@@ -1,0 +1,32 @@
+{
+  "name": "twine-dugger",
+  "version": "0.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "vite",
+    "prettier": "prettier . -c",
+    "prettier:fix": "prettier . -w",
+    "start": "vite",
+    "type-check": "tsc --noEmit",
+    "watch": "vite build --watch"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chrome": "0.0.321",
+    "@types/node": "22.15.17",
+    "esbuild-plugin-solid": "0.6.0",
+    "prettier": "3.5.3",
+    "prettier-plugin-package": "1.4.0",
+    "tsup": "8.4.0",
+    "typescript": "5.8.3",
+    "vite": "6.3.5",
+    "vite-plugin-solid": "2.11.6"
+  },
+  "dependencies": {
+    "solid-js": "1.9.6",
+    "uuid": "11.1.0",
+    "zod": "3.24.4"
+  }
+}

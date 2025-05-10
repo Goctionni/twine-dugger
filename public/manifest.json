@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Twine Dugger",
+  "version": "0.1.0",
+  "description": "A tool to inspect and diff game state for Twine games.",
+  "permissions": ["scripting", "activeTab", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "devtools_page": "./create-panel.html",
+  "background": {
+    "service_worker": "./service-hub.js",
+    "type": "module"
+  },
+  "content_scripts": [],
+  "web_accessible_resources": [
+    {
+      "resources": ["./content-script.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "alexdima.copy-relative-path",
+    "esbenp.prettier-vscode",
+    "rohit-gohri.format-code-action",
+    "eamodio.gitlens",
+    "codeandstuff.package-json-upgrade"
+  ]
+}

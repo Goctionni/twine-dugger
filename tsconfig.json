@@ -1,0 +1,16 @@
+{
+  "files": [], // No specific files to compile at this level
+  "references": [
+    // Reference the tsconfig for your application code (SolidJS UI, content script)
+    { "path": "./tsconfig.app.json" },
+    // Reference the tsconfig for Node.js specific files (like vite.config.ts)
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    // You can put common compiler options here if absolutely necessary,
+    // but usually, it's better to keep them specific to app/node.
+    // "esModuleInterop": true, // Example common option
+    // "forceConsistentCasingInFileNames": true,
+    // "strict": true,
+  }
+}

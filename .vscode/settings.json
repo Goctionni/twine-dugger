@@ -1,0 +1,25 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": false,
+  "editor.rulers": [100],
+  // "prettier.prettierPath": "./node_modules/prettier",
+  "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": false,
+  "editor.detectIndentation": false,
+  "editor.indentSize": "tabSize",
+  "editor.tabSize": 2,
+  "files.associations": {
+    "*.css": "tailwindcss",
+    "**/_templates/**/*": "plaintext"
+  },
+  "package-json-upgrade.ignoreVersions": {
+    "@pega/pcore-pconnect-typedefs": ">=3.0.0",
+    "eslint": ">=9.0.0",
+    "@pega/cosmos-react-core": ">=5.0.0",
+    "@pega/cosmos-react-work": ">=5.0.0",
+    "@date-io/dayjs": ">=2.0.0",
+    "@tinymce/tinymce-react": ">=5.0.0",
+    "react-datepicker": ">=5.0.0"
+  }
+}

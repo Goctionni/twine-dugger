@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // Target modern JavaScript features
+    "module": "ESNext", // Use ES modules
+    "moduleResolution": "node", // How modules are resolved
+    "jsx": "preserve", // Preserve JSX for SolidJS compiler
+    "jsxImportSource": "solid-js", // Specify SolidJS as JSX source
+    "allowSyntheticDefaultImports": true, // Allows default imports from modules with no default export
+    "esModuleInterop": true, // Enables compatibility with CommonJS modules
+    "forceConsistentCasingInFileNames": true,
+    "strict": true, // Enable all strict type-checking options
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "baseUrl": ".", // Base directory for module resolution
+    "paths": {
+      // Define any path aliases if you use them (e.g., "@/*": ["src/*"])
+      // "~/*": ["./src/*"] // Example
+    },
+    "lib": ["ESNext", "DOM", "DOM.Iterable"], // Libraries available in the execution environment
+    "types": ["vite/client", "chrome", "solid-js"], // Include types for Vite client and SolidJS
+    "resolveJsonModule": true, // Allow importing JSON files
+    "isolatedModules": true, // Ensure each file can be safely transpiled without relying on other imports
+    "noEmit": true // Vite handles the emitting of files
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"], // Files to be included in compilation
+  "exclude": ["node_modules", "dist"]
+}
