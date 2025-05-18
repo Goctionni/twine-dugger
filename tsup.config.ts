@@ -1,36 +1,37 @@
 import { defineConfig, Options } from 'tsup';
 import { solidPlugin } from 'esbuild-plugin-solid';
 
-export default defineConfig((options): Options[] => [
+const baseOptions = {
+  tsconfig: 'tsconfig.app.json',
+  target: 'chrome135',
+  platform: 'browser',
+  minify: false,
+  sourcemap: true,
+  cjsInterop: true,
+  replaceNodeEnv: false,
+  format: 'esm',
+  outDir: 'dist',
+  minifyIdentifiers: false,
+  treeshake: true,
+} satisfies Options;
+
+export default defineConfig((): Options[] => [
   {
     clean: true,
-    config: './tsconfig.app.json',
-    target: 'esnext',
-    platform: 'browser',
-    format: 'esm',
-    entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
-    outDir: 'dist',
-    treeshake: options.watch ? false : { preset: 'safest' },
-    replaceNodeEnv: true,
-    noExternal: ['solid-js/web', 'solid-js', 'zod', 'uuid'],
-    esbuildPlugins: [solidPlugin()],
     publicDir: 'public',
+    entry: { style: 'src/devtools-panel/index.css' },
   },
   {
-    config: './tsconfig.app.json',
-    target: 'esnext',
-    platform: 'browser',
-    format: 'esm',
+    ...baseOptions,
+    entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
+    noExternal: ['solid-js/web', 'solid-js', 'clsx'],
+    esbuildPlugins: [solidPlugin()],
+  },
+  {
+    ...baseOptions,
     entry: {
       'create-panel': 'src/create-panel/create-panel.ts',
       'content-script': 'src/content-script/content-script.ts',
-      'service-hub': 'src/service-hub/service-hub.ts',
     },
-    outDir: 'dist',
-    treeshake: options.watch ? false : { preset: 'safest' },
-    replaceNodeEnv: true,
-    esbuildPlugins: [solidPlugin()],
-    splitting: false,
-    noExternal: ['zod', 'uuid'],
   },
 ]);

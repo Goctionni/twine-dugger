@@ -21,7 +21,7 @@ function serializePath(path: Path): string {
 }
 
 // Determines the type category, including specific primitives.
-function getType(value: Value): ValueType {
+export function getType(value: Value): ValueType {
   if (typeof value === 'function') return 'function';
   if (Array.isArray(value)) return 'array';
   if (value instanceof Set) return 'set';

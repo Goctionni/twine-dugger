@@ -5,12 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "tsup",
-    "dev": "vite",
     "prettier": "prettier . -c",
     "prettier:fix": "prettier . -w",
-    "start": "vite",
-    "type-check": "tsc --noEmit",
-    "watch": "vite build --watch"
+    "type-check": "tsc --noEmit"
   },
   "license": "MIT",
   "devDependencies": {
@@ -20,13 +17,14 @@
     "prettier": "3.5.3",
     "prettier-plugin-package": "1.4.0",
     "tsup": "8.4.0",
-    "typescript": "5.8.3",
-    "vite": "6.3.5",
-    "vite-plugin-solid": "2.11.6"
+    "typescript": "5.8.3"
   },
   "dependencies": {
+    "@microsoft/api-extractor": "^7.52.7",
+    "@tailwindcss/postcss": "^4.1.6",
+    "clsx": "^2.1.1",
+    "postcss": "^8.5.3",
     "solid-js": "1.9.6",
-    "uuid": "11.1.0",
-    "zod": "3.24.4"
+    "tailwindcss": "^4.1.6"
   }
 }

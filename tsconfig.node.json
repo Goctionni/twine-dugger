@@ -9,8 +9,8 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node", "vite/client"] // Include Node.js types and Vite types
+    "types": ["node"] // Include Node.js types and Vite types
   },
-  "include": ["vite.config.ts", "tsup.config.ts", "tests/**/*.ts", "src/content-script/util/**/*.ts"],
+  "include": ["tsup.config.ts", "tests/**/*.ts", "src/content-script/util/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

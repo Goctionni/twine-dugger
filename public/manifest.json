@@ -6,10 +6,6 @@
   "permissions": ["scripting", "activeTab", "tabs"],
   "host_permissions": ["<all_urls>"],
   "devtools_page": "./create-panel.html",
-  "background": {
-    "service_worker": "./service-hub.js",
-    "type": "module"
-  },
   "content_scripts": [],
   "web_accessible_resources": [
     {
