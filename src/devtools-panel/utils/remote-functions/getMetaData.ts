@@ -179,7 +179,7 @@ export function getGameMetaFn(): GameMetaData | null {
       ifId: getIfid(),
       compiler: getCompiler(),
       format: {
-        name: 'SugarCube',
+        name: 'Harlowe',
         version: getVersion() ?? undefined,
       },
       passages: getPassages(),

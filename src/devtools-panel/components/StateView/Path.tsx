@@ -39,9 +39,9 @@ export function Path(props: Props) {
               <Match when={chunk().type === 'map'}>
                 <span class={colorClasses.pathDot}>.</span>
                 <span class={colorClasses.typeString}>get</span>
-                <span class={colorClasses.pathBrackets}>{'('}</span>
+                <span class={colorClasses.pathBrackets}>{'("'}</span>
                 <span class={colorClasses.typeNumber}>{chunk().selectedChildKey!}</span>
-                <span class={colorClasses.pathBrackets}>{')'}</span>
+                <span class={colorClasses.pathBrackets}>{'")'}</span>
               </Match>
             </Switch>
           </Show>
