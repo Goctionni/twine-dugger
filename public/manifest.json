@@ -3,7 +3,7 @@
   "name": "Twine Dugger",
   "version": "0.1.0",
   "description": "A tool to inspect and diff game state for Twine games.",
-  "permissions": ["scripting", "activeTab", "tabs"],
+  "permissions": ["scripting", "activeTab"],
   "host_permissions": ["<all_urls>"],
   "devtools_page": "./create-panel.html",
   "content_scripts": [],
