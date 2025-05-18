@@ -15,13 +15,13 @@ export interface GameMetaData {
   };
   format?: {
     name: 'SugarCube' | 'Harlowe';
-    version: {
+    version?: {
       major: number;
       minor: number;
       patch: number;
       build?: number;
       shortStr: string;
-      fullStr: string;
+      fullStr?: string;
     };
   };
   compiler?: {
@@ -36,6 +36,7 @@ export interface GameMetaData {
 
 export function getGameMetaFn(): GameMetaData | null {
   if ('SugarCube' in window) return getSugarCubeMeta();
+  if ('Harlowe' in window) return getHarloweMeta();
   return null;
 
   function getSugarCubeMeta(): GameMetaData | null {
@@ -44,7 +45,7 @@ export function getGameMetaFn(): GameMetaData | null {
       return window.SugarCube.Story.title || storyData?.getAttribute('name') || 'Untitled';
     };
     const getIfid = () => {
-      return window.SugarCube.Story.title || storyData?.getAttribute('ifid') || '';
+      return window.SugarCube.Story.ifId || storyData?.getAttribute('ifid') || '';
     };
     const getCompiler = () => {
       const creator = storyData?.getAttribute('creator');
@@ -69,7 +70,7 @@ export function getGameMetaFn(): GameMetaData | null {
       const startnode = storyData?.getAttribute('startnode');
       if (startnode)
         return (
-          document.querySelector(`tw-passagedata[pid=${startnode}]`)?.getAttribute('name') || ''
+          document.querySelector(`tw-passagedata[pid="${startnode}"]`)?.getAttribute('name') || ''
         );
       return '';
     };
@@ -130,6 +131,58 @@ export function getGameMetaFn(): GameMetaData | null {
       passages: getPassages(),
       save: getSave(),
       settings: getSettings(),
+    };
+  }
+
+  function getHarloweMeta(): GameMetaData | null {
+    const storyData = document.querySelector('tw-storydata');
+    const getName = () => {
+      return storyData?.getAttribute('name') || 'Untitled';
+    };
+    const getIfid = () => {
+      return storyData?.getAttribute('ifid') || '';
+    };
+    const getCompiler = () => {
+      const creator = storyData?.getAttribute('creator');
+      if (!creator) return;
+      const version = storyData?.getAttribute('creator-version') ?? undefined;
+      return { name: creator, version };
+    };
+    const getVersion = () => {
+      const shortStr = storyData?.getAttribute('format-version');
+      if (!shortStr) return null;
+      const [major, minor, patch] = shortStr.split('.').map(Number);
+      return {
+        major,
+        minor,
+        patch,
+        shortStr: shortStr,
+      };
+    };
+    const getStartingPassage = () => {
+      const startnode = storyData?.getAttribute('startnode');
+      if (startnode)
+        return (
+          document.querySelector(`tw-passagedata[pid="${startnode}"]`)?.getAttribute('name') || ''
+        );
+      return '';
+    };
+    const getPassages = () => {
+      return {
+        start: getStartingPassage(),
+        count: document.querySelectorAll('tw-passagedata').length || undefined,
+      };
+    };
+
+    return {
+      name: getName(),
+      ifId: getIfid(),
+      compiler: getCompiler(),
+      format: {
+        name: 'SugarCube',
+        version: getVersion() ?? undefined,
+      },
+      passages: getPassages(),
     };
   }
 

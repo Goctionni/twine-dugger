@@ -2,6 +2,14 @@ import { ObjectValue } from './content-script/util/types';
 
 declare global {
   interface Window {
+    Harlowe: {
+      API_ACCESS: {
+        STATE: {
+          variables: ObjectValue;
+          passage: string;
+        };
+      };
+    };
     SugarCube: {
       Config: {
         passages: {

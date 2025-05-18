@@ -103,7 +103,7 @@ function deepEquals(val1: Value, val2: Value): boolean {
 }
 
 // --- Public API Factory ---
-export function getDiffer() {
+export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) {
   let storedIdentityMap: IdentityMap = new Map(); // State is private to this instance
 
   // --- Diffing Logic Helpers (Defined inside factory) ---
@@ -119,6 +119,10 @@ export function getDiffer() {
     const allKeys = new Set([...oldEntries.keys(), ...newEntries.keys()]);
 
     for (const key of allKeys) {
+      if (ignoreCheck) {
+        if (ignoreCheck(key, oldEntries.get(key))) continue;
+        if (ignoreCheck(key, newEntries.get(key))) continue;
+      }
       const currentPath = path.concat(key); // Path to the property/entry
       const oldValExists = oldEntries.has(key);
       const newValExists = newEntries.has(key);
