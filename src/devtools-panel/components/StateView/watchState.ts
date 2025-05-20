@@ -77,7 +77,7 @@ function createPathChunk(name: string, value: ObjectValue | MapValue | ArrayValu
 }
 
 function getPathChunkValue(chunk: PathChunk) {
-  if (!chunk.selectedChildKey) return chunk.getValue();
+  if (typeof chunk.selectedChildKey === 'undefined') return chunk.getValue();
   if (chunk.type === 'array') {
     return chunk.getValue()[chunk.selectedChildKey];
   }
