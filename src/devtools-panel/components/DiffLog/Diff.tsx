@@ -37,7 +37,7 @@ function RenderValue(props: { value: Value }) {
   };
 
   return (
-    <Switch fallback={<code class={colorClasses.typeOther}>{getType(value)}</code>}>
+    <Switch fallback={<code class={colorClasses.typeOther}>{getType(value())}</code>}>
       <Match when={renderType() === 'empty'}>
         <code class={colorClasses.typeEmpty}>Empty string</code>
       </Match>
