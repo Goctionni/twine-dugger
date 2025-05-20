@@ -8,9 +8,9 @@ interface Props {
 
 export function DiffLog(props: Props) {
   return (
-    <div class="overflow-auto p-4">
+    <div class="p-4 flex flex-col h-full">
       <h2 class="text-lg font-semibold mb-2 text-gray-200">Diff Log</h2>
-      <ul>
+      <ul class="overflow-auto flex-1">
         <For each={props.frames}>
           {(frame, index) => (
             <li>
