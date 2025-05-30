@@ -1,8 +1,8 @@
-import { ArrayValue, MapValue, ObjectValue, SetValue, Value } from '@/content-script/util/types';
+import { ArrayValue, MapValue, ObjectValue, Value } from '@/shared/shared-types';
 import { Index, Match, Show, Switch } from 'solid-js';
-import { getSpecificType } from '../watchState';
 import { TypeIcon } from '../TypeIcon';
 import { BooleanInput, NumberInput, StringInput } from './PrimitiveInputs';
+import { getSpecificType } from '@/shared/type-helpers';
 
 interface ObjectInputProps {
   value: ObjectValue;

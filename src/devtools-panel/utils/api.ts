@@ -1,6 +1,7 @@
 import { jsonReviver } from '@/shared/json-helper';
 import { executeCode } from './remote-execute';
 import { getGameMetaFn } from './remote-functions/getMetaData';
+import { ObjectValue } from '@/content-script/util/types';
 
 export async function getGameMetaData() {
   return executeCode(getGameMetaFn);
@@ -16,8 +17,8 @@ export async function getState() {
       requires: ['content-script.js'],
     },
   ).then((jsonStr) => {
-    if (jsonStr) return JSON.parse(jsonStr, jsonReviver);
-    return jsonStr;
+    if (typeof jsonStr !== 'string') return jsonStr;
+    return JSON.parse(jsonStr, jsonReviver) as ReturnType<Window['TwineDugger']['getState']>;
   });
 }
 
@@ -31,8 +32,8 @@ export async function getDiffs() {
       requires: ['content-script.js'],
     },
   ).then((jsonStr) => {
-    if (jsonStr) return JSON.parse(jsonStr, jsonReviver);
-    return jsonStr;
+    if (typeof jsonStr !== 'string') return jsonStr;
+    return JSON.parse(jsonStr, jsonReviver) as ReturnType<Window['TwineDugger']['getDiffs']>;
   });
 }
 

@@ -9,6 +9,7 @@
     "esModuleInterop": true, // Enables compatibility with CommonJS modules
     "forceConsistentCasingInFileNames": true,
     "strict": true, // Enable all strict type-checking options
+    "noUncheckedIndexedAccess": true,
     "skipLibCheck": true, // Skip type checking of declaration files
     "baseUrl": ".", // Base directory for module resolution
     "lib": ["ESNext", "DOM", "DOM.Iterable"], // Libraries available in the execution environment

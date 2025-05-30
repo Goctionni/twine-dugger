@@ -1,9 +1,9 @@
-import { Accessor, For, Index } from 'solid-js';
+import { Accessor, Index } from 'solid-js';
 import { PathChunk, SelectedValue } from './types';
-import { Value } from '@content/util/types';
 import { ObjectNav } from './ObjectNav';
 import { ValueView } from './ValueView';
 import { Path } from './Path';
+import { Value } from '@/shared/shared-types';
 
 interface Props {
   getPathChunks: Accessor<PathChunk[]>;
@@ -16,7 +16,7 @@ export function StateView(props: Props) {
   return (
     <div class="flex h-full px-2 py-1">
       <Index each={props.getPathChunks()}>
-        {(chunk, index) => (
+        {(chunk) => (
           <ObjectNav chunk={chunk()} onClick={(childKey) => props.selectPath(chunk(), childKey)} />
         )}
       </Index>

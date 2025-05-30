@@ -1,10 +1,10 @@
 import { For } from 'solid-js';
-import { Frame } from './types';
 import { DiffItem } from './Diff';
 import { RelativeTime } from './RelativeTime';
+import type { DiffFrame } from '@/shared/shared-types';
 
 interface Props {
-  frame: Frame;
+  frame: DiffFrame;
 }
 
 export function DiffFrame(props: Props) {

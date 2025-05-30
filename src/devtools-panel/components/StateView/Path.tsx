@@ -1,4 +1,4 @@
-import { For, Index, Match, Show, Switch } from 'solid-js';
+import { Index, Match, Show, Switch } from 'solid-js';
 import { PathChunk } from './types';
 
 const colorClasses = {

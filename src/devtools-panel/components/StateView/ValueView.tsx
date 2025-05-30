@@ -1,4 +1,4 @@
-import { ArrayValue, MapValue, ObjectValue, Value } from '@content/util/types';
+import { ArrayValue, MapValue, ObjectValue } from '@/shared/shared-types';
 import { SelectedValue } from './types';
 import { JSX, Match, Switch } from 'solid-js';
 import { TypeIcon } from './TypeIcon';

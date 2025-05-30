@@ -1,3 +1,4 @@
+import { getPotentialId } from '@/shared/id-helper';
 import { createInstructions } from './createInstructions';
 import type {
   Value,
@@ -12,6 +13,7 @@ import type {
   MatchPair, // Assuming MatchPair is defined in types.ts now
   Primitive,
 } from './types'; // Import types from types.ts
+import { getSpecificType, isNullish, isPrimitive } from '@/shared/type-helpers';
 
 // --- Helper Functions ---
 
@@ -20,40 +22,10 @@ function serializePath(path: Path): string {
   return path.join('\u0000');
 }
 
-// Determines the type category, including specific primitives.
-export function getType(value: Value): ValueType {
-  if (typeof value === 'function') return 'function';
-  if (Array.isArray(value)) return 'array';
-  if (value instanceof Set) return 'set';
-  if (value instanceof Map) return 'map';
-  if (typeof value === 'object' && value !== null) return 'object';
-  if (typeof value === 'string') return 'string';
-  if (typeof value === 'number') return 'number';
-  if (typeof value === 'boolean') return 'boolean';
-  // Treat null/undefined as 'primitive' for general type checking,
-  // specific diffs will handle them via type-changed or updates from/to them.
-  return 'primitive';
-}
-
-// List of common ID keys to check (case-insensitive).
-const COMMON_ID_KEYS = ['id', '_id', 'key', 'uuid'];
-
-// Extracts a potential ID value from an object based on common keys.
-function getPotentialId(obj: ObjectValue): Primitive | undefined {
-  const objectValue = obj as ObjectValue;
-  for (const key of COMMON_ID_KEYS) {
-    const actualKey = Object.keys(objectValue).find((k) => k.toLowerCase() === key);
-    if (actualKey && typeof objectValue[actualKey] !== 'object') {
-      return objectValue[actualKey] as Primitive;
-    }
-  }
-  return undefined;
-}
-
 // --- Deep Equality Check (Unchanged from your paste) ---
 function deepEquals(val1: Value, val2: Value): boolean {
   if (Object.is(val1, val2)) return true;
-  // Use basic typeof for type check within deepEquals, getType is for diff logic
+  // Use basic typeof for type check within deepEquals, getSpecificType is for diff logic
   const type1 = typeof val1;
   const type2 = typeof val2;
   if (type1 !== type2 || val1 === null || val2 === null || type1 === 'function') {
@@ -129,7 +101,7 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
       const oldVal = oldEntries.get(key);
       const newVal = newEntries.get(key);
 
-      if (newValExists && getType(newVal) !== 'primitive') {
+      if (newValExists && isPrimitive(newVal)) {
         newMap.set(serializePath(currentPath), newVal);
       }
 
@@ -177,7 +149,7 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
     // Cache objects for future run
     for (let i = 0; i < newLen; i++) {
       const newItem = newArr[i];
-      if (getType(newItem) !== 'primitive') {
+      if (isPrimitive(newItem)) {
         newIdentityMap.set(serializePath(path.concat(i)), newItem);
       }
     }
@@ -199,8 +171,8 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
 
     // Pass 2: Referential equality at same index via identity map
     for (let i = 0; i < minLen; i++) {
-      if (oldMatched[i] || getType(oldArr[i]) === 'primitive') continue;
-      if (newMatched[i] || getType(newArr[i]) === 'primitive') continue;
+      if (oldMatched[i] || isPrimitive(oldArr[i])) continue;
+      if (newMatched[i] || isPrimitive(newArr[i])) continue;
       const oldItemPath = serializePath(path.concat(i));
       const oldItem = storedIdentityMap.get(oldItemPath);
       if (oldItem !== newArr[i]) continue;
@@ -219,12 +191,12 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
     // Pass 3: ID key equality at same index
     for (let i = 0; i < minLen; i++) {
       if (oldMatched[i] || newMatched[i]) continue;
-      if (oldMatched[i] || getType(oldArr[i]) !== 'object') continue;
-      if (newMatched[i] || getType(newArr[i]) !== 'object') continue;
+      if (oldMatched[i] || getSpecificType(oldArr[i]) !== 'object') continue;
+      if (newMatched[i] || getSpecificType(newArr[i]) !== 'object') continue;
 
-      const oldId = getPotentialId(oldArr[i] as ObjectValue);
+      const oldId = getPotentialId(oldArr[i]);
       if (oldId === undefined) continue;
-      const newId = getPotentialId(newArr[i] as ObjectValue);
+      const newId = getPotentialId(newArr[i]);
       if (newId === undefined) continue;
       if (!Object.is(oldId, newId)) continue;
 
@@ -242,8 +214,8 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
     // Pass 4: Deep equality at same index, but only if no ref or id was matched
     if (!foundRefOrIdMatch) {
       for (let i = 0; i < minLen; i++) {
-        if (oldMatched[i] || getType(oldArr[i]) === 'primitive') continue;
-        if (newMatched[i] || getType(newArr[i]) === 'primitive') continue;
+        if (oldMatched[i] || isPrimitive(oldArr[i])) continue;
+        if (newMatched[i] || isPrimitive(newArr[i])) continue;
         if (!deepEquals(oldArr[i], newArr[i])) continue;
 
         oldMatched[i] = true;
@@ -280,13 +252,13 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
 
     // Pass 6: Referential equality at any index via identity map
     for (let oldIndex = 0; oldIndex < oldLen; oldIndex++) {
-      if (oldMatched[oldIndex] || getType(oldArr[oldIndex]) === 'primitive') continue;
+      if (oldMatched[oldIndex] || isPrimitive(oldArr[oldIndex])) continue;
 
       const oldItemPath = serializePath(path.concat(oldIndex));
       const oldItem = storedIdentityMap.get(oldItemPath);
       if (oldItem === undefined) continue;
       for (let newIndex = 0; newIndex < newLen; newIndex++) {
-        if (newMatched[newIndex] || getType(newArr[newIndex]) === 'primitive') continue;
+        if (newMatched[newIndex] || isPrimitive(newArr[newIndex])) continue;
         if (oldItem === newArr[newIndex]) {
           oldMatched[oldIndex] = true;
           newMatched[newIndex] = true;
@@ -299,14 +271,14 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
 
     // Pass 7: ID key equality at any index
     for (let oldIndex = 0; oldIndex < oldLen; oldIndex++) {
-      if (oldMatched[oldIndex] || getType(oldArr[oldIndex]) !== 'object') continue;
-      const oldId = getPotentialId(oldArr[oldIndex] as ObjectValue);
+      if (oldMatched[oldIndex] || getSpecificType(oldArr[oldIndex]) !== 'object') continue;
+      const oldId = getPotentialId(oldArr[oldIndex]);
       if (oldId === undefined) continue;
 
       for (let newIndex = 0; newIndex < newLen; newIndex++) {
         if (oldIndex === newIndex) continue;
-        if (newMatched[newIndex] || getType(newArr[newIndex]) !== 'object') continue;
-        const newId = getPotentialId(newArr[newIndex] as ObjectValue);
+        if (newMatched[newIndex] || getSpecificType(newArr[newIndex]) !== 'object') continue;
+        const newId = getPotentialId(newArr[newIndex]);
         if (newId === undefined) continue;
         if (!Object.is(oldId, newId)) continue;
 
@@ -326,10 +298,10 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
     // Pass 8: Deep Equality (Conditional)
     if (!foundRefOrIdMatch) {
       for (let oldIndex = 0; oldIndex < oldLen; oldIndex++) {
-        if (oldMatched[oldIndex] || getType(oldArr[oldIndex]) === 'primitive') continue;
+        if (oldMatched[oldIndex] || isPrimitive(oldArr[oldIndex])) continue;
 
         for (let newIndex = 0; newIndex < newLen; newIndex++) {
-          if (newMatched[newIndex] || getType(newArr[newIndex]) === 'primitive') continue;
+          if (newMatched[newIndex] || isPrimitive(newArr[newIndex])) continue;
           if (!deepEquals(oldArr[oldIndex], newArr[newIndex])) continue;
 
           oldMatched[oldIndex] = true;
@@ -444,15 +416,15 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
     for (let oldIndex = 0; oldIndex < oldSize; oldIndex++) {
       if (oldMatched[oldIndex]) continue;
       const oldItem = oldItems[oldIndex];
-      if (getType(oldItem) !== 'object') continue;
-      const oldId = getPotentialId(oldItem as ObjectValue);
+      if (getSpecificType(oldItem) !== 'object') continue;
+      const oldId = getPotentialId(oldItem);
       if (!oldId) continue;
 
       for (let newIndex = 0; newIndex < newSize; newIndex++) {
         if (newMatched[newIndex]) continue;
         const newItem = newItems[newIndex];
-        if (getType(newItem) !== 'object') continue;
-        const newId = getPotentialId(newItem as ObjectValue);
+        if (getSpecificType(newItem) !== 'object') continue;
+        const newId = getPotentialId(newItem);
         if (!newId) continue;
 
         oldMatched[oldIndex] = true;
@@ -465,11 +437,11 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
     // Compare by deepEq (no recursion)
     for (let oldIndex = 0; oldIndex < oldSize; oldIndex++) {
       if (oldMatched[oldIndex]) continue;
-      if (getType(oldItems[oldIndex]) === 'primitive') continue;
+      if (isPrimitive(oldItems[oldIndex])) continue;
 
       for (let newIndex = 0; newIndex < newSize; newIndex++) {
         if (newMatched[newIndex]) continue;
-        if (getType(newItems[newIndex]) === 'primitive') continue;
+        if (isPrimitive(newItems[newIndex])) continue;
         if (!deepEquals(oldItems[oldIndex], newItems[newIndex])) continue;
 
         oldMatched[oldIndex] = true;
@@ -482,7 +454,7 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
     if (storedSetArr) {
       for (let oldIndex = 0; oldIndex < oldSize; oldIndex++) {
         if (oldMatched[oldIndex]) continue;
-        if (getType(storedSetArr[oldIndex]) !== 'primitive') continue;
+        if (!isPrimitive(storedSetArr[oldIndex])) continue;
         const newIndex = newItems.indexOf(storedSetArr[oldIndex]);
         if (newIndex === -1) continue;
 
@@ -529,14 +501,14 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
     diffs: Diff[],
     newMap: IdentityMap,
   ) {
-    if (getType(newVal) !== 'primitive') {
+    if (!isPrimitive(newVal)) {
       newMap.set(serializePath(path), newVal);
     }
 
     if (Object.is(oldVal, newVal)) return;
 
-    const oldType = getType(oldVal);
-    const newType = getType(newVal);
+    const oldType = getSpecificType(oldVal);
+    const newType = getSpecificType(newVal);
 
     // Handle Type Change first
     if (oldType !== newType) {
@@ -606,7 +578,7 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
           newValue: newVal as Primitive,
         });
         break;
-      case 'primitive':
+      default:
         // This case handles null <-> undefined changes if Object.is failed,
         // or other potential primitive mismatches not caught by specific types.
         // Report as type-changed for clarity.

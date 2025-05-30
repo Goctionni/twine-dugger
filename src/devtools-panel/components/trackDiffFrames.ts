@@ -1,9 +1,9 @@
 import { createSignal, onCleanup } from 'solid-js';
-import { Frame } from './DiffLog/types';
+import { DiffFrame } from '@/shared/shared-types';
 import { getDiffs } from '../utils/api';
 
 export function trackDiffFrames() {
-  const [diffFrames, setDiffFrames] = createSignal<Frame[]>([]);
+  const [diffFrames, setDiffFrames] = createSignal<DiffFrame[]>([]);
 
   const interval = setInterval(() => {
     const date = new Date();
@@ -11,7 +11,7 @@ export function trackDiffFrames() {
       if (!result) return;
       const { diffs, passage } = result;
 
-      const lastFrame = diffFrames()[0] as Frame | undefined;
+      const lastFrame = diffFrames()[0] as DiffFrame | undefined;
       if (!diffs?.length) {
         if (!lastFrame) return;
         if (passage === lastFrame.passage) return;

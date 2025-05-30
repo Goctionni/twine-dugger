@@ -5,6 +5,7 @@ import clsx from 'clsx';
 
 interface Props {
   chunk: PathChunk;
+  selectedProperty?: string | number;
   onClick: (childKey: string | number) => void;
 }
 
@@ -20,7 +21,7 @@ export function ObjectNav(props: Props) {
                 on:click={() => props.onClick(child.text)}
                 class={clsx(
                   'flex items-center gap-1 p-1 cursor-pointer rounded-md',
-                  child.text === props.chunk.selectedChildKey
+                  child.text === props.selectedProperty
                     ? 'outline-gray-300 outline-2 -outline-offset-2'
                     : 'outline-transparent hover:bg-gray-700',
                 )}

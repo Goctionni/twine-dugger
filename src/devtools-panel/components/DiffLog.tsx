@@ -1,12 +1,13 @@
 import { For } from 'solid-js';
-import { Frame } from './DiffLog/types';
 import { DiffFrame } from './DiffLog/DiffFrame';
+import type { DiffFrame as IDiffFrame } from '@/shared/shared-types';
 
 interface Props {
-  frames: Frame[];
+  frames: IDiffFrame[];
 }
 
 export function DiffLog(props: Props) {
+  const frames = () => props.frames.slice(0, 30);
   return (
     <div class="p-4 flex flex-col h-full">
       <h2 class="text-lg font-semibold mb-2 text-gray-200">Diff Log</h2>

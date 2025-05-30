@@ -16,12 +16,10 @@ export interface GameMetaData {
   format?: {
     name: 'SugarCube' | 'Harlowe';
     version?: {
-      major: number;
-      minor: number;
-      patch: number;
-      build?: number;
+      major: number | undefined;
+      minor: number | undefined;
+      patch: number | undefined;
       shortStr: string;
-      fullStr?: string;
     };
   };
   compiler?: {

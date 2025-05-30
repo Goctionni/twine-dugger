@@ -16,7 +16,7 @@ export function MetaInfo(props: GameMetaData) {
         <span>
           StoryFormat:{' '}
           <span class="font-medium text-gray-300">
-            {props.format.name} {props.format.version.shortStr}
+            {props.format.name} {props.format.version?.shortStr}
           </span>
         </span>
       )}

@@ -1,4 +1,4 @@
-import { Component, JSX } from 'solid-js';
+import { JSX } from 'solid-js';
 import { MetaInfo } from './MetaInfo';
 import { CogIcon } from './CogIcon';
 import { GameMetaData } from '@/devtools-panel/utils/remote-functions/getMetaData';
@@ -8,7 +8,7 @@ interface LayoutProps {
   children: JSX.Element;
 }
 
-export const Layout: Component<LayoutProps> = (props) => {
+export function Layout(props: LayoutProps) {
   const handleOptionsClick = () => {
     console.log('Options clicked!');
   };
@@ -32,4 +32,4 @@ export const Layout: Component<LayoutProps> = (props) => {
       {props.children}
     </div>
   );
-};
+}

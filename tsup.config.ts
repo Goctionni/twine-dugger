@@ -24,7 +24,7 @@ export default defineConfig((): Options[] => [
   {
     ...baseOptions,
     entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
-    noExternal: ['solid-js/web', 'solid-js', 'clsx'],
+    noExternal: ['solid-js/web', 'solid-js', 'clsx', 'immer'],
     esbuildPlugins: [solidPlugin()],
   },
   {

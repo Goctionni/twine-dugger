@@ -1,7 +1,7 @@
 import { DiffLog } from './DiffLog';
 import { trackDiffFrames } from './trackDiffFrames';
 import { MovableSplit } from './Layout/MovableSplit';
-import { watchState } from './StateView/watchState';
+import { watchState } from './StateView/watchState/watchState';
 import { StateView } from './StateView/StateView';
 import { createEffect } from 'solid-js';
 
