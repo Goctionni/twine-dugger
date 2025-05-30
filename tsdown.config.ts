@@ -1,5 +1,7 @@
-import { defineConfig, Options } from 'tsup';
-import { solidPlugin } from 'esbuild-plugin-solid';
+import { defineConfig, Options } from 'tsdown';
+import solidPlugin from 'vite-plugin-solid';
+import postcss from 'rollup-plugin-postcss';
+import tailwindcss from '@tailwindcss/postcss';
 
 const baseOptions = {
   tsconfig: 'tsconfig.app.json',
@@ -7,28 +9,33 @@ const baseOptions = {
   platform: 'browser',
   minify: false,
   sourcemap: true,
-  cjsInterop: true,
-  replaceNodeEnv: false,
   format: 'esm',
   outDir: 'dist',
-  minifyIdentifiers: false,
   treeshake: true,
 } satisfies Options;
 
 export default defineConfig((): Options[] => [
   {
     clean: true,
-    publicDir: 'public',
+    copy: [{ from: 'public', to: 'dist' }],
     entry: { style: 'src/devtools-panel/index.css' },
+    plugins: [
+      postcss({
+        extract: true,
+        plugins: [tailwindcss()],
+      }),
+    ],
   },
   {
     ...baseOptions,
+    clean: false,
     entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
     noExternal: ['solid-js/web', 'solid-js', 'clsx', 'immer'],
-    esbuildPlugins: [solidPlugin()],
+    plugins: [solidPlugin()],
   },
   {
     ...baseOptions,
+    clean: false,
     entry: {
       'create-panel': 'src/create-panel/create-panel.ts',
       'content-script': 'src/content-script/content-script.ts',

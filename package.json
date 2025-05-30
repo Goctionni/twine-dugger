@@ -4,26 +4,28 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "prettier": "prettier . -c",
     "prettier:fix": "prettier . -w",
     "type-check": "tsc --noEmit"
   },
   "license": "MIT",
   "devDependencies": {
+    "@microsoft/api-extractor": "7.52.7",
+    "@tailwindcss/postcss": "4.1.8",
     "@types/chrome": "0.0.321",
     "@types/node": "22.15.17",
-    "esbuild-plugin-solid": "0.6.0",
+    "postcss": "8.5.3",
     "prettier": "3.5.3",
     "prettier-plugin-package": "1.4.0",
-    "tsup": "8.4.0",
-    "typescript": "5.8.3"
+    "rollup-plugin-postcss": "4.0.2",
+    "ts-node": "10.9.2",
+    "tsdown": "^0.12.5",
+    "typescript": "5.8.3",
+    "vite-plugin-solid": "2.11.6"
   },
   "dependencies": {
-    "@microsoft/api-extractor": "7.52.7",
-    "@tailwindcss/postcss": "4.1.6",
     "clsx": "2.1.1",
-    "postcss": "8.5.3",
     "solid-js": "1.9.6",
     "tailwindcss": "4.1.6"
   }

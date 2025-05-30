@@ -5,17 +5,16 @@ SugarCube or Harlowe), or to cheat in those games.
 
 ## Dependencies / Technologies
 
-- yarn - Package manager
+- pnpm - Package manager
 - typescript - Types
-- tsup - Build
-- tsx - Run node scripts
+- tsdown - Build
 - SolidJS - UI
 - Tailwindcs - Styling
 
 ## Commands
 
-`yarn` - install dependencies
-`yarn build` - build extension
+`pnpm i` - install dependencies
+`pnpm build` - build extension
 
 ## Status
 
