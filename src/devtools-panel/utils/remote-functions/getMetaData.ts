@@ -1,3 +1,5 @@
+import { getGameMetaData } from "../api";
+
 export interface GameMetaData {
   name: string;
   ifId: string;
@@ -42,7 +44,8 @@ export function getGameMetaFn(): GameMetaData | null {
   function getSugarCubeMeta(): GameMetaData | null {
     const storyData = document.querySelector('tw-storydata');
     const getName = () => {
-      return window.SugarCube.Story.title || storyData?.getAttribute('name') || 'Untitled';
+      const story = window.SugarCube.Story;
+      return story.name || story.title || storyData?.getAttribute('name') || 'Untitled';
     };
     const getIfid = () => {
       return window.SugarCube.Story.ifId || storyData?.getAttribute('ifid') || '';
@@ -81,9 +84,18 @@ export function getGameMetaFn(): GameMetaData | null {
       };
     };
     const getSave = () => {
-      const numSlots = window.SugarCube.Save.slots.length;
-      const slotsUsed = window.SugarCube.Save.slots.count();
-      const storage = window.SugarCube.storage.name;
+      const isNewAPI = 'browser' in window.SugarCube.Save;
+
+      const numSlots = isNewAPI
+        ? window.SugarCube.Config?.saves?.maxSlotSaves ?? 0
+        : window.SugarCube.Save.slots.length;
+
+      const slotsUsed = isNewAPI
+        ? window.SugarCube.Save.browser.slot.size
+        : window.SugarCube.Save.slots.count();
+
+      const storage = window.SugarCube.storage?.name;
+
       if (!storage) {
         return {
           numSlots,
@@ -99,14 +111,14 @@ export function getGameMetaFn(): GameMetaData | null {
         };
       }
 
-      const storageCapacity = 5242880;
+      const storageCapacity = 5242880; // 5MB
       const storageUsed = getLocalStorageUsed();
       const storageUsedPct = (storageUsed / storageCapacity) * 100;
 
       return {
-        numSlots: window.SugarCube.Save.slots.length,
-        slotsUsed: window.SugarCube.Save.slots.count(),
-        storage: window.SugarCube.storage.name,
+        numSlots,
+        slotsUsed,
+        storage,
         storageCapacity,
         storageUsed,
         storageUsedPct,

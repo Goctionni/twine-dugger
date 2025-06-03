@@ -12,6 +12,7 @@ declare global {
     };
     SugarCube: {
       Config: {
+        saves: any;
         passages: {
           start: string;
         };
@@ -21,6 +22,7 @@ declare global {
         };
       };
       Save: {
+        browser: any;
         slots: {
           length: number;
           count(): number;
@@ -31,6 +33,7 @@ declare global {
         passage: string;
       };
       Story: {
+        name: string;
         title: string;
         get ifId(): string;
       };
