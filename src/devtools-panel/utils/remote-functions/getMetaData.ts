@@ -1,5 +1,3 @@
-import { getGameMetaData } from "../api";
-
 export interface GameMetaData {
   name: string;
   ifId: string;
@@ -111,7 +109,7 @@ export function getGameMetaFn(): GameMetaData | null {
         };
       }
 
-      const storageCapacity = 5242880; // 5MB
+      const storageCapacity = 5242880;
       const storageUsed = getLocalStorageUsed();
       const storageUsedPct = (storageUsed / storageCapacity) * 100;
 
