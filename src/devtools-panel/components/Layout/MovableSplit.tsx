@@ -1,13 +1,13 @@
-import { Component, createSignal, onMount, onCleanup, JSX } from 'solid-js';
+import { createSignal, onMount, onCleanup, JSX } from 'solid-js';
 
-interface MovableSplitProps {
+interface Interface {
   leftContent: JSX.Element;
   rightContent: JSX.Element;
-  initialLeftWidthPercent?: number; // e.g., 50 for 50%
+  initialLeftWidthPercent?: number;
   class?: string;
 }
 
-export const MovableSplit: Component<MovableSplitProps> = (props) => {
+export function MovableSplit(props: Interface) {
   const initialWidthPct = props.initialLeftWidthPercent || 50;
   const [leftWidth, setLeftWidth] = createSignal(`${initialWidthPct}%`); // Percentage
   const [isDragging, setIsDragging] = createSignal(false);
@@ -61,4 +61,4 @@ export const MovableSplit: Component<MovableSplitProps> = (props) => {
       <div class="bg-gray-900 flex-grow">{props.rightContent}</div>
     </div>
   );
-};
+}

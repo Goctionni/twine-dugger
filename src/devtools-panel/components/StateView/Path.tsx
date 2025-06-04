@@ -1,5 +1,6 @@
-import { For, Index, Match, Show, Switch } from 'solid-js';
+import { Index, Match, Switch } from 'solid-js';
 import { PathChunk } from './types';
+import { Path as TPath } from '@/shared/shared-types';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',
@@ -14,39 +15,39 @@ const colorClasses = {
 } as const;
 
 interface Props {
+  path: TPath;
   chunks: PathChunk[];
 }
 
 export function Path(props: Props) {
   return (
-    <Index each={props.chunks}>
-      {(chunk, index) => (
-        <>
-          <Show when={index === 0}>
-            <span class={colorClasses.pathRoot}>{chunk().name}</span>
-          </Show>
-          <Show when={chunk().selectedChildKey}>
+    <>
+      <span class={colorClasses.pathRoot}>State</span>
+      <Index each={props.path}>
+        {(slug, index) => {
+          const type = () => props.chunks[index]?.type;
+          return (
             <Switch>
-              <Match when={chunk().type === 'object'}>
+              <Match when={type() === 'object'}>
                 <span class={colorClasses.pathDot}>.</span>
-                <span class={colorClasses.pathChunk}>{chunk().selectedChildKey!}</span>
+                <span class={colorClasses.pathChunk}>{slug()}</span>
               </Match>
-              <Match when={chunk().type === 'array'}>
+              <Match when={type() === 'array'}>
                 <span class={colorClasses.pathBrackets}>[</span>
-                <span class={colorClasses.typeNumber}>{chunk().selectedChildKey!}</span>
+                <span class={colorClasses.typeNumber}>{slug()}</span>
                 <span class={colorClasses.pathBrackets}>]</span>
               </Match>
-              <Match when={chunk().type === 'map'}>
+              <Match when={type() === 'map'}>
                 <span class={colorClasses.pathDot}>.</span>
                 <span class={colorClasses.typeString}>get</span>
                 <span class={colorClasses.pathBrackets}>{'("'}</span>
-                <span class={colorClasses.typeNumber}>{chunk().selectedChildKey!}</span>
+                <span class={colorClasses.typeNumber}>{slug()}</span>
                 <span class={colorClasses.pathBrackets}>{'")'}</span>
               </Match>
             </Switch>
-          </Show>
-        </>
-      )}
-    </Index>
+          );
+        }}
+      </Index>
+    </>
   );
 }

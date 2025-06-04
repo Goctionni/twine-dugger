@@ -1,5 +1,4 @@
 import { For, Match, Switch } from 'solid-js';
-import { getType } from '@content/util/differ';
 import {
   Diff,
   DiffArrayChange,
@@ -9,7 +8,8 @@ import {
   DiffTypeChange,
   Path,
   Value,
-} from '@content/util/types';
+} from '@/shared/shared-types';
+import { getSpecificType } from '@/shared/type-helpers';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',
@@ -37,7 +37,7 @@ function RenderValue(props: { value: Value }) {
   };
 
   return (
-    <Switch fallback={<code class={colorClasses.typeOther}>{getType(value())}</code>}>
+    <Switch fallback={<code class={colorClasses.typeOther}>{getSpecificType(value())}</code>}>
       <Match when={renderType() === 'empty'}>
         <code class={colorClasses.typeEmpty}>Empty string</code>
       </Match>

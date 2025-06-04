@@ -1,12 +1,13 @@
-import { ArrayValue, MapValue, ObjectValue, SetValue, Value } from '@/content-script/util/types';
+import { ArrayValue, MapValue, ObjectValue, Value } from '@/shared/shared-types';
 import { Index, Match, Show, Switch } from 'solid-js';
-import { getSpecificType } from '../watchState';
 import { TypeIcon } from '../TypeIcon';
 import { BooleanInput, NumberInput, StringInput } from './PrimitiveInputs';
+import { getSpecificType } from '@/shared/type-helpers';
 
 interface ObjectInputProps {
   value: ObjectValue;
-  onChange: (newValue: Value, keyOrIndex: string) => void;
+  editable?: boolean;
+  onChange: (keyOrIndex: string, newValue: Value) => void;
 }
 
 export function ObjectInput(props: ObjectInputProps) {
@@ -14,6 +15,7 @@ export function ObjectInput(props: ObjectInputProps) {
   return (
     <ContainerInput
       keys={keys()}
+      editable={props.editable}
       getKeyValue={(key) => props.value[key]}
       onChange={props.onChange}
     />
@@ -22,7 +24,8 @@ export function ObjectInput(props: ObjectInputProps) {
 
 interface MapInputProps {
   value: MapValue;
-  onChange: (newValue: Value, keyOrIndex: string) => void;
+  editable?: boolean;
+  onChange: (keyOrIndex: string, newValue: Value) => void;
 }
 
 export function MapInput(props: MapInputProps) {
@@ -30,6 +33,7 @@ export function MapInput(props: MapInputProps) {
   return (
     <ContainerInput
       keys={keys()}
+      editable={props.editable}
       getKeyValue={(key) => props.value.get(key)}
       onChange={props.onChange}
     />
@@ -38,7 +42,8 @@ export function MapInput(props: MapInputProps) {
 
 interface ArrayInputProps {
   value: ArrayValue;
-  onChange: (newValue: Value, keyOrIndex: number) => void;
+  editable?: boolean;
+  onChange: (keyOrIndex: number, newValue: Value) => void;
 }
 
 export function ArrayInput(props: ArrayInputProps) {
@@ -46,6 +51,7 @@ export function ArrayInput(props: ArrayInputProps) {
   return (
     <ContainerInput
       keys={keys()}
+      editable={props.editable}
       getKeyValue={(key) => props.value[key]}
       onChange={props.onChange}
     />
@@ -54,8 +60,9 @@ export function ArrayInput(props: ArrayInputProps) {
 
 interface ContainerInputProps<TKey extends string | number> {
   keys: TKey[];
+  editable?: boolean;
   getKeyValue: (key: TKey) => Value;
-  onChange: (newValue: Value, keyOrIndex: TKey) => void;
+  onChange: (keyOrIndex: TKey, newValue: Value) => void;
 }
 
 export function ContainerInput<TKey extends string | number>(props: ContainerInputProps<TKey>) {
@@ -74,19 +81,22 @@ export function ContainerInput<TKey extends string | number>(props: ContainerInp
                   <Match when={type() === 'string'}>
                     <StringInput
                       value={value() as string}
-                      onChange={(newValue) => props.onChange?.(newValue, key())}
+                      editable={props.editable}
+                      onChange={(newValue) => props.onChange?.(key(), newValue)}
                     />
                   </Match>
                   <Match when={type() === 'number'}>
                     <NumberInput
                       value={value() as number}
-                      onChange={(newValue) => props.onChange?.(newValue, key())}
+                      editable={props.editable}
+                      onChange={(newValue) => props.onChange?.(key(), newValue)}
                     />
                   </Match>
                   <Match when={type() === 'boolean'}>
                     <BooleanInput
                       value={value() as boolean}
-                      onChange={(newValue) => props.onChange?.(newValue, key())}
+                      editable={props.editable}
+                      onChange={(newValue) => props.onChange?.(key(), newValue)}
                     />
                   </Match>
                 </Switch>

@@ -77,7 +77,7 @@ function orderRawInstructions(instructions: Instruction[]): Instruction[] {
 function forwardPropagateIndexAdjustments(instructionsBase: Instruction[]) {
   const instructions = structuredClone(instructionsBase);
   for (let i = 0; i < instructions.length; i++) {
-    const instruction = instructions[i];
+    const instruction = instructions[i]!;
     const downstreamInstructions = instructions.slice(i + 1);
 
     if (instruction.type === 'add') {

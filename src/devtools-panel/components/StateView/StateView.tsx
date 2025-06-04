@@ -1,32 +1,49 @@
-import { Accessor, For, Index } from 'solid-js';
-import { PathChunk, SelectedValue } from './types';
-import { Value } from '@content/util/types';
+import { Index } from 'solid-js';
+import { NavLayers, PathChunk } from './types';
 import { ObjectNav } from './ObjectNav';
 import { ValueView } from './ValueView';
 import { Path } from './Path';
+import { Path as TPath, Value } from '@/shared/shared-types';
+
+function pathsMatch(path1: TPath, path2: TPath) {
+  if (path1 === path2) return true;
+  if (path1.length !== path2.length) return false;
+  return path1.every((value, index) => value === path2[index]);
+}
 
 interface Props {
-  getPathChunks: Accessor<PathChunk[]>;
-  getSelectedValue: () => SelectedValue;
-  setSelectedValue: (newValue: Value) => void;
-  selectPath: (parentChunk: PathChunk, selectedChildKey: string | number) => void;
+  navLayers: NavLayers;
+  viewValue: Value;
+  path: TPath;
+  setPath: (newPath: TPath) => void;
+  readonly?: boolean;
+  setViewValue: (newValue: unknown) => void;
+  setViewPropertyValue: (property: string | number, newValue: unknown) => void;
 }
 
 export function StateView(props: Props) {
+  const onPropertyClick = (chunk: PathChunk, property: string | number) => {
+    const newPath = [...chunk.path, property];
+    const isEqual = pathsMatch(props.path, newPath);
+    props.setPath(isEqual ? chunk.path : newPath);
+  };
   return (
-    <div class="flex h-full px-2 py-1">
-      <Index each={props.getPathChunks()}>
-        {(chunk, index) => (
-          <ObjectNav chunk={chunk()} onClick={(childKey) => props.selectPath(chunk(), childKey)} />
+    <div class="flex h-full py-1">
+      <Index each={props.navLayers.pathChunks}>
+        {(chunk) => (
+          <ObjectNav
+            chunk={chunk()}
+            selectedProperty={props.path[chunk().path.length]}
+            onClick={(childKey) => onPropertyClick(chunk(), childKey)}
+          />
         )}
       </Index>
       <ValueView
-        selectedValue={props.getSelectedValue()}
-        path={<Path chunks={props.getPathChunks()} />}
-        editable
-        onChange={
-          props.setSelectedValue as (newValue: unknown, keyOrIndex?: string | number) => void
-        }
+        value={props.viewValue}
+        path={<Path chunks={props.navLayers.pathChunks} path={props.path} />}
+        editable={!props.readonly}
+        onChange={props.setViewValue}
+        onPropertyChange={props.setViewPropertyValue}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { ObjectValue } from './content-script/util/types';
+import { Diff, ObjectValue } from './content-script/util/types';
 
 declare global {
   interface Window {
@@ -20,9 +20,16 @@ declare global {
           controls: boolean;
           maxStates: number;
         };
+        saves?: {
+          maxSlotSaves?: number;
+        };
       };
       Save: {
-        browser: any;
+        browser?: {
+          slot?: {
+            size?: number;
+          };
+        };
         slots: {
           length: number;
           count(): number;

@@ -1,4 +1,11 @@
-import { ArrayValue, MapValue, ObjectValue, SetValue } from '@content/util/types';
+import {
+  ArrayValue,
+  MapValue,
+  ObjectValue,
+  Path,
+  SetValue,
+  ValueType,
+} from '@/shared/shared-types';
 
 export type SelectedValue = { name: string | number } & (
   | { type: 'string'; value: string }
@@ -13,29 +20,31 @@ export type SelectedValue = { name: string | number } & (
   | { type: 'undefined' }
 );
 
-export type ValueType = SelectedValue['type'];
 export type ChildKey<T extends string | number = string | number> = { type: ValueType; text: T };
 type ChunkChildren<T extends string | number> = Array<ChildKey<T>>;
 
 export type PathChunk = {
   name: string;
+  path: Path;
 } & (
   | {
       type: 'object';
       getValue(): ObjectValue;
-      selectedChildKey?: string;
       childKeys: ChunkChildren<string>;
     }
   | {
       type: 'map';
       getValue(): MapValue;
-      selectedChildKey?: string;
       childKeys: ChunkChildren<string>;
     }
   | {
       type: 'array';
       getValue(): ArrayValue;
-      selectedChildKey?: number;
       childKeys: ChunkChildren<number>;
     }
 );
+
+export interface NavLayers {
+  historyId: 'latest' | number;
+  pathChunks: PathChunk[];
+}

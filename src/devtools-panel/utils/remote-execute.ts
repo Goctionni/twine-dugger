@@ -5,10 +5,8 @@ interface ExecuteCodeOptions {
 
 export async function executeCode<T>(
   callback: (...args: unknown[]) => T,
-  { requires = [], args = [] }: ExecuteCodeOptions = {},
+  { args = [] }: ExecuteCodeOptions = {},
 ) {
-  await Promise.all(requires.map((file) => injectFile(file)));
-
   return chrome.scripting
     .executeScript({
       target: { tabId: chrome.devtools.inspectedWindow.tabId },
@@ -16,22 +14,24 @@ export async function executeCode<T>(
       func: callback,
       args,
     })
-    .then(([{ result }]) => result)
+    .then((response) => response[0]?.result)
     .catch(() => null);
 }
 
-interface InjectFileOptions {
-  injectOnce?: boolean;
-}
+export async function injectContentScript() {
+  const alreadyInjected = await chrome.scripting
+    .executeScript({
+      target: { tabId: chrome.devtools.inspectedWindow.tabId },
+      world: 'MAIN',
+      func: () => 'TwineDugger' in window,
+    })
+    .then((response) => response[0]?.result);
 
-const injectedFiles: Record<string, boolean> = {};
-export async function injectFile(file: string, { injectOnce = false }: InjectFileOptions = {}) {
-  if (injectOnce || injectedFiles[file]) return;
-
-  injectedFiles[file] = true;
-  await chrome.scripting.executeScript({
-    target: { tabId: chrome.devtools.inspectedWindow.tabId },
-    world: 'MAIN',
-    files: [file],
-  });
+  if (!alreadyInjected) {
+    await chrome.scripting.executeScript({
+      target: { tabId: chrome.devtools.inspectedWindow.tabId },
+      world: 'MAIN',
+      files: ['content-script.js'],
+    });
+  }
 }

@@ -16,12 +16,10 @@ export interface GameMetaData {
   format?: {
     name: 'SugarCube' | 'Harlowe';
     version?: {
-      major: number;
-      minor: number;
-      patch: number;
-      build?: number;
+      major: number | undefined;
+      minor: number | undefined;
+      patch: number | undefined;
       shortStr: string;
-      fullStr?: string;
     };
   };
   compiler?: {
@@ -85,15 +83,13 @@ export function getGameMetaFn(): GameMetaData | null {
       const isNewAPI = 'browser' in window.SugarCube.Save;
 
       const numSlots = isNewAPI
-        ? window.SugarCube.Config?.saves?.maxSlotSaves ?? 0
+        ? (window.SugarCube.Config?.saves?.maxSlotSaves ?? 0)
         : window.SugarCube.Save.slots.length;
 
-      const slotsUsed = isNewAPI
-        ? window.SugarCube.Save.browser.slot.size
-        : window.SugarCube.Save.slots.count();
+      const slotsUsed =
+        window.SugarCube.Save.browser?.slot?.size ?? window.SugarCube.Save.slots.count();
 
-      const storage = window.SugarCube.storage?.name;
-
+      const storage = window.SugarCube.storage.name;
       if (!storage) {
         return {
           numSlots,
