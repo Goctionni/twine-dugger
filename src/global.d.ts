@@ -19,8 +19,16 @@ declare global {
           controls: boolean;
           maxStates: number;
         };
+        saves?: {
+          maxSlotSaves?: number;
+        };
       };
       Save: {
+        browser?: {
+          slot?: {
+            size?: number;
+          };
+        };
         slots: {
           length: number;
           count(): number;
@@ -31,6 +39,7 @@ declare global {
         passage: string;
       };
       Story: {
+        name: string;
         title: string;
         get ifId(): string;
       };
