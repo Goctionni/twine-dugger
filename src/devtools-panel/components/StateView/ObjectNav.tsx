@@ -11,12 +11,12 @@ interface Props {
 
 export function ObjectNav(props: Props) {
   return (
-    <div class="w-max max-w-3xs flex flex-col h-full">
+    <div class="w-max max-w-3xs flex flex-col h-full px-2 border-r border-r-gray-700">
       <p class="text-lg">{props.chunk.name}</p>
       <ul class="flex flex-1 flex-col overflow-auto">
         <For each={props.chunk.childKeys}>
           {(child) => (
-            <li class="pr-1">
+            <li>
               <a
                 on:click={() => props.onClick(child.text)}
                 class={clsx(
@@ -27,7 +27,7 @@ export function ObjectNav(props: Props) {
                 )}
               >
                 <TypeIcon type={child.type} />
-                {child.text}
+                <span class="flex-1 overflow-hidden overflow-ellipsis">{child.text}</span>
               </a>
             </li>
           )}

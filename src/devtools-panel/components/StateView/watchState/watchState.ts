@@ -3,7 +3,7 @@ import { Accessor, createSignal } from 'solid-js';
 import { setState } from '@panel/utils/api';
 import { StateViewSelection } from './types';
 import { createStateHistory } from './createStateHistory';
-import { createGetPathChunks } from './createGetPathChunks';
+import { createGetNavLayers } from './createGetNavLayers';
 import { createGetViewValue } from './createGetViewValue';
 import { createGetHistoryItems } from './createGetHistoryItems';
 import type { DiffFrame, Path } from '@/shared/shared-types';
@@ -17,7 +17,7 @@ export function watchState(getFrames: Accessor<DiffFrame[]>) {
 
   const getViewValue = createGetViewValue(getStateViewSelection, getStateHistory);
 
-  const getPathChunks = createGetPathChunks(getStateViewSelection, getStateHistory);
+  const getNavLayers = createGetNavLayers(getStateViewSelection, getStateHistory);
 
   const getHistoryItems = createGetHistoryItems(getStateHistory, getStateViewSelection);
 
@@ -28,6 +28,11 @@ export function watchState(getFrames: Accessor<DiffFrame[]>) {
     });
   };
 
+  const setViewValue = (value: unknown) => setState(getStateViewSelection().path, value);
+
+  const setViewPropertyValue = (property: string | number, value: unknown) =>
+    setState([...getStateViewSelection().path, property], value);
+
   const setHistoryId = (historyId: 'latest' | number) => {
     setStateViewSelection({ historyId, path: [] });
   };
@@ -35,12 +40,13 @@ export function watchState(getFrames: Accessor<DiffFrame[]>) {
   const getReadOnly = () => getStateViewSelection().historyId !== 'latest';
 
   return {
-    getPathChunks,
-    getReadOnly,
     getHistoryItems,
+    getNavLayers,
+    getViewValue,
+    getReadOnly,
     setHistoryId,
     setPath,
-    setState,
-    getViewValue,
+    setViewValue,
+    setViewPropertyValue,
   };
 }

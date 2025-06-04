@@ -1,32 +1,39 @@
-import { Accessor, Index } from 'solid-js';
-import { PathChunk, SelectedValue } from './types';
+import { createEffect, Index } from 'solid-js';
+import { NavLayers } from './types';
 import { ObjectNav } from './ObjectNav';
 import { ValueView } from './ValueView';
 import { Path } from './Path';
-import { Value } from '@/shared/shared-types';
+import { Path as TPath, Value } from '@/shared/shared-types';
 
 interface Props {
-  getPathChunks: Accessor<PathChunk[]>;
-  getSelectedValue: () => SelectedValue;
-  setSelectedValue: (newValue: Value) => void;
-  selectPath: (parentChunk: PathChunk, selectedChildKey: string | number) => void;
+  navLayers: NavLayers;
+  viewValue: Value;
+  setPath: (newPath: TPath) => void;
+  readonly?: boolean;
+  setViewValue: (newValue: unknown) => void;
+  setViewPropertyValue: (property: string | number, newValue: unknown) => void;
 }
 
 export function StateView(props: Props) {
+  createEffect(() => {
+    console.log('StateView > props.readonly', props.readonly);
+  });
   return (
-    <div class="flex h-full px-2 py-1">
-      <Index each={props.getPathChunks()}>
+    <div class="flex h-full py-1">
+      <Index each={props.navLayers.pathChunks}>
         {(chunk) => (
-          <ObjectNav chunk={chunk()} onClick={(childKey) => props.selectPath(chunk(), childKey)} />
+          <ObjectNav
+            chunk={chunk()}
+            onClick={(childKey) => props.setPath([...chunk().path, childKey])}
+          />
         )}
       </Index>
       <ValueView
-        selectedValue={props.getSelectedValue()}
-        path={<Path chunks={props.getPathChunks()} />}
-        editable
-        onChange={
-          props.setSelectedValue as (newValue: unknown, keyOrIndex?: string | number) => void
-        }
+        value={props.viewValue}
+        path={<Path chunks={props.navLayers.pathChunks} />}
+        editable={!props.readonly}
+        onChange={props.setViewValue}
+        onPropertyChange={props.setViewPropertyValue}
       />
     </div>
   );

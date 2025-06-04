@@ -1,5 +1,5 @@
 import { Accessor, createMemo } from 'solid-js';
-import { HistoryItem, StateViewSelection } from './types';
+import { HistoryItem, HistoryNode, StateViewSelection } from './types';
 
 export function createGetHistoryItems(
   getStateHistory: Accessor<HistoryItem[]>,
@@ -14,9 +14,11 @@ export function createGetHistoryItems(
     // combine with state-view-selection for active flag
     const viewSelection = getStateViewSelection();
     const historyId = ids.includes(viewSelection.historyId) ? viewSelection.historyId : 'latest';
-    return ids.map((id) => ({
-      id,
-      active: id === historyId,
-    }));
+    return ids.map(
+      (id): HistoryNode => ({
+        id,
+        active: id === historyId,
+      }),
+    );
   });
 }

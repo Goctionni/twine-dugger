@@ -22,3 +22,8 @@ export interface HistoryItem {
   diffingFrame: DiffFrame | undefined;
   state: ObjectValue;
 }
+
+export interface HistoryNode {
+  id: 'latest' | number;
+  active: boolean;
+}

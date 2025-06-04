@@ -1,10 +1,11 @@
 import { Accessor, createMemo } from 'solid-js';
 import { ChildKey, NavLayers, PathChunk } from '../types';
-import { ContainerValue, HistoryItem, StateViewSelection } from './types';
+import { HistoryItem, StateViewSelection } from './types';
 import { compareChildKeys } from './watchHelpers';
 import { getSpecificType } from '@/shared/type-helpers';
+import { ContainerValue, Path } from '@/shared/shared-types';
 
-export function createGetPathChunks(
+export function createGetNavLayers(
   getStateViewSelection: Accessor<StateViewSelection>,
   getStateHistory: Accessor<HistoryItem[]>,
 ) {
@@ -17,22 +18,23 @@ export function createGetPathChunks(
     if (!prev) {
       // If there is no previous value, this is the initial value. If this is the initial value,
       // we can more or less ignore the rest of the state selection.
-      return { historyId, pathChunks: [createPathChunk('State', state.state)] };
+      return { historyId, pathChunks: [createPathChunk('State', [], state.state)] };
     }
 
     if (prev.historyId !== historyId) {
       // If the previous value is from a different history id, we can also ignore the rest of
       // the state selection
-      return { historyId, pathChunks: [createPathChunk('State', state.state)] };
+      return { historyId, pathChunks: [createPathChunk('State', [], state.state)] };
     }
 
     let layerState = state.state as ContainerValue;
     const result: NavLayers = {
       historyId,
-      pathChunks: [createPathChunk('State', state.state)],
+      pathChunks: [createPathChunk('State', [], state.state)],
     };
 
-    for (const slug of path) {
+    for (let i = 0; i < path.length; i++) {
+      const slug = path[i]!;
       const sublayerState = Array.isArray(layerState)
         ? layerState[Number(slug)]
         : layerState instanceof Map
@@ -42,7 +44,9 @@ export function createGetPathChunks(
       if (!sublayerState) break;
       if (typeof sublayerState !== 'object') break;
       if (sublayerState instanceof Set) break;
-      result.pathChunks.push(createPathChunk(`${slug}`, sublayerState));
+      result.pathChunks.push(
+        createPathChunk(`${slug}`, [...path.slice(0, i), slug], sublayerState),
+      );
       layerState = sublayerState;
     }
 
@@ -50,10 +54,11 @@ export function createGetPathChunks(
   });
 }
 
-function createPathChunk(name: string, value: ContainerValue): PathChunk {
+function createPathChunk(name: string, path: Path, value: ContainerValue): PathChunk {
   if (Array.isArray(value)) {
     return {
       name,
+      path,
       type: 'array',
       getValue: () => value,
       childKeys: [...value.keys()]
@@ -69,6 +74,7 @@ function createPathChunk(name: string, value: ContainerValue): PathChunk {
   if (value instanceof Map) {
     return {
       name,
+      path,
       type: 'map',
       getValue: () => value,
       childKeys: [...value.keys()]
@@ -83,6 +89,7 @@ function createPathChunk(name: string, value: ContainerValue): PathChunk {
   }
   return {
     name,
+    path,
     type: 'object',
     getValue: () => value,
     childKeys: Object.keys(value)
