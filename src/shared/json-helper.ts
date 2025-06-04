@@ -1,28 +1,29 @@
+const jsonKey = '____JSON_type';
 export function jsonReplacer(_key: string, value: any) {
   if (Array.isArray(value) && value.length === 2) {
     if (value[0] === '(revive:map)') {
       return {
-        ['____JSON_type']: 'MAP',
+        [jsonKey]: 'MAP',
         entries: value[1],
       };
     } else if (value[0] === '(revive:set)') {
       return {
-        ['____JSON_type']: 'SET',
+        [jsonKey]: 'SET',
         values: value[1],
       };
     } else if (value[0] === '(revive:eval)' && value[1] === 'undefined') {
-      return { ['____JSON_type']: 'UNDEFINED' };
+      return { [jsonKey]: 'UNDEFINED' };
     }
   }
   if (value instanceof Map) {
     return {
-      ['____JSON_type']: 'MAP',
+      [jsonKey]: 'MAP',
       entries: [...value.entries()],
     };
   }
   if (value instanceof Set) {
     return {
-      ['____JSON_type']: 'SET',
+      [jsonKey]: 'SET',
       values: [...value],
     };
   }
@@ -30,12 +31,12 @@ export function jsonReplacer(_key: string, value: any) {
 }
 
 export function jsonReviver(_key: string, value: any) {
-  if (value && typeof value === 'object' && '____JSON_type' in value) {
-    if (value['____JSON_type'] === 'MAP') {
+  if (value && typeof value === 'object' && jsonKey in value) {
+    if (value[jsonKey] === 'MAP') {
       return new Map(value.entries);
-    } else if (value['____JSON_type'] === 'SET') {
+    } else if (value[jsonKey] === 'SET') {
       return new Set(value.values);
-    } else if (value['____JSON_type'] === 'undefined') {
+    } else if (value[jsonKey] === 'undefined') {
       return undefined;
     }
   }
