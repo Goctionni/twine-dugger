@@ -39,8 +39,11 @@ export function watchState(getFrames: Accessor<DiffFrame[]>) {
 
   const getReadOnly = () => getStateViewSelection().historyId !== 'latest';
 
+  const getPath = () => getStateViewSelection().path;
+
   return {
     getHistoryItems,
+    getPath,
     getNavLayers,
     getViewValue,
     getReadOnly,

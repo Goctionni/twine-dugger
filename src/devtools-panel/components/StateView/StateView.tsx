@@ -1,5 +1,5 @@
-import { createEffect, Index } from 'solid-js';
-import { NavLayers } from './types';
+import { Index } from 'solid-js';
+import { NavLayers, PathChunk } from './types';
 import { ObjectNav } from './ObjectNav';
 import { ValueView } from './ValueView';
 import { Path } from './Path';
@@ -8,6 +8,7 @@ import { Path as TPath, Value } from '@/shared/shared-types';
 interface Props {
   navLayers: NavLayers;
   viewValue: Value;
+  path: TPath;
   setPath: (newPath: TPath) => void;
   readonly?: boolean;
   setViewValue: (newValue: unknown) => void;
@@ -15,16 +16,19 @@ interface Props {
 }
 
 export function StateView(props: Props) {
-  createEffect(() => {
-    console.log('StateView > props.readonly', props.readonly);
-  });
+  const onPropertyClick = (chunk: PathChunk, property: string | number) => {
+    const current = props.path[chunk.path.length];
+    if (current === property) props.setPath(chunk.path);
+    else props.setPath([...chunk.path, property]);
+  };
   return (
     <div class="flex h-full py-1">
       <Index each={props.navLayers.pathChunks}>
-        {(chunk) => (
+        {(chunk, index) => (
           <ObjectNav
             chunk={chunk()}
-            onClick={(childKey) => props.setPath([...chunk().path, childKey])}
+            selectedProperty={props.path[chunk().path.length]}
+            onClick={(childKey) => onPropertyClick(chunk(), childKey)}
           />
         )}
       </Index>

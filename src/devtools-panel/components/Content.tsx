@@ -9,6 +9,7 @@ export function Content() {
   const diffFrames = trackDiffFrames();
   const {
     getNavLayers,
+    getPath,
     getHistoryItems,
     getReadOnly,
     getViewValue,
@@ -25,6 +26,7 @@ export function Content() {
         <>
           <HistoryNav historyItems={getHistoryItems()} setHistoryId={setHistoryId} />
           <StateView
+            path={getPath()}
             navLayers={getNavLayers()}
             viewValue={getViewValue()}
             setPath={setPath}
