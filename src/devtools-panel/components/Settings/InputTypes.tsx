@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { createEffect, createSignal, Show } from 'solid-js';
+import { createEffect, createSignal } from 'solid-js';
 import { getSetting, setSetting } from './PersistSettings';
 
 interface Props<T extends string | number | boolean> {
