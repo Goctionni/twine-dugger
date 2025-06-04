@@ -12,7 +12,6 @@ declare global {
     };
     SugarCube: {
       Config: {
-        saves: any;
         passages: {
           start: string;
         };
