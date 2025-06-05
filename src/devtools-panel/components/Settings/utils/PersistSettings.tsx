@@ -3,13 +3,13 @@ import { createSignal } from 'solid-js';
 const LOCAL_STORAGE_KEY = 'twine-dugger-settings';
 
 export interface SettingsData {
-  fontSize: number;
+  diffLogFontSize: number;
   diffLogSeparation: boolean;
   // Add other settings here
 }
 
 const defaultSettings: SettingsData = {
-  fontSize: 14,
+  diffLogFontSize: 14,
   diffLogSeparation: false,
 };
 

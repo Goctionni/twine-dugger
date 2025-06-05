@@ -1,4 +1,4 @@
-import { Component, onCleanup, onMount } from 'solid-js';
+import { onCleanup, onMount } from 'solid-js';
 import { FontSize } from './FontSize';
 import { DiffLogSeparation } from './DiffLogSeperation';
 
@@ -6,7 +6,7 @@ interface SettingsProps {
   onClose: () => void;
 }
 
-export const Settings: Component<SettingsProps> = (props) => {
+export function Settings(props: SettingsProps) {
   let modalRef: HTMLDivElement | undefined;
 
   const handlePointerDownOutside = (event: PointerEvent) => {
@@ -59,4 +59,4 @@ export const Settings: Component<SettingsProps> = (props) => {
       </div>
     </div>
   );
-};
+}
