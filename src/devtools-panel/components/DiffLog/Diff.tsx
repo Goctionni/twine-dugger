@@ -54,10 +54,15 @@ function RenderValue(props: { value: Value }) {
   );
 }
 
-function DiffItemTypeChanged(props: { diff: DiffTypeChange }) {
+interface DiffChangeProps<T> {
+  diff: T;
+  setPath: (path: Path) => void;
+}
+
+function DiffItemTypeChanged(props: DiffChangeProps<DiffTypeChange>) {
   return (
     <div>
-      <RenderPath path={props.diff.path} />
+      <RenderPath path={props.diff.path} onClick={() => props.setPath(props.diff.path)} />
       {` Changed from `}
       <RenderValue value={props.diff.oldValue} />
       {` to `}
@@ -66,10 +71,10 @@ function DiffItemTypeChanged(props: { diff: DiffTypeChange }) {
   );
 }
 
-function DiffPrimitiveChanged(props: { diff: DiffPrimitiveUpdate }) {
+function DiffPrimitiveChanged(props: DiffChangeProps<DiffPrimitiveUpdate>) {
   return (
     <div>
-      <RenderPath path={props.diff.path} />
+      <RenderPath path={props.diff.path} onClick={() => props.setPath(props.diff.path)} />
       {` Changed from `}
       <RenderValue value={props.diff.oldValue} />
       {' to '}
@@ -78,7 +83,7 @@ function DiffPrimitiveChanged(props: { diff: DiffPrimitiveUpdate }) {
   );
 }
 
-function DiffListChanged(props: { diff: DiffSetChange | DiffArrayChange }) {
+function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>) {
   function getChange(diff: DiffSetChange | DiffArrayChange) {
     if (diff.subtype === 'add') {
       return (
@@ -100,12 +105,13 @@ function DiffListChanged(props: { diff: DiffSetChange | DiffArrayChange }) {
   }
   return (
     <div>
-      <RenderPath path={props.diff.path} /> {getChange(props.diff)}
+      <RenderPath path={props.diff.path} onClick={() => props.setPath(props.diff.path)} />{' '}
+      {getChange(props.diff)}
     </div>
   );
 }
 
-function DiffRecordChanged(props: { diff: DiffObjectMapChange }) {
+function DiffRecordChanged(props: DiffChangeProps<DiffObjectMapChange>) {
   function getChange(diff: DiffObjectMapChange) {
     if (diff.subtype === 'add') {
       return (
@@ -122,15 +128,25 @@ function DiffRecordChanged(props: { diff: DiffObjectMapChange }) {
       );
     }
   }
+
+  const onClick = () => {
+    if (props.diff.subtype === 'add') {
+      props.setPath([...props.diff.path, props.diff.key]);
+    } else {
+      props.setPath(props.diff.path);
+    }
+  };
+
   return (
     <div>
-      <RenderPath path={props.diff.path} /> {getChange(props.diff)}
+      <RenderPath path={props.diff.path} onClick={onClick} /> {getChange(props.diff)}
     </div>
   );
 }
 
 interface Props {
   diff: Diff;
+  setPath: (path: Path) => void;
 }
 
 export function DiffItem(props: Props) {
@@ -146,30 +162,30 @@ export function DiffItem(props: Props) {
   return (
     <Switch>
       <Match when={type() === 'type-changed'}>
-        <DiffItemTypeChanged diff={diff() as DiffTypeChange} />
+        <DiffItemTypeChanged diff={diff() as DiffTypeChange} setPath={props.setPath} />
       </Match>
       <Match when={primitives.includes(type() as string)}>
-        <DiffPrimitiveChanged diff={diff() as DiffPrimitiveUpdate} />
+        <DiffPrimitiveChanged diff={diff() as DiffPrimitiveUpdate} setPath={props.setPath} />
       </Match>
       <Match when={type() === 'set'}>
-        <DiffListChanged diff={diff() as DiffSetChange} />
+        <DiffListChanged diff={diff() as DiffSetChange} setPath={props.setPath} />
       </Match>
       <Match when={type() === 'array'}>
-        <DiffListChanged diff={diff() as DiffArrayChange} />
+        <DiffListChanged diff={diff() as DiffArrayChange} setPath={props.setPath} />
       </Match>
       <Match when={type() === 'map'}>
-        <DiffRecordChanged diff={diff() as DiffObjectMapChange} />
+        <DiffRecordChanged diff={diff() as DiffObjectMapChange} setPath={props.setPath} />
       </Match>
       <Match when={type() === 'object'}>
-        <DiffRecordChanged diff={diff() as DiffObjectMapChange} />
+        <DiffRecordChanged diff={diff() as DiffObjectMapChange} setPath={props.setPath} />
       </Match>
     </Switch>
   );
 }
 
-function RenderPath(props: { path: Path }) {
+function RenderPath(props: { path: Path; onClick: () => void }) {
   return (
-    <code>
+    <code onClick={props.onClick} class="hover:underline cursor-pointer">
       <For each={props.path}>{(chunk, index) => <PathChunk index={index()} chunk={chunk} />}</For>
     </code>
   );

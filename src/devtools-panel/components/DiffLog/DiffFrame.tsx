@@ -1,10 +1,11 @@
 import { For } from 'solid-js';
 import { DiffItem } from './Diff';
 import { RelativeTime } from './RelativeTime';
-import type { DiffFrame } from '@/shared/shared-types';
+import type { DiffFrame, Path } from '@/shared/shared-types';
 
 interface Props {
   frame: DiffFrame;
+  setPath: (path: Path) => void;
 }
 
 export function DiffFrame(props: Props) {
@@ -14,7 +15,9 @@ export function DiffFrame(props: Props) {
         <span class="text-gray-300 font-bold">{props.frame.passage}</span>
         <RelativeTime date={props.frame.timestamp} />
       </div>
-      <For each={props.frame.changes}>{(diff) => <DiffItem diff={diff} />}</For>
+      <For each={props.frame.changes}>
+        {(diff) => <DiffItem diff={diff} setPath={props.setPath} />}
+      </For>
     </div>
   );
 }

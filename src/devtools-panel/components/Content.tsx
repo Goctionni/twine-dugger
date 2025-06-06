@@ -21,7 +21,7 @@ export function Content() {
 
   return (
     <MovableSplit
-      leftContent={<DiffLog frames={diffFrames()} />}
+      leftContent={<DiffLog frames={diffFrames()} setPath={setPath} />}
       rightContent={
         <>
           <HistoryNav historyItems={getHistoryItems()} setHistoryId={setHistoryId} />
