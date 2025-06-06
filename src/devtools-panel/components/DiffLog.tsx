@@ -1,11 +1,12 @@
 import { For } from 'solid-js';
 import { DiffFrame } from './DiffLog/DiffFrame';
-import type { DiffFrame as IDiffFrame } from '@/shared/shared-types';
+import type { DiffFrame as IDiffFrame, Path } from '@/shared/shared-types';
 import { FontSizeControls } from './Settings/utils/FontSizeControls';
 import { getDiffLogFontSize, setDiffLogFontSize } from './Settings/State/State';
 
 interface Props {
   frames: IDiffFrame[];
+  setPath: (path: Path) => void;
 }
 
 export function DiffLog(props: Props) {
@@ -22,10 +23,10 @@ export function DiffLog(props: Props) {
         />
       </div>
       <ul class="overflow-auto flex-1">
-        <For each={props.frames}>
+        <For each={frames()}>
           {(frame, index) => (
             <li>
-              <DiffFrame frame={frame} />
+              <DiffFrame frame={frame} setPath={props.setPath} />
             </li>
           )}
         </For>
