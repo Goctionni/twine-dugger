@@ -5,12 +5,14 @@ const LOCAL_STORAGE_KEY = 'twine-dugger-settings';
 
 export interface SettingsState {
   diffLogFontSize: number;
+  diffLogPolling: number;
   diffLogSeparation: boolean;
   // Add more settings here
 }
 
 const defaultSettings: SettingsState = {
   diffLogFontSize: 14,
+  diffLogPolling: 200,
   diffLogSeparation: false,
 };
 
@@ -36,3 +38,6 @@ export const setDiffLogFontSize = createSetter('diffLogFontSize');
 
 export const getDiffLogSeparation = createGetter('diffLogSeparation');
 export const setDiffLogSeparation = createSetter('diffLogSeparation');
+
+export const getDiffLogPolling = createGetter('diffLogPolling');
+export const setDiffLogPolling = createSetter('diffLogPolling');

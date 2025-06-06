@@ -18,22 +18,24 @@ export function NumberInput(props: NumberInputProps) {
   const min = props.min ?? -Infinity;
   const max = props.max ?? Infinity;
 
-  const [value, setValue] = createSignal(props.value());
+  const [input, setInput] = createSignal(String(props.value()));
 
-  const update = (newVal: number) => {
-    const clamped = Math.max(min, Math.min(max, newVal));
-    setValue(clamped);
+  const update = (rawVal: string) => {
+    const parsed = Number(rawVal);
+    if (isNaN(parsed)) return;
+    const clamped = Math.max(min, Math.min(max, parsed));
+    setInput(String(clamped));
     props.setValue(clamped);
     props.onChange?.(clamped);
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter') update(value());
-    if (e.key === 'Escape') setValue(props.value());
+    if (e.key === 'Enter') update(input());
+    if (e.key === 'Escape') setInput(String(props.value()));
   };
 
   createEffect(() => {
-    setValue(props.value());
+    setInput(String(props.value()));
   });
 
   return (
@@ -41,7 +43,7 @@ export function NumberInput(props: NumberInputProps) {
       <div class="flex">
         <button
           type="button"
-          onClick={() => update(value() - 1)}
+          onClick={() => update(String(props.value() - 1))}
           class={clsx(
             buttonClasses,
             'rounded-l-md font-mono px-2 w-7 bg-gray-600 hover:bg-sky-700 focus:ring-sky-500',
@@ -51,11 +53,12 @@ export function NumberInput(props: NumberInputProps) {
         </button>
         <input
           type="number"
-          value={value()}
+          value={input()}
           min={min}
           max={max}
-          oninput={e => update((e.target as HTMLInputElement).valueAsNumber)}
-          onkeydown={onKeyDown}
+          onInput={e => setInput((e.target as HTMLInputElement).value)}
+          onBlur={() => update(input())}
+          onKeyDown={onKeyDown}
           class={clsx(
             inputClasses,
             `[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`,
@@ -64,7 +67,7 @@ export function NumberInput(props: NumberInputProps) {
         />
         <button
           type="button"
-          onClick={() => update(value() + 1)}
+          onClick={() => update(String(props.value() + 1))}
           class={clsx(
             buttonClasses,
             'rounded-r-md font-mono px-2 w-7 bg-gray-600 hover:bg-sky-700 focus:ring-sky-500',

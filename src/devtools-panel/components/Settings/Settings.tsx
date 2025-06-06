@@ -1,6 +1,7 @@
 import { onCleanup, onMount } from 'solid-js';
 import { FontSize } from './FontSize';
 import { DiffLogSeparation } from './DiffLogSeperation';
+import { DiffPolling } from './DiffFramesPolling'
 
 interface SettingsProps {
   onClose: () => void;
@@ -55,6 +56,7 @@ export function Settings(props: SettingsProps) {
         <div class="p-6">
           <FontSize />
           <DiffLogSeparation />
+          <DiffPolling />
         </div>
       </div>
     </div>
