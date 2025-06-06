@@ -1,5 +1,6 @@
 import { NumberInput } from './utils/InputTypes';
 import { SettingsControl } from './utils/SettingsControl';
+import { getDiffLogFontSize, setDiffLogFontSize } from '../Settings/State/State';
 
 export function FontSize() {
   return (
@@ -7,7 +8,7 @@ export function FontSize() {
       label="Diff Log Font Size"
       labelTooltip="Adjust the diff log font size (10–20px)"
     >
-      <NumberInput settingKey="diffLogFontSize" min={10} max={20} />
+      <NumberInput value={getDiffLogFontSize()} setValue={setDiffLogFontSize} min={10} max={20} />
     </SettingsControl>
   );
 }

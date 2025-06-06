@@ -1,32 +1,27 @@
 import { createMemo } from 'solid-js';
-import { getSetting, setSetting } from './PersistSettings';
-import { MagnifyingGlassMinusIcon } from '../../Layout/MagnifyingGlassMinusIcon';
-import { MagnifyingGlassPlusIcon } from '../../Layout/MagnifyingGlassPlusIcon';
-import type { SettingsData } from './PersistSettings';
+import { MagnifyingGlassMinusIcon } from '../../Icons/ZoomOutIcon';
+import { MagnifyingGlassPlusIcon } from '../../Icons/ZoomInIcon';
 
-type NumericSettingKey = {
-  [K in keyof SettingsData]: SettingsData[K] extends number ? K : never;
-}[keyof SettingsData];
-
-interface FontSizeControlsProps<K extends NumericSettingKey> {
-  settingKey: K;
+interface FontSizeControlsProps {
+  value: () => number;
+  setValue: (v: number) => void;
   min?: number;
   max?: number;
 }
 
-export function FontSizeControls<K extends NumericSettingKey>(props: FontSizeControlsProps<K>) {
-  const { settingKey, min = -Infinity, max = Infinity } = props;
+export function FontSizeControls(props: FontSizeControlsProps) {
+  const { value, setValue, min = -Infinity, max = Infinity } = props;
 
-  const fontSize = createMemo(() => getSetting(settingKey));
+  const fontSize = createMemo(() => value());
 
   const increase = () => {
     const newSize = Math.min(fontSize() + 1, max);
-    setSetting(settingKey, newSize);
+    setValue(newSize);
   };
 
   const decrease = () => {
     const newSize = Math.max(fontSize() - 1, min);
-    setSetting(settingKey, newSize);
+    setValue(newSize);
   };
 
   return (

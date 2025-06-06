@@ -1,5 +1,6 @@
 import { BooleanInput } from './utils/InputTypes';
 import { SettingsControl } from './utils/SettingsControl';
+import { getDiffLogSeparation, setDiffLogSeparation } from '../Settings/State/State';
 
 export function DiffLogSeparation() {
   return (
@@ -7,7 +8,7 @@ export function DiffLogSeparation() {
       label="Easier Diff Log Separation"
       labelTooltip="Show more explicit separation between Diff Log states"
     >
-      <BooleanInput settingKey="diffLogSeparation" />
+      <BooleanInput value={getDiffLogSeparation()} setValue={setDiffLogSeparation} />
     </SettingsControl>
   );
 }

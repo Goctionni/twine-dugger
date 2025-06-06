@@ -1,6 +1,6 @@
 import { Component, JSX, createSignal, Show } from 'solid-js';
 import { MetaInfo } from './MetaInfo';
-import { CogIcon } from './CogIcon';
+import { CogIcon } from '../Icons/CogIcon';
 import { GameMetaData } from '@/devtools-panel/utils/remote-functions/getMetaData';
 import { Settings } from '../Settings/Settings';
 

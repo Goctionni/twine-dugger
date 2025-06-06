@@ -1,7 +1,7 @@
-import { For, createMemo } from 'solid-js';
+import { For } from 'solid-js';
 import { DiffItem } from './Diff';
 import { RelativeTime } from './RelativeTime';
-import { getSetting } from '../Settings/utils/PersistSettings';
+import { getDiffLogFontSize, getDiffLogSeparation } from '../Settings/State/State';
 import type { DiffFrame } from '@/shared/shared-types';
 
 interface Props {
@@ -9,8 +9,8 @@ interface Props {
 }
 
 export function DiffFrame(props: Props) {
-  const showSeparation = createMemo(() => getSetting('diffLogSeparation'));
-  const fontSize = createMemo(() => getSetting('diffLogFontSize'));
+  const showSeparation = getDiffLogSeparation();
+  const fontSize = getDiffLogFontSize();
 
   return (
     <>

@@ -1,13 +1,12 @@
 import clsx from 'clsx';
 import { createEffect, createSignal } from 'solid-js';
-import { getSetting, setSetting } from './PersistSettings';
 
-interface Props<T extends string | number | boolean> {
-  value?: T;
-  onChange?: (newValue: T) => void;
-  settingKey?: string;
+interface NumberInputProps {
+  value: () => number;
+  setValue: (v: number) => void;
   min?: number;
   max?: number;
+  onChange?: (v: number) => void;
 }
 
 const inputClasses =
@@ -15,28 +14,27 @@ const inputClasses =
 const buttonClasses =
   'py-1 cursor-pointer border border-transparent shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-500';
 
-export function NumberInput(props: Props<number>) {
-  const initial = props.settingKey ? getSetting(props.settingKey as any) : props.value ?? 0;
-  const [value, setValue] = createSignal<number>(initial);
-
+export function NumberInput(props: NumberInputProps) {
   const min = props.min ?? -Infinity;
   const max = props.max ?? Infinity;
+
+  const [value, setValue] = createSignal(props.value());
 
   const update = (newVal: number) => {
     const clamped = Math.max(min, Math.min(max, newVal));
     setValue(clamped);
-    if (props.settingKey) {
-      setSetting(props.settingKey as any, clamped);
-    }
+    props.setValue(clamped);
     props.onChange?.(clamped);
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter') update(value());
-    if (e.key === 'Escape') setValue(initial);
+    if (e.key === 'Escape') setValue(props.value());
   };
 
-  createEffect(() => setValue(initial));
+  createEffect(() => {
+    setValue(props.value());
+  });
 
   return (
     <div class="flex gap-2">
@@ -56,7 +54,7 @@ export function NumberInput(props: Props<number>) {
           value={value()}
           min={min}
           max={max}
-          oninput={(e) => update(e.target.valueAsNumber)}
+          oninput={e => update((e.target as HTMLInputElement).valueAsNumber)}
           onkeydown={onKeyDown}
           class={clsx(
             inputClasses,
@@ -79,19 +77,24 @@ export function NumberInput(props: Props<number>) {
   );
 }
 
-export function BooleanInput(props: Props<boolean>) {
-  const initial = props.settingKey ? getSetting(props.settingKey as any) : props.value ?? false;
-  const [checked, setChecked] = createSignal(initial);
+interface BooleanInputProps {
+  value: () => boolean;
+  setValue: (v: boolean) => void;
+  onChange?: (v: boolean) => void;
+}
+
+export function BooleanInput(props: BooleanInputProps) {
+  const [checked, setChecked] = createSignal(props.value());
 
   const update = (val: boolean) => {
     setChecked(val);
-    if (props.settingKey) {
-      setSetting(props.settingKey as any, val);
-    }
+    props.setValue(val);
     props.onChange?.(val);
   };
 
-  createEffect(() => setChecked(initial));
+  createEffect(() => {
+    setChecked(props.value());
+  });
 
   return (
     <label class="flex justify-start cursor-pointer select-none">
