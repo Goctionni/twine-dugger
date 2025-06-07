@@ -1,6 +1,7 @@
 import { For } from 'solid-js';
 import { DiffItem } from './Diff';
 import { RelativeTime } from './RelativeTime';
+import { getDiffLogFontSize, getDiffLogSeparation } from '../Settings/State/State';
 import type { DiffFrame, Path } from '@/shared/shared-types';
 
 interface Props {
@@ -9,15 +10,26 @@ interface Props {
 }
 
 export function DiffFrame(props: Props) {
+  const showSeparation = getDiffLogSeparation();
+  const fontSize = getDiffLogFontSize();
+
   return (
-    <div class="mb-1 text-gray-400">
-      <div class="flex gap-2 items-center">
-        <span class="text-gray-300 font-bold">{props.frame.passage}</span>
-        <RelativeTime date={props.frame.timestamp} />
+    <>
+      {showSeparation() && <div class="h-px bg-gray-800 my-2" />}
+      <div
+        class="mb-1 text-gray-400"
+        style={{ 'font-size': `${fontSize()}px` }}
+      >
+        <div class="flex gap-2 items-center">
+          <span class={showSeparation() ? 'text-purple-400 font-bold' : 'text-gray-300 font-bold'}>
+            {props.frame.passage}
+          </span>
+          <RelativeTime date={props.frame.timestamp} />
+        </div>
+        <For each={props.frame.changes}>
+          {(diff) => <DiffItem diff={diff} setPath={props.setPath}/>}
+        </For>
       </div>
-      <For each={props.frame.changes}>
-        {(diff) => <DiffItem diff={diff} setPath={props.setPath} />}
-      </For>
-    </div>
+    </>
   );
 }
