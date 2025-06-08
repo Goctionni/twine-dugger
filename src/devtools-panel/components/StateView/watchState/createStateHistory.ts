@@ -1,19 +1,21 @@
+import { Accessor, createMemo, createResource } from 'solid-js';
+import { getState } from '@/devtools-panel/utils/api';
+import { HistoryItem } from './types';
+import { getContainerItem } from './watchHelpers';
+import { getSpecificType } from '@/shared/type-helpers';
+import { copy } from '@/shared/copy';
 import {
   ArrayValue,
+  ContainerValue,
   Diff,
+  DiffFrame,
   DiffPrimitiveUpdate,
   MapValue,
   ObjectValue,
   Path,
   SetValue,
   Value,
-} from '@/content-script/util/types';
-import { Frame } from '../../DiffLog/types';
-import { Accessor, createMemo, createResource } from 'solid-js';
-import { getState } from '@/devtools-panel/utils/api';
-import { ContainerValue, HistoryItem } from './types';
-import { getContainerItem } from './watchHelpers';
-import { getSpecificType } from '@/shared/type-helpers';
+} from '@/shared/shared-types';
 
 function getByPath(container: ContainerValue | SetValue, path: Path) {
   let current: Value = container;
@@ -26,7 +28,7 @@ function getByPath(container: ContainerValue | SetValue, path: Path) {
 }
 
 function applyDiffsToState(oldState: ObjectValue, diffs: Diff[]): ObjectValue {
-  const state = structuredClone(oldState);
+  const state = copy(oldState) as ContainerValue | SetValue;
   for (const diff of diffs) {
     if (
       diff.type === 'object' ||
@@ -110,11 +112,11 @@ function applyDiffsToState(oldState: ObjectValue, diffs: Diff[]): ObjectValue {
       }
     }
   }
-  return state;
+  return state as ObjectValue;
 }
 
 let historyId = 0;
-export function createStateHistory(getFrames: Accessor<Frame[]>) {
+export function createStateHistory(getFrames: Accessor<DiffFrame[]>) {
   const [getInitialState] = createResource(async () => {
     const result = await getState();
     if (!result) throw new Error('getState returned empty value');

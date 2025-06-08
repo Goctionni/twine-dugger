@@ -1,3 +1,4 @@
+import { copy } from '@/shared/copy';
 import type {
   Instruction,
   MatchPair,
@@ -75,7 +76,7 @@ function orderRawInstructions(instructions: Instruction[]): Instruction[] {
 }
 
 function forwardPropagateIndexAdjustments(instructionsBase: Instruction[]) {
-  const instructions = structuredClone(instructionsBase);
+  const instructions = copy(instructionsBase) as (typeof Instruction)[];
   for (let i = 0; i < instructions.length; i++) {
     const instruction = instructions[i]!;
     const downstreamInstructions = instructions.slice(i + 1);

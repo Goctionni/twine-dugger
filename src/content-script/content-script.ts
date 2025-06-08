@@ -3,6 +3,7 @@ import { jsonReplacer, jsonReviver } from '@/shared/json-helper';
 import sugarcubeHelpers from './format-helpers/sugarcube';
 import harloweHelpers from './format-helpers/harlowe';
 import { FormatHelpers } from './format-helpers/type';
+import { copy } from '@/shared/copy';
 
 const formatHelpers: FormatHelpers[] = [sugarcubeHelpers, harloweHelpers];
 
@@ -11,7 +12,7 @@ function init() {
   if (!formatHelper) return;
 
   const differ = formatHelper.getDiffer();
-  let lastState = structuredClone(formatHelper.getState(false));
+  let lastState = copy(formatHelper.getState(false));
   window.TwineDugger = {
     utils: {
       jsonReplacer,
@@ -24,7 +25,7 @@ function init() {
     getDiffs: () => {
       const newState = formatHelper.getState(false);
       const diffs = differ(lastState, newState);
-      lastState = structuredClone(newState);
+      lastState = copy(newState);
       return {
         passage: formatHelper.getPassage(),
         diffs,

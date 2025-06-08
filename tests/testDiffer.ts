@@ -1,7 +1,6 @@
 // diffTest.ts
 import { getDiffer } from '../src/content-script/util/differ'; // Import the factory function
 // Assuming you import the full Diff type from types.ts
-import type { Diff, Primitive, Value } from '../src/content-script/util/types';
 
 // --- Create a Differ Instance ---
 // This instance will maintain its own identity map state across calls.
