@@ -16,7 +16,7 @@ export function DiffLog(props: Props) {
         <For each={frames()}>
           {(frame, index) => (
             <li>
-              <DiffFrame frame={frame} setPath={props.setPath} />
+              <DiffFrame frame={frame} setPath={props.setPath} first={index() === 0} />
             </li>
           )}
         </For>
