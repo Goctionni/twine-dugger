@@ -67,7 +67,8 @@ interface SettingControlProps {
 }
 
 function SettingControl(props: SettingControlProps) {
-  const id = () => props.label.replace(/[^a-z0-9]/, '') + Math.random().toString(36).slice(2);
+  const id = () =>
+    `${props.label.toLowerCase().replace(/[^a-z0-9]/, '')}-${Math.random().toString(36).slice(2)}`;
   return (
     <label class="col-span-full grid grid-cols-subgrid items-center py-1" for={id()}>
       <span>{props.label}</span>
