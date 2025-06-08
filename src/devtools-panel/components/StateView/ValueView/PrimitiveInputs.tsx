@@ -118,7 +118,7 @@ export function BooleanInput(props: Props<boolean>) {
   createEffect(() => setChecked(props.value));
 
   return (
-    <label
+    <div
       class={clsx(
         'flex justify-start select-none',
         props.editable ? 'cursor-pointer' : 'pointer-events-none',
@@ -134,9 +134,27 @@ export function BooleanInput(props: Props<boolean>) {
           id={props.id}
         />
         <span class="absolute toggle border-2 border-gray-500 h-7 w-1/2 rounded-sm transition-all top-0 left-1/2 peer-checked:left-0"></span>
-        <span class="text-center flex-grow relative self-center transition text-white">True</span>
-        <span class="text-center flex-grow relative self-center transition text-white">False</span>
+        <label
+          class="text-center flex-grow relative self-center transition text-white cursor-pointer"
+          for={props.id}
+          onClick={(e) => {
+            e.preventDefault();
+            props.onChange?.(true);
+          }}
+        >
+          True
+        </label>
+        <label
+          class="text-center flex-grow relative self-center transition text-white cursor-pointer"
+          for={props.id}
+          onClick={(e) => {
+            e.preventDefault();
+            props.onChange?.(false);
+          }}
+        >
+          False
+        </label>
       </div>
-    </label>
+    </div>
   );
 }

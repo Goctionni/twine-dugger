@@ -45,10 +45,10 @@ export function SettingsView() {
               />
             )}
           </SettingControl>
-          <SettingControl label="Heading Emphasis">
+          <SettingControl label="Heading Emphasis" noLabel>
             {(id) => (
               <BooleanInput
-                value={getDiffLogHeadingStyle() === 'default'}
+                value={getDiffLogHeadingStyle() === 'distinct'}
                 onChange={(value) => setDiffLogHeadingStyle(value ? 'distinct' : 'default')}
                 id={id}
                 editable
@@ -63,14 +63,27 @@ export function SettingsView() {
 
 interface SettingControlProps {
   label: string;
+  noLabel?: boolean;
   children: (id: string) => JSX.Element;
 }
 
 function SettingControl(props: SettingControlProps) {
   const id = () =>
     `${props.label.toLowerCase().replace(/[^a-z0-9]/, '')}-${Math.random().toString(36).slice(2)}`;
+
+  const className = 'col-span-full grid grid-cols-subgrid items-center py-1';
+
+  if (props.noLabel) {
+    return (
+      <div class={className}>
+        <span>{props.label}</span>
+        {props.children(id())}
+      </div>
+    );
+  }
+
   return (
-    <label class="col-span-full grid grid-cols-subgrid items-center py-1" for={id()}>
+    <label class={className} for={id()}>
       <span>{props.label}</span>
       {props.children(id())}
     </label>

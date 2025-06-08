@@ -12,12 +12,15 @@ interface Props {
 }
 
 export function DiffFrame(props: Props) {
-  const showSeparator = () => !props.first && getDiffLogHeadingStyle();
+  const showSeparator = () => !props.first && getDiffLogHeadingStyle() === 'distinct';
   return (
     <div class="mb-1 text-gray-400 group" style={{ 'font-size': `${getDiffLogFontSize()}px` }}>
       <div class={clsx('flex gap-2 items-center', { ['mt-2 border-t pt-2']: showSeparator() })}>
         <span
-          class={clsx('font-bold', getDiffLogHeadingStyle() ? 'text-purple-400' : 'text-gray-300')}
+          class={clsx(
+            'font-bold',
+            getDiffLogHeadingStyle() === 'distinct' ? 'text-purple-400' : 'text-gray-300',
+          )}
         >
           {props.frame.passage}
         </span>
