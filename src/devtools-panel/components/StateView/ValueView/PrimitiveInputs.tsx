@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { createEffect, createSignal, Show } from 'solid-js';
 
 interface Props<T extends string | number | boolean> {
+  id?: string;
   value: T;
   editable?: boolean;
   onChange?: (newValue: T) => void;
@@ -30,6 +31,7 @@ export function StringInput(props: Props<string>) {
         onkeydown={onKeyDown}
         class={clsx(inputClasses, 'rounded-md w-[184px]')}
         readOnly={!props.editable}
+        id={props.id}
       />
       <Show when={props.onChange && props.value !== value() && props.editable}>
         <button
@@ -76,6 +78,7 @@ export function NumberInput(props: Props<number>) {
           oninput={(e) => setValue(e.target.valueAsNumber)}
           onkeydown={onKeyDown}
           readOnly={!props.editable}
+          id={props.id}
           class={clsx(
             inputClasses,
             `[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`,
@@ -128,6 +131,7 @@ export function BooleanInput(props: Props<boolean>) {
           checked={checked()}
           readOnly={!props.editable}
           onChange={(e) => props.onChange?.(e.target.checked)}
+          id={props.id}
         />
         <span class="absolute toggle border-2 border-gray-500 h-7 w-1/2 rounded-sm transition-all top-0 left-1/2 peer-checked:left-0"></span>
         <span class="text-center flex-grow relative self-center transition text-white">True</span>

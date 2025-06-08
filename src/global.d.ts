@@ -1,4 +1,13 @@
 import { Diff, ObjectValue } from './content-script/util/types';
+import { JSX } from 'solid-js/types/jsx.d.ts';
+
+declare module 'solid-js/types/jsx.d.ts' {
+  namespace JSX {
+    interface DialogHtmlAttributes<T> extends JSX.HTMLAttributes<T> {
+      closedby: 'any' | 'closerequest' | 'none';
+    }
+  }
+}
 
 declare global {
   interface Window {

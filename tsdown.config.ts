@@ -30,7 +30,7 @@ export default defineConfig((): Options[] => [
     ...baseOptions,
     clean: false,
     entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
-    noExternal: ['solid-js/web', 'solid-js', 'clsx', 'immer'],
+    noExternal: ['solid-js/web', 'solid-js', 'solid-js/store', 'clsx', 'immer'],
     plugins: [solidPlugin()],
   },
   {
