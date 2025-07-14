@@ -1,5 +1,5 @@
+import { ArrayValue, MapValue, ObjectValue, Value } from '@/shared/shared-types';
 import { getDiffer as getDifferBase } from '../util/differ';
-import { ArrayValue, MapValue, ObjectValue, Value } from '../util/types';
 import { FormatHelpers } from './type';
 
 function detect() {
@@ -24,7 +24,7 @@ function detect() {
 
 function setState(path: Array<string | number>, value: unknown) {
   type StateObj = ObjectValue | MapValue | ArrayValue;
-  let stateObj: StateObj = sanitize(window.Harlowe.API_ACCESS.STATE.variables);
+  let stateObj: StateObj = window.Harlowe.API_ACCESS.STATE.variables;
   for (let i = 0; i < path.length; i++) {
     const key = path[i];
     const isLast = i + 1 === path.length;
@@ -61,15 +61,13 @@ function setState(path: Array<string | number>, value: unknown) {
   }
 }
 
-const formatHelpers: FormatHelpers = {
+export default {
   detect,
   getState: () => sanitize(window.Harlowe.API_ACCESS.STATE.variables),
   getDiffer: () => getDifferBase(ignoreCheck),
   setState,
   getPassage: () => window.Harlowe.API_ACCESS.STATE.passage,
-};
-
-export default formatHelpers;
+} satisfies FormatHelpers;
 
 function sanitize(obj: ObjectValue) {
   const result: ObjectValue = {};
