@@ -5,22 +5,36 @@ import { getGameMetaData } from './utils/api';
 
 function App() {
   const [enabled, setEnabled] = createSignal(false);
-  const [resource] = createResource(() => getGameMetaData());
+  const [killed, setKilled] = createSignal(false);
+  const [resource, { mutate }] = createResource(() => getGameMetaData());
 
   const state = () => {
+    if (killed()) return 'killed';
     if (!resource.latest && !resource.error) return 'loading';
     if (resource.error) return 'error';
     if (enabled()) return 'content';
     return 'not-enabled';
   };
 
+  const kill = () => {
+    setKilled(true);
+    mutate(undefined);
+  };
+
   return (
-    <Layout meta={resource.latest}>
+    <Layout meta={resource()}>
       <Switch>
-        <Match when={state() === 'loading'}>Retrieving game metadata</Match>
-        <Match when={state() === 'error'}>An error has occured</Match>
+        <Match when={state() === 'killed'}>
+          <span class="m-auto">Extension has disconnected. Re-open devtools to reinitialize.</span>
+        </Match>
+        <Match when={state() === 'loading'}>
+          <span class="m-auto">Retrieving game metadata</span>
+        </Match>
+        <Match when={state() === 'error'}>
+          <span class="m-auto">An error has occured</span>
+        </Match>
         <Match when={state() === 'content'}>
-          <Content />
+          <Content kill={kill} />
         </Match>
         <Match when={state() === 'not-enabled'}>
           <div class="flex-grow flex flex-col items-center justify-center gap-4">

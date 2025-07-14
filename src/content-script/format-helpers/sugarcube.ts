@@ -1,5 +1,5 @@
+import { ArrayValue, MapValue, ObjectValue, Value } from '@/shared/shared-types';
 import { getDiffer as getDifferBase } from '../util/differ';
-import { ArrayValue, MapValue, ObjectValue, Value } from '../util/types';
 import { FormatHelpers } from './type';
 
 function setState(path: Array<string | number>, value: unknown) {
@@ -41,12 +41,10 @@ function setState(path: Array<string | number>, value: unknown) {
   }
 }
 
-const formatHelpers: FormatHelpers = {
+export default {
   getDiffer: () => getDifferBase(),
   detect: () => 'SugarCube' in window && typeof window.SugarCube === 'object',
   getState: () => window.SugarCube.State.variables,
   getPassage: () => window.SugarCube.State.passage,
   setState,
-};
-
-export default formatHelpers;
+} satisfies FormatHelpers;

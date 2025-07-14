@@ -6,7 +6,7 @@ import type {
   AddInstruction,
   MoveInstruction,
   RemoveInstruction,
-} from './types';
+} from '@/shared/shared-types';
 
 function createRawAddInstructions(newArr: Value[], newMatched: boolean[]) {
   const rawAddInstructions: AddInstruction[] = [];
@@ -76,7 +76,7 @@ function orderRawInstructions(instructions: Instruction[]): Instruction[] {
 }
 
 function forwardPropagateIndexAdjustments(instructionsBase: Instruction[]) {
-  const instructions = copy(instructionsBase) as (typeof Instruction)[];
+  const instructions = copy(instructionsBase) as Instruction[];
   for (let i = 0; i < instructions.length; i++) {
     const instruction = instructions[i]!;
     const downstreamInstructions = instructions.slice(i + 1);

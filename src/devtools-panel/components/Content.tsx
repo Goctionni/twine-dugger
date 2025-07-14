@@ -5,8 +5,12 @@ import { watchState } from './StateView/watchState/watchState';
 import { StateView } from './StateView/StateView';
 import { HistoryNav } from './HistoryNav';
 
-export function Content() {
-  const diffFrames = trackDiffFrames();
+interface Props {
+  kill: () => void;
+}
+
+export function Content(props: Props) {
+  const diffFrames = trackDiffFrames(props.kill);
   const {
     getNavLayers,
     getPath,

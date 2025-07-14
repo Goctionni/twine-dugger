@@ -8,12 +8,11 @@ import type {
   MapValue,
   SetValue,
   Diff,
-  ValueType,
   IdentityMap,
-  MatchPair, // Assuming MatchPair is defined in types.ts now
+  MatchPair,
   Primitive,
-} from './types'; // Import types from types.ts
-import { getSpecificType, isNullish, isPrimitive } from '@/shared/type-helpers';
+} from '@/shared/shared-types'; // Import types from types.ts
+import { getSpecificType, isPrimitive } from '@/shared/type-helpers';
 
 // --- Helper Functions ---
 

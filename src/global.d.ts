@@ -75,4 +75,7 @@ declare global {
       };
     };
   }
+  interface ErrorConstructor {
+    isError(value: unknown): value is Error;
+  }
 }
