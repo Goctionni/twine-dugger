@@ -36,9 +36,11 @@ export default defineConfig((): Options[] => [
   {
     ...baseOptions,
     clean: false,
+    format: 'iife',
     entry: {
       'create-panel': 'src/create-panel/create-panel.ts',
       'content-script': 'src/content-script/content-script.ts',
     },
+    outputOptions: (opts) => ({ ...opts, entryFileNames: `[name].js` }),
   },
 ]);
