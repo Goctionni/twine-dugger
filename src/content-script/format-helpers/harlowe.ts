@@ -61,13 +61,42 @@ function setState(path: Array<string | number>, value: unknown) {
   }
 }
 
-export default {
-  detect,
-  getState: () => sanitize(window.Harlowe.API_ACCESS.STATE.variables),
-  getDiffer: () => getDifferBase(ignoreCheck),
-  setState,
-  getPassage: () => window.Harlowe.API_ACCESS.STATE.passage,
-} satisfies FormatHelpers;
+function deleteFromState(path: Array<string | number>) {
+  type StateObj = ObjectValue | MapValue | ArrayValue;
+  let stateObj: StateObj = window.Harlowe.API_ACCESS.STATE.variables;
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i];
+    if (Array.isArray(stateObj)) {
+      stateObj = stateObj[Number(key)] as StateObj;
+    } else if (stateObj instanceof Map) {
+      stateObj = stateObj.get(`${key}`) as StateObj;
+    } else {
+      stateObj = stateObj[`${key}`] as StateObj;
+    }
+
+    if (!stateObj || typeof stateObj !== 'object') {
+      console.error(`[Twine Dugger]: Could not resolve path to delete`, {
+        path,
+      });
+      return;
+    }
+  }
+
+  const finalKey = path[path.length - 1];
+
+  if (Array.isArray(stateObj)) {
+    stateObj.splice(Number(finalKey), 1);
+  } else if (stateObj instanceof Map) {
+    stateObj.delete(`${finalKey}`);
+  } else if (typeof stateObj === 'object' && stateObj !== null) {
+    delete stateObj[`${finalKey}`];
+  } else {
+    console.error(`[Twine Dugger]: Could not delete at path`, {
+      path,
+    });
+  }
+}
 
 function sanitize(obj: ObjectValue) {
   const result: ObjectValue = {};
@@ -95,3 +124,12 @@ function ignoreCheck(key: unknown, value: Value) {
   }
   return false;
 }
+
+export default {
+  detect,
+  getState: () => sanitize(window.Harlowe.API_ACCESS.STATE.variables),
+  getDiffer: () => getDifferBase(ignoreCheck),
+  setState,
+  deleteFromState,
+  getPassage: () => window.Harlowe.API_ACCESS.STATE.passage,
+} satisfies FormatHelpers;

@@ -6,6 +6,7 @@ import clsx from 'clsx';
 interface Props {
   chunk: PathChunk;
   selectedProperty?: string | number;
+  dataPropertyPath: (string | number)[];
   onClick: (childKey: string | number) => void;
 }
 
@@ -18,6 +19,7 @@ export function ObjectNav(props: Props) {
           {(child) => (
             <li>
               <a
+                data-property={child.text}
                 on:click={() => props.onClick(child.text)}
                 class={clsx(
                   'flex items-center gap-1 p-1 cursor-pointer rounded-md',

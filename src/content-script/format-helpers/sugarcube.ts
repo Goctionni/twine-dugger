@@ -41,10 +41,48 @@ function setState(path: Array<string | number>, value: unknown) {
   }
 }
 
+function deleteFromState(path: Array<string | number>) {
+  type StateObj = ObjectValue | MapValue | ArrayValue;
+  let stateObj: StateObj = window.SugarCube.State.variables;
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i];
+    if (Array.isArray(stateObj)) {
+      stateObj = stateObj[Number(key)] as StateObj;
+    } else if (stateObj instanceof Map) {
+      stateObj = stateObj.get(`${key}`) as StateObj;
+    } else {
+      stateObj = stateObj[`${key}`] as StateObj;
+    }
+
+    if (!stateObj || typeof stateObj !== 'object') {
+      console.error(`[Twine Dugger]: Could not resolve path to delete`, {
+        path,
+      });
+      return;
+    }
+  }
+
+  const finalKey = path[path.length - 1];
+
+  if (Array.isArray(stateObj)) {
+    stateObj.splice(Number(finalKey), 1);
+  } else if (stateObj instanceof Map) {
+    stateObj.delete(`${finalKey}`);
+  } else if (typeof stateObj === 'object' && stateObj !== null) {
+    delete stateObj[`${finalKey}`];
+  } else {
+    console.error(`[Twine Dugger]: Could not delete at path`, {
+      path,
+    });
+  }
+}
+
 export default {
   getDiffer: () => getDifferBase(),
   detect: () => 'SugarCube' in window && typeof window.SugarCube === 'object',
   getState: () => window.SugarCube.State.variables,
   getPassage: () => window.SugarCube.State.passage,
   setState,
+  deleteFromState,
 } satisfies FormatHelpers;

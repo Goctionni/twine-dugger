@@ -69,6 +69,7 @@ declare global {
       getDiffs: () => { passage: string; diffs: Diff[] };
       getState: () => { passage: string; state: ObjectValue };
       setState: (path: Array<string | number>, value: unknown) => void;
+      deleteFromState: (path: Array<string | number>) => void;
       utils: {
         jsonReplacer(key: string, value: any): any;
         jsonReviver(key: string, value: any): any;

@@ -1,9 +1,10 @@
-import { Index } from 'solid-js';
+import { Index, onMount, onCleanup, createSignal } from 'solid-js';
 import { NavLayers, PathChunk } from './types';
 import { ObjectNav } from './ObjectNav';
 import { ValueView } from './ValueView';
 import { Path } from './Path';
 import { Path as TPath, Value } from '@/shared/shared-types';
+import { useContextMenu } from '@/devtools-panel/components/ContextMenuProvider/ContextMenu';
 
 function pathsMatch(path1: TPath, path2: TPath) {
   if (path1 === path2) return true;
@@ -22,19 +23,53 @@ interface Props {
 }
 
 export function StateView(props: Props) {
+  const { registerContextHandler } = useContextMenu();
+  let containerRef: HTMLDivElement | undefined;
+  const [rightClickedProperty, setRightClickedProperty] = createSignal<string | null>(null);
+
   const onPropertyClick = (chunk: PathChunk, property: string | number) => {
     const newPath = [...chunk.path, property];
     const isEqual = pathsMatch(props.path, newPath);
     props.setPath(isEqual ? chunk.path : newPath);
   };
+
+  onMount(() => {
+    const unregister = registerContextHandler((e) => {
+      if (!containerRef?.contains(e.target as Node)) return null;
+
+      const target = e.target as HTMLElement;
+      const property = target.closest('[data-property]')?.getAttribute('data-property');
+      setRightClickedProperty(property ?? null);
+
+      const menuItems = [];
+
+      if (property) {
+        menuItems.push({
+          label: `Delete "${property}"`,
+          onClick: () => console.log('Delete', property),
+        });
+      }
+
+      menuItems.push({
+        label: 'StateView Option',
+        onClick: () => console.log('StateView clicked'),
+      });
+
+      return menuItems;
+    });
+
+    onCleanup(() => unregister());
+  });
+
   return (
-    <div class="flex h-full py-1">
+    <div ref={containerRef} class="flex h-full py-1">
       <Index each={props.navLayers.pathChunks}>
         {(chunk) => (
           <ObjectNav
             chunk={chunk()}
             selectedProperty={props.path[chunk().path.length]}
             onClick={(childKey) => onPropertyClick(chunk(), childKey)}
+            dataPropertyPath={chunk().path}
           />
         )}
       </Index>

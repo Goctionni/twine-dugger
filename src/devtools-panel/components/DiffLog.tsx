@@ -1,6 +1,7 @@
-import { For } from 'solid-js';
+import { For, onMount, onCleanup } from 'solid-js';
 import { DiffFrame } from './DiffLog/DiffFrame';
 import type { DiffFrame as IDiffFrame, Path } from '@/shared/shared-types';
+import { useContextMenu } from '@/devtools-panel/components/ContextMenuProvider/ContextMenu';
 
 interface Props {
   frames: IDiffFrame[];
@@ -8,9 +9,23 @@ interface Props {
 }
 
 export function DiffLog(props: Props) {
+  const { registerContextHandler } = useContextMenu();
+  let containerRef: HTMLDivElement | undefined;
+
+  onMount(() => {
+    const unregister = registerContextHandler((e) => {
+      if (!containerRef?.contains(e.target as Node)) return null;
+      return [
+        { label: 'DiffLog Option', onClick: () => console.log('DiffLog clicked') },
+      ];
+    });
+
+    onCleanup(() => unregister());
+  });
+
   const frames = () => props.frames.slice(0, 30);
   return (
-    <div class="p-4 flex flex-col h-full">
+    <div ref={containerRef} class="p-4 flex flex-col h-full">
       <h2 class="text-lg font-semibold mb-2 text-gray-200">Diff Log</h2>
       <ul class="overflow-auto flex-1">
         <For each={frames()}>

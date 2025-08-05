@@ -41,3 +41,17 @@ export async function setState(path: Array<string | number>, value: unknown) {
     },
   );
 }
+
+export async function deleteFromState(path: Array<string | number>) {
+  await injectContentScript();
+  return executeCode(
+    (path) => {
+      if (!('TwineDugger' in window)) return;
+      return window.TwineDugger.deleteFromState(path as Array<string | number>);
+    },
+    {
+      requires: ['content-script.js'],
+      args: [path],
+    },
+  );
+}
