@@ -1,6 +1,6 @@
 import { Accessor, createSignal } from 'solid-js';
 
-import { setState } from '@panel/utils/api';
+import { setState, deleteFromState } from '@panel/utils/api';
 import { StateViewSelection } from './types';
 import { createStateHistory } from './createStateHistory';
 import { createGetNavLayers } from './createGetNavLayers';
@@ -33,6 +33,9 @@ export function watchState(getFrames: Accessor<DiffFrame[]>) {
   const setViewPropertyValue = (property: string | number, value: unknown) =>
     setState([...getStateViewSelection().path, property], value);
 
+  const deleteViewPropertyValue = (property: string | number) =>
+    deleteFromState([...getStateViewSelection().path, property]);
+
   const setHistoryId = (historyId: 'latest' | number) => {
     setStateViewSelection({ historyId, path: [] });
   };
@@ -51,5 +54,6 @@ export function watchState(getFrames: Accessor<DiffFrame[]>) {
     setPath,
     setViewValue,
     setViewPropertyValue,
+    deleteViewPropertyValue,
   };
 }

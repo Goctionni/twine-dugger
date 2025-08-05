@@ -21,6 +21,7 @@ export function Content(props: Props) {
     setViewValue,
     setViewPropertyValue,
     setHistoryId,
+    deleteViewPropertyValue
   } = watchState(diffFrames);
 
   return (
@@ -37,6 +38,7 @@ export function Content(props: Props) {
             readonly={getReadOnly()}
             setViewValue={setViewValue}
             setViewPropertyValue={setViewPropertyValue}
+            deleteViewPropertyValue={deleteViewPropertyValue}
           />
         </>
       }
