@@ -1,4 +1,4 @@
-import { Index, onMount, onCleanup, createSignal, createMemo } from 'solid-js';
+import { Index, onMount, onCleanup, createSignal, createMemo, Show } from 'solid-js';
 import { NavLayers, PathChunk } from './types';
 import { ObjectNav } from './ObjectNav';
 import { ValueView } from './ValueView';
@@ -28,6 +28,8 @@ export function StateView(props: Props) {
   let containerRef!: HTMLDivElement;
 
   const [rightClickedProperty, setRightClickedProperty] = createSignal<string | null>(null);
+  const [duplicatingProperty, setDuplicatingProperty] = createSignal<string | null>(null);
+  const [duplicateName, setDuplicateName] = createSignal<string>('');
 
   // Context Menu Registration
   onMount(() => {
@@ -39,16 +41,53 @@ export function StateView(props: Props) {
       setRightClickedProperty(property ?? null);
 
       if (property) {
-        return [{
-          label: `Delete "${property}"`,
-          onClick: () => props.deleteViewPropertyValue(property),
-        }];
+        return [
+          {
+            label: `Delete "${property}"`,
+            onClick: () => props.deleteViewPropertyValue(property),
+          },
+          {
+            label: `Duplicate "${property}"`,
+            onClick: () => {
+              setDuplicatingProperty(property);
+              setDuplicateName(`${property}_copy`);
+            },
+          },
+        ];
       }
       return [];
     });
 
-    onCleanup(() => unregister());
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!containerRef.contains(e.target as Node)) {
+        setDuplicatingProperty(null);
+        setDuplicateName('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    onCleanup(() => {
+      unregister();
+      document.removeEventListener('mousedown', handleClickOutside);
+    });
   });
+
+
+  const handleDuplicateSave = () => {
+    const sourceProp = duplicatingProperty();
+    const newProp = duplicateName();
+
+    if (!sourceProp || !newProp) return;
+
+    const sourceValue = (props.viewValue as Record<string, unknown>)[sourceProp];
+    const clonedValue = structuredClone(sourceValue);
+
+    props.setViewPropertyValue(newProp, clonedValue);
+
+    setDuplicatingProperty(null);
+    setDuplicateName('');
+  };
 
   const handlePropertyClick = (chunk: PathChunk, property: string | number) => {
     const newPath = [...chunk.path, property];
@@ -69,6 +108,10 @@ export function StateView(props: Props) {
             selectedProperty={selectedProperties()[idx]}
             onClick={handlePropertyClick.bind(null, chunk())}
             dataPropertyPath={chunk().path}
+            duplicatingProperty={duplicatingProperty()}
+            duplicateName={duplicateName()}
+            setDuplicateName={setDuplicateName}
+            onDuplicateSave={handleDuplicateSave}
           />
         )}
       </Index>
