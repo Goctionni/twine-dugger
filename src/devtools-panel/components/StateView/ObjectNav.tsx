@@ -1,4 +1,4 @@
-import { For, Show } from 'solid-js';
+import { Accessor, For, Show } from 'solid-js';
 import { PathChunk } from './types';
 import { TypeIcon } from './TypeIcon';
 import clsx from 'clsx';
@@ -11,6 +11,7 @@ interface Props {
   duplicateName: string;
   setDuplicateName: (value: string) => void;
   onDuplicateSave: () => void;
+  lockedProperties: Accessor<Map<string, unknown>>;
   onClick: (childKey: string | number) => void;
 }
 
@@ -37,7 +38,12 @@ export function ObjectNav(props: Props) {
                   )}
                 >
                   <TypeIcon type={child.type} />
-                  <span class="flex-1 overflow-hidden overflow-ellipsis">{child.text}</span>
+                  <span class="flex-1 overflow-hidden overflow-ellipsis">
+                    {child.text}
+                    <Show when={props.lockedProperties().has(String(child.text))}>
+                      {' 🔒'}
+                    </Show>
+                  </span>
                 </a>
               </li>
               <Show when={props.duplicatingProperty === child.text}>

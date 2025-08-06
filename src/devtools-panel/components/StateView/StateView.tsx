@@ -1,4 +1,4 @@
-import { Index, onMount, onCleanup, createSignal, createMemo, Show } from 'solid-js';
+import { Index, onMount, onCleanup, createSignal, createMemo, createEffect } from 'solid-js';
 import { NavLayers, PathChunk } from './types';
 import { ObjectNav } from './ObjectNav';
 import { ValueView } from './ValueView';
@@ -30,6 +30,37 @@ export function StateView(props: Props) {
   const [rightClickedProperty, setRightClickedProperty] = createSignal<string | null>(null);
   const [duplicatingProperty, setDuplicatingProperty] = createSignal<string | null>(null);
   const [duplicateName, setDuplicateName] = createSignal<string>('');
+  const [lockedProperties, setLockedProperties] = createSignal<Map<string, unknown>>(new Map());
+
+  const toggleLockProperty = (property: string | number) => {
+    const key = String(property);
+    setLockedProperties(prev => {
+      const newMap = new Map(prev);
+      if (newMap.has(key)) {
+        newMap.delete(key);
+      } else {
+        const value = (props.viewValue as Record<string | number, unknown>)[property];
+        newMap.set(key, structuredClone(value));
+      }
+      return newMap;
+    });
+  };
+
+  createEffect(() => {
+    const current = props.viewValue as Record<string | number, unknown>;
+    const locked = lockedProperties();
+
+    locked.forEach((lockedValue, property) => {
+      const actualProp = property in current ? property : Number(property);
+      if (!(actualProp in current)) return;
+
+      const currentValue = current[actualProp];
+      if (JSON.stringify(currentValue) !== JSON.stringify(lockedValue)) {
+        // Revert the change immediately, I am unsure if we want to prevent or revert?
+        props.setViewPropertyValue(actualProp, structuredClone(lockedValue));
+      }
+    });
+  });
 
   // Context Menu Registration
   onMount(() => {
@@ -53,6 +84,10 @@ export function StateView(props: Props) {
               setDuplicateName(`${property}_copy`);
             },
           },
+          {
+            label: lockedProperties().has(String(property)) ? `Unlock "${property}"` : `Lock "${property}"`,
+            onClick: () => toggleLockProperty(property),
+          }
         ];
       }
       return [];
@@ -112,6 +147,7 @@ export function StateView(props: Props) {
             duplicateName={duplicateName()}
             setDuplicateName={setDuplicateName}
             onDuplicateSave={handleDuplicateSave}
+            lockedProperties={lockedProperties}
           />
         )}
       </Index>
