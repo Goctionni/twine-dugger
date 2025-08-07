@@ -2,11 +2,14 @@ import { For } from 'solid-js';
 import { PathChunk } from './types';
 import { TypeIcon } from './TypeIcon';
 import clsx from 'clsx';
+import { useContextMenu } from '../ContextMenu/useContextMenu';
+import { Path } from '@/shared/shared-types';
 
 interface Props {
   chunk: PathChunk;
   selectedProperty?: string | number;
   onClick: (childKey: string | number) => void;
+  onDeleteProperty: (path: Path) => void;
 }
 
 export function ObjectNav(props: Props) {
@@ -16,23 +19,48 @@ export function ObjectNav(props: Props) {
       <ul class="flex flex-1 flex-col overflow-auto">
         <For each={props.chunk.childKeys}>
           {(child) => (
-            <li>
-              <a
-                on:click={() => props.onClick(child.text)}
-                class={clsx(
-                  'flex items-center gap-1 p-1 cursor-pointer rounded-md',
-                  child.text === props.selectedProperty
-                    ? 'outline-gray-300 outline-2 -outline-offset-2'
-                    : 'outline-transparent hover:bg-gray-700',
-                )}
-              >
-                <TypeIcon type={child.type} />
-                <span class="flex-1 overflow-hidden overflow-ellipsis">{child.text}</span>
-              </a>
-            </li>
+            <NavItem
+              child={child}
+              active={child.text === props.selectedProperty}
+              onClick={() => props.onClick(child.text)}
+              onDelete={() => props.onDeleteProperty([...props.chunk.path, child.text])}
+            />
           )}
         </For>
       </ul>
     </div>
+  );
+}
+
+interface NavItemProps {
+  child: PathChunk['childKeys'][number];
+  active: boolean;
+  onClick: () => void;
+  onDelete: () => void;
+}
+
+function NavItem(props: NavItemProps) {
+  const elRef = useContextMenu([
+    {
+      label: `Delete "${props.child.text}"`,
+      onClick: () => props.onDelete(),
+    },
+  ]);
+
+  return (
+    <li ref={elRef}>
+      <a
+        on:click={() => props.onClick()}
+        class={clsx(
+          'flex items-center gap-1 p-1 cursor-pointer rounded-md',
+          props.active
+            ? 'outline-gray-300 outline-2 -outline-offset-2'
+            : 'outline-transparent hover:bg-gray-700',
+        )}
+      >
+        <TypeIcon type={props.child.type} />
+        <span class="flex-1 overflow-hidden overflow-ellipsis">{props.child.text}</span>
+      </a>
+    </li>
   );
 }

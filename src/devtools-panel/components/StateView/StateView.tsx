@@ -19,6 +19,7 @@ interface Props {
   readonly?: boolean;
   setViewValue: (newValue: unknown) => void;
   setViewPropertyValue: (property: string | number, newValue: unknown) => void;
+  onDeleteProperty: (path: TPath) => void;
 }
 
 export function StateView(props: Props) {
@@ -35,6 +36,7 @@ export function StateView(props: Props) {
             chunk={chunk()}
             selectedProperty={props.path[chunk().path.length]}
             onClick={(childKey) => onPropertyClick(chunk(), childKey)}
+            onDeleteProperty={props.onDeleteProperty}
           />
         )}
       </Index>

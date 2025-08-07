@@ -2,6 +2,7 @@ import { createResource, createSignal, Match, Switch } from 'solid-js';
 import { Layout } from './components/Layout/Layout';
 import { Content } from './components/Content';
 import { getGameMetaData } from './utils/api';
+import { ContextMenuUI } from './components/ContextMenu/ContextMenuUI';
 
 function App() {
   const [enabled, setEnabled] = createSignal(false);
@@ -23,6 +24,7 @@ function App() {
 
   return (
     <Layout meta={resource()}>
+      <ContextMenuUI />
       <Switch>
         <Match when={state() === 'killed'}>
           <span class="m-auto">Extension has disconnected. Re-open devtools to reinitialize.</span>

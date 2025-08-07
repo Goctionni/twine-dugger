@@ -34,6 +34,9 @@ function init() {
     setState: (path, value) => {
       return formatHelper.setState(path, value);
     },
+    deleteFromState: (path) => {
+      return formatHelper.deleteFromState(path);
+    },
   };
 }
 
