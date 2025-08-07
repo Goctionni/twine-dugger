@@ -12,6 +12,10 @@ function pathsMatch(path1: TPath, path2: TPath): boolean {
   return path1.every((value, index) => value === path2[index]);
 }
 
+function getNestedValue(obj: unknown, path: (string | number)[]): any {
+  return path.reduce((acc, key) => (acc && typeof acc === 'object' ? (acc as any)[key] : undefined), obj);
+}
+
 interface Props {
   navLayers: NavLayers;
   viewValue: Value;
@@ -148,6 +152,14 @@ export function StateView(props: Props) {
             setDuplicateName={setDuplicateName}
             onDuplicateSave={handleDuplicateSave}
             lockedProperties={lockedProperties}
+            onAddProperty={(key, value) => {
+              const path = chunk().path;
+              const target = getNestedValue(props.viewValue, path);
+              if (typeof target === 'object' && target !== null) {
+                target[key] = value;
+                props.setViewValue(structuredClone(props.viewValue));
+              }
+            }}
           />
         )}
       </Index>
