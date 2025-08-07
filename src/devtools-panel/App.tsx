@@ -3,6 +3,7 @@ import { Layout } from './components/Layout/Layout';
 import { Content } from './components/Content';
 import { getGameMetaData } from './utils/api';
 import { ContextMenuUI } from './components/ContextMenu/ContextMenuUI';
+import { PromptDialogOutlet } from './components/Common/PromptProvider';
 
 function App() {
   const [enabled, setEnabled] = createSignal(false);
@@ -24,6 +25,7 @@ function App() {
 
   return (
     <Layout meta={resource()}>
+      <PromptDialogOutlet />
       <ContextMenuUI />
       <Switch>
         <Match when={state() === 'killed'}>

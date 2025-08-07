@@ -70,6 +70,11 @@ declare global {
       getState: () => { passage: string; state: ObjectValue };
       setState: (path: Array<string | number>, value: unknown) => void;
       deleteFromState: (path: Array<string | number>) => void;
+      duplicateStateProperty: (
+        parentPath: Path,
+        sourceKey: string | number,
+        targetKey?: string,
+      ) => void;
       utils: {
         jsonReplacer(key: string, value: any): any;
         jsonReviver(key: string, value: any): any;

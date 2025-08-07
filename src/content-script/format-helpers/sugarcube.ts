@@ -1,6 +1,6 @@
 import { getDiffer as getDifferBase } from '../util/differ';
 import { FormatHelpers } from './type';
-import { setState, deleteFromState } from './shared';
+import { setState, deleteFromState, duplicateStateProperty } from './shared';
 import { z } from 'zod';
 import { matchesSChema } from '../util/type-helpers';
 
@@ -10,11 +10,15 @@ const SugarCubeSchema = z.object({
   }),
 });
 
+const getBaseState = () => window.SugarCube.State.variables;
+
 export default {
   getDiffer: () => getDifferBase(),
   detect: () => matchesSChema(window.SugarCube, SugarCubeSchema),
-  getState: () => window.SugarCube.State.variables,
+  getState: () => getBaseState(),
   getPassage: () => window.SugarCube.State.passage,
-  setState: (path, value) => setState(window.SugarCube.State.variables, path, value),
-  deleteFromState: (path) => deleteFromState(window.SugarCube.State.variables, path),
+  setState: (path, value) => setState(getBaseState(), path, value),
+  duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
+    duplicateStateProperty(getBaseState(), parentPath, sourceKey, targetKey),
+  deleteFromState: (path) => deleteFromState(getBaseState(), path),
 } satisfies FormatHelpers;

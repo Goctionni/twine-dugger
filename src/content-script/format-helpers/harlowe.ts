@@ -1,6 +1,6 @@
 import { getDiffer as getDifferBase } from '../util/differ';
 import { FormatHelpers } from './type';
-import { setState, deleteFromState } from './shared';
+import { setState, deleteFromState, duplicateStateProperty } from './shared';
 import { z } from 'zod';
 import { isObj, matchesSChema } from '../util/type-helpers';
 import { ObjectValue, Value } from '@/shared/shared-types';
@@ -44,6 +44,8 @@ export default {
   getState: () => sanitize(getBaseState()),
   getDiffer: () => getDifferBase(ignoreCheck),
   setState: (path, value) => setState(getBaseState(), path, value),
+  duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
+    duplicateStateProperty(getBaseState(), parentPath, sourceKey, targetKey),
   deleteFromState: (path) => deleteFromState(getBaseState(), path),
   getPassage: () => window.Harlowe.API_ACCESS.STATE.passage,
 } satisfies FormatHelpers;

@@ -21,6 +21,7 @@ export function ContextMenuUI() {
     return new Set<MappepRegistration>(
       registrations.map((registration) => {
         const handler = (event: MouseEvent) => {
+          if (event.ctrlKey) return;
           setEvent({ event, registration });
           event.stopPropagation();
           event.preventDefault();
@@ -60,12 +61,13 @@ export function ContextMenuUI() {
           ></div>
           <div
             style={{ top: `${getEvent()?.event.y}px`, left: `${getEvent()?.event.x}px` }}
-            class="fixed bg-gray-800 text-white rounded shadow-lg z-50 p-2"
+            class="fixed flex flex-col items-stretch bg-gray-800 text-white rounded shadow-lg z-50 p-2"
             onContextMenu={(e) => e.preventDefault()}
           >
             {getEvent()?.registration.items.map((item) => (
-              <div
-                class="px-4 py-2 hover:bg-gray-600 cursor-pointer"
+              <button
+                class="px-4 py-2 hover:bg-gray-600 cursor-pointer text-left"
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   item.onClick();
@@ -73,7 +75,7 @@ export function ContextMenuUI() {
                 }}
               >
                 {item.label}
-              </div>
+              </button>
             ))}
           </div>
         </div>

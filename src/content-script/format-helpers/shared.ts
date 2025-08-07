@@ -1,4 +1,4 @@
-import { ArrayValue, MapValue, ObjectValue, Value } from '@/shared/shared-types';
+import { ArrayValue, MapValue, ObjectValue, Path, Value } from '@/shared/shared-types';
 import { isObj } from '../util/type-helpers';
 
 type StateObj = ObjectValue | MapValue | ArrayValue;
@@ -25,6 +25,37 @@ export function getStateValue(
   }
 
   return stateObj;
+}
+
+export function duplicateStateProperty(
+  stateRoot: ObjectValue | MapValue | ArrayValue,
+  parentPath: Path,
+  sourceKey: string | number,
+  targetKey?: string,
+) {
+  const parentObj = getStateValue(stateRoot, parentPath);
+  if (!isObj(parentObj)) {
+    console.error(`[Twine Dugger]: Could not resolve path`, { path: [...parentPath, sourceKey] });
+    return;
+  }
+  // Array
+  if (Array.isArray(parentObj)) {
+    const value = parentObj[Number(sourceKey)];
+    parentObj.push(structuredClone(value));
+    return;
+  }
+  if (!targetKey) {
+    console.error('[Twine Dugger]: Duplicate State Property called without targetKey');
+    return;
+  }
+  // Map
+  if (parentObj instanceof Map) {
+    const value = parentObj.get(`${sourceKey}`);
+    parentObj.set(`${targetKey}`, structuredClone(value));
+    return;
+  }
+  // Normal object
+  parentObj[`${targetKey}`] = structuredClone(parentObj[`${sourceKey}`]);
 }
 
 export function setState(
