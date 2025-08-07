@@ -1,11 +1,10 @@
-import { createEffect, createSignal, onCleanup } from 'solid-js';
+import { Accessor, createEffect, createSignal, onCleanup } from 'solid-js';
 import { DiffFrame } from '@/shared/shared-types';
 import { getDiffs } from '../utils/api';
 import { getDiffLogPollingInterval } from '../stores/settingsStore';
 
-export function trackDiffFrames(kill: () => void) {
+export function trackDiffFrames(kill: () => void): [Accessor<DiffFrame[]>, () => void] {
   const [diffFrames, setDiffFrames] = createSignal<DiffFrame[]>([]);
-
   let interval = 0;
 
   createEffect(() => {
@@ -23,7 +22,10 @@ export function trackDiffFrames(kill: () => void) {
             if (!lastFrame) return;
             if (passage === lastFrame.passage) return;
           }
-          setDiffFrames([{ timestamp: date, passage, changes: diffs }, ...diffFrames()]);
+          setDiffFrames([
+            { timestamp: date, passage, changes: diffs },
+            ...diffFrames().slice(0, 50),
+          ]);
         })
         .catch((error) => {
           if (Error.isError(error) && error.message.includes('Extension context invalidated')) {
@@ -38,5 +40,5 @@ export function trackDiffFrames(kill: () => void) {
 
   onCleanup(() => clearInterval(interval));
 
-  return diffFrames;
+  return [diffFrames, () => setDiffFrames([])];
 }
