@@ -4,6 +4,7 @@ import { Dialog } from './Dialog';
 
 interface Store {
   prompt?: {
+    dialogTitle: string;
     content: JSXElement;
     reject: () => void;
   };
@@ -13,7 +14,7 @@ const [store, setStore] = createStore<Store>({});
 
 type PromptResolver<T> = (createResolver: (result: T) => void) => JSXElement;
 
-export function showPromptDialog<T>(resolver: PromptResolver<T>) {
+export function showPromptDialog<T>(dialogTitle: string, resolver: PromptResolver<T>) {
   return new Promise<T>((resolvePromise, rejectPromise) => {
     const resolve = (result: T) => {
       resolvePromise(result);
@@ -23,14 +24,19 @@ export function showPromptDialog<T>(resolver: PromptResolver<T>) {
       rejectPromise();
       setStore({ prompt: undefined });
     };
-    setStore({ prompt: { content: resolver(resolve), reject } });
+    setStore({ prompt: { dialogTitle, content: resolver(resolve), reject } });
   });
 }
 
 export function PromptDialogOutlet() {
   return (
     <Show when={store.prompt}>
-      <Dialog onClose={store.prompt!.reject} open closedby="any">
+      <Dialog
+        onClose={store.prompt!.reject}
+        open
+        closedby="any"
+        heading={store.prompt!.dialogTitle}
+      >
         {store.prompt!.content}
       </Dialog>
     </Show>

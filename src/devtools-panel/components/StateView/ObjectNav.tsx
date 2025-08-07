@@ -25,7 +25,7 @@ export function ObjectNav(props: Props) {
     }
 
     // For Objects/Maps, we need a name for the duplicated property
-    const newPropertyKey = await showPromptDialog<string>((resolve) => (
+    const newPropertyKey = await showPromptDialog<string>('Name for property', (resolve) => (
       <DuplicateKeyDialog onConfirm={resolve} />
     ));
 
