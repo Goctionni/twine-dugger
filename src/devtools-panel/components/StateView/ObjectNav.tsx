@@ -1,68 +1,92 @@
-import { For, Show } from 'solid-js';
+import { createSignal, For } from 'solid-js';
 import { PathChunk } from './types';
 import { TypeIcon } from './TypeIcon';
 import clsx from 'clsx';
+import { useContextMenu } from '../ContextMenu/useContextMenu';
+import { Path } from '@/shared/shared-types';
+import { duplicateStateProperty } from '@/devtools-panel/utils/api';
+import { showPromptDialog } from '../Common/PromptProvider';
+import { DuplicateKeyDialog } from './DuplicateKeyDialog';
 
 interface Props {
   chunk: PathChunk;
   selectedProperty?: string | number;
-  dataPropertyPath: (string | number)[];
-  duplicatingProperty: string | null;
-  duplicateName: string;
-  setDuplicateName: (value: string) => void;
-  onDuplicateSave: () => void;
   onClick: (childKey: string | number) => void;
+  onDeleteProperty: (path: Path) => void;
 }
 
-const buttonClasses =
-  'py-1 cursor-pointer border border-transparent shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-500';
-
 export function ObjectNav(props: Props) {
+  const onDuplicate = async (property: string | number) => {
+    const object = props.chunk.getValue();
+    if (Array.isArray(object)) {
+      // For arrays, the duplicated value is added to the end of the array
+      duplicateStateProperty(props.chunk.path, property);
+      return;
+    }
+
+    // For Objects/Maps, we need a name for the duplicated property
+    const newPropertyKey = await showPromptDialog<string>((resolve) => (
+      <DuplicateKeyDialog onConfirm={resolve} />
+    ));
+
+    if (newPropertyKey && typeof newPropertyKey === 'string') {
+      duplicateStateProperty(props.chunk.path, property, newPropertyKey);
+    }
+  };
   return (
-    <div class="min-w-[200px] flex flex-col h-full px-2 border-r border-r-gray-700">
+    <div class="w-max max-w-3xs flex flex-col h-full px-2 border-r border-r-gray-700">
       <p class="text-lg">{props.chunk.name}</p>
       <ul class="flex flex-1 flex-col overflow-auto">
         <For each={props.chunk.childKeys}>
           {(child) => (
-            <>
-              <li>
-                <a
-                  data-property={child.text}
-                  on:click={() => props.onClick(child.text)}
-                  class={clsx(
-                    'flex items-center gap-1 p-1 cursor-pointer rounded-md',
-                    child.text === props.selectedProperty
-                      ? 'outline-gray-300 outline-2 -outline-offset-2'
-                      : 'outline-transparent hover:bg-gray-700',
-                  )}
-                >
-                  <TypeIcon type={child.type} />
-                  <span class="flex-1 overflow-hidden overflow-ellipsis">{child.text}</span>
-                </a>
-              </li>
-              <Show when={props.duplicatingProperty === child.text}>
-                <li class="flex items-center gap-2 px-2 py-1">
-                  <input
-                    class="border rounded px-2 py-1 text-sm bg-gray-800 text-white flex-1"
-                    value={props.duplicateName}
-                    onInput={(e) => props.setDuplicateName(e.currentTarget.value)}
-                  />
-                  <button
-                    type="button"
-                    onClick={props.onDuplicateSave}
-                    class={clsx(
-                      buttonClasses,
-                      'text-white px-4 rounded-md bg-sky-600 hover:bg-sky-700 focus:ring-sky-500 whitespace-nowrap',
-                    )}
-                  >
-                    Save
-                  </button>
-                </li>
-              </Show>
-            </>
+            <NavItem
+              child={child}
+              active={child.text === props.selectedProperty}
+              onClick={() => props.onClick(child.text)}
+              onDelete={() => props.onDeleteProperty([...props.chunk.path, child.text])}
+              onDuplicate={() => onDuplicate(child.text)}
+            />
           )}
         </For>
       </ul>
     </div>
+  );
+}
+
+interface NavItemProps {
+  child: PathChunk['childKeys'][number];
+  active: boolean;
+  onClick: () => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
+}
+
+function NavItem(props: NavItemProps) {
+  const elRef = useContextMenu([
+    {
+      label: `Duplicate "${props.child.text}"`,
+      onClick: () => props.onDuplicate(),
+    },
+    {
+      label: `Delete "${props.child.text}"`,
+      onClick: () => props.onDelete(),
+    },
+  ]);
+
+  return (
+    <li ref={elRef}>
+      <a
+        onClick={props.onClick}
+        class={clsx(
+          'flex items-center gap-1 p-1 cursor-pointer rounded-md',
+          props.active
+            ? 'outline-gray-300 outline-2 -outline-offset-2'
+            : 'outline-transparent hover:bg-gray-700',
+        )}
+      >
+        <TypeIcon type={props.child.type} />
+        <span class="flex-1 overflow-hidden overflow-ellipsis">{props.child.text}</span>
+      </a>
+    </li>
   );
 }

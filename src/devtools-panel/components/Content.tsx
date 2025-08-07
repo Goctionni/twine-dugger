@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function Content(props: Props) {
-  const diffFrames = trackDiffFrames(props.kill);
+  const [diffFrames, clearDiffFrames] = trackDiffFrames(props.kill);
   const {
     getNavLayers,
     getPath,
@@ -21,12 +21,12 @@ export function Content(props: Props) {
     setViewValue,
     setViewPropertyValue,
     setHistoryId,
-    deleteViewPropertyValue
+    deleteProperty,
   } = watchState(diffFrames);
 
   return (
     <MovableSplit
-      leftContent={<DiffLog frames={diffFrames()} setPath={setPath} />}
+      leftContent={<DiffLog frames={diffFrames()} setPath={setPath} onClear={clearDiffFrames} />}
       rightContent={
         <>
           <HistoryNav historyItems={getHistoryItems()} setHistoryId={setHistoryId} />
@@ -38,7 +38,7 @@ export function Content(props: Props) {
             readonly={getReadOnly()}
             setViewValue={setViewValue}
             setViewPropertyValue={setViewPropertyValue}
-            deleteViewPropertyValue={deleteViewPropertyValue}
+            onDeleteProperty={deleteProperty}
           />
         </>
       }

@@ -37,6 +37,9 @@ function init() {
     deleteFromState: (path) => {
       return formatHelper.deleteFromState(path);
     },
+    duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
+      return formatHelper.duplicateStateProperty(parentPath, sourceKey, targetKey);
+    },
   };
 }
 

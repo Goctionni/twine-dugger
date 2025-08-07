@@ -1,48 +1,19 @@
-import { ArrayValue, MapValue, ObjectValue, Value } from '@/shared/shared-types';
+import { ArrayValue, MapValue, ObjectValue, Path, Value } from '@/shared/shared-types';
+import { isObj } from '../util/type-helpers';
 
-export function setState(stateRoot: ObjectValue | MapValue | ArrayValue, path: Array<string | number>, value: unknown) {
-  type StateObj = ObjectValue | MapValue | ArrayValue;
-  let stateObj: StateObj = stateRoot;
+type StateObj = ObjectValue | MapValue | ArrayValue;
 
+export function getStateValue(
+  stateRoot: ObjectValue | MapValue | ArrayValue,
+  path: Array<string | number>,
+) {
+  let stateObj: Value = stateRoot;
   for (let i = 0; i < path.length; i++) {
-    const key = path[i];
-    const isLast = i + 1 === path.length;
-
-    if (Array.isArray(stateObj)) {
-      if (!isLast) {
-        stateObj = stateObj[Number(key)] as StateObj;
-      } else {
-        stateObj[Number(key)] = value as Value;
-      }
-    } else if (stateObj instanceof Map) {
-      if (!isLast) {
-        stateObj = stateObj.get(`${key}`) as StateObj;
-      } else {
-        stateObj.set(`${key}`, value as Value);
-      }
-    } else {
-      if (!isLast) {
-        stateObj = stateObj[`${key}`] as StateObj;
-      } else {
-        stateObj[`${key}`] = value as Value;
-      }
+    if (!isObj(stateObj)) {
+      console.error(`[Twine Dugger]: Could not resolve path`, { path });
+      return null;
     }
 
-    if (!stateObj || typeof stateObj !== 'object') {
-      console.error(`[Twine Dugger]: Tried to set state, but could not resolve path`, {
-        path,
-        value,
-      });
-      return;
-    }
-  }
-}
-
-export function deleteFromState(stateRoot: ObjectValue | MapValue | ArrayValue, path: Array<string | number>) {
-  type StateObj = ObjectValue | MapValue | ArrayValue;
-  let stateObj: StateObj = stateRoot;
-
-  for (let i = 0; i < path.length - 1; i++) {
     const key = path[i];
     if (Array.isArray(stateObj)) {
       stateObj = stateObj[Number(key)] as StateObj;
@@ -51,55 +22,77 @@ export function deleteFromState(stateRoot: ObjectValue | MapValue | ArrayValue, 
     } else {
       stateObj = stateObj[`${key}`] as StateObj;
     }
-
-    console.log("cdddddd");
-
-    if (!stateObj || typeof stateObj !== 'object') {
-      console.error(`[Twine Dugger]: Could not resolve path to delete`, {
-        path,
-      });
-      return;
-    }
   }
 
-  const finalKey = path[path.length - 1];
+  return stateObj;
+}
+
+export function duplicateStateProperty(
+  stateRoot: ObjectValue | MapValue | ArrayValue,
+  parentPath: Path,
+  sourceKey: string | number,
+  targetKey?: string,
+) {
+  const parentObj = getStateValue(stateRoot, parentPath);
+  if (!isObj(parentObj)) {
+    console.error(`[Twine Dugger]: Could not resolve path`, { path: [...parentPath, sourceKey] });
+    return;
+  }
+  // Array
+  if (Array.isArray(parentObj)) {
+    const value = parentObj[Number(sourceKey)];
+    parentObj.push(structuredClone(value));
+    return;
+  }
+  if (!targetKey) {
+    console.error('[Twine Dugger]: Duplicate State Property called without targetKey');
+    return;
+  }
+  // Map
+  if (parentObj instanceof Map) {
+    const value = parentObj.get(`${sourceKey}`);
+    parentObj.set(`${targetKey}`, structuredClone(value));
+    return;
+  }
+  // Normal object
+  parentObj[`${targetKey}`] = structuredClone(parentObj[`${sourceKey}`]);
+}
+
+export function setState(
+  stateRoot: ObjectValue | MapValue | ArrayValue,
+  path: Array<string | number>,
+  value: unknown,
+) {
+  const objPath = path.slice(0, -1);
+  const valueKey = path.at(-1)!;
+  const stateObj = getStateValue(stateRoot, objPath) as StateObj;
 
   if (Array.isArray(stateObj)) {
-    stateObj.splice(Number(finalKey), 1);
+    stateObj[Number(valueKey)] = value as Value;
   } else if (stateObj instanceof Map) {
-    stateObj.delete(`${finalKey}`);
+    stateObj.set(`${valueKey}`, value as Value);
+  } else {
+    stateObj[`${valueKey}`] = value as Value;
+  }
+}
+
+export function deleteFromState(
+  stateRoot: ObjectValue | MapValue | ArrayValue,
+  path: Array<string | number>,
+) {
+  const objPath = path.slice(0, -1);
+  const valueKey = path.at(-1)!;
+  const stateObj = getStateValue(stateRoot, objPath) as StateObj;
+
+  if (Array.isArray(stateObj)) {
+    stateObj.splice(Number(valueKey), 1);
+  } else if (stateObj instanceof Map) {
+    stateObj.delete(`${valueKey}`);
   } else if (typeof stateObj === 'object' && stateObj !== null) {
-    delete stateObj[`${finalKey}`];
+    delete stateObj[`${valueKey}`];
   } else {
     console.error(`[Twine Dugger]: Could not delete at path`, {
       path,
     });
   }
-}
-
-export function sanitize(obj: ObjectValue) {
-  const result: ObjectValue = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (key.startsWith('TwineScript_')) continue;
-    if (
-      value &&
-      typeof value === 'object' &&
-      Object.keys(value).some((subkey) => subkey.startsWith('TwineScript_'))
-    )
-      continue;
-    result[key] = value;
-  }
-  return result;
-}
-
-export function ignoreCheck(key: unknown, value: Value) {
-  if (typeof key === 'string' && key.startsWith('TwineScript_')) return true;
-  if (
-    value &&
-    typeof value === 'object' &&
-    Object.keys(value).some((key) => key.startsWith('TwineScript_'))
-  ) {
-    return true;
-  }
-  return false;
 }

@@ -2,6 +2,7 @@
   "name": "twine-dugger",
   "version": "0.0.0",
   "description": "",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "tsdown",
@@ -9,7 +10,12 @@
     "prettier:fix": "prettier . -w",
     "type-check": "tsc --noEmit"
   },
-  "license": "MIT",
+  "dependencies": {
+    "clsx": "2.1.1",
+    "solid-js": "1.9.6",
+    "tailwindcss": "4.1.6",
+    "zod": "4.0.15"
+  },
   "devDependencies": {
     "@microsoft/api-extractor": "7.52.7",
     "@tailwindcss/postcss": "4.1.8",
@@ -17,16 +23,11 @@
     "@types/node": "22.15.17",
     "postcss": "8.5.3",
     "prettier": "3.5.3",
-    "prettier-plugin-package": "1.4.0",
+    "prettier-plugin-package": "2.0.0",
     "rollup-plugin-postcss": "4.0.2",
     "ts-node": "10.9.2",
     "tsdown": "^0.12.5",
     "typescript": "5.8.3",
     "vite-plugin-solid": "2.11.6"
-  },
-  "dependencies": {
-    "clsx": "2.1.1",
-    "solid-js": "1.9.6",
-    "tailwindcss": "4.1.6"
   }
 }
