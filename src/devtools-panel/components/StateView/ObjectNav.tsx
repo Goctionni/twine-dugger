@@ -4,7 +4,7 @@ import { TypeIcon } from './TypeIcon';
 import clsx from 'clsx';
 import { useContextMenu } from '../ContextMenu/useContextMenu';
 import { Path } from '@/shared/shared-types';
-import { duplicateStateProperty } from '@/devtools-panel/utils/api';
+import { duplicateStateProperty } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
 import { DuplicateKeyDialog } from './DuplicateKeyDialog';
 
