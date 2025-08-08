@@ -1,29 +1,19 @@
-import { For, onMount, onCleanup } from 'solid-js';
+import { For } from 'solid-js';
 import { DiffFrame } from './DiffLog/DiffFrame';
 import type { DiffFrame as IDiffFrame, Path } from '@/shared/shared-types';
-import { useContextMenu } from '@/devtools-panel/components/ContextMenuProvider/ContextMenu';
+import { useContextMenu } from './ContextMenu/useContextMenu';
 
 interface Props {
   frames: IDiffFrame[];
   setPath: (path: Path) => void;
+  onClear: () => void;
 }
 
 export function DiffLog(props: Props) {
-  const { registerContextHandler } = useContextMenu();
-  let containerRef: HTMLDivElement | undefined;
-
-  onMount(() => {
-    const unregister = registerContextHandler((e) => {
-      if (!containerRef?.contains(e.target as Node)) return null;
-      return [
-        { label: 'DiffLog Option', onClick: () => console.log('DiffLog clicked') },
-      ];
-    });
-
-    onCleanup(() => unregister());
-  });
+  const containerRef = useContextMenu([{ label: 'Clear Diff Log', onClick: props.onClear }]);
 
   const frames = () => props.frames.slice(0, 30);
+
   return (
     <div ref={containerRef} class="p-4 flex flex-col h-full">
       <h2 class="text-lg font-semibold mb-2 text-gray-200">Diff Log</h2>

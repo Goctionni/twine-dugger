@@ -1,6 +1,7 @@
 import { jsonReviver } from '@/shared/json-helper';
 import { executeCode, injectContentScript } from './remote-execute';
 import { getGameMetaFn } from './remote-functions/getMetaData';
+import { Path } from '@/shared/shared-types';
 
 export async function getGameMetaData() {
   return executeCode(getGameMetaFn);
@@ -38,6 +39,28 @@ export async function setState(path: Array<string | number>, value: unknown) {
     {
       requires: ['content-script.js'],
       args: [path, value],
+    },
+  );
+}
+
+export async function duplicateStateProperty(
+  parentPath: Path,
+  sourceKey: string | number,
+  targetKey?: string,
+) {
+  await injectContentScript();
+  return executeCode(
+    (parentPath, sourceKey, targetKey) => {
+      if (!('TwineDugger' in window)) return;
+      return window.TwineDugger.duplicateStateProperty(
+        parentPath,
+        sourceKey as string | number,
+        targetKey as string | undefined,
+      );
+    },
+    {
+      requires: ['content-script.js'],
+      args: [parentPath, sourceKey, targetKey],
     },
   );
 }
