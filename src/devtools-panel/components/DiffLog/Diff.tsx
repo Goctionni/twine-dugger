@@ -143,11 +143,19 @@ function DiffRecordChanged(props: DiffChangeProps<DiffObjectMapChange>) {
     }
   }
 
+  const onClick = () => {
+    if (props.diff.subtype === 'add') {
+      props.setPath([...props.diff.path, props.diff.key]);
+    } else {
+      props.setPath(props.diff.path);
+    }
+  };
+
   return (
     <div>
       <RenderPath 
         path={props.diff.path} 
-        onClick={() => props.setPath(props.diff.path)} 
+        onClick={() => onClick} 
         onAddFilter={props.onAddFilter}
       />
       {getChange(props.diff)}
