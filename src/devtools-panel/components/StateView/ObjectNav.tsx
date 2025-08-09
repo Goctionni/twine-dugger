@@ -90,10 +90,12 @@ function NavItem(props: NavItemProps) {
     {
       label: `Duplicate "${props.child.text}"`,
       onClick: () => props.onDuplicate(),
+      disabled: () => props.lockStatus === 'ancestor-lock',
     },
     {
       label: `Delete "${props.child.text}"`,
       onClick: () => props.onDelete(),
+      disabled: () => props.lockStatus !== 'unlocked',
     },
   ]);
 

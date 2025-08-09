@@ -2,7 +2,6 @@ import { Portal } from 'solid-js/web';
 import { useContextMenuRegistrations } from './useContextMenu';
 import { createEffect, createMemo, createSignal, onCleanup, Show } from 'solid-js';
 import { ContextMenuRegistration } from './types';
-import clsx from 'clsx';
 
 interface MappepRegistration extends ContextMenuRegistration {
   onAdded: () => void;
