@@ -31,7 +31,7 @@ export function duplicateStateProperty(
   stateRoot: ObjectValue | MapValue | ArrayValue,
   parentPath: Path,
   sourceKey: string | number,
-  targetKey?: string,
+  targetKey?: string | null,
 ) {
   const parentObj = getStateValue(stateRoot, parentPath);
   if (!isObj(parentObj)) {

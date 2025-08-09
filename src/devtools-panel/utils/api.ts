@@ -18,29 +18,25 @@ export async function getState() {
   });
 }
 
-export async function getDiffs() {
+export async function getUpdates() {
   await injectContentScript();
   return executeCode(() => {
     if (!('TwineDugger' in window)) return null;
-    return JSON.stringify(window.TwineDugger.getDiffs(), window.TwineDugger.utils.jsonReplacer);
+    return JSON.stringify(window.TwineDugger.getUpdates(), window.TwineDugger.utils.jsonReplacer);
   }).then((jsonStr) => {
     if (typeof jsonStr !== 'string') return jsonStr;
-    return JSON.parse(jsonStr, jsonReviver) as ReturnType<Window['TwineDugger']['getDiffs']>;
+    return JSON.parse(jsonStr, jsonReviver) as ReturnType<Window['TwineDugger']['getUpdates']>;
   });
 }
 
 export async function setState(path: Array<string | number>, value: unknown) {
   await injectContentScript();
-  return executeCode(
-    (path, value) => {
-      if (!('TwineDugger' in window)) return;
-      return window.TwineDugger.setState(path as Array<string | number>, value);
-    },
-    {
-      requires: ['content-script.js'],
-      args: [path, value],
-    },
-  );
+  return execDuggerFunction('setState', [path, value]);
+}
+
+export async function setStatePropertyLock(path: Path, lock: boolean) {
+  await injectContentScript();
+  return execDuggerFunction('setStatePropertyLock', [path, lock]);
 }
 
 export async function duplicateStateProperty(
@@ -49,32 +45,28 @@ export async function duplicateStateProperty(
   targetKey?: string,
 ) {
   await injectContentScript();
-  return executeCode(
-    (parentPath, sourceKey, targetKey) => {
-      if (!('TwineDugger' in window)) return;
-      return window.TwineDugger.duplicateStateProperty(
-        parentPath,
-        sourceKey as string | number,
-        targetKey as string | undefined,
-      );
-    },
-    {
-      requires: ['content-script.js'],
-      args: [parentPath, sourceKey, targetKey ?? null],
-    },
-  );
+  return execDuggerFunction('duplicateStateProperty', [parentPath, sourceKey, targetKey ?? null]);
 }
 
 export async function deleteFromState(path: Array<string | number>) {
   await injectContentScript();
+  return execDuggerFunction('deleteFromState', [path]);
+}
+
+type DuggerFunctionNames = Exclude<keyof Window['TwineDugger'], 'utils'>;
+function execDuggerFunction<T extends DuggerFunctionNames>(
+  fn: T,
+  args: Parameters<Window['TwineDugger'][T]>,
+): Promise<ReturnType<Window['TwineDugger'][T]>> {
   return executeCode(
-    (path) => {
+    (functionName, ...rest) => {
       if (!('TwineDugger' in window)) return;
-      return window.TwineDugger.deleteFromState(path as Array<string | number>);
+      const fn = window.TwineDugger[functionName as T] as Function;
+      return fn(...rest);
     },
     {
       requires: ['content-script.js'],
-      args: [path],
+      args: [fn, ...args],
     },
   );
 }

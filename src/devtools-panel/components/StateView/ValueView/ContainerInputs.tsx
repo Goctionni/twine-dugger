@@ -1,10 +1,15 @@
-import { ArrayValue, MapValue, ObjectValue, Value } from '@/shared/shared-types';
+import { ArrayValue, MapValue, ObjectValue, Path, Value } from '@/shared/shared-types';
 import { Index, Match, Show, Switch } from 'solid-js';
 import { TypeIcon } from '../TypeIcon';
 import { BooleanInput, NumberInput, StringInput } from './PrimitiveInputs';
 import { getSpecificType } from '@/shared/type-helpers';
+import { getLockStatus } from '@/devtools-panel/utils/is-locked';
 
 interface ObjectInputProps {
+  getLockedPaths: () => Path[];
+  addLockPath: (path: Path) => void;
+  removeLockPath: (path: Path) => void;
+  path: Path;
   value: ObjectValue;
   editable?: boolean;
   onChange: (keyOrIndex: string, newValue: Value) => void;
@@ -14,6 +19,10 @@ export function ObjectInput(props: ObjectInputProps) {
   const keys = () => Object.keys(props.value).sort();
   return (
     <ContainerInput
+      path={props.path}
+      addLockPath={props.addLockPath}
+      removeLockPath={props.removeLockPath}
+      getLockedPaths={props.getLockedPaths}
       keys={keys()}
       editable={props.editable}
       getKeyValue={(key) => props.value[key]}
@@ -23,6 +32,10 @@ export function ObjectInput(props: ObjectInputProps) {
 }
 
 interface MapInputProps {
+  getLockedPaths: () => Path[];
+  addLockPath: (path: Path) => void;
+  removeLockPath: (path: Path) => void;
+  path: Path;
   value: MapValue;
   editable?: boolean;
   onChange: (keyOrIndex: string, newValue: Value) => void;
@@ -32,6 +45,10 @@ export function MapInput(props: MapInputProps) {
   const keys = () => [...props.value.keys()].sort();
   return (
     <ContainerInput
+      path={props.path}
+      addLockPath={props.addLockPath}
+      removeLockPath={props.removeLockPath}
+      getLockedPaths={props.getLockedPaths}
       keys={keys()}
       editable={props.editable}
       getKeyValue={(key) => props.value.get(key)}
@@ -41,6 +58,10 @@ export function MapInput(props: MapInputProps) {
 }
 
 interface ArrayInputProps {
+  getLockedPaths: () => Path[];
+  addLockPath: (path: Path) => void;
+  removeLockPath: (path: Path) => void;
+  path: Path;
   value: ArrayValue;
   editable?: boolean;
   onChange: (keyOrIndex: number, newValue: Value) => void;
@@ -50,6 +71,10 @@ export function ArrayInput(props: ArrayInputProps) {
   const keys = () => [...props.value.keys()].sort();
   return (
     <ContainerInput
+      path={props.path}
+      addLockPath={props.addLockPath}
+      removeLockPath={props.removeLockPath}
+      getLockedPaths={props.getLockedPaths}
       keys={keys()}
       editable={props.editable}
       getKeyValue={(key) => props.value[key]}
@@ -59,6 +84,10 @@ export function ArrayInput(props: ArrayInputProps) {
 }
 
 interface ContainerInputProps<TKey extends string | number> {
+  getLockedPaths: () => Path[];
+  addLockPath: (path: Path) => void;
+  removeLockPath: (path: Path) => void;
+  path: Path;
   keys: TKey[];
   editable?: boolean;
   getKeyValue: (key: TKey) => Value;
@@ -72,6 +101,14 @@ export function ContainerInput<TKey extends string | number>(props: ContainerInp
         {(key) => {
           const value = () => props.getKeyValue(key());
           const type = () => getSpecificType(value());
+          const getPath = () => [...props.path, key()];
+          const toggleLock = () => {
+            if (getLockStatus(getPath, props.getLockedPaths) === 'locked')
+              props.removeLockPath(getPath());
+            if (getLockStatus(getPath, props.getLockedPaths) === 'unlocked')
+              props.addLockPath(getPath());
+          };
+
           return (
             <Show when={['string', 'number', 'boolean'].includes(type())}>
               <TypeIcon type={type()} />
@@ -83,6 +120,8 @@ export function ContainerInput<TKey extends string | number>(props: ContainerInp
                       value={value() as string}
                       editable={props.editable}
                       onChange={(newValue) => props.onChange?.(key(), newValue)}
+                      lockStatus={getLockStatus(getPath, props.getLockedPaths)}
+                      toggleLock={toggleLock}
                     />
                   </Match>
                   <Match when={type() === 'number'}>
@@ -90,6 +129,8 @@ export function ContainerInput<TKey extends string | number>(props: ContainerInp
                       value={value() as number}
                       editable={props.editable}
                       onChange={(newValue) => props.onChange?.(key(), newValue)}
+                      lockStatus={getLockStatus(getPath, props.getLockedPaths)}
+                      toggleLock={toggleLock}
                     />
                   </Match>
                   <Match when={type() === 'boolean'}>
@@ -97,6 +138,8 @@ export function ContainerInput<TKey extends string | number>(props: ContainerInp
                       value={value() as boolean}
                       editable={props.editable}
                       onChange={(newValue) => props.onChange?.(key(), newValue)}
+                      lockStatus={getLockStatus(getPath, props.getLockedPaths)}
+                      toggleLock={toggleLock}
                     />
                   </Match>
                 </Switch>

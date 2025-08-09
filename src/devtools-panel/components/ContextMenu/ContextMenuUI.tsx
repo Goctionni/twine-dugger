@@ -2,6 +2,7 @@ import { Portal } from 'solid-js/web';
 import { useContextMenuRegistrations } from './useContextMenu';
 import { createEffect, createMemo, createSignal, onCleanup, Show } from 'solid-js';
 import { ContextMenuRegistration } from './types';
+import clsx from 'clsx';
 
 interface MappepRegistration extends ContextMenuRegistration {
   onAdded: () => void;
@@ -66,15 +67,19 @@ export function ContextMenuUI() {
           >
             {getEvent()?.registration.items.map((item) => (
               <button
-                class="px-4 py-2 hover:bg-gray-600 cursor-pointer text-left"
+                class="
+                  px-4 py-2 hover:bg-gray-600 cursor-pointer text-left
+                  disabled:text-slate-400 disabled:hover:bg-transparent disabled:cursor-default
+                "
                 type="button"
+                disabled={typeof item.disabled === 'function' ? item.disabled() : item.disabled}
                 onClick={(e) => {
                   e.stopPropagation();
                   item.onClick();
                   setEvent(null);
                 }}
               >
-                {item.label}
+                {typeof item.label === 'function' ? item.label() : item.label}
               </button>
             ))}
           </div>

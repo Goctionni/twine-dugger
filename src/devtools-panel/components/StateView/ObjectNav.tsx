@@ -1,18 +1,22 @@
-import { createSignal, For } from 'solid-js';
+import { createEffect, For } from 'solid-js';
 import { PathChunk } from './types';
 import { TypeIcon } from './TypeIcon';
 import clsx from 'clsx';
 import { useContextMenu } from '../ContextMenu/useContextMenu';
-import { Path } from '@/shared/shared-types';
+import { LockStatus, Path } from '@/shared/shared-types';
 import { duplicateStateProperty } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
 import { DuplicateKeyDialog } from './DuplicateKeyDialog';
+import { getLockStatus } from '@/devtools-panel/utils/is-locked';
 
 interface Props {
   chunk: PathChunk;
   selectedProperty?: string | number;
   onClick: (childKey: string | number) => void;
   onDeleteProperty: (path: Path) => void;
+  getLockedPaths: () => Path[];
+  addLockPath: (path: Path) => void;
+  removeLockPath: (path: Path) => void;
 }
 
 export function ObjectNav(props: Props) {
@@ -38,15 +42,24 @@ export function ObjectNav(props: Props) {
       <p class="text-lg">{props.chunk.name}</p>
       <ul class="flex flex-1 flex-col overflow-auto">
         <For each={props.chunk.childKeys}>
-          {(child) => (
-            <NavItem
-              child={child}
-              active={child.text === props.selectedProperty}
-              onClick={() => props.onClick(child.text)}
-              onDelete={() => props.onDeleteProperty([...props.chunk.path, child.text])}
-              onDuplicate={() => onDuplicate(child.text)}
-            />
-          )}
+          {(child) => {
+            const childPath = () => [...props.chunk.path, child.text];
+            const lockStatus = () => getLockStatus(childPath, props.getLockedPaths);
+            return (
+              <NavItem
+                child={child}
+                lockStatus={lockStatus()}
+                setLockState={(lock) => {
+                  if (lock) props.addLockPath(childPath());
+                  else props.removeLockPath(childPath());
+                }}
+                active={child.text === props.selectedProperty}
+                onClick={() => props.onClick(child.text)}
+                onDelete={() => props.onDeleteProperty(childPath())}
+                onDuplicate={() => onDuplicate(child.text)}
+              />
+            );
+          }}
         </For>
       </ul>
     </div>
@@ -59,10 +72,21 @@ interface NavItemProps {
   onClick: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
+  lockStatus: LockStatus;
+  setLockState: (lock: boolean) => void;
 }
 
 function NavItem(props: NavItemProps) {
   const elRef = useContextMenu([
+    {
+      disabled: () => props.lockStatus === 'ancestor-lock',
+      label: () => {
+        return props.lockStatus !== 'locked'
+          ? `Lock "${props.child.text}"`
+          : `Unlock "${props.child.text}"`;
+      },
+      onClick: () => props.setLockState(props.lockStatus === 'unlocked'),
+    },
     {
       label: `Duplicate "${props.child.text}"`,
       onClick: () => props.onDuplicate(),
@@ -72,6 +96,10 @@ function NavItem(props: NavItemProps) {
       onClick: () => props.onDelete(),
     },
   ]);
+
+  createEffect(() => {
+    console.log(props.child, props.lockStatus);
+  });
 
   return (
     <li ref={elRef}>
@@ -85,7 +113,11 @@ function NavItem(props: NavItemProps) {
         )}
       >
         <TypeIcon type={props.child.type} />
-        <span class="flex-1 overflow-hidden overflow-ellipsis">{props.child.text}</span>
+        <span class="flex-1 overflow-hidden overflow-ellipsis">
+          {props.child.text}
+          {props.lockStatus === 'locked' && '🔒'}
+          {props.lockStatus === 'ancestor-lock' && <span class="saturate-0">🔒</span>}
+        </span>
       </a>
     </li>
   );

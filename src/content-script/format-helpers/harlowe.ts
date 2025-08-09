@@ -1,9 +1,10 @@
 import { getDiffer as getDifferBase } from '../util/differ';
 import { FormatHelpers } from './type';
-import { setState, deleteFromState, duplicateStateProperty } from './shared';
+import { setState as setStateBase, deleteFromState, duplicateStateProperty } from './shared';
 import { z } from 'zod';
 import { isObj, matchesSChema } from '../util/type-helpers';
-import { ObjectValue, Value } from '@/shared/shared-types';
+import { ObjectValue, Path, Value } from '@/shared/shared-types';
+import { createPropertyLocker } from './sharedPropertyLocker';
 
 const HarloweSchema = z.object({
   API_ACCESS: z.object({
@@ -38,14 +39,18 @@ function ignoreCheck(key: unknown, value: Value) {
 
 const detect = () => matchesSChema(window.Harlowe, HarloweSchema);
 const getBaseState = () => window.Harlowe.API_ACCESS.STATE.variables;
+const setState = (path: Path, value: unknown) => setStateBase(getBaseState(), path, value);
+const { processDiffs, setPathLock } = createPropertyLocker(getBaseState, setState);
 
 export default {
   detect,
   getState: () => sanitize(getBaseState()),
   getDiffer: () => getDifferBase(ignoreCheck),
-  setState: (path, value) => setState(getBaseState(), path, value),
+  setState,
   duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
     duplicateStateProperty(getBaseState(), parentPath, sourceKey, targetKey),
   deleteFromState: (path) => deleteFromState(getBaseState(), path),
   getPassage: () => window.Harlowe.API_ACCESS.STATE.passage,
+  setStatePropertyLock: setPathLock,
+  processDiffs,
 } satisfies FormatHelpers;
