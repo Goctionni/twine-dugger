@@ -1,4 +1,4 @@
-import { Diff, ObjectValue } from './content-script/util/types';
+import { Diff, ObjectValue, Path, UpdateResult } from '@/shared/shared-types';
 import { JSX } from 'solid-js/types/jsx.d.ts';
 
 declare module 'solid-js/types/jsx.d.ts' {
@@ -66,15 +66,16 @@ declare global {
       };
     };
     TwineDugger: {
-      getDiffs: () => { passage: string; diffs: Diff[] };
+      getUpdates: () => UpdateResult;
       getState: () => { passage: string; state: ObjectValue };
-      setState: (path: Array<string | number>, value: unknown) => void;
-      deleteFromState: (path: Array<string | number>) => void;
+      setState: (path: Path, value: unknown) => void;
+      deleteFromState: (path: Path) => void;
       duplicateStateProperty: (
         parentPath: Path,
         sourceKey: string | number,
-        targetKey?: string,
+        targetKey?: string | null,
       ) => void;
+      setStatePropertyLock: (path: Path, lock: boolean) => Path[];
       utils: {
         jsonReplacer(key: string, value: any): any;
         jsonReviver(key: string, value: any): any;

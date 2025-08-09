@@ -4,6 +4,7 @@ import { ObjectNav } from './ObjectNav';
 import { ValueView } from './ValueView';
 import { Path } from './Path';
 import { Path as TPath, Value } from '@/shared/shared-types';
+import { getLockStatus } from '@/devtools-panel/utils/is-locked';
 
 function pathsMatch(path1: TPath, path2: TPath) {
   if (path1 === path2) return true;
@@ -20,6 +21,9 @@ interface Props {
   setViewValue: (newValue: unknown) => void;
   setViewPropertyValue: (property: string | number, newValue: unknown) => void;
   onDeleteProperty: (path: TPath) => void;
+  getLockedPaths: () => TPath[];
+  addLockPath: (path: TPath) => void;
+  removeLockPath: (path: TPath) => void;
 }
 
 export function StateView(props: Props) {
@@ -37,15 +41,22 @@ export function StateView(props: Props) {
             selectedProperty={props.path[chunk().path.length]}
             onClick={(childKey) => onPropertyClick(chunk(), childKey)}
             onDeleteProperty={props.onDeleteProperty}
+            addLockPath={props.addLockPath}
+            removeLockPath={props.removeLockPath}
+            getLockedPaths={props.getLockedPaths}
           />
         )}
       </Index>
       <ValueView
         value={props.viewValue}
-        path={<Path chunks={props.navLayers.pathChunks} path={props.path} />}
+        pathJsx={<Path chunks={props.navLayers.pathChunks} path={props.path} />}
         editable={!props.readonly}
         onChange={props.setViewValue}
         onPropertyChange={props.setViewPropertyValue}
+        path={props.path}
+        addLockPath={props.addLockPath}
+        removeLockPath={props.removeLockPath}
+        getLockedPaths={props.getLockedPaths}
       />
     </div>
   );

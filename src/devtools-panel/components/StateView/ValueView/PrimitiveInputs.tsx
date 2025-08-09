@@ -1,10 +1,13 @@
+import { LockStatus, Path } from '@/shared/shared-types';
 import clsx from 'clsx';
-import { createEffect, createSignal, Show } from 'solid-js';
+import { createEffect, createSignal, Match, Show, Switch } from 'solid-js';
 
 interface Props<T extends string | number | boolean> {
   id?: string;
   value: T;
   editable?: boolean;
+  lockStatus: LockStatus;
+  toggleLock: () => void;
   onChange?: (newValue: T) => void;
 }
 
@@ -31,19 +34,30 @@ export function StringInput(props: Props<string>) {
         onkeydown={onKeyDown}
         class={clsx(inputClasses, 'rounded-md w-[184px]')}
         readOnly={!props.editable}
+        disabled={props.lockStatus !== 'unlocked'}
         id={props.id}
       />
-      <Show when={props.onChange && props.value !== value() && props.editable}>
+      <Show
+        when={
+          props.onChange &&
+          props.value !== value() &&
+          props.editable &&
+          props.lockStatus === 'unlocked'
+        }
+      >
         <button
           type="button"
           onclick={() => props.onChange?.(value())}
           class={clsx(
             buttonClasses,
-            'text-white px-4 rounded-md bg-sky-600 hover:bg-sky-700 focus:ring-sky-500',
+            'min-w-16 text-white px-4 rounded-md bg-sky-600 hover:bg-sky-700 focus:ring-sky-500',
           )}
         >
           Save
         </button>
+      </Show>
+      <Show when={props.onChange && props.value === value() && props.editable}>
+        <LockUnlockButton lockStatus={props.lockStatus} onClick={props.toggleLock} />
       </Show>
     </div>
   );
@@ -78,6 +92,7 @@ export function NumberInput(props: Props<number>) {
           oninput={(e) => setValue(e.target.valueAsNumber)}
           onkeydown={onKeyDown}
           readOnly={!props.editable}
+          disabled={props.lockStatus !== 'unlocked'}
           id={props.id}
           class={clsx(
             inputClasses,
@@ -97,17 +112,20 @@ export function NumberInput(props: Props<number>) {
           +
         </button>
       </div>
-      <Show when={props.onChange && props.value !== value()}>
+      <Show when={props.onChange && props.value !== value() && props.editable}>
         <button
           type="button"
           onclick={() => props.onChange?.(value())}
           class={clsx(
             buttonClasses,
-            'text-white px-4 rounded-md bg-sky-600 hover:bg-sky-700 focus:ring-sky-500',
+            'min-w-16 text-white px-4 rounded-md bg-sky-600 hover:bg-sky-700 focus:ring-sky-500',
           )}
         >
           Save
         </button>
+      </Show>
+      <Show when={props.onChange && props.value === value() && props.editable}>
+        <LockUnlockButton lockStatus={props.lockStatus} onClick={props.toggleLock} />
       </Show>
     </div>
   );
@@ -130,6 +148,7 @@ export function BooleanInput(props: Props<boolean>) {
           class="hidden peer"
           checked={checked()}
           readOnly={!props.editable}
+          disabled={props.lockStatus !== 'unlocked'}
           onChange={(e) => props.onChange?.(e.target.checked)}
           id={props.id}
         />
@@ -154,7 +173,52 @@ export function BooleanInput(props: Props<boolean>) {
         >
           False
         </label>
+        <Show when={props.onChange && props.editable}>
+          <LockUnlockButton lockStatus={props.lockStatus} onClick={props.toggleLock} />
+        </Show>
       </div>
     </div>
+  );
+}
+
+interface LockUnlockButtonProps {
+  lockStatus: LockStatus;
+  onClick: () => void;
+}
+
+const outlinedButtonClasses =
+  'py-1 cursor-pointer shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-500';
+
+function LockUnlockButton(props: LockUnlockButtonProps) {
+  return (
+    <Switch>
+      <Match when={props.lockStatus === 'locked'}>
+        <button
+          type="button"
+          onclick={props.onClick}
+          class={clsx(
+            outlinedButtonClasses,
+            'min-w-16 text-white px-4 rounded-md -outline-offset-2 outline-2 outline-gray-500 hover:outline-transparent hover:bg-sky-700 focus:ring-sky-500',
+          )}
+        >
+          Unlock
+        </button>
+      </Match>
+      <Match when={props.lockStatus === 'unlocked'}>
+        <button
+          type="button"
+          onclick={props.onClick}
+          class={clsx(
+            outlinedButtonClasses,
+            'min-w-16 text-white px-4 rounded-md -outline-offset-2 outline-2 outline-gray-500 hover:outline-transparent hover:bg-sky-700 focus:ring-sky-500',
+          )}
+        >
+          Lock
+        </button>
+      </Match>
+      <Match when={props.lockStatus === 'ancestor-lock'}>
+        <span class="flex items-center text-slate-300">Ancestor locked</span>
+      </Match>
+    </Switch>
   );
 }

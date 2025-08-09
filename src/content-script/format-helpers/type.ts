@@ -1,4 +1,4 @@
-import { Diff, ObjectValue, Path, Value } from '@/shared/shared-types';
+import { Diff, ObjectValue, Path, ProcessDiffResult, Value } from '@/shared/shared-types';
 
 export interface FormatHelpers {
   detect: () => boolean;
@@ -8,8 +8,10 @@ export interface FormatHelpers {
   duplicateStateProperty: (
     parentPath: Path,
     sourceKey: string | number,
-    targetKey?: string,
+    targetKey?: string | null,
   ) => void;
   deleteFromState: (path: Path) => void;
   getDiffer: () => (clonedOldValue: Value, liveNewValue: Value) => Diff[];
+  processDiffs?: (diffs: Diff[]) => ProcessDiffResult;
+  setStatePropertyLock: (path: Path, lock: boolean) => Path[];
 }
