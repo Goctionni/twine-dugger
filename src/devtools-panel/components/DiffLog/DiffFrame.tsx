@@ -9,6 +9,7 @@ interface Props {
   first?: boolean;
   frame: DiffFrame;
   setPath: (path: Path) => void;
+  onAddFilter: (path: string) => void;
 }
 
 export function DiffFrame(props: Props) {
@@ -27,7 +28,7 @@ export function DiffFrame(props: Props) {
         <RelativeTime date={props.frame.timestamp} />
       </div>
       <For each={props.frame.changes}>
-        {(diff) => <DiffItem diff={diff} setPath={props.setPath} />}
+        {(diff) => <DiffItem diff={diff} setPath={props.setPath} onAddFilter={props.onAddFilter} />}
       </For>
     </div>
   );
