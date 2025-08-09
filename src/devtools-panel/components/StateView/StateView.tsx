@@ -20,6 +20,9 @@ interface Props {
   setViewValue: (newValue: unknown) => void;
   setViewPropertyValue: (property: string | number, newValue: unknown) => void;
   onDeleteProperty: (path: TPath) => void;
+  lockProperty: (path: TPath) => void;
+  unlockProperty: (path: TPath) => void;
+  isLocked: (path: TPath) => boolean;
 }
 
 export function StateView(props: Props) {
@@ -28,6 +31,8 @@ export function StateView(props: Props) {
     const isEqual = pathsMatch(props.path, newPath);
     props.setPath(isEqual ? chunk.path : newPath);
   };
+  const onLockToggleClick = (path: TPath) => 
+    props.isLocked(path) ? props.unlockProperty(path) : props.lockProperty(path);
   return (
     <div class="flex h-full py-1">
       <Index each={props.navLayers.pathChunks}>
@@ -37,6 +42,8 @@ export function StateView(props: Props) {
             selectedProperty={props.path[chunk().path.length]}
             onClick={(childKey) => onPropertyClick(chunk(), childKey)}
             onDeleteProperty={props.onDeleteProperty}
+            onLockToggle={(childPath) => onLockToggleClick(childPath)}
+            isLocked={props.isLocked}
           />
         )}
       </Index>

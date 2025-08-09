@@ -13,6 +13,8 @@ interface Props {
   selectedProperty?: string | number;
   onClick: (childKey: string | number) => void;
   onDeleteProperty: (path: Path) => void;
+  onLockToggle: (path: Path) => void;
+  isLocked: (path: Path) => boolean;
 }
 
 export function ObjectNav(props: Props) {
@@ -45,6 +47,8 @@ export function ObjectNav(props: Props) {
               onClick={() => props.onClick(child.text)}
               onDelete={() => props.onDeleteProperty([...props.chunk.path, child.text])}
               onDuplicate={() => onDuplicate(child.text)}
+              onLockToggle={() => props.onLockToggle([...props.chunk.path, child.text])}
+              locked={props.isLocked([...props.chunk.path, child.text])}
             />
           )}
         </For>
@@ -59,6 +63,8 @@ interface NavItemProps {
   onClick: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
+  onLockToggle: () => void;
+  locked: boolean;
 }
 
 function NavItem(props: NavItemProps) {
@@ -71,6 +77,10 @@ function NavItem(props: NavItemProps) {
       label: `Delete "${props.child.text}"`,
       onClick: () => props.onDelete(),
     },
+    {
+      label: props.locked ? `Unlock "${props.child.text}"` : `Lock "${props.child.text}"`,
+      onClick: props.onLockToggle,
+    },
   ]);
 
   return (
@@ -82,10 +92,12 @@ function NavItem(props: NavItemProps) {
           props.active
             ? 'outline-gray-300 outline-2 -outline-offset-2'
             : 'outline-transparent hover:bg-gray-700',
+          props.locked && 'bg-red-800/50'
         )}
       >
         <TypeIcon type={props.child.type} />
         <span class="flex-1 overflow-hidden overflow-ellipsis">{props.child.text}</span>
+        {props.locked && <span>🔒</span>}
       </a>
     </li>
   );
