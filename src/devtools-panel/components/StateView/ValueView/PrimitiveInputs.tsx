@@ -136,13 +136,15 @@ export function BooleanInput(props: Props<boolean>) {
   createEffect(() => setChecked(props.value));
 
   return (
-    <div
-      class={clsx(
-        'flex justify-start select-none',
-        props.editable ? 'cursor-pointer' : 'pointer-events-none',
-      )}
-    >
-      <div class="relative flex justify-between w-[184px] h-7">
+    <div class="flex justify-start select-none gap-2">
+      <div
+        class={clsx(
+          'relative flex justify-between w-[184px] h-7',
+          props.editable && props.lockStatus === 'unlocked'
+            ? 'cursor-pointer'
+            : 'pointer-events-none',
+        )}
+      >
         <input
           type="checkbox"
           class="hidden peer"
@@ -173,10 +175,10 @@ export function BooleanInput(props: Props<boolean>) {
         >
           False
         </label>
-        <Show when={props.onChange && props.editable}>
-          <LockUnlockButton lockStatus={props.lockStatus} onClick={props.toggleLock} />
-        </Show>
       </div>
+      <Show when={props.onChange && props.editable}>
+        <LockUnlockButton lockStatus={props.lockStatus} onClick={props.toggleLock} />
+      </Show>
     </div>
   );
 }
