@@ -61,6 +61,21 @@ export type Diff =
   | DiffPrimitiveUpdate
   | DiffTypeChange;
 
+export type ProcessDiffResult = {
+  diffs: Diff[];
+  locksUpdate: Path[] | null;
+};
+
+export type DiffPackage = {
+  passage: string;
+  diffs: Diff[];
+};
+
+export type UpdateResult = {
+  diffPackage: DiffPackage | null;
+  locksUpdate: Path[] | null;
+};
+
 export type ValueType =
   | 'other'
   | 'null'
@@ -93,3 +108,5 @@ export interface DiffFrame {
   passage: string;
   changes: Diff[];
 }
+
+export type LockStatus = 'locked' | 'ancestor-lock' | 'unlocked';

@@ -10,7 +10,9 @@ interface Props {
 }
 
 export function Content(props: Props) {
-  const [diffFrames, clearDiffFrames] = trackDiffFrames(props.kill);
+  const [diffFrames, { clearDiffFrames, getLockedPaths, addLockPath, removeLockPath }] =
+    trackDiffFrames(props.kill);
+
   const {
     getNavLayers,
     getPath,
@@ -39,6 +41,9 @@ export function Content(props: Props) {
             setViewValue={setViewValue}
             setViewPropertyValue={setViewPropertyValue}
             onDeleteProperty={deleteProperty}
+            addLockPath={addLockPath}
+            removeLockPath={removeLockPath}
+            getLockedPaths={getLockedPaths}
           />
         </>
       }
