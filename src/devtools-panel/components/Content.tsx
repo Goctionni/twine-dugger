@@ -22,6 +22,9 @@ export function Content(props: Props) {
     setViewPropertyValue,
     setHistoryId,
     deleteProperty,
+    lockProperty,
+    unlockProperty,
+    isLocked,
   } = watchState(diffFrames);
 
   return (
@@ -39,6 +42,9 @@ export function Content(props: Props) {
             setViewValue={setViewValue}
             setViewPropertyValue={setViewPropertyValue}
             onDeleteProperty={deleteProperty}
+            lockProperty={lockProperty}
+            unlockProperty={unlockProperty}
+            isLocked={isLocked}
           />
         </>
       }
