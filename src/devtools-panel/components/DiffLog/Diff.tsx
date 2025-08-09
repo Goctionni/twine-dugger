@@ -10,6 +10,7 @@ import {
   Value,
 } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
+import { useContextMenu } from '../ContextMenu/useContextMenu';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',
@@ -57,12 +58,17 @@ function RenderValue(props: { value: Value }) {
 interface DiffChangeProps<T> {
   diff: T;
   setPath: (path: Path) => void;
+  onAddFilter: (path: string) => void;
 }
 
 function DiffItemTypeChanged(props: DiffChangeProps<DiffTypeChange>) {
   return (
     <div>
-      <RenderPath path={props.diff.path} onClick={() => props.setPath(props.diff.path)} />
+      <RenderPath
+        path={props.diff.path}
+        onClick={() => props.setPath(props.diff.path)}
+        onAddFilter={props.onAddFilter}
+      />
       {` Changed from `}
       <RenderValue value={props.diff.oldValue} />
       {` to `}
@@ -74,7 +80,11 @@ function DiffItemTypeChanged(props: DiffChangeProps<DiffTypeChange>) {
 function DiffPrimitiveChanged(props: DiffChangeProps<DiffPrimitiveUpdate>) {
   return (
     <div>
-      <RenderPath path={props.diff.path} onClick={() => props.setPath(props.diff.path)} />
+      <RenderPath
+        path={props.diff.path}
+        onClick={() => props.setPath(props.diff.path)}
+        onAddFilter={props.onAddFilter}
+      />
       {` Changed from `}
       <RenderValue value={props.diff.oldValue} />
       {' to '}
@@ -105,7 +115,11 @@ function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>
   }
   return (
     <div>
-      <RenderPath path={props.diff.path} onClick={() => props.setPath(props.diff.path)} />{' '}
+      <RenderPath
+        path={props.diff.path}
+        onClick={() => props.setPath(props.diff.path)}
+        onAddFilter={props.onAddFilter}
+      />{' '}
       {getChange(props.diff)}
     </div>
   );
@@ -139,7 +153,8 @@ function DiffRecordChanged(props: DiffChangeProps<DiffObjectMapChange>) {
 
   return (
     <div>
-      <RenderPath path={props.diff.path} onClick={onClick} /> {getChange(props.diff)}
+      <RenderPath path={props.diff.path} onClick={() => onClick} onAddFilter={props.onAddFilter} />
+      {getChange(props.diff)}
     </div>
   );
 }
@@ -147,6 +162,7 @@ function DiffRecordChanged(props: DiffChangeProps<DiffObjectMapChange>) {
 interface Props {
   diff: Diff;
   setPath: (path: Path) => void;
+  onAddFilter: (path: string) => void;
 }
 
 export function DiffItem(props: Props) {
@@ -159,33 +175,50 @@ export function DiffItem(props: Props) {
     return 'hide';
   };
   const primitives = ['string', 'number', 'boolean'];
+  const baseProps = () => ({
+    setPath: props.setPath,
+    onAddFilter: props.onAddFilter,
+  });
+
   return (
     <Switch>
       <Match when={type() === 'type-changed'}>
-        <DiffItemTypeChanged diff={diff() as DiffTypeChange} setPath={props.setPath} />
+        <DiffItemTypeChanged diff={diff() as DiffTypeChange} {...baseProps()} />
       </Match>
       <Match when={primitives.includes(type() as string)}>
-        <DiffPrimitiveChanged diff={diff() as DiffPrimitiveUpdate} setPath={props.setPath} />
+        <DiffPrimitiveChanged diff={diff() as DiffPrimitiveUpdate} {...baseProps()} />
       </Match>
       <Match when={type() === 'set'}>
-        <DiffListChanged diff={diff() as DiffSetChange} setPath={props.setPath} />
+        <DiffListChanged diff={diff() as DiffSetChange} {...baseProps()} />
       </Match>
       <Match when={type() === 'array'}>
-        <DiffListChanged diff={diff() as DiffArrayChange} setPath={props.setPath} />
+        <DiffListChanged diff={diff() as DiffArrayChange} {...baseProps()} />
       </Match>
       <Match when={type() === 'map'}>
-        <DiffRecordChanged diff={diff() as DiffObjectMapChange} setPath={props.setPath} />
+        <DiffRecordChanged diff={diff() as DiffObjectMapChange} {...baseProps()} />
       </Match>
       <Match when={type() === 'object'}>
-        <DiffRecordChanged diff={diff() as DiffObjectMapChange} setPath={props.setPath} />
+        <DiffRecordChanged diff={diff() as DiffObjectMapChange} {...baseProps()} />
       </Match>
     </Switch>
   );
 }
 
-function RenderPath(props: { path: Path; onClick: () => void }) {
+function RenderPath(props: {
+  path: Path;
+  onClick: () => void;
+  onAddFilter: (path: string) => void;
+}) {
+  const pathString = props.path.join('.');
+  const ref = useContextMenu([
+    {
+      label: `Filter out changes to "${pathString}"`,
+      onClick: () => props.onAddFilter(pathString),
+    },
+  ]);
+
   return (
-    <code onClick={props.onClick} class="hover:underline cursor-pointer">
+    <code ref={ref} onClick={props.onClick} class="hover:underline cursor-pointer">
       <For each={props.path}>{(chunk, index) => <PathChunk index={index()} chunk={chunk} />}</For>
     </code>
   );

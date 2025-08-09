@@ -19,6 +19,7 @@ window.TwineDugger = {
 - **Safety**: Mutations operate on the live Twine state objects provided by the engine.
 
 ### Adding a New Twine Format
+
 1. Create a new helper in `format-helpers/<format>.ts` that implements `FormatHelpers`.
 2. Implement `detect`, `getState(sanitized?: boolean)`, `getPassage`, and state mutation helpers.
 3. Add the helper to `formatHelpers` array in `content-script.ts`.
