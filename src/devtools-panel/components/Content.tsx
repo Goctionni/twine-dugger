@@ -1,3 +1,4 @@
+import { createSignal } from 'solid-js';
 import { DiffLog } from './DiffLog';
 import { trackDiffFrames } from './trackDiffFrames';
 import { MovableSplit } from './Layout/MovableSplit';
@@ -11,6 +12,8 @@ interface Props {
 
 export function Content(props: Props) {
   const [diffFrames, clearDiffFrames] = trackDiffFrames(props.kill);
+  const [filteredPaths, setFilteredPaths] = createSignal<string[]>([]);
+
   const {
     getNavLayers,
     getPath,
@@ -24,9 +27,26 @@ export function Content(props: Props) {
     deleteProperty,
   } = watchState(diffFrames);
 
+  const addFilterPath = (path: string) => {
+    setFilteredPaths(prev =>
+      prev.includes(path) ? prev : [...prev, path]
+    );
+  };
+
+  const clearFilters = () => setFilteredPaths([]);
+
   return (
     <MovableSplit
-      leftContent={<DiffLog frames={diffFrames()} setPath={setPath} onClear={clearDiffFrames} />}
+      leftContent={
+        <DiffLog
+          frames={diffFrames()}
+          setPath={setPath}
+          onClear={clearDiffFrames}
+          filteredPaths={filteredPaths()}
+          onAddFilter={addFilterPath}
+          onClearFilters={clearFilters}
+        />
+      }
       rightContent={
         <>
           <HistoryNav historyItems={getHistoryItems()} setHistoryId={setHistoryId} />
