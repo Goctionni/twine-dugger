@@ -60,7 +60,7 @@ export async function duplicateStateProperty(
     },
     {
       requires: ['content-script.js'],
-      args: [parentPath, sourceKey, targetKey],
+      args: [parentPath, sourceKey, targetKey ?? null],
     },
   );
 }

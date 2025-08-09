@@ -2,3 +2,4 @@ node_modules
 extension/tsup
 extension/vite
 dist
+*.zip
