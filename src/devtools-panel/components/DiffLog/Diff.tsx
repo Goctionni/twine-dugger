@@ -64,9 +64,9 @@ interface DiffChangeProps<T> {
 function DiffItemTypeChanged(props: DiffChangeProps<DiffTypeChange>) {
   return (
     <div>
-      <RenderPath 
-        path={props.diff.path} 
-        onClick={() => props.setPath(props.diff.path)} 
+      <RenderPath
+        path={props.diff.path}
+        onClick={() => props.setPath(props.diff.path)}
         onAddFilter={props.onAddFilter}
       />
       {` Changed from `}
@@ -80,9 +80,9 @@ function DiffItemTypeChanged(props: DiffChangeProps<DiffTypeChange>) {
 function DiffPrimitiveChanged(props: DiffChangeProps<DiffPrimitiveUpdate>) {
   return (
     <div>
-      <RenderPath 
-        path={props.diff.path} 
-        onClick={() => props.setPath(props.diff.path)} 
+      <RenderPath
+        path={props.diff.path}
+        onClick={() => props.setPath(props.diff.path)}
         onAddFilter={props.onAddFilter}
       />
       {` Changed from `}
@@ -115,9 +115,9 @@ function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>
   }
   return (
     <div>
-      <RenderPath 
-        path={props.diff.path} 
-        onClick={() => props.setPath(props.diff.path)} 
+      <RenderPath
+        path={props.diff.path}
+        onClick={() => props.setPath(props.diff.path)}
         onAddFilter={props.onAddFilter}
       />{' '}
       {getChange(props.diff)}
@@ -153,11 +153,7 @@ function DiffRecordChanged(props: DiffChangeProps<DiffObjectMapChange>) {
 
   return (
     <div>
-      <RenderPath 
-        path={props.diff.path} 
-        onClick={() => onClick} 
-        onAddFilter={props.onAddFilter}
-      />
+      <RenderPath path={props.diff.path} onClick={() => onClick} onAddFilter={props.onAddFilter} />
       {getChange(props.diff)}
     </div>
   );
@@ -178,29 +174,47 @@ export function DiffItem(props: Props) {
     if (_diff.instructions.some((inst) => inst.type === 'move')) return _diff.type;
     return 'hide';
   };
+  const primitives = ['string', 'number', 'boolean'];
+  const baseProps = () => ({
+    setPath: props.setPath,
+    onAddFilter: props.onAddFilter,
+  });
 
-  const componentMap: Record<string, any> = {
-    'type-changed': DiffItemTypeChanged,
-    string: DiffPrimitiveChanged,
-    number: DiffPrimitiveChanged,
-    boolean: DiffPrimitiveChanged,
-    set: DiffListChanged,
-    array: DiffListChanged,
-    map: DiffRecordChanged,
-    object: DiffRecordChanged,
-  };
-
-  const Comp = componentMap[type()];
-
-  return Comp ? (
-    <Comp diff={diff()} setPath={props.setPath} onAddFilter={props.onAddFilter} />
-  ) : null;
+  return (
+    <Switch>
+      <Match when={type() === 'type-changed'}>
+        <DiffItemTypeChanged diff={diff() as DiffTypeChange} {...baseProps()} />
+      </Match>
+      <Match when={primitives.includes(type() as string)}>
+        <DiffPrimitiveChanged diff={diff() as DiffPrimitiveUpdate} {...baseProps()} />
+      </Match>
+      <Match when={type() === 'set'}>
+        <DiffListChanged diff={diff() as DiffSetChange} {...baseProps()} />
+      </Match>
+      <Match when={type() === 'array'}>
+        <DiffListChanged diff={diff() as DiffArrayChange} {...baseProps()} />
+      </Match>
+      <Match when={type() === 'map'}>
+        <DiffRecordChanged diff={diff() as DiffObjectMapChange} {...baseProps()} />
+      </Match>
+      <Match when={type() === 'object'}>
+        <DiffRecordChanged diff={diff() as DiffObjectMapChange} {...baseProps()} />
+      </Match>
+    </Switch>
+  );
 }
 
-function RenderPath(props: { path: Path; onClick: () => void; onAddFilter: (path: string) => void }) {
+function RenderPath(props: {
+  path: Path;
+  onClick: () => void;
+  onAddFilter: (path: string) => void;
+}) {
   const pathString = props.path.join('.');
   const ref = useContextMenu([
-    { label: `Filter out changes to "${pathString}"`, onClick: () => props.onAddFilter(pathString) }
+    {
+      label: `Filter out changes to "${pathString}"`,
+      onClick: () => props.onAddFilter(pathString),
+    },
   ]);
 
   return (

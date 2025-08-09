@@ -15,18 +15,16 @@ interface Props {
 export function DiffLog(props: Props) {
   const containerRef = useContextMenu([
     { label: 'Clear Diff Log', onClick: props.onClear },
-    { label: 'Clear All Filters', onClick: props.onClearFilters }
+    { label: 'Clear All Filters', onClick: props.onClearFilters },
   ]);
 
   const frames = () => {
     return props.frames
-      .map(frame => ({
+      .map((frame) => ({
         ...frame,
-        changes: frame.changes.filter(
-          c => !props.filteredPaths.includes(c.path.join('.'))
-        )
+        changes: frame.changes.filter((c) => !props.filteredPaths.includes(c.path.join('.'))),
       }))
-      .filter(frame => frame.changes.length > 0)
+      .filter((frame) => frame.changes.length > 0)
       .slice(0, 30);
   };
 

@@ -29,9 +29,7 @@ export function Content(props: Props) {
   } = watchState(diffFrames);
 
   const addFilterPath = (path: string) => {
-    setFilteredPaths(prev =>
-      prev.includes(path) ? prev : [...prev, path]
-    );
+    setFilteredPaths((prev) => (prev.includes(path) ? prev : [...prev, path]));
   };
 
   const clearFilters = () => setFilteredPaths([]);

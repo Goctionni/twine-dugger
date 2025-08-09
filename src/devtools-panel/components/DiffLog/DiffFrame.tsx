@@ -28,13 +28,7 @@ export function DiffFrame(props: Props) {
         <RelativeTime date={props.frame.timestamp} />
       </div>
       <For each={props.frame.changes}>
-        {(diff) => (
-          <DiffItem
-            diff={diff}
-            setPath={props.setPath}
-            onAddFilter={props.onAddFilter}
-          />
-        )}
+        {(diff) => <DiffItem diff={diff} setPath={props.setPath} onAddFilter={props.onAddFilter} />}
       </For>
     </div>
   );

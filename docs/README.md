@@ -4,6 +4,7 @@ Welcome! This document set orients new contributors to **twine-dugger** (0.0.0).
 inspects and diffs the runtime state of **Twine** games (SugarCube & Harlowe), and provides tools to view and mutate that state.
 
 ## Quick links
+
 - Start here: [`setup.md`](./setup.md)
 - Architecture overview: [`architecture.md`](./architecture.md)
 - Extension panels & flows: [`devtools.md`](./devtools.md)
