@@ -33,7 +33,7 @@ export function StateView(props: Props) {
     props.setPath(isEqual ? chunk.path : newPath);
   };
   return (
-    <div class="flex h-full py-1">
+    <div class="flex h-[calc(100%_-_3rem)] py-1">
       <Index each={props.navLayers.pathChunks}>
         {(chunk) => (
           <ObjectNav
