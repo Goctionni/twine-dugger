@@ -13,6 +13,7 @@ interface Props {
 export function Content(props: Props) {
   const [diffFrames, { clearDiffFrames, getLockedPaths, addLockPath, removeLockPath }] =
     trackDiffFrames(props.kill);
+  const [filteredPaths, setFilteredPaths] = createSignal<string[]>([]);
 
   const {
     getNavLayers,
