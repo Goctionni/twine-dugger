@@ -2,6 +2,9 @@ import { defineConfig, Options } from 'tsdown';
 import solidPlugin from 'vite-plugin-solid';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from '@tailwindcss/postcss';
+import { readFile, writeFile } from 'fs/promises';
+
+import packageJson from './package.json' with { type: 'json' };
 
 const baseOptions = {
   tsconfig: 'tsconfig.app.json',
@@ -25,6 +28,11 @@ export default defineConfig((): Options[] => [
         plugins: [tailwindcss()],
       }),
     ],
+    onSuccess: async () => {
+      const manifest = await readFile('src/devtools-panel/manifest.json', 'utf-8');
+      const transformed = manifest.replace(/\$version/g, packageJson.version);
+      await writeFile('dist/manifest.json', transformed, { encoding: 'utf-8' });
+    },
   },
   {
     ...baseOptions,
