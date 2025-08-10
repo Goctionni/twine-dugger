@@ -4,7 +4,7 @@ import { CogIcon } from '../Icons/CogIcon';
 import { GameMetaData } from '@/devtools-panel/utils/remote-functions/getMetaData';
 import { Dialog } from '../Common/Dialog';
 import { SettingsView } from '../Settings/SettingsView';
-import { useContextMenu } from '../ContextMenu/useContextMenu';
+import { createContextMenuHandler } from '../ContextMenu';
 
 interface LayoutProps {
   meta?: GameMetaData | null;
@@ -14,7 +14,7 @@ interface LayoutProps {
 export function Layout(props: LayoutProps) {
   const [getShowSettings, setShowSetttings] = createSignal(false);
   const handleOptionsClick = () => setShowSetttings(true);
-  const elRef = useContextMenu([
+  const onContextMenu = createContextMenuHandler([
     {
       label: 'Reload Twine Dugger',
       onClick: () => window.location.reload(),
@@ -26,7 +26,7 @@ export function Layout(props: LayoutProps) {
       <Dialog open={getShowSettings()} onClose={() => setShowSetttings(false)} heading="Settings">
         <SettingsView />
       </Dialog>
-      <div class="bg-gray-900 text-gray-100 h-screen flex flex-col" ref={elRef}>
+      <div class="bg-gray-900 text-gray-100 h-screen flex flex-col" onContextMenu={onContextMenu}>
         {/* Top Bar */}
         <header class="bg-gray-800 p-3 shadow-md flex justify-between items-center sticky top-0 z-10">
           <div class="flex items-center space-x-4">

@@ -2,7 +2,7 @@ import { createResource, createSignal, Match, Switch } from 'solid-js';
 import { Layout } from './components/Layout/Layout';
 import { Content } from './components/Content';
 import { getGameMetaData } from './utils/api';
-import { ContextMenuUI } from './components/ContextMenu/ContextMenuUI';
+import { ContextMenuUI } from './components/ContextMenu';
 import { PromptDialogOutlet } from './components/Common/PromptProvider';
 
 function App() {
