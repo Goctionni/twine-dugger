@@ -11,6 +11,8 @@ import {
 } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 import { createContextMenuHandler } from '../ContextMenu';
+import { Tooltip } from '../Common/Tooltip';
+import clsx from 'clsx';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',
@@ -38,7 +40,19 @@ function RenderValue(props: { value: Value }) {
   };
 
   return (
-    <Switch fallback={<code class={colorClasses.typeOther}>{getSpecificType(value())}</code>}>
+    <Switch
+      fallback={
+        <Tooltip
+          area="bottom right"
+          element={(elProps) => (
+            <code {...elProps} class={clsx(elProps.class, colorClasses.typeOther)}>
+              {getSpecificType(value())}
+            </code>
+          )}
+          tooltip="COWS"
+        />
+      }
+    >
       <Match when={renderType() === 'empty'}>
         <code class={colorClasses.typeEmpty}>Empty string</code>
       </Match>
