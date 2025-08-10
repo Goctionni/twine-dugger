@@ -2,7 +2,7 @@ import { createEffect, For } from 'solid-js';
 import { PathChunk } from './types';
 import { TypeIcon } from './TypeIcon';
 import clsx from 'clsx';
-import { useContextMenu } from '../ContextMenu/useContextMenu';
+import { createContextMenuHandler } from '../ContextMenu';
 import { LockStatus, Path } from '@/shared/shared-types';
 import { duplicateStateProperty } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
@@ -77,7 +77,7 @@ interface NavItemProps {
 }
 
 function NavItem(props: NavItemProps) {
-  const elRef = useContextMenu([
+  const onContextMenu = createContextMenuHandler([
     {
       disabled: () => props.lockStatus === 'ancestor-lock',
       label: () => {
@@ -104,7 +104,7 @@ function NavItem(props: NavItemProps) {
   });
 
   return (
-    <li ref={elRef}>
+    <li onContextMenu={onContextMenu}>
       <a
         onClick={props.onClick}
         class={clsx(

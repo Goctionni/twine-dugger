@@ -10,7 +10,7 @@ import {
   Value,
 } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
-import { useContextMenu } from '../ContextMenu/useContextMenu';
+import { createContextMenuHandler } from '../ContextMenu';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',
@@ -210,7 +210,7 @@ function RenderPath(props: {
   onAddFilter: (path: string) => void;
 }) {
   const pathString = props.path.join('.');
-  const ref = useContextMenu([
+  const onContextMenu = createContextMenuHandler([
     {
       label: `Filter out changes to "${pathString}"`,
       onClick: () => props.onAddFilter(pathString),
@@ -218,7 +218,11 @@ function RenderPath(props: {
   ]);
 
   return (
-    <code ref={ref} onClick={props.onClick} class="hover:underline cursor-pointer">
+    <code
+      onContextMenu={onContextMenu}
+      onClick={props.onClick}
+      class="hover:underline cursor-pointer"
+    >
       <For each={props.path}>{(chunk, index) => <PathChunk index={index()} chunk={chunk} />}</For>
     </code>
   );
