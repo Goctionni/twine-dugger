@@ -29,23 +29,28 @@ export default defineConfig((): Options[] => [
         extract: true,
         plugins: [tailwindcss()],
       }),
-    ],
-    onSuccess: async () => {
-      await copyTransform({
-        from: 'src/devtools-panel/manifest.json',
-        to: 'dist/manifest.json',
-        transform: (content) => content.replace(/\$version/g, packageJson.version),
-      });
+      {
+        name: 'copy-transform',
+        transform: async (code) => {
+          await copyTransform({
+            from: 'src/devtools-panel/manifest.json',
+            to: 'dist/manifest.json',
+            transform: (content) => content.replace(/\$version/g, packageJson.version),
+          });
 
-      await copyTransform({
-        from: 'src/devtools-panel/index.html',
-        to: 'dist/index.html',
-        transform: async (content) =>
-          content
-            .replace('./main.tsx', './devtools-panel.js')
-            .replace('<!--head-->', await getFontHtml(['search'])),
-      });
-    },
+          await copyTransform({
+            from: 'src/devtools-panel/index.html',
+            to: 'dist/index.html',
+            transform: async (content) =>
+              content
+                .replace('./main.tsx', './devtools-panel.js')
+                .replace('<!--head-->', await getFontHtml(['search'])),
+          });
+
+          return code;
+        },
+      },
+    ],
   },
   {
     ...baseOptions,
