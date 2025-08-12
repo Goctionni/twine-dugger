@@ -1,8 +1,9 @@
-import { Value } from '@/shared/shared-types';
+import { ObjectValue, Value } from '@/shared/shared-types';
 import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
 import { Tooltip } from '../Common/Tooltip';
 import { getSpecificType } from '@/shared/type-helpers';
+import { DiffPreview } from './DiffPreview';
 
 const colorClasses = {
   typeNumber: 'text-emerald-300 saturate-50',
@@ -59,13 +60,13 @@ function RenderValueFallback(props: RenderValueFallbackProps) {
           {...elProps}
           class={clsx('inline-flex items-center gap-1 cursor-help', elProps.class)}
         >
+          <span class="material-symbols-outlined text-xs align-middle text-white">search</span>
           <code class={clsx(colorClasses.typeOther, fadedCls())}>
             {getSpecificType(props.value)}
           </code>
-          <span class="material-symbols-outlined text-sm align-middle opacity-85">search</span>
         </span>
       )}
-      tooltip="Preview coming soon"
+      tooltip={<DiffPreview value={props.value as ObjectValue} />}
     />
   );
 }

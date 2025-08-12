@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/postcss';
 import { readFile, writeFile } from 'fs/promises';
 
 import packageJson from './package.json' with { type: 'json' };
+import { getFontHtml } from './build/material-symbols';
+import { copyTransform } from './build/copy-transform';
 
 const baseOptions = {
   tsconfig: 'tsconfig.app.json',
@@ -29,9 +31,20 @@ export default defineConfig((): Options[] => [
       }),
     ],
     onSuccess: async () => {
-      const manifest = await readFile('src/devtools-panel/manifest.json', 'utf-8');
-      const transformed = manifest.replace(/\$version/g, packageJson.version);
-      await writeFile('dist/manifest.json', transformed, { encoding: 'utf-8' });
+      await copyTransform({
+        from: 'src/devtools-panel/manifest.json',
+        to: 'dist/manifest.json',
+        transform: (content) => content.replace(/\$version/g, packageJson.version),
+      });
+
+      await copyTransform({
+        from: 'src/devtools-panel/index.html',
+        to: 'dist/index.html',
+        transform: async (content) =>
+          content
+            .replace('./main.tsx', './devtools-panel.js')
+            .replace('<!--head-->', await getFontHtml(['search'])),
+      });
     },
   },
   {

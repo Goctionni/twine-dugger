@@ -3,7 +3,7 @@
     "composite": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
@@ -11,6 +11,6 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"] // Include Node.js types and Vite types
   },
-  "include": ["tsup.config.ts", "tests/**/*.ts", "src/content-script/util/**/*.ts"],
+  "include": ["tsdown.config.ts", "build", "tests/**/*.ts", "src/content-script/util/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
