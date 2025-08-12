@@ -2,7 +2,7 @@ import { defineConfig, Options } from 'tsdown';
 import solidPlugin from 'vite-plugin-solid';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from '@tailwindcss/postcss';
-import { readFile, writeFile } from 'fs/promises';
+import { mkdir } from 'fs/promises';
 
 import packageJson from './package.json' with { type: 'json' };
 import { getFontHtml } from './build/material-symbols';
@@ -32,6 +32,7 @@ export default defineConfig((): Options[] => [
       {
         name: 'copy-transform',
         transform: async (code) => {
+          await mkdir('dist');
           await copyTransform({
             from: 'src/devtools-panel/manifest.json',
             to: 'dist/manifest.json',
