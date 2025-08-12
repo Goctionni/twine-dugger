@@ -4,7 +4,7 @@ import sugarcubeHelpers from './format-helpers/sugarcube';
 import harloweHelpers from './format-helpers/harlowe';
 import { FormatHelpers } from './format-helpers/type';
 import { copy } from '@/shared/copy';
-import { Path, UpdateResult } from '@/shared/shared-types';
+import { UpdateResult } from '@/shared/shared-types';
 
 const formatHelpers: FormatHelpers[] = [sugarcubeHelpers, harloweHelpers];
 
