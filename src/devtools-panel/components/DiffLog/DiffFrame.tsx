@@ -13,23 +13,28 @@ interface Props {
 }
 
 export function DiffFrame(props: Props) {
-  const showSeparator = () => !props.first && getDiffLogHeadingStyle() === 'distinct';
+  const showSeparator = () => !props.first;
+
   return (
-    <div class="mb-1 text-gray-400 group" style={{ 'font-size': `${getDiffLogFontSize()}px` }}>
-      <div class={clsx('flex gap-2 items-center', { ['mt-2 border-t pt-2']: showSeparator() })}>
-        <span
-          class={clsx(
-            'font-bold',
-            getDiffLogHeadingStyle() === 'distinct' ? 'text-purple-400' : 'text-gray-300',
-          )}
-        >
-          {props.frame.passage}
-        </span>
+    <div class="group" style={{ 'font-size': `${getDiffLogFontSize()}px` }}>
+      <div
+        class={clsx(
+          'flex items-center gap-2',
+          showSeparator() && 'mt-3 pt-3 border-t border-gray-700/50',
+        )}
+      >
+        <span class="font-bold text-gray-300">{props.frame.passage}</span>
         <RelativeTime date={props.frame.timestamp} />
       </div>
-      <For each={props.frame.changes}>
-        {(diff) => <DiffItem diff={diff} setPath={props.setPath} onAddFilter={props.onAddFilter} />}
-      </For>
+
+      {/* lines */}
+      <div class="mt-1 space-y-0.5 text-gray-400">
+        <For each={props.frame.changes}>
+          {(diff) => (
+            <DiffItem diff={diff} setPath={props.setPath} onAddFilter={props.onAddFilter} />
+          )}
+        </For>
+      </div>
     </div>
   );
 }
