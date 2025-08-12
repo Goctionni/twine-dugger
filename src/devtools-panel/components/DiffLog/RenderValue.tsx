@@ -52,21 +52,27 @@ interface RenderValueFallbackProps {
 function RenderValueFallback(props: RenderValueFallbackProps) {
   const fadedCls = () => (props.faded ? 'opacity-60 saturate-50' : '');
 
+  const base = () => (
+    <code class={clsx(colorClasses.typeOther, fadedCls())}>{getSpecificType(props.value)}</code>
+  );
+
   return (
-    <Tooltip
-      area="bottom right"
-      element={(elProps) => (
-        <span
-          {...elProps}
-          class={clsx('inline-flex items-center gap-1 cursor-help', elProps.class)}
-        >
-          <span class="material-symbols-outlined text-xs align-middle text-white">search</span>
-          <code class={clsx(colorClasses.typeOther, fadedCls())}>
-            {getSpecificType(props.value)}
-          </code>
-        </span>
-      )}
-      tooltip={<DiffPreview value={props.value as ObjectValue} />}
-    />
+    <Switch fallback={base()}>
+      <Match when={props.value && typeof props.value === 'object'}>
+        <Tooltip
+          area="bottom right"
+          element={(elProps) => (
+            <span
+              {...elProps}
+              class={clsx('inline-flex items-center gap-1 cursor-help', elProps.class)}
+            >
+              <span class="material-symbols-outlined text-xs align-middle text-white">search</span>
+              {base()}
+            </span>
+          )}
+          tooltip={<DiffPreview value={props.value as ObjectValue} />}
+        />
+      </Match>
+    </Switch>
   );
 }
