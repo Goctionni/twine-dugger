@@ -1,4 +1,4 @@
-import { deleteFromState,setState } from '@panel/utils/api';
+import { deleteFromState, setState } from '@panel/utils/api';
 import { Accessor, createSignal } from 'solid-js';
 
 import type { DiffFrame, Path } from '@/shared/shared-types';

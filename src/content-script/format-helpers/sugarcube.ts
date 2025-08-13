@@ -4,7 +4,7 @@ import { ObjectValue, Path, Value } from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
 import { matchesSChema } from '../util/type-helpers';
-import { deleteFromState, duplicateStateProperty,setState as setStateBase } from './shared';
+import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
 import { createPropertyLocker } from './sharedPropertyLocker';
 import { FormatHelpers } from './type';
 

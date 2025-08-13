@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { createMemo,JSX, Match, Switch } from 'solid-js';
+import { createMemo, JSX, Match, Switch } from 'solid-js';
 
 import { ArrayValue, MapValue, ObjectValue, SetValue, Value } from '@/shared/shared-types';
 

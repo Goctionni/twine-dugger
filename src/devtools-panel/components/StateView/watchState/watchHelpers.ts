@@ -1,5 +1,5 @@
 import { getPotentialId } from '@/shared/id-helper';
-import { ContainerValue,SetValue } from '@/shared/shared-types';
+import { ContainerValue, SetValue } from '@/shared/shared-types';
 
 import { ChildKey } from '../types';
 
