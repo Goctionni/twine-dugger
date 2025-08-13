@@ -1,9 +1,10 @@
 import { createResource, createSignal, Match, Switch } from 'solid-js';
-import { Layout } from './components/Layout/Layout';
-import { Content } from './components/Content';
-import { getGameMetaData } from './utils/api';
-import { ContextMenuUI } from './components/ContextMenu';
+
 import { PromptDialogOutlet } from './components/Common/PromptProvider';
+import { Content } from './components/Content';
+import { ContextMenuUI } from './components/ContextMenu';
+import { Layout } from './components/Layout/Layout';
+import { getGameMetaData } from './utils/api';
 
 function App() {
   const [enabled, setEnabled] = createSignal(false);

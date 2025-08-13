@@ -1,7 +1,8 @@
 import { jsonReviver } from '@/shared/json-helper';
+import { Path } from '@/shared/shared-types';
+
 import { executeCode, injectContentScript } from './remote-execute';
 import { getGameMetaFn } from './remote-functions/getMetaData';
-import { Path } from '@/shared/shared-types';
 
 export async function getGameMetaData() {
   return executeCode(getGameMetaFn);

@@ -17,7 +17,7 @@ export function jsonReplacer(_key: string, value: any) {
       }
       const fnSyntax1 =
         /^\(\s*(function\s*)?\s*(?<name>[a-zA-Z_$][a-zA-Z0-9_$]*)?\s*\((?<args>.*)\)\s*(\{.*\})\)$/g;
-      const fnSyntax2 = /^\(\s*\((?<args>.*)\)\s*\=\>.*\)$/g;
+      const fnSyntax2 = /^\(\s*\((?<args>.*)\)\s*=>.*\)$/g;
       const matches = fnSyntax1.exec(value[1]) || fnSyntax2.exec(value[1]);
       if (matches) return { [jsonKey]: 'function' };
     }

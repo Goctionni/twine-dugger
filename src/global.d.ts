@@ -1,5 +1,6 @@
-import { Diff, ObjectValue, Path, UpdateResult } from '@/shared/shared-types';
 import { JSX } from 'solid-js/types/jsx.d.ts';
+
+import { Diff, ObjectValue, Path, UpdateResult } from '@/shared/shared-types';
 
 declare module 'solid-js/types/jsx.d.ts' {
   namespace JSX {

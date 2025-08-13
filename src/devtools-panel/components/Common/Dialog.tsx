@@ -1,5 +1,6 @@
 import { createEffect, JSX } from 'solid-js';
 import { Portal } from 'solid-js/web';
+
 import { CrossIcon } from '../Icons/CrossIcon';
 
 interface Props {
@@ -42,7 +43,7 @@ export function Dialog(props: Props) {
           [@starting-style]:open:backdrop:backdrop-blur-none
           [@starting-style]:open:backdrop:backdrop-saturate-100
         "
-        on:close={props.onClose}
+        on:close={() => props.onClose?.()}
       >
         <header class="mb-1 border-b-2 border-b-gray-400 text-xl font-bold py-1 flex gap-4 justify-between min-w-md">
           <div>{props.heading}</div>

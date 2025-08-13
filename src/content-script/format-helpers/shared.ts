@@ -1,4 +1,5 @@
 import { ArrayValue, MapValue, ObjectValue, Path, Value } from '@/shared/shared-types';
+
 import { isObj } from '../util/type-helpers';
 
 type StateObj = ObjectValue | MapValue | ArrayValue;

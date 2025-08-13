@@ -195,7 +195,7 @@ export function getGameMetaFn(): GameMetaData | null {
   function getLocalStorageUsed() {
     let used = 0;
     for (let key in localStorage) {
-      if (localStorage.hasOwnProperty(key)) {
+      if (Object.hasOwnProperty.call(localStorage, key)) {
         const value = localStorage.getItem(key);
         used += 2 * (key.length + (value ? value.length : 0));
       }

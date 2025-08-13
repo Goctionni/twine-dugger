@@ -1,9 +1,11 @@
-import { ArrayValue, MapValue, ObjectValue, Path, Value } from '@/shared/shared-types';
 import { Index, Match, Show, Switch } from 'solid-js';
+
+import { getLockStatus } from '@/devtools-panel/utils/is-locked';
+import { ArrayValue, MapValue, ObjectValue, Path, Value } from '@/shared/shared-types';
+import { getSpecificType } from '@/shared/type-helpers';
+
 import { TypeIcon } from '../TypeIcon';
 import { BooleanInput, NumberInput, StringInput } from './PrimitiveInputs';
-import { getSpecificType } from '@/shared/type-helpers';
-import { getLockStatus } from '@/devtools-panel/utils/is-locked';
 
 interface ObjectInputProps {
   getLockedPaths: () => Path[];

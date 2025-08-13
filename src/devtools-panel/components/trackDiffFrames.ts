@@ -1,7 +1,9 @@
 import { Accessor, createEffect, createSignal, onCleanup } from 'solid-js';
+
 import { DiffFrame, Path } from '@/shared/shared-types';
-import { getUpdates, setStatePropertyLock } from '../utils/api';
+
 import { getDiffLogPollingInterval } from '../stores/settingsStore';
+import { getUpdates, setStatePropertyLock } from '../utils/api';
 
 type Result = [
   Accessor<DiffFrame[]>,
@@ -31,15 +33,14 @@ export function trackDiffFrames(kill: () => void): Result {
           if (diffPackage) {
             const { diffs, passage } = diffPackage;
 
-            const lastFrame = diffFrames()[0] as DiffFrame | undefined;
-            if (!diffs?.length) {
-              if (!lastFrame) return;
-              if (passage === lastFrame.passage) return;
-            }
-            setDiffFrames([
-              { timestamp: date, passage, changes: diffs },
-              ...diffFrames().slice(0, 50),
-            ]);
+            setDiffFrames((cur) => {
+              if (!diffs?.length) {
+                const lastFrame = cur[0] as DiffFrame | undefined;
+                if (!lastFrame) return cur;
+                if (passage === lastFrame.passage) return cur;
+              }
+              return [{ timestamp: date, passage, changes: diffs }, ...cur.slice(0, 50)];
+            });
           }
         })
         .catch((error) => {

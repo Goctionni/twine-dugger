@@ -1,5 +1,5 @@
-import { createStore } from 'solid-js/store';
 import { createEffect } from 'solid-js';
+import { createStore } from 'solid-js/store';
 
 interface SettingsState {
   diffLog: {

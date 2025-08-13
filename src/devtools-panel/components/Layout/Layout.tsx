@@ -1,10 +1,12 @@
 import { createSignal, JSX } from 'solid-js';
-import { MetaInfo } from './MetaInfo';
-import { CogIcon } from '../Icons/CogIcon';
+
 import { GameMetaData } from '@/devtools-panel/utils/remote-functions/getMetaData';
+
 import { Dialog } from '../Common/Dialog';
-import { SettingsView } from '../Settings/SettingsView';
 import { createContextMenuHandler } from '../ContextMenu';
+import { CogIcon } from '../Icons/CogIcon';
+import { SettingsView } from '../Settings/SettingsView';
+import { MetaInfo } from './MetaInfo';
 
 interface LayoutProps {
   meta?: GameMetaData | null;

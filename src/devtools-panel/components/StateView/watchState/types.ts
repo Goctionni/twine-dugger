@@ -1,4 +1,5 @@
 import type { DiffFrame, ObjectValue, Path } from '@/shared/shared-types';
+
 import { PathChunk } from '../types';
 
 export interface NavigationAction {

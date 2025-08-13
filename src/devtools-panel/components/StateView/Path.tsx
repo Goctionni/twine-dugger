@@ -1,6 +1,8 @@
 import { Index, Match, Switch } from 'solid-js';
-import { PathChunk } from './types';
+
 import { Path as TPath } from '@/shared/shared-types';
+
+import { PathChunk } from './types';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',

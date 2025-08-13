@@ -1,8 +1,10 @@
-import { ObjectValue, Value } from '@/shared/shared-types';
 import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
-import { Tooltip } from '../Common/Tooltip';
+
+import { ObjectValue, Value } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
+
+import { Tooltip } from '../Common/Tooltip';
 import { DiffPreview } from './DiffPreview';
 
 const colorClasses = {

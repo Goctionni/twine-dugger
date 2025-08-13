@@ -1,18 +1,21 @@
-import { createSignal } from 'solid-js';
+import { createMemo, createSignal } from 'solid-js';
+
 import { DiffLog } from './DiffLog';
-import { trackDiffFrames } from './trackDiffFrames';
-import { MovableSplit } from './Layout/MovableSplit';
-import { watchState } from './StateView/watchState/watchState';
-import { StateView } from './StateView/StateView';
 import { HistoryNav } from './HistoryNav';
+import { MovableSplit } from './Layout/MovableSplit';
+import { StateView } from './StateView/StateView';
+import { watchState } from './StateView/watchState/watchState';
+import { trackDiffFrames } from './trackDiffFrames';
 
 interface Props {
   kill: () => void;
 }
 
 export function Content(props: Props) {
+  const kill = () => props.kill();
   const [diffFrames, { clearDiffFrames, getLockedPaths, addLockPath, removeLockPath }] =
-    trackDiffFrames(props.kill);
+    // eslint-disable-next-line solid/reactivity
+    trackDiffFrames(kill);
   const [filteredPaths, setFilteredPaths] = createSignal<string[]>([]);
 
   const {

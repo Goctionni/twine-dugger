@@ -1,11 +1,12 @@
 import { Accessor, createMemo } from 'solid-js';
+
 import { HistoryItem, HistoryNode, StateViewSelection } from './types';
 
 export function createGetHistoryItems(
   getStateHistory: Accessor<HistoryItem[]>,
   getStateViewSelection: Accessor<StateViewSelection>,
 ) {
-  return createMemo(() => {
+  const getHistoryItems = createMemo(() => {
     // get ids
     const ids = getStateHistory()
       .map(({ id }, index) => (index ? id : 'latest'))
@@ -21,4 +22,6 @@ export function createGetHistoryItems(
       }),
     );
   });
+
+  return getHistoryItems;
 }

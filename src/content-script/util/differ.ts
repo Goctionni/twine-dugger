@@ -1,18 +1,19 @@
 import { getPotentialId } from '@/shared/id-helper';
-import { createInstructions } from './createInstructions';
 import type {
-  Value,
-  Path,
-  ObjectValue,
   ArrayValue,
-  MapValue,
-  SetValue,
   Diff,
   IdentityMap,
+  MapValue,
   MatchPair,
+  ObjectValue,
+  Path,
   Primitive,
+  SetValue,
+  Value,
 } from '@/shared/shared-types'; // Import types from types.ts
 import { getSpecificType, isPrimitive } from '@/shared/type-helpers';
+
+import { createInstructions } from './createInstructions';
 
 // --- Helper Functions ---
 
@@ -66,7 +67,9 @@ function deepEquals(val1: Value, val2: Value): boolean {
     const obj2 = val2 as ObjectValue;
     const keys1 = Object.keys(obj1);
     if (keys1.length !== Object.keys(obj2).length) return false;
-    return keys1.every((key) => obj2.hasOwnProperty(key) && deepEquals(obj1[key], obj2[key]));
+    return keys1.every(
+      (key) => Object.prototype.hasOwnProperty.call(obj2, key) && deepEquals(obj1[key], obj2[key]),
+    );
   }
 
   // If none of the above, must be primitives that failed Object.is
@@ -124,7 +127,6 @@ export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) 
         });
       } else if (oldValExists && newValExists) {
         // Key exists in both: Recurse using direct path
-        // eslint-disable-next-line no-use-before-define
         findDifferences(oldVal, newVal, currentPath, diffs, newMap);
       }
     }

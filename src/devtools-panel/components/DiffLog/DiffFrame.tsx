@@ -1,13 +1,15 @@
+import clsx from 'clsx';
 import { For } from 'solid-js';
+
+import { getDiffLogFontSize } from '@/devtools-panel/stores/settingsStore';
+import type { DiffFrame as TDiffFrame, Path } from '@/shared/shared-types';
+
 import { DiffItem } from './Diff';
 import { RelativeTime } from './RelativeTime';
-import type { DiffFrame, Path } from '@/shared/shared-types';
-import clsx from 'clsx';
-import { getDiffLogFontSize, getDiffLogHeadingStyle } from '@/devtools-panel/stores/settingsStore';
 
 interface Props {
   first?: boolean;
-  frame: DiffFrame;
+  frame: TDiffFrame;
   setPath: (path: Path) => void;
   onAddFilter: (path: string) => void;
 }

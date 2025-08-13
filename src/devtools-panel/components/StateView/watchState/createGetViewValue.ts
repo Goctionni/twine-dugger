@@ -1,12 +1,14 @@
 import { Accessor, createMemo } from 'solid-js';
-import { HistoryItem, StateViewSelection } from './types';
+
 import { ContainerValue, Value } from '@/shared/shared-types';
+
+import { HistoryItem, StateViewSelection } from './types';
 
 export function createGetViewValue(
   getStateViewSelection: Accessor<StateViewSelection>,
   getStateHistory: Accessor<HistoryItem[]>,
 ) {
-  return createMemo((): Value => {
+  const viewValue = createMemo((): Value => {
     const { historyId, path } = getStateViewSelection();
     const stateHistory = getStateHistory();
     const historyItem = stateHistory.find((item) => item.id === historyId) ?? stateHistory[0];
@@ -29,4 +31,6 @@ export function createGetViewValue(
 
     return state;
   });
+
+  return viewValue;
 }

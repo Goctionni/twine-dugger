@@ -1,7 +1,9 @@
 import { For } from 'solid-js';
-import { DiffFrame } from './DiffLog/DiffFrame';
+
 import type { DiffFrame as IDiffFrame, Path } from '@/shared/shared-types';
+
 import { createContextMenuHandler } from './ContextMenu';
+import { DiffFrame } from './DiffLog/DiffFrame';
 
 interface Props {
   frames: IDiffFrame[];
@@ -14,8 +16,8 @@ interface Props {
 
 export function DiffLog(props: Props) {
   const onContextMenu = createContextMenuHandler([
-    { label: 'Clear Diff Log', onClick: props.onClear },
-    { label: 'Clear All Filters', onClick: props.onClearFilters },
+    { label: 'Clear Diff Log', onClick: () => props.onClear() },
+    { label: 'Clear All Filters', onClick: () => props.onClearFilters() },
   ]);
 
   const frames = () => {

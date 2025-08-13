@@ -1,18 +1,27 @@
-import { createSignal } from 'solid-js';
+import { createSignal, onCleanup, untrack } from 'solid-js';
 
 interface Props {
   date: Date;
 }
 
 export function RelativeTime(props: Props) {
-  const [unitValueNext, setUnitValueNext] = createSignal(getDiffUnitValueNext(props.date));
+  const [unitValueNext, setUnitValueNext] = createSignal(
+    getDiffUnitValueNext(untrack(() => props.date)),
+  );
   const dateStr = () => formatRelativeTime(unitValueNext());
 
-  let timeout = setTimeout(updateDateStr, unitValueNext().next);
+  let timeout = setTimeout(
+    updateDateStr,
+    untrack(() => unitValueNext().next),
+  );
   function updateDateStr() {
     setUnitValueNext(getDiffUnitValueNext(props.date));
     timeout = setTimeout(updateDateStr, unitValueNext().next);
   }
+
+  onCleanup(() => {
+    clearTimeout(timeout);
+  });
 
   return <strong class="text-gray-500">({dateStr()})</strong>;
 }

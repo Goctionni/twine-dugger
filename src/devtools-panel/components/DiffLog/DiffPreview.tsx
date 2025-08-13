@@ -1,7 +1,9 @@
-import { JSX, Switch, Match, createMemo } from 'solid-js';
 import clsx from 'clsx';
-import { RenderValue } from './RenderValue';
+import { createMemo, JSX, Match, Switch } from 'solid-js';
+
 import { ArrayValue, MapValue, ObjectValue, SetValue, Value } from '@/shared/shared-types';
+
+import { RenderValue } from './RenderValue';
 
 type ObjectType = ObjectValue | MapValue | ArrayValue | SetValue;
 
@@ -73,9 +75,8 @@ function SetPreview(props: InnerProps & { value: SetValue }) {
 function ArraySetPreview(
   props: InnerProps & { value: ArrayValue; prefix: string; suffix: string },
 ): JSX.Element {
-  if (props.remainingDepth <= 0) return <span>{`[Array(${props.value.length})]`}</span>;
-
-  return createMemo(() => {
+  const result = createMemo(() => {
+    if (props.remainingDepth <= 0) return <span>{`[Array(${props.value.length})]`}</span>;
     const items = props.value.slice(0, props.maxItems);
     const indent = (plus = 1) => '  '.repeat(props.level + plus);
     const output: JSX.Element[] = [props.prefix];
@@ -104,7 +105,8 @@ function ArraySetPreview(
     if (props.layout === 'pretty') output.push(indent(0));
     output.push(props.suffix);
     return output;
-  })();
+  });
+  return <>{result()}</>;
 }
 
 function MapPreview(props: InnerProps & { value: MapValue }) {
@@ -120,9 +122,8 @@ function ObjectPreview(props: InnerProps & { value: ObjectValue }) {
 function ObjectMapPreview(
   props: InnerProps & { value: ObjectValue; prefix: string; suffix: string },
 ): JSX.Element {
-  if (props.remainingDepth <= 0) return <span>{`[Array(${props.value.length})]`}</span>;
-
-  return createMemo(() => {
+  const result = createMemo(() => {
+    if (props.remainingDepth <= 0) return <span>{`[Array(${props.value.length})]`}</span>;
     const entries = Object.entries(props.value);
     const items = entries.slice(0, props.maxItems) as Array<[string, Value]>;
     const indent = (plus = 1) => '  '.repeat(props.level + plus);
@@ -155,7 +156,9 @@ function ObjectMapPreview(
     if (props.layout === 'pretty') output.push(indent(0));
     output.push(props.suffix);
     return output;
-  })();
+  });
+
+  return <>{result()}</>;
 }
 
 function mapToObj(map: MapValue) {
@@ -177,12 +180,12 @@ function isPlainObject(value: Value) {
 // -----------------------------------------------------------------------------
 // Mock hooks for configuration (replace with your settings store later)
 function usePreviewDepth() {
-  return createMemo(() => 1);
+  return () => 1;
 }
 function usePreviewLength() {
-  return createMemo(() => 5);
+  return () => 5;
 }
 function usePreviewLayout() {
   // 'inline' keeps everything on one line; 'pretty' breaks across lines with indentation.
-  return createMemo<Layout>(() => 'pretty');
+  return (): Layout => 'pretty';
 }

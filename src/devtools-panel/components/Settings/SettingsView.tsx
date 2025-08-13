@@ -1,13 +1,14 @@
-import { BooleanInput, NumberInput } from '../StateView/ValueView/PrimitiveInputs';
+import { JSX, Match, Switch } from 'solid-js';
+
 import {
   getDiffLogFontSize,
-  setDiffLogFontSize,
-  getDiffLogPollingInterval,
-  setDiffLogPollingInterval,
   getDiffLogHeadingStyle,
+  getDiffLogPollingInterval,
+  setDiffLogFontSize,
   setDiffLogHeadingStyle,
+  setDiffLogPollingInterval,
 } from '../../stores/settingsStore';
-import { JSX } from 'solid-js';
+import { BooleanInput, NumberInput } from '../StateView/ValueView/PrimitiveInputs';
 
 function setterWithValidation<T>(setter: (v: T) => void, validator: (v: T) => boolean) {
   return (value: T) => (validator(value) ? setter(value) : undefined);
@@ -22,6 +23,8 @@ export function SettingsView() {
           <SettingControl label="Font size">
             {(id) => (
               <NumberInput
+                lockStatus="no-lock"
+                toggleLock={() => {}}
                 value={getDiffLogFontSize()}
                 onChange={setterWithValidation(
                   setDiffLogFontSize,
@@ -35,6 +38,8 @@ export function SettingsView() {
           <SettingControl label="Polling interval">
             {(id) => (
               <NumberInput
+                lockStatus="no-lock"
+                toggleLock={() => {}}
                 value={getDiffLogPollingInterval()}
                 onChange={setterWithValidation(
                   setDiffLogPollingInterval,
@@ -48,6 +53,8 @@ export function SettingsView() {
           <SettingControl label="Heading Emphasis" noLabel>
             {(id) => (
               <BooleanInput
+                lockStatus="no-lock"
+                toggleLock={() => {}}
                 value={getDiffLogHeadingStyle() === 'distinct'}
                 onChange={(value) => setDiffLogHeadingStyle(value ? 'distinct' : 'default')}
                 id={id}
@@ -73,19 +80,20 @@ function SettingControl(props: SettingControlProps) {
 
   const className = 'col-span-full grid grid-cols-subgrid items-center py-1';
 
-  if (props.noLabel) {
-    return (
-      <div class={className}>
-        <span>{props.label}</span>
-        {props.children(id())}
-      </div>
-    );
-  }
-
   return (
-    <label class={className} for={id()}>
-      <span>{props.label}</span>
-      {props.children(id())}
-    </label>
+    <Switch>
+      <Match when={props.noLabel}>
+        <div class={className}>
+          <span>{props.label}</span>
+          {props.children(id())}
+        </div>
+      </Match>
+      <Match when={!props.noLabel}>
+        <label class={className} for={id()}>
+          <span>{props.label}</span>
+          {props.children(id())}
+        </label>
+      </Match>
+    </Switch>
   );
 }

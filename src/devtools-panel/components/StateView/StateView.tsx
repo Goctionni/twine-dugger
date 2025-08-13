@@ -1,10 +1,12 @@
 import { Index } from 'solid-js';
-import { NavLayers, PathChunk } from './types';
-import { ObjectNav } from './ObjectNav';
-import { ValueView } from './ValueView';
-import { Path } from './Path';
-import { Path as TPath, Value } from '@/shared/shared-types';
+
 import { getLockStatus } from '@/devtools-panel/utils/is-locked';
+import { Path as TPath, Value } from '@/shared/shared-types';
+
+import { ObjectNav } from './ObjectNav';
+import { Path } from './Path';
+import { NavLayers, PathChunk } from './types';
+import { ValueView } from './ValueView';
 
 function pathsMatch(path1: TPath, path2: TPath) {
   if (path1 === path2) return true;

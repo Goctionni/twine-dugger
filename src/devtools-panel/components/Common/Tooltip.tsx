@@ -1,4 +1,4 @@
-import type { JSX, Component } from 'solid-js';
+import type { Component, JSX } from 'solid-js';
 
 type AnchorRenderProps = {
   'class': string;
