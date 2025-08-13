@@ -6,21 +6,33 @@
   "type": "module",
   "scripts": {
     "build": "tsdown",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "prettier": "prettier . -c",
     "prettier:fix": "prettier . -w",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "clsx": "2.1.1",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "solid-js": "1.9.6",
     "tailwindcss": "4.1.6",
     "zod": "4.0.15"
   },
   "devDependencies": {
+    "@eslint/js": "^9.33.0",
     "@microsoft/api-extractor": "7.52.7",
     "@tailwindcss/postcss": "4.1.8",
+    "@types/archiver": "^6.0.3",
     "@types/chrome": "0.0.321",
     "@types/node": "22.15.17",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
+    "archiver": "^7.0.1",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-solid": "^0.14.5",
+    "globals": "^16.3.0",
     "postcss": "8.5.3",
     "prettier": "3.5.3",
     "prettier-plugin-package": "2.0.0",
@@ -28,6 +40,7 @@
     "ts-node": "10.9.2",
     "tsdown": "^0.12.5",
     "typescript": "5.8.3",
+    "typescript-eslint": "^8.39.1",
     "vite-plugin-solid": "2.11.6"
   }
 }

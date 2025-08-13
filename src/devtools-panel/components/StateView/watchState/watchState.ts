@@ -1,12 +1,13 @@
+import { deleteFromState,setState } from '@panel/utils/api';
 import { Accessor, createSignal } from 'solid-js';
 
-import { setState, deleteFromState } from '@panel/utils/api';
-import { StateViewSelection } from './types';
-import { createStateHistory } from './createStateHistory';
+import type { DiffFrame, Path } from '@/shared/shared-types';
+
+import { createGetHistoryItems } from './createGetHistoryItems';
 import { createGetNavLayers } from './createGetNavLayers';
 import { createGetViewValue } from './createGetViewValue';
-import { createGetHistoryItems } from './createGetHistoryItems';
-import type { DiffFrame, Path } from '@/shared/shared-types';
+import { createStateHistory } from './createStateHistory';
+import { StateViewSelection } from './types';
 
 export function watchState(getFrames: Accessor<DiffFrame[]>) {
   const getStateHistory = createStateHistory(getFrames);

@@ -1,6 +1,7 @@
-import { SetValue, ContainerValue } from '@/shared/shared-types';
-import { ChildKey } from '../types';
 import { getPotentialId } from '@/shared/id-helper';
+import { ContainerValue,SetValue } from '@/shared/shared-types';
+
+import { ChildKey } from '../types';
 
 export function getContainerItem(container: ContainerValue | SetValue, key: string | number) {
   if (Array.isArray(container)) {

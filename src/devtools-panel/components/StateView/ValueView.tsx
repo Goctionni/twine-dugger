@@ -1,10 +1,12 @@
-import { ArrayValue, MapValue, ObjectValue, Path, Value, ValueType } from '@/shared/shared-types';
 import { JSX, Match, Show, Switch } from 'solid-js';
-import { TypeIcon } from './TypeIcon';
-import { BooleanInput, NumberInput, StringInput } from './ValueView/PrimitiveInputs';
-import { ArrayInput, MapInput, ObjectInput } from './ValueView/ContainerInputs';
-import { getSpecificType } from '@/shared/type-helpers';
+
 import { getLockStatus } from '@/devtools-panel/utils/is-locked';
+import { ArrayValue, MapValue, ObjectValue, Path, Value, ValueType } from '@/shared/shared-types';
+import { getSpecificType } from '@/shared/type-helpers';
+
+import { TypeIcon } from './TypeIcon';
+import { ArrayInput, MapInput, ObjectInput } from './ValueView/ContainerInputs';
+import { BooleanInput, NumberInput, StringInput } from './ValueView/PrimitiveInputs';
 
 interface Props {
   path: Path;

@@ -1,8 +1,6 @@
 import { Accessor, createMemo, createResource } from 'solid-js';
+
 import { getState } from '@/devtools-panel/utils/api';
-import { HistoryItem } from './types';
-import { getContainerItem } from './watchHelpers';
-import { getSpecificType } from '@/shared/type-helpers';
 import { copy } from '@/shared/copy';
 import {
   ArrayValue,
@@ -16,6 +14,10 @@ import {
   SetValue,
   Value,
 } from '@/shared/shared-types';
+import { getSpecificType } from '@/shared/type-helpers';
+
+import { HistoryItem } from './types';
+import { getContainerItem } from './watchHelpers';
 
 function getByPath(container: ContainerValue | SetValue, path: Path) {
   let current: Value = container;
@@ -123,7 +125,7 @@ export function createStateHistory(getFrames: Accessor<DiffFrame[]>) {
     return result.state;
   });
 
-  return createMemo<HistoryItem[]>((prev): HistoryItem[] => {
+  const getLines = createMemo<HistoryItem[]>((prev): HistoryItem[] => {
     const [lastItem] = prev;
     if (!lastItem) {
       const initialState = getInitialState();
@@ -154,4 +156,6 @@ export function createStateHistory(getFrames: Accessor<DiffFrame[]>) {
     }
     return [...newFrameItems, ...prev].slice(0, 25);
   }, []);
+
+  return getLines;
 }

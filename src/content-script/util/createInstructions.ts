@@ -1,11 +1,11 @@
 import { copy } from '@/shared/copy';
 import type {
+  AddInstruction,
   Instruction,
   MatchPair,
-  Value,
-  AddInstruction,
   MoveInstruction,
   RemoveInstruction,
+  Value,
 } from '@/shared/shared-types';
 
 function createRawAddInstructions(newArr: Value[], newMatched: boolean[]) {

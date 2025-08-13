@@ -7,6 +7,7 @@ import {
   ProcessDiffResult,
   Value,
 } from '@/shared/shared-types';
+
 import { getStateValue } from './shared';
 
 type StateObj = ObjectValue | MapValue | ArrayValue;

@@ -1,5 +1,6 @@
 import { JSXElement, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
+
 import { Dialog } from './Dialog';
 
 interface Store {

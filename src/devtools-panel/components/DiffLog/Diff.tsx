@@ -1,4 +1,5 @@
 import { Match, Switch } from 'solid-js';
+
 import {
   Diff,
   DiffArrayChange,
@@ -9,6 +10,7 @@ import {
   Path,
   Value,
 } from '@/shared/shared-types';
+
 import { Badge } from './Badge';
 import { RenderPath } from './RenderPath';
 import { RenderValue } from './RenderValue';
@@ -167,26 +169,26 @@ export function DiffItem(props: {
     return 'hide';
   };
   const primitives = ['string', 'number', 'boolean'];
-  const baseProps = { setPath: props.setPath, onAddFilter: props.onAddFilter };
+  const baseProps = () => ({ setPath: props.setPath, onAddFilter: props.onAddFilter });
   return (
     <Switch>
       <Match when={type() === 'type-changed'}>
-        <DiffItemTypeChanged diff={props.diff as DiffTypeChange} {...baseProps} />
+        <DiffItemTypeChanged diff={props.diff as DiffTypeChange} {...baseProps()} />
       </Match>
       <Match when={primitives.includes(type() as string)}>
-        <DiffPrimitiveChanged diff={props.diff as DiffPrimitiveUpdate} {...baseProps} />
+        <DiffPrimitiveChanged diff={props.diff as DiffPrimitiveUpdate} {...baseProps()} />
       </Match>
       <Match when={type() === 'set'}>
-        <DiffListChanged diff={props.diff as DiffSetChange} {...baseProps} />
+        <DiffListChanged diff={props.diff as DiffSetChange} {...baseProps()} />
       </Match>
       <Match when={type() === 'array'}>
-        <DiffListChanged diff={props.diff as DiffArrayChange} {...baseProps} />
+        <DiffListChanged diff={props.diff as DiffArrayChange} {...baseProps()} />
       </Match>
       <Match when={type() === 'map'}>
-        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} {...baseProps} />
+        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} {...baseProps()} />
       </Match>
       <Match when={type() === 'object'}>
-        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} {...baseProps} />
+        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} {...baseProps()} />
       </Match>
     </Switch>
   );

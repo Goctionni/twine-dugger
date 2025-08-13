@@ -1,7 +1,9 @@
-import { Path } from '@/shared/shared-types';
-import { createContextMenuHandler } from '../ContextMenu';
-import { For, Match, Switch } from 'solid-js';
 import clsx from 'clsx';
+import { For, Match, Switch } from 'solid-js';
+
+import { Path } from '@/shared/shared-types';
+
+import { createContextMenuHandler } from '../ContextMenu';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',
@@ -37,7 +39,7 @@ export function RenderPath(props: {
   return (
     <code
       onContextMenu={onContextMenu}
-      onClick={props.onClick}
+      onClick={() => props.onClick()}
       class="hover:underline cursor-pointer"
     >
       <For each={fullPath()}>

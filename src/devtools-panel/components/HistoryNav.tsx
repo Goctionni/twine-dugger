@@ -1,6 +1,7 @@
 import clsx from 'clsx';
-import { HistoryNode } from './StateView/watchState/types';
 import { For } from 'solid-js';
+
+import { HistoryNode } from './StateView/watchState/types';
 
 interface Props {
   historyItems: HistoryNode[];

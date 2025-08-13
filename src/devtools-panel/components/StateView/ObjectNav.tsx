@@ -1,13 +1,15 @@
-import { createEffect, For } from 'solid-js';
-import { PathChunk } from './types';
-import { TypeIcon } from './TypeIcon';
 import clsx from 'clsx';
-import { createContextMenuHandler } from '../ContextMenu';
+import { createEffect, For } from 'solid-js';
+
+import { getLockStatus } from '@/devtools-panel/utils/is-locked';
 import { LockStatus, Path } from '@/shared/shared-types';
+
 import { duplicateStateProperty } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
+import { createContextMenuHandler } from '../ContextMenu';
 import { DuplicateKeyDialog } from './DuplicateKeyDialog';
-import { getLockStatus } from '@/devtools-panel/utils/is-locked';
+import { TypeIcon } from './TypeIcon';
+import { PathChunk } from './types';
 
 interface Props {
   chunk: PathChunk;
@@ -88,25 +90,21 @@ function NavItem(props: NavItemProps) {
       onClick: () => props.setLockState(props.lockStatus === 'unlocked'),
     },
     {
-      label: `Duplicate "${props.child.text}"`,
+      label: () => `Duplicate "${props.child.text}"`,
       onClick: () => props.onDuplicate(),
       disabled: () => props.lockStatus === 'ancestor-lock',
     },
     {
-      label: `Delete "${props.child.text}"`,
+      label: () => `Delete "${props.child.text}"`,
       onClick: () => props.onDelete(),
       disabled: () => props.lockStatus !== 'unlocked',
     },
   ]);
 
-  createEffect(() => {
-    console.log(props.child, props.lockStatus);
-  });
-
   return (
     <li onContextMenu={onContextMenu}>
       <a
-        onClick={props.onClick}
+        onClick={() => props.onClick()}
         class={clsx(
           'flex items-center gap-1 p-1 cursor-pointer rounded-md',
           props.active

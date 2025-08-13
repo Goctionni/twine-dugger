@@ -1,10 +1,10 @@
-import { jsonReplacer, jsonReviver } from '@/shared/json-helper';
-
-import sugarcubeHelpers from './format-helpers/sugarcube';
-import harloweHelpers from './format-helpers/harlowe';
-import { FormatHelpers } from './format-helpers/type';
 import { copy } from '@/shared/copy';
+import { jsonReplacer, jsonReviver } from '@/shared/json-helper';
 import { UpdateResult } from '@/shared/shared-types';
+
+import harloweHelpers from './format-helpers/harlowe';
+import sugarcubeHelpers from './format-helpers/sugarcube';
+import { FormatHelpers } from './format-helpers/type';
 
 const formatHelpers: FormatHelpers[] = [sugarcubeHelpers, harloweHelpers];
 

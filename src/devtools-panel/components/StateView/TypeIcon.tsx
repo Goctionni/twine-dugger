@@ -1,4 +1,5 @@
 import { Match, Switch } from 'solid-js';
+
 import { ValueType } from './types';
 
 interface Props {

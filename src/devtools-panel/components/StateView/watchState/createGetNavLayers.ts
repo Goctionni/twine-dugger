@@ -1,15 +1,17 @@
 import { Accessor, createMemo } from 'solid-js';
+
+import { ContainerValue, Path } from '@/shared/shared-types';
+import { getSpecificType } from '@/shared/type-helpers';
+
 import { ChildKey, NavLayers, PathChunk } from '../types';
 import { HistoryItem, StateViewSelection } from './types';
 import { compareChildKeys } from './watchHelpers';
-import { getSpecificType } from '@/shared/type-helpers';
-import { ContainerValue, Path } from '@/shared/shared-types';
 
 export function createGetNavLayers(
   getStateViewSelection: Accessor<StateViewSelection>,
   getStateHistory: Accessor<HistoryItem[]>,
 ) {
-  return createMemo<NavLayers>((prev) => {
+  const navLayers = createMemo<NavLayers>((prev) => {
     const { historyId, path } = getStateViewSelection();
     const history = getStateHistory();
     const state = history.find((item) => item.id === historyId) ?? history[0];
@@ -52,6 +54,8 @@ export function createGetNavLayers(
 
     return result;
   });
+
+  return navLayers;
 }
 
 function createPathChunk(name: string, path: Path, value: ContainerValue): PathChunk {
