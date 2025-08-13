@@ -1,4 +1,5 @@
-import { defineConfig, Options } from 'tsdown';
+import { defineConfig } from 'tsdown';
+import type { Options } from 'tsdown';
 import solidPlugin from 'vite-plugin-solid';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from '@tailwindcss/postcss';
