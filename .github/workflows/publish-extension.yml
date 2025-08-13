@@ -1,16 +1,17 @@
-name: Publish
+name: Publish Extension
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+permissions:
+  contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,14 +33,10 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
+      - name: Upload to Chrome Web Store
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        with:
-          publish: pnpx chrome-webstore-upload-cli --source dist && pnpx @changesets/cli tag
+        run: pnpx chrome-webstore-upload-cli --source dist
