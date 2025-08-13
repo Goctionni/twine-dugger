@@ -39,4 +39,4 @@ jobs:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
         with:
-          publish: pnpm build && pnpx chrome-webstore-upload --source dist
+          publish: pnpm build && pnpx chrome-webstore-upload --source dist && pnpx @changesets/cli tag
