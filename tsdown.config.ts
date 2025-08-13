@@ -3,11 +3,11 @@ import solidPlugin from 'vite-plugin-solid';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from '@tailwindcss/postcss';
 import { mkdir, rm } from 'fs/promises';
+import { resolve } from 'path';
 
 import packageJson from './package.json' with { type: 'json' };
-import { getFontHtml } from './build/material-symbols';
-import { copyTransform } from './build/copy-transform';
-import { resolve } from 'path';
+import { getFontHtml } from './build/material-symbols.ts';
+import { copyTransform } from './build/copy-transform.ts';
 
 const baseOptions = {
   tsconfig: 'tsconfig.app.json',
