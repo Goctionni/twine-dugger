@@ -49,7 +49,7 @@ export default defineConfig((): Options[] => [
                 .replace('./main.tsx', './devtools-panel.js')
                 .replace(
                   '<!--head-->',
-                  await getFontHtml(['search', 'data_object', 'settings', 'content_copy']),
+                  await getFontHtml(['search', 'data_object', 'settings', 'content_copy', 'close']),
                 ),
           });
 

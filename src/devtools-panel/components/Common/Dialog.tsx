@@ -1,8 +1,6 @@
 import { createEffect, JSX } from 'solid-js';
 import { Portal } from 'solid-js/web';
 
-import { CrossIcon } from '../Icons/CrossIcon';
-
 interface Props {
   onClose?: () => void;
   open?: boolean;
@@ -48,7 +46,7 @@ export function Dialog(props: Props) {
         <header class="mb-1 border-b-2 border-b-gray-400 text-xl font-bold py-1 flex gap-4 justify-between min-w-md">
           <div>{props.heading}</div>
           <button commandfor={id} command="close" aria-label="Close" class="cursor-pointer">
-            <CrossIcon class="h-6 w-6 text-white hover:text-sky-400" />
+            <span class="material-symbols-outlined text-white">close</span>
           </button>
         </header>
         {props.children}
