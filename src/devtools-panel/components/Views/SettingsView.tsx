@@ -16,55 +16,58 @@ function setterWithValidation<T>(setter: (v: T) => void, validator: (v: T) => bo
 
 export function SettingsView() {
   return (
-    <>
-      <fieldset class="text-base">
-        <legend class="text-lg font-bold">Diff Log</legend>
-        <div class="grid grid-cols-[auto_1fr] gap-4">
-          <SettingControl label="Font size">
-            {(id) => (
-              <NumberInput
-                lockStatus="no-lock"
-                toggleLock={() => {}}
-                value={getDiffLogFontSize()}
-                onChange={setterWithValidation(
-                  setDiffLogFontSize,
-                  (size) => size > 10 && size < 40,
-                )}
-                id={id}
-                editable
-              />
-            )}
-          </SettingControl>
-          <SettingControl label="Polling interval">
-            {(id) => (
-              <NumberInput
-                lockStatus="no-lock"
-                toggleLock={() => {}}
-                value={getDiffLogPollingInterval()}
-                onChange={setterWithValidation(
-                  setDiffLogPollingInterval,
-                  (interval) => interval > 100 && interval < 5000,
-                )}
-                id={id}
-                editable
-              />
-            )}
-          </SettingControl>
-          <SettingControl label="Heading Emphasis" noLabel>
-            {(id) => (
-              <BooleanInput
-                lockStatus="no-lock"
-                toggleLock={() => {}}
-                value={getDiffLogHeadingStyle() === 'distinct'}
-                onChange={(value) => setDiffLogHeadingStyle(value ? 'distinct' : 'default')}
-                id={id}
-                editable
-              />
-            )}
-          </SettingControl>
-        </div>
-      </fieldset>
-    </>
+    <div class="bg-gray-700 flex-1 flex">
+      <div class="mx-auto max-w-6xl w-full bg-slate-900 flex-1 py-3 px-6">
+        <h2 class="text-2xl font-bold pb-4">Settings</h2>
+        <fieldset class="text-base">
+          <legend class="text-lg font-bold">Diff Log</legend>
+          <div class="grid grid-cols-[auto_1fr] gap-4">
+            <SettingControl label="Font size">
+              {(id) => (
+                <NumberInput
+                  lockStatus="no-lock"
+                  toggleLock={() => {}}
+                  value={getDiffLogFontSize()}
+                  onChange={setterWithValidation(
+                    setDiffLogFontSize,
+                    (size) => size > 10 && size < 40,
+                  )}
+                  id={id}
+                  editable
+                />
+              )}
+            </SettingControl>
+            <SettingControl label="Polling interval">
+              {(id) => (
+                <NumberInput
+                  lockStatus="no-lock"
+                  toggleLock={() => {}}
+                  value={getDiffLogPollingInterval()}
+                  onChange={setterWithValidation(
+                    setDiffLogPollingInterval,
+                    (interval) => interval > 100 && interval < 5000,
+                  )}
+                  id={id}
+                  editable
+                />
+              )}
+            </SettingControl>
+            <SettingControl label="Heading Emphasis" noLabel>
+              {(id) => (
+                <BooleanInput
+                  lockStatus="no-lock"
+                  toggleLock={() => {}}
+                  value={getDiffLogHeadingStyle() === 'distinct'}
+                  onChange={(value) => setDiffLogHeadingStyle(value ? 'distinct' : 'default')}
+                  id={id}
+                  editable
+                />
+              )}
+            </SettingControl>
+          </div>
+        </fieldset>
+      </div>
+    </div>
   );
 }
 
@@ -84,7 +87,7 @@ function SettingControl(props: SettingControlProps) {
     <Switch>
       <Match when={props.noLabel}>
         <div class={className}>
-          <span>{props.label}</span>
+          <span class="inline-block w-50">{props.label}</span>
           {props.children(id())}
         </div>
       </Match>
