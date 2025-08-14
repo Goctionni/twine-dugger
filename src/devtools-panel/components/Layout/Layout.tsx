@@ -5,8 +5,9 @@ import { GameMetaData } from '@/devtools-panel/utils/remote-functions/getMetaDat
 import { Dialog } from '../Common/Dialog';
 import { createContextMenuHandler } from '../ContextMenu';
 import { CogIcon } from '../Icons/CogIcon';
-import { SettingsView } from '../Settings/SettingsView';
+import { SettingsView } from '../Views/SettingsView';
 import { MetaInfo } from './MetaInfo';
+import { Navigation } from './Navigation';
 
 interface LayoutProps {
   meta?: GameMetaData | null;
@@ -35,14 +36,15 @@ export function Layout(props: LayoutProps) {
             <h1 class="text-xl font-semibold text-sky-400">Twine Dugger</h1>
             {props.meta && <MetaInfo {...props.meta} />}
           </div>
-          <button
+          <Navigation />
+          {/* <button
             type="button"
             onClick={handleOptionsClick}
             class="cursor-pointer p-2 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
             aria-label="Options"
           >
             <CogIcon class="h-6 w-6 text-gray-400 hover:text-sky-400" />
-          </button>
+          </button> */}
         </header>
         {props.children}
       </div>

@@ -47,7 +47,10 @@ export default defineConfig((): Options[] => [
             transform: async (content) =>
               content
                 .replace('./main.tsx', './devtools-panel.js')
-                .replace('<!--head-->', await getFontHtml(['search'])),
+                .replace(
+                  '<!--head-->',
+                  await getFontHtml(['search', 'data_object', 'settings', 'content_copy']),
+                ),
           });
 
           return code;
