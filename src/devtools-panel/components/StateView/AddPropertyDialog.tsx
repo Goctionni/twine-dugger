@@ -9,7 +9,11 @@ const buttonClasses =
 
 type NewValueType = 'string' | 'number' | 'boolean' | 'object' | 'array';
 
-export function AddPropertyDialog(props: { onConfirm: (name: string, value: unknown) => void }) {
+export function AddPropertyDialog(props: {
+  onConfirm: (name: string, value: unknown) => void;
+  isArray?: boolean;
+  nextIndex?: number; // new prop
+}) {
   const [name, setName] = createSignal('');
   const [type, setType] = createSignal<NewValueType>('string');
   const [primitiveValue, setPrimitiveValue] = createSignal<string | number | boolean>('');
@@ -34,19 +38,24 @@ export function AddPropertyDialog(props: { onConfirm: (name: string, value: unkn
         value = [];
         break;
     }
-    props.onConfirm(name(), value);
+
+    // For arrays, use nextIndex as key
+    const key = props.isArray ? String(props.nextIndex ?? 0) : name();
+    props.onConfirm(key, value);
   }
 
   return (
     <form onSubmit={handleSubmit} class="flex flex-col gap-2">
-      <input
-        autofocus
-        type="text"
-        placeholder="Property name"
-        value={name()}
-        onInput={(e) => setName(e.currentTarget.value)}
-        class={clsx(inputClasses, 'rounded-md')}
-      />
+      <Show when={!props.isArray}>
+        <input
+          autofocus
+          type="text"
+          placeholder="Property name"
+          value={name()}
+          onInput={(e) => setName(e.currentTarget.value)}
+          class={clsx(inputClasses, 'rounded-md')}
+        />
+      </Show>
 
       <select
         value={type()}
@@ -92,8 +101,10 @@ export function AddPropertyDialog(props: { onConfirm: (name: string, value: unkn
           'text-white px-4 rounded-md bg-green-600 hover:bg-green-700 focus:ring-green-500',
         )}
       >
-        Add Property
+        Add {props.isArray ? 'Item' : 'Property'}
       </button>
     </form>
   );
 }
+
+

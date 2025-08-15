@@ -8,7 +8,7 @@ import { duplicateStateProperty, setState } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
 import { createContextMenuHandler } from '../ContextMenu';
 import { DuplicateKeyDialog } from './DuplicateKeyDialog';
-import { AddPropertyDialog } from './addPropertyDialog';
+import { AddPropertyDialog } from './AddPropertyDialog';
 import { TypeIcon } from './TypeIcon';
 import { PathChunk } from './types';
 
@@ -41,9 +41,16 @@ export function ObjectNav(props: Props) {
     }
   };
   const onAdd = async () => {
+    const isArray = Array.isArray(props.chunk.getValue());
     const result = await showPromptDialog<{ name: string; value: unknown }>(
-      'Add new property',
-      (resolve) => <AddPropertyDialog onConfirm={(name, value) => resolve({ name, value })} />
+      'Add new',
+      (resolve) => (
+        <AddPropertyDialog
+          isArray={isArray}
+          nextIndex={isArray ? props.chunk.childKeys.length : undefined}
+          onConfirm={(name, value) => resolve({ name, value })}
+        />
+      ),
     );
 
     if (result && result.name) {
