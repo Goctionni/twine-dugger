@@ -4,10 +4,11 @@ import { createEffect, For } from 'solid-js';
 import { getLockStatus } from '@/devtools-panel/utils/is-locked';
 import { LockStatus, Path } from '@/shared/shared-types';
 
-import { duplicateStateProperty } from '../../utils/api';
+import { duplicateStateProperty, setState } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
 import { createContextMenuHandler } from '../ContextMenu';
 import { DuplicateKeyDialog } from './DuplicateKeyDialog';
+import { AddPropertyDialog } from './addPropertyDialog';
 import { TypeIcon } from './TypeIcon';
 import { PathChunk } from './types';
 
@@ -39,6 +40,17 @@ export function ObjectNav(props: Props) {
       duplicateStateProperty(props.chunk.path, property, newPropertyKey);
     }
   };
+  const onAdd = async () => {
+    const result = await showPromptDialog<{ name: string; value: unknown }>(
+      'Add new property',
+      (resolve) => <AddPropertyDialog onConfirm={(name, value) => resolve({ name, value })} />
+    );
+
+    if (result && result.name) {
+      const fullPath = [...props.chunk.path, result.name];
+      await setState(fullPath, result.value);
+    }
+  };
   return (
     <div class="w-max max-w-3xs flex flex-col h-full px-2 border-r border-r-gray-700">
       <p class="text-lg">{props.chunk.name}</p>
@@ -63,6 +75,14 @@ export function ObjectNav(props: Props) {
             );
           }}
         </For>
+        <li>
+          <a
+            onClick={onAdd}
+            class="flex items-center gap-1 p-1 cursor-pointer rounded-md text-green-400 hover:bg-gray-700"
+          >
+            ➕ <span class="flex-1 overflow-hidden overflow-ellipsis">Add new...</span>
+          </a>
+        </li>
       </ul>
     </div>
   );
