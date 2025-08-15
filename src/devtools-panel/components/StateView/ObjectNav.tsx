@@ -41,13 +41,11 @@ export function ObjectNav(props: Props) {
     }
   };
   const onAdd = async () => {
-    const isArray = Array.isArray(props.chunk.getValue());
     const result = await showPromptDialog<{ name: string; value: unknown }>(
       'Add new',
       (resolve) => (
         <AddPropertyDialog
-          isArray={isArray}
-          nextIndex={isArray ? props.chunk.childKeys.length : undefined}
+          chunk={props.chunk}
           onConfirm={(name, value) => resolve({ name, value })}
         />
       ),
@@ -61,6 +59,16 @@ export function ObjectNav(props: Props) {
   return (
     <div class="w-max max-w-3xs flex flex-col h-full px-2 border-r border-r-gray-700">
       <p class="text-lg">{props.chunk.name}</p>
+      <ul>
+        <li>
+          <a
+            onClick={onAdd}
+            class="flex items-center gap-1 p-1 cursor-pointer rounded-md text-green-400 hover:bg-gray-700"
+          >
+            ➕ <span class="flex-1 overflow-hidden overflow-ellipsis">Add new...</span>
+          </a>
+        </li>
+      </ul>
       <ul class="flex flex-1 flex-col overflow-auto">
         <For each={props.chunk.childKeys}>
           {(child) => {
@@ -82,14 +90,6 @@ export function ObjectNav(props: Props) {
             );
           }}
         </For>
-        <li>
-          <a
-            onClick={onAdd}
-            class="flex items-center gap-1 p-1 cursor-pointer rounded-md text-green-400 hover:bg-gray-700"
-          >
-            ➕ <span class="flex-1 overflow-hidden overflow-ellipsis">Add new...</span>
-          </a>
-        </li>
       </ul>
     </div>
   );
