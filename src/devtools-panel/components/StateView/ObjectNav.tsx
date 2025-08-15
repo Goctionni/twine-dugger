@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { createEffect, For } from 'solid-js';
+import { For } from 'solid-js';
 
 import { getLockStatus } from '@/devtools-panel/utils/is-locked';
 import { LockStatus, Path } from '@/shared/shared-types';

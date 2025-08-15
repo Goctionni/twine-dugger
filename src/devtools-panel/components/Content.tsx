@@ -25,6 +25,7 @@ export function Content(props: Props) {
   const [filteredPaths, setFilteredPaths] = createSignal<string[]>([]);
 
   const {
+    getState,
     getNavLayers,
     getPath,
     getHistoryItems,
@@ -78,7 +79,7 @@ export function Content(props: Props) {
         />
       </Match>
       <Match when={getNavItem().text === 'Search'}>
-        <SearchView />
+        <SearchView gameState={getState()} passageData={passageData()} setPath={setPath} />
       </Match>
       <Match when={getNavItem().text === 'Passages'}>
         <PassagesView passageData={passageData()} />

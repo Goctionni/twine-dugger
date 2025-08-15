@@ -4,38 +4,21 @@ import { createMemo, createSignal, For } from 'solid-js';
 import { PassageData } from '@/shared/shared-types';
 
 import { MovableSplit } from '../Layout/MovableSplit';
-
-interface ParsedPassageData {
-  id: number;
-  name: string;
-  size: [number, number] | null;
-  position: [number, number] | null;
-  content: string;
-  tags: string[];
-}
+import {
+  getSelectedPassage,
+  ParsedPassageData,
+  parsePassage,
+  setSelectedPassage,
+} from './passageDataStore';
 
 interface Props {
   passageData?: PassageData[];
 }
 
-function parseDoubleIntAttr(str: string) {
-  return str.split(',').map(Number) as [number, number];
-}
-
 export function PassagesView(props: Props) {
-  const [selectedPassage, setSelectedPassage] = createSignal<ParsedPassageData | null>(null);
   const formatted = createMemo(() => {
     if (!props.passageData?.length) return null;
-    return props.passageData.map((data): ParsedPassageData => {
-      return {
-        id: parseInt(data.pid),
-        name: data.name,
-        size: data.size ? parseDoubleIntAttr(data.size) : null,
-        position: data.position ? parseDoubleIntAttr(data.position) : null,
-        content: data.content,
-        tags: data.tags?.split(' ').filter(Boolean),
-      };
-    });
+    return props.passageData.map(parsePassage);
   });
   return (
     <MovableSplit
@@ -49,7 +32,7 @@ export function PassagesView(props: Props) {
                 <ListItem
                   passageData={item}
                   onClick={() => setSelectedPassage(item)}
-                  active={selectedPassage()?.id === item.id}
+                  active={getSelectedPassage()?.id === item.id}
                 />
               )}
             </For>
@@ -59,12 +42,12 @@ export function PassagesView(props: Props) {
       rightContent={
         <div class="w-full h-full overflow-auto px-4 py-2 flex flex-col">
           <div class="py-2 flex gap-2">
-            <h3 class="text-lg">Selected Passage: {selectedPassage()?.name}</h3>
+            <h3 class="text-lg">Selected Passage: {getSelectedPassage()?.name}</h3>
             <div class="flex gap-1 ">
-              <For each={selectedPassage()?.tags}>{(tag) => <Tag tag={tag} />}</For>
+              <For each={getSelectedPassage()?.tags}>{(tag) => <Tag tag={tag} />}</For>
             </div>
           </div>
-          <code class="whitespace-pre flex-1 overflow-auto">{selectedPassage()?.content}</code>
+          <code class="whitespace-pre flex-1 overflow-auto">{getSelectedPassage()?.content}</code>
         </div>
       }
     />
@@ -76,7 +59,7 @@ interface ListItemProps {
   onClick: () => void;
   active?: boolean;
 }
-function ListItem(props: ListItemProps) {
+export function ListItem(props: ListItemProps) {
   return (
     <li class="border-t last:border-b border-slate-400 flex">
       <button
