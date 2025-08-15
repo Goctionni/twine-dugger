@@ -47,7 +47,6 @@ export function AddPropertyDialog(props: {
 
     return 'primitive';
   };
-  const parentType = getParentType();
 
   function handleSubmit(e: Event) {
     e.preventDefault();
@@ -55,9 +54,9 @@ export function AddPropertyDialog(props: {
     const childKeys = props.chunk.childKeys.length
     
     let key: string;
-    if (parentType === 'array') {
+    if (getParentType() === 'array') {
       key = String(childKeys ?? 0)
-    } else if (parentType === 'set' || parentType === 'map') {
+    } else if (getParentType() === 'set' || getParentType() === 'map') {
       key = '';
     } else {
       key = name();
@@ -68,7 +67,7 @@ export function AddPropertyDialog(props: {
 
   return (
     <form onSubmit={handleSubmit} class="flex flex-col gap-2">
-      <Show when={parentType !== 'set' && parentType !== 'map' && parentType !== 'array'}>
+      <Show when={getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array'}>
         <input
           autofocus
           type="text"
@@ -128,7 +127,7 @@ export function AddPropertyDialog(props: {
         )}
       >
         Add {
-          (parentType !== 'set' && parentType !== 'map' && parentType !== 'array') 
+          (getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array') 
           ? 
           'Item' : 'Property'
         }
