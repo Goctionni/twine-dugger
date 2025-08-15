@@ -44,6 +44,7 @@ export function SearchView(props: Props) {
         value={query()}
         onInput={(e) => setQuery(e.target.value)}
         class={inputClasses}
+        autofocus
       />
       <Show when={Object.values(searchResults()).some((arr) => arr.length > 0)}>
         <div class="flex-1 overflow-hidden">
@@ -122,7 +123,7 @@ function findPassageMatches(data: ParsedPassageData[], rawQuery: string): Parsed
   // search tags
   for (const passage of data) {
     if (results.includes(passage)) continue;
-    if (passage.tags.some((tag) => tag.toLocaleLowerCase().includes(query))) {
+    if (passage.tags?.some((tag) => tag.toLocaleLowerCase().includes(query))) {
       results.push(passage);
     }
   }
@@ -160,8 +161,8 @@ function findStateMatches(data: ObjectValue, rawQuery: string): Path[] {
       }
 
       if (val instanceof Map) {
-        for (const [k, v] of val) {
-          checkKey(k, path);
+        for (const [k, v] of val.entries()) {
+          checkKey(`${k}`, path);
           checkValue(v, k, path);
           visit(v, [...path, k]);
         }

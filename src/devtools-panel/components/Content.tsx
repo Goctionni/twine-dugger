@@ -56,6 +56,7 @@ export function Content(props: Props) {
               filteredPaths={filteredPaths()}
               onAddFilter={addFilterPath}
               onClearFilters={clearFilters}
+              passageData={passageData()}
             />
           }
           rightContent={

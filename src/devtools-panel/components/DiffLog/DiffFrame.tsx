@@ -2,8 +2,10 @@ import clsx from 'clsx';
 import { For } from 'solid-js';
 
 import { getDiffLogFontSize } from '@/devtools-panel/stores/settingsStore';
-import type { DiffFrame as TDiffFrame, Path } from '@/shared/shared-types';
+import type { DiffFrame as TDiffFrame, PassageData, Path } from '@/shared/shared-types';
 
+import { navItems, setNavItem } from '../Layout/nav-items';
+import { parsePassage, setSelectedPassage } from '../Views/passageDataStore';
 import { DiffItem } from './Diff';
 import { RelativeTime } from './RelativeTime';
 
@@ -12,6 +14,7 @@ interface Props {
   frame: TDiffFrame;
   setPath: (path: Path) => void;
   onAddFilter: (path: string) => void;
+  passageData?: PassageData[];
 }
 
 export function DiffFrame(props: Props) {
@@ -25,7 +28,16 @@ export function DiffFrame(props: Props) {
           showSeparator() && 'mt-3 pt-3 border-t border-gray-700/50',
         )}
       >
-        <span class="font-bold text-gray-300">{props.frame.passage}</span>
+        <button
+          class="cursor-pointer font-bold text-gray-300"
+          onClick={() => {
+            setNavItem(navItems[2]);
+            const passage = props.passageData?.find((p) => p.name === props.frame.passage);
+            if (passage) setSelectedPassage(parsePassage(passage));
+          }}
+        >
+          {props.frame.passage}
+        </button>
         <RelativeTime date={props.frame.timestamp} />
       </div>
 
