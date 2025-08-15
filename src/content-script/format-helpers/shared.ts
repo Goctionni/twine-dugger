@@ -1,4 +1,4 @@
-import { ArrayValue, MapValue, ObjectValue, Path, Value } from '@/shared/shared-types';
+import { ArrayValue, MapValue, ObjectValue, PassageData, Path, Value } from '@/shared/shared-types';
 
 import { isObj } from '../util/type-helpers';
 
@@ -96,4 +96,15 @@ export function deleteFromState(
       path,
     });
   }
+}
+
+export function getPassageData() {
+  const passageElements = document.querySelectorAll<HTMLElement>('tw-storydata tw-passagedata');
+  return Array.from(passageElements).map((el) => {
+    const elData: Partial<PassageData> = { content: el.innerText };
+    el.getAttributeNames().forEach((attr) => {
+      elData[attr] = el.getAttribute(attr) ?? '';
+    });
+    return elData as PassageData;
+  });
 }

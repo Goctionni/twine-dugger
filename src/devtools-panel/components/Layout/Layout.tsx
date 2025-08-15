@@ -1,11 +1,8 @@
-import { createSignal, JSX } from 'solid-js';
+import { JSX } from 'solid-js';
 
 import { GameMetaData } from '@/devtools-panel/utils/remote-functions/getMetaData';
 
-import { Dialog } from '../Common/Dialog';
 import { createContextMenuHandler } from '../ContextMenu';
-import { CogIcon } from '../Icons/CogIcon';
-import { SettingsView } from '../Views/SettingsView';
 import { MetaInfo } from './MetaInfo';
 import { Navigation } from './Navigation';
 

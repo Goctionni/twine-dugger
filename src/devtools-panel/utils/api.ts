@@ -54,6 +54,11 @@ export async function deleteFromState(path: Array<string | number>) {
   return execDuggerFunction('deleteFromState', [path]);
 }
 
+export async function getPassageData() {
+  await injectContentScript();
+  return execDuggerFunction('getPassageData', []);
+}
+
 type DuggerFunctionNames = Exclude<keyof Window['TwineDugger'], 'utils'>;
 function execDuggerFunction<T extends DuggerFunctionNames>(
   fn: T,

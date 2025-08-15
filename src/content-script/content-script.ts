@@ -3,6 +3,7 @@ import { jsonReplacer, jsonReviver } from '@/shared/json-helper';
 import { UpdateResult } from '@/shared/shared-types';
 
 import harloweHelpers from './format-helpers/harlowe';
+import { getPassageData } from './format-helpers/shared';
 import sugarcubeHelpers from './format-helpers/sugarcube';
 import { FormatHelpers } from './format-helpers/type';
 
@@ -54,6 +55,7 @@ function init() {
     deleteFromState: formatHelper.deleteFromState,
     duplicateStateProperty: formatHelper.duplicateStateProperty,
     setStatePropertyLock: formatHelper.setStatePropertyLock,
+    getPassageData,
   };
 }
 

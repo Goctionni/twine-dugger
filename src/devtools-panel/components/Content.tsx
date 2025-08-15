@@ -1,5 +1,6 @@
-import { createSignal, Match, Switch } from 'solid-js';
+import { createResource, createSignal, Match, Switch } from 'solid-js';
 
+import { getPassageData } from '../utils/api';
 import { DiffLog } from './DiffLog';
 import { HistoryNav } from './HistoryNav';
 import { MovableSplit } from './Layout/MovableSplit';
@@ -20,6 +21,7 @@ export function Content(props: Props) {
   const [diffFrames, { clearDiffFrames, getLockedPaths, addLockPath, removeLockPath }] =
     // eslint-disable-next-line solid/reactivity
     trackDiffFrames(kill);
+  const [passageData] = createResource(() => getPassageData());
   const [filteredPaths, setFilteredPaths] = createSignal<string[]>([]);
 
   const {
@@ -79,7 +81,7 @@ export function Content(props: Props) {
         <SearchView />
       </Match>
       <Match when={getNavItem().text === 'Passages'}>
-        <PassagesView />
+        <PassagesView passageData={passageData()} />
       </Match>
       <Match when={getNavItem().text === 'Settings'}>
         <SettingsView />
