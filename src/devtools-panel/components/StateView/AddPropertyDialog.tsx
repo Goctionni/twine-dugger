@@ -18,8 +18,11 @@ export function AddPropertyDialog(props: {
   const [name, setName] = createSignal('');
   const [type, setType] = createSignal<NewValueType>('string');
   const [primitiveValue, setPrimitiveValue] = createSignal<string | number | boolean>('');
-  
-  function getValueFromType(type: NewValueType, primitiveValue: string | number | boolean): unknown {
+
+  function getValueFromType(
+    type: NewValueType,
+    primitiveValue: string | number | boolean,
+  ): unknown {
     switch (type) {
       case 'string':
         return String(primitiveValue ?? '');
@@ -52,11 +55,11 @@ export function AddPropertyDialog(props: {
   function handleSubmit(e: Event) {
     e.preventDefault();
     const value = getValueFromType(type(), primitiveValue());
-    const childKeys = props.chunk.childKeys.length
-    
+    const childKeys = props.chunk.childKeys.length;
+
     let key: string;
     if (getParentType() === 'array') {
-      key = String(childKeys ?? 0)
+      key = String(childKeys ?? 0);
     } else if (getParentType() === 'set' || getParentType() === 'map') {
       key = '';
     } else {
@@ -68,7 +71,9 @@ export function AddPropertyDialog(props: {
 
   return (
     <form onSubmit={handleSubmit} class="flex flex-col gap-2">
-      <Show when={getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array'}>
+      <Show
+        when={getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array'}
+      >
         <input
           autofocus
           type="text"
@@ -110,9 +115,11 @@ export function AddPropertyDialog(props: {
             value={String(primitiveValue())}
             onInput={(e) =>
               setPrimitiveValue(
-                type() === 'number' 
-                  ? (isNaN(e.currentTarget.valueAsNumber) ? 0 : e.currentTarget.valueAsNumber) 
-                  : e.currentTarget.value
+                type() === 'number'
+                  ? isNaN(e.currentTarget.valueAsNumber)
+                    ? 0
+                    : e.currentTarget.valueAsNumber
+                  : e.currentTarget.value,
               )
             }
             class={clsx(inputClasses, 'rounded-md')}
@@ -127,14 +134,11 @@ export function AddPropertyDialog(props: {
           'text-white px-4 rounded-md bg-green-600 hover:bg-green-700 focus:ring-green-500',
         )}
       >
-        Add {
-          (getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array') 
-          ? 
-          'Item' : 'Property'
-        }
+        Add{' '}
+        {getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array'
+          ? 'Item'
+          : 'Property'}
       </button>
     </form>
   );
 }
-
-
