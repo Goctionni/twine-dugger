@@ -7,8 +7,8 @@ import { LockStatus, Path } from '@/shared/shared-types';
 import { duplicateStateProperty, setState } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
 import { createContextMenuHandler } from '../ContextMenu';
-import { DuplicateKeyDialog } from './DuplicateKeyDialog';
 import { AddPropertyDialog } from './AddPropertyDialog';
+import { DuplicateKeyDialog } from './DuplicateKeyDialog';
 import { TypeIcon } from './TypeIcon';
 import { PathChunk } from './types';
 

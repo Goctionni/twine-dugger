@@ -1,5 +1,6 @@
-import { createSignal, Show } from 'solid-js';
 import clsx from 'clsx';
+import { createSignal, Show } from 'solid-js';
+
 import { PathChunk } from './types';
 
 const inputClasses =
