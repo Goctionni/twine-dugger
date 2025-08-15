@@ -1,6 +1,6 @@
 import { For } from 'solid-js';
 
-import type { DiffFrame as IDiffFrame, Path } from '@/shared/shared-types';
+import type { DiffFrame as IDiffFrame, PassageData, Path } from '@/shared/shared-types';
 
 import { createContextMenuHandler } from './ContextMenu';
 import { DiffFrame } from './DiffLog/DiffFrame';
@@ -12,6 +12,7 @@ interface Props {
   filteredPaths: string[];
   onAddFilter: (path: string) => void;
   onClearFilters: () => void;
+  passageData?: PassageData[];
 }
 
 export function DiffLog(props: Props) {
@@ -42,6 +43,7 @@ export function DiffLog(props: Props) {
                 setPath={props.setPath}
                 first={index() === 0}
                 onAddFilter={props.onAddFilter}
+                passageData={props.passageData}
               />
             </li>
           )}

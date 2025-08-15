@@ -155,7 +155,7 @@ export function BooleanInput(props: Props<boolean>) {
       <div
         class={clsx(
           'relative flex justify-between w-[184px] h-7',
-          props.editable && props.lockStatus === 'unlocked'
+          props.editable && (props.lockStatus === 'unlocked' || props.lockStatus === 'no-lock')
             ? 'cursor-pointer'
             : 'pointer-events-none',
         )}
@@ -165,7 +165,7 @@ export function BooleanInput(props: Props<boolean>) {
           class="hidden peer"
           checked={checked()}
           readOnly={!props.editable}
-          disabled={props.lockStatus !== 'unlocked'}
+          disabled={props.lockStatus !== 'unlocked' && props.lockStatus !== 'no-lock'}
           onChange={(e) => props.onChange?.(e.target.checked)}
           id={props.id}
         />

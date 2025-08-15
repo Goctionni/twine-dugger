@@ -58,7 +58,9 @@ export function MovableSplit(props: Interface) {
       />
 
       {/* Right Panel */}
-      <div class="bg-gray-900 flex-grow">{props.rightContent}</div>
+      <div class="bg-gray-900 flex-grow" style={{ width: `calc(100% - 8px - ${leftWidth()}` }}>
+        {props.rightContent}
+      </div>
     </div>
   );
 }

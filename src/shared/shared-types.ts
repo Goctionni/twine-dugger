@@ -110,3 +110,7 @@ export interface DiffFrame {
 }
 
 export type LockStatus = 'locked' | 'ancestor-lock' | 'unlocked';
+
+type KnownPassageAttribute = 'content' | 'pid' | 'name' | 'tags' | 'position' | 'size';
+export type PassageAttribute = KnownPassageAttribute | (string & {});
+export type PassageData = Record<PassageAttribute, string>;

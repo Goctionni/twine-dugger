@@ -1,12 +1,10 @@
-import { createSignal, JSX } from 'solid-js';
+import { JSX } from 'solid-js';
 
 import { GameMetaData } from '@/devtools-panel/utils/remote-functions/getMetaData';
 
-import { Dialog } from '../Common/Dialog';
 import { createContextMenuHandler } from '../ContextMenu';
-import { CogIcon } from '../Icons/CogIcon';
-import { SettingsView } from '../Settings/SettingsView';
 import { MetaInfo } from './MetaInfo';
+import { Navigation } from './Navigation';
 
 interface LayoutProps {
   meta?: GameMetaData | null;
@@ -14,8 +12,6 @@ interface LayoutProps {
 }
 
 export function Layout(props: LayoutProps) {
-  const [getShowSettings, setShowSetttings] = createSignal(false);
-  const handleOptionsClick = () => setShowSetttings(true);
   const onContextMenu = createContextMenuHandler([
     {
       label: 'Reload Twine Dugger',
@@ -25,9 +21,6 @@ export function Layout(props: LayoutProps) {
 
   return (
     <>
-      <Dialog open={getShowSettings()} onClose={() => setShowSetttings(false)} heading="Settings">
-        <SettingsView />
-      </Dialog>
       <div class="bg-gray-900 text-gray-100 h-screen flex flex-col" onContextMenu={onContextMenu}>
         {/* Top Bar */}
         <header class="bg-gray-800 p-3 shadow-md flex justify-between items-center sticky top-0 z-10">
@@ -35,14 +28,7 @@ export function Layout(props: LayoutProps) {
             <h1 class="text-xl font-semibold text-sky-400">Twine Dugger</h1>
             {props.meta && <MetaInfo {...props.meta} />}
           </div>
-          <button
-            type="button"
-            onClick={handleOptionsClick}
-            class="cursor-pointer p-2 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
-            aria-label="Options"
-          >
-            <CogIcon class="h-6 w-6 text-gray-400 hover:text-sky-400" />
-          </button>
+          <Navigation />
         </header>
         {props.children}
       </div>

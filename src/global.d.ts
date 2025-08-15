@@ -1,6 +1,6 @@
 import { JSX } from 'solid-js/types/jsx.d.ts';
 
-import { Diff, ObjectValue, Path, UpdateResult } from '@/shared/shared-types';
+import { Diff, ObjectValue, PassageData, Path, UpdateResult } from '@/shared/shared-types';
 
 declare module 'solid-js/types/jsx.d.ts' {
   namespace JSX {
@@ -67,6 +67,7 @@ declare global {
       };
     };
     TwineDugger: {
+      getPassageData: () => PassageData[];
       getUpdates: () => UpdateResult;
       getState: () => { passage: string; state: ObjectValue };
       setState: (path: Path, value: unknown) => void;

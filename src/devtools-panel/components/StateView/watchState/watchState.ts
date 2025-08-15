@@ -16,6 +16,8 @@ export function watchState(getFrames: Accessor<DiffFrame[]>) {
     path: [],
   });
 
+  const getState = () => getStateHistory()[0]?.state;
+
   const getViewValue = createGetViewValue(getStateViewSelection, getStateHistory);
 
   const getNavLayers = createGetNavLayers(getStateViewSelection, getStateHistory);
@@ -55,5 +57,6 @@ export function watchState(getFrames: Accessor<DiffFrame[]>) {
     setViewValue,
     setViewPropertyValue,
     deleteProperty,
+    getState,
   };
 }
