@@ -69,11 +69,18 @@ export function AddPropertyDialog(props: {
     props.onConfirm(key, value);
   }
 
+  const parentIsContainer = () =>
+    getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array';
+
+  const setSafePrimitiveValue = (e: InputEvent & { currentTarget: HTMLInputElement }) => {
+    if (isNaN(e.currentTarget.valueAsNumber)) return;
+    if (type() === 'number') setPrimitiveValue(e.currentTarget.valueAsNumber);
+    else setPrimitiveValue(e.currentTarget.value);
+  };
+
   return (
     <form onSubmit={handleSubmit} class="flex flex-col gap-2">
-      <Show
-        when={getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array'}
-      >
+      <Show when={parentIsContainer()}>
         <input
           autofocus
           type="text"
@@ -113,15 +120,7 @@ export function AddPropertyDialog(props: {
             type={type() === 'number' ? 'number' : 'text'}
             placeholder="Value"
             value={String(primitiveValue())}
-            onInput={(e) =>
-              setPrimitiveValue(
-                type() === 'number'
-                  ? isNaN(e.currentTarget.valueAsNumber)
-                    ? 0
-                    : e.currentTarget.valueAsNumber
-                  : e.currentTarget.value,
-              )
-            }
+            onInput={(e) => setSafePrimitiveValue(e)}
             class={clsx(inputClasses, 'rounded-md')}
           />
         )}
@@ -134,10 +133,7 @@ export function AddPropertyDialog(props: {
           'text-white px-4 rounded-md bg-green-600 hover:bg-green-700 focus:ring-green-500',
         )}
       >
-        Add{' '}
-        {getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array'
-          ? 'Item'
-          : 'Property'}
+        Add {parentIsContainer() ? 'Item' : 'Property'}
       </button>
     </form>
   );
