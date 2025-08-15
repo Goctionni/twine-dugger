@@ -4,13 +4,16 @@
   "version": "$version",
   "description": "A tool to inspect and diff game state for Twine games.",
   "permissions": ["scripting", "activeTab"],
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": [
+    "<all_urls>",
+    "file:///*"
+  ],
   "devtools_page": "./create-panel.html",
   "content_scripts": [],
   "web_accessible_resources": [
     {
       "resources": ["./content-script.js"],
-      "matches": ["<all_urls>"]
+      "matches": ["<all_urls>", "file:///*"]
     }
   ]
 }
