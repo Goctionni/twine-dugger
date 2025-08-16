@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.0.1
+
+### Patch Changes
+
+- c3319da: Support file protocol
+
 ## 1.0.0
 
 ### Major Changes
