@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.0.2
+
+### Patch Changes
+
+- 2f98912: syntax highlighting passage view
+
 ## 1.0.1
 
 ### Patch Changes
