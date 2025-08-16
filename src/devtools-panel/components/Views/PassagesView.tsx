@@ -1,9 +1,10 @@
 import clsx from 'clsx';
-import { createMemo, createSignal, For } from 'solid-js';
+import { createMemo, For } from 'solid-js';
 
 import { PassageData } from '@/shared/shared-types';
 
 import { MovableSplit } from '../Layout/MovableSplit';
+import { PassageCode } from '../SyntaxHighlight/PassageCode';
 import {
   getSelectedPassage,
   ParsedPassageData,
@@ -13,6 +14,7 @@ import {
 
 interface Props {
   passageData?: PassageData[];
+  format?: 'SugarCube' | 'Harlowe';
 }
 
 export function PassagesView(props: Props) {
@@ -47,7 +49,7 @@ export function PassagesView(props: Props) {
               <For each={getSelectedPassage()?.tags}>{(tag) => <Tag tag={tag} />}</For>
             </div>
           </div>
-          <code class="whitespace-pre flex-1 overflow-auto">{getSelectedPassage()?.content}</code>
+          <PassageCode code={getSelectedPassage()?.content ?? ''} format={props.format} />
         </div>
       }
     />

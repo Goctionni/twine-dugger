@@ -1,0 +1,27 @@
+.navitem {
+  @apply flex items-center
+    transition-[padding-inline] duration-100
+    cursor-pointer
+    p-2 rounded-full text-slate-400;
+  transition-timing-function: linear;
+}
+
+.navitem-label {
+  @apply text-base leading-none align-middle whitespace-nowrap transition-all duration-100 overflow-hidden pb-0.5;
+  width: 0;
+  text-align: left;
+  text-indent: 1ch;
+  transition-timing-function: linear;
+}
+
+.navitem:hover,
+nav:not(:has(.navitem:hover)) .navitem.active {
+  @apply px-3 text-white outline-2 -outline-offset-2 outline-white/50;
+  .navitem-label {
+    width: 9ch;
+  }
+}
+
+.navitem.active {
+  @apply bg-white/20 text-white;
+}

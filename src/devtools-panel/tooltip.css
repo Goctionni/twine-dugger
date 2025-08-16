@@ -1,0 +1,43 @@
+@layer components {
+  .tp-anchor {
+    anchor-name: attr(data-anchor type(*));
+  }
+  .tp-tooltip {
+    position-anchor: attr(data-anchor-target type(*));
+    position-area: attr(data-area type(*), bottom center);
+  }
+
+  :is(.tp-anchor) {
+    /* :is() for minimal specificity */
+    cursor: default;
+  }
+
+  .tp-tooltip {
+    @apply fixed z-50;
+    position-try:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline;
+
+    display: none;
+    opacity: 0;
+    transform: translateY(-2px);
+
+    transition:
+      display 0.12s allow-discrete,
+      opacity 0.12s,
+      transform 0.12s;
+  }
+
+  /* hover/focus reveal; keeps open when moving onto the tooltip */
+  .tp-anchor:is(:hover, :focus-visible) + .tp-tooltip,
+  .tp-tooltip:hover {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    @starting-style {
+      opacity: 0;
+      transform: translateY(-2px);
+    }
+  }
+}

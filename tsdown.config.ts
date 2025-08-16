@@ -65,7 +65,14 @@ export default defineConfig((): Options[] => [
     ...baseOptions,
     clean: false,
     entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
-    noExternal: ['solid-js/web', 'solid-js', 'solid-js/store', 'clsx', 'immer'],
+    noExternal: [
+      'solid-js/web',
+      'solid-js',
+      'solid-js/store',
+      'clsx',
+      'oniguruma-to-es',
+      'vscode-textmate',
+    ],
     plugins: [solidPlugin()],
   },
   {

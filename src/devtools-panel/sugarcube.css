@@ -1,0 +1,94 @@
+.passage-code {
+  color: #d4d4d4;
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow: auto;
+  white-space: pre;
+}
+
+/* Comments */
+.passage-code [class~='comment.block'] {
+  color: #6a9955;
+  font-style: italic;
+}
+
+/* Keywords / operators (incl. SugarCube syntactic sugar) */
+.passage-code [class~='keyword'],
+.passage-code [class~='keyword.operator'],
+.passage-code [class~='keyword.control.flow.js'] {
+  color: #c586c0;
+}
+
+/* HTML tags + brackets */
+.passage-code [class~='entity.name.tag.other.html'] {
+  color: #569cd6;
+}
+.passage-code [class~='punctuation.definition.tag.begin.html'],
+.passage-code [class~='punctuation.definition.tag.end.html'] {
+  color: #c586c0;
+}
+
+.passage-code [class~='meta.tag.other.html'][class~='punctuation.definition.tag.begin.html'],
+.passage-code [class~='meta.tag.other.html'][class~='punctuation.definition.tag.end.html'] {
+  color: #569cd6;
+}
+
+/* HTML attributes + = */
+.passage-code [class~='entity.other.attribute-name.html'],
+.passage-code [class~='entity.other.attribute-name.id.html'] {
+  color: #9cdcfe;
+}
+.passage-code [class~='punctuation.separator.key-value.html'] {
+  color: #d4d4d4;
+}
+
+/* Strings */
+.passage-code [class~='string.quoted.double.html'],
+.passage-code [class~='string.quoted.single.html'] {
+  color: #ce9178;
+}
+
+/* Entities (&nbsp;, &#xA0;, etc.) and bad ampersands */
+.passage-code [class~='constant.character.entity.html'] {
+  color: #b5cea8;
+}
+.passage-code [class~='invalid.illegal.bad-ampersand.html'] {
+  color: #f44747;
+  text-decoration: underline;
+}
+
+/* SugarCube variables/templates ($foo, _bar, ?Template) */
+.passage-code [class~='source.sugarcube-2'][class~='entity.name.tag'] {
+  color: #4ec9b0;
+}
+.passage-code [class~='punctuation.accessor'] {
+  color: #d4d4d4;
+  opacity: 0.8;
+}
+
+/* Link markup [[...]] blocks */
+.passage-code [class~='meta.markup.underline.link'] {
+  color: #d7ba7d;
+  text-decoration: underline;
+}
+.passage-code [class~='entity.name.function'] {
+  color: #dcdcaa;
+}
+
+/* Embedded language regions (you may further style inner scopes if you load those grammars) */
+.passage-code [class~='source.js.embedded.sugarcube-2'] {
+  background: rgba(255, 255, 255, 0.03);
+}
+.passage-code [class~='source.css.embedded.sugarcube-2'] {
+  background: rgba(86, 156, 214, 0.07);
+}
+.passage-code [class~='source.json.embedded.sugarcube-2'] {
+  background: rgba(197, 134, 192, 0.06);
+}
+
+/* Optional: subtle punctuation tone-down */
+.passage-code [class~='punctuation.definition.entity.html'],
+.passage-code [class~='punctuation.definition.string.begin.html'],
+.passage-code [class~='punctuation.definition.string.end.html'] {
+  opacity: 0.9;
+}

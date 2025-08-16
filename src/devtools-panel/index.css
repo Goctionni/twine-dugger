@@ -1,48 +1,8 @@
 @import 'tailwindcss';
-
-@layer components {
-  .tp-anchor {
-    anchor-name: attr(data-anchor type(*));
-  }
-  .tp-tooltip {
-    position-anchor: attr(data-anchor-target type(*));
-    position-area: attr(data-area type(*), bottom center);
-  }
-
-  :is(.tp-anchor) {
-    /* :is() for minimal specificity */
-    cursor: default;
-  }
-
-  .tp-tooltip {
-    @apply fixed z-50;
-    position-try:
-      flip-block,
-      flip-inline,
-      flip-block flip-inline;
-
-    display: none;
-    opacity: 0;
-    transform: translateY(-2px);
-
-    transition:
-      display 0.12s allow-discrete,
-      opacity 0.12s,
-      transform 0.12s;
-  }
-
-  /* hover/focus reveal; keeps open when moving onto the tooltip */
-  .tp-anchor:is(:hover, :focus-visible) + .tp-tooltip,
-  .tp-tooltip:hover {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-    @starting-style {
-      opacity: 0;
-      transform: translateY(-2px);
-    }
-  }
-}
+@import './tooltip.css';
+@import './nav.css';
+@import './sugarcube.css';
+@import './harlowe.css';
 
 /* width */
 ::-webkit-scrollbar {
@@ -62,32 +22,4 @@
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
-}
-
-.navitem {
-  @apply flex items-center
-    transition-[padding-inline] duration-100
-    cursor-pointer
-    p-2 rounded-full text-slate-400;
-  transition-timing-function: linear;
-}
-
-.navitem-label {
-  @apply text-base leading-none align-middle whitespace-nowrap transition-all duration-100 overflow-hidden pb-0.5;
-  width: 0;
-  text-align: left;
-  text-indent: 1ch;
-  transition-timing-function: linear;
-}
-
-.navitem:hover,
-nav:not(:has(.navitem:hover)) .navitem.active {
-  @apply px-3 text-white outline-2 -outline-offset-2 outline-white/50;
-  .navitem-label {
-    width: 9ch;
-  }
-}
-
-.navitem.active {
-  @apply bg-white/20 text-white;
 }

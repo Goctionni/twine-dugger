@@ -1,0 +1,106 @@
+/* Container */
+.passage-code {
+  color: #d4d4d4;
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow: auto;
+  white-space: pre;
+}
+
+/* Comments */
+.passage-code [class~='comment.block'] {
+  color: #6a9955;
+  font-style: italic;
+}
+
+/* Passage header (:: Title) */
+.passage-code [class~='meta.harlowe3.passage.twee3'] [class~='punctuation.separator.twee3'] {
+  color: #808080;
+}
+
+/* Harlowe variables: $foo, _bar, ?Template */
+.passage-code [class~='source.harlowe-3.twee3'][class~='entity.name.tag'] {
+  color: #4ec9b0;
+}
+
+/* Hooks: |name>[ ... ] and closing bits */
+.passage-code [class~='entity.name.tag.hook'] {
+  color: #569cd6;
+}
+.passage-code [class~='meta.harlowe.hooks.twee3'] [class~='punctuation.separator.twee3'],
+.passage-code [class~='meta.harlowe.collapsed.twee3'] [class~='punctuation.separator.twee3'],
+.passage-code [class~='meta.harlowe.macroparens.twee3'] [class~='punctuation.separator.twee3'],
+.passage-code [class~='meta.harlowe.macros.twee3'] [class~='punctuation.separator.twee3'] {
+  color: #808080;
+}
+
+/* Macros, keywords, operators, types */
+.passage-code [class~='keyword.operator'] {
+  color: #c586c0;
+} /* e.g. contains, is, %, +, <, > */
+.passage-code [class~='entity.name.type'] {
+  color: #4ec9b0;
+} /* of, 's */
+.passage-code [class~='meta.brace'] {
+  color: #d4d4d4;
+} /* () {} */
+
+/* Strings / numbers / booleans */
+.passage-code [class~='string.quoted.double.html'],
+.passage-code [class~='string.quoted.single.html'] {
+  color: #ce9178;
+}
+.passage-code [class~='constant.numeric.js'] {
+  color: #b5cea8;
+}
+.passage-code [class~='constant.language.js'] {
+  color: #4fc1ff;
+}
+
+/* Link markup [[...]] and its label */
+.passage-code [class~='meta.markup.underline.link.twee3'] {
+  color: #d7ba7d;
+  text-decoration: underline;
+}
+.passage-code [class~='entity.name.function.twee3'] {
+  color: #dcdcaa;
+}
+
+/* HTML tags inside passages */
+.passage-code [class~='entity.name.tag.html'],
+.passage-code [class~='entity.name.tag.other.html'] {
+  color: #569cd6;
+} /* tag names = blue */
+.passage-code [class~='punctuation.definition.tag.begin.html'],
+.passage-code [class~='punctuation.definition.tag.end.html'] {
+  color: #808080;
+} /* <, </, >, /> */
+.passage-code [class~='entity.other.attribute-name.html'],
+.passage-code [class~='entity.other.attribute-name.id.html'] {
+  color: #9cdcfe;
+}
+.passage-code [class~='punctuation.separator.key-value.html'] {
+  color: #d4d4d4;
+}
+
+/* HTML strings & entities */
+.passage-code [class~='punctuation.definition.string.begin.html'],
+.passage-code [class~='punctuation.definition.string.end.html'] {
+  color: #ce9178;
+  opacity: 0.9;
+}
+.passage-code [class~='constant.character.entity.html'] {
+  color: #b5cea8;
+}
+.passage-code [class~='invalid.illegal.bad-ampersand.html'] {
+  color: #f44747;
+  text-decoration: underline;
+}
+
+/* Embedded <script> and <style> passage types */
+.passage-code [class~='source.js.twee3'] {
+  background: rgba(255, 255, 255, 0.03);
+}
+.passage-code [class~='source.css.twee3'] {
+  background: rgba(86, 156, 214, 0.07);
+}

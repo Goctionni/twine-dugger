@@ -1,6 +1,7 @@
 import { createResource, createSignal, Match, Switch } from 'solid-js';
 
 import { getPassageData } from '../utils/api';
+import { GameMetaData } from '../utils/remote-functions/getMetaData';
 import { DiffLog } from './DiffLog';
 import { HistoryNav } from './HistoryNav';
 import { MovableSplit } from './Layout/MovableSplit';
@@ -14,6 +15,7 @@ import { SettingsView } from './Views/SettingsView';
 
 interface Props {
   kill: () => void;
+  meta?: GameMetaData | null;
 }
 
 export function Content(props: Props) {
@@ -83,7 +85,7 @@ export function Content(props: Props) {
         <SearchView gameState={getState()} passageData={passageData()} setPath={setPath} />
       </Match>
       <Match when={getNavItem().text === 'Passages'}>
-        <PassagesView passageData={passageData()} />
+        <PassagesView passageData={passageData()} format={props.meta?.format?.name} />
       </Match>
       <Match when={getNavItem().text === 'Settings'}>
         <SettingsView />

@@ -39,7 +39,7 @@ function App() {
           <span class="m-auto">An error has occured</span>
         </Match>
         <Match when={state() === 'content'}>
-          <Content kill={kill} />
+          <Content kill={kill} meta={resource()} />
         </Match>
         <Match when={state() === 'not-enabled'}>
           <div class="flex-grow flex flex-col items-center justify-center gap-4">

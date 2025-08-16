@@ -15,8 +15,10 @@
   "dependencies": {
     "clsx": "2.1.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
+    "oniguruma-to-es": "4.3.3",
     "solid-js": "1.9.6",
     "tailwindcss": "4.1.6",
+    "vscode-textmate": "9.2.0",
     "zod": "4.0.15"
   },
   "devDependencies": {
