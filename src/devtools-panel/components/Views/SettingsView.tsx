@@ -7,7 +7,7 @@ import {
   setDiffLogFontSize,
   setDiffLogHeadingStyle,
   setDiffLogPollingInterval,
-} from '../../stores/settingsStore';
+} from '../../store/settingsStore';
 import { BooleanInput, NumberInput } from '../StateView/ValueView/PrimitiveInputs';
 
 function setterWithValidation<T>(setter: (v: T) => void, validator: (v: T) => boolean) {

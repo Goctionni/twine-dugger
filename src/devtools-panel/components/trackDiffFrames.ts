@@ -2,7 +2,7 @@ import { Accessor, createEffect, createSignal, onCleanup } from 'solid-js';
 
 import { DiffFrame, Path } from '@/shared/shared-types';
 
-import { getDiffLogPollingInterval } from '../stores/settingsStore';
+import { getDiffLogPollingInterval } from '../store/settingsStore';
 import { getUpdates, setStatePropertyLock } from '../utils/api';
 
 type Result = [

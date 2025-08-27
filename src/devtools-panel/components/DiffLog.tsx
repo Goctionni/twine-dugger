@@ -1,35 +1,29 @@
-import { For } from 'solid-js';
+import { createMemo, For } from 'solid-js';
 
-import type { DiffFrame as IDiffFrame, PassageData, Path } from '@/shared/shared-types';
+import { pathEquals } from '@/shared/path-equals';
 
+import { getDiffFrames, getFilteredPaths } from '../store/store';
 import { createContextMenuHandler } from './ContextMenu';
 import { DiffFrame } from './DiffLog/DiffFrame';
 
-interface Props {
-  frames: IDiffFrame[];
-  setPath: (path: Path) => void;
-  onClear: () => void;
-  filteredPaths: string[];
-  onAddFilter: (path: string) => void;
-  onClearFilters: () => void;
-  passageData?: PassageData[];
-}
-
-export function DiffLog(props: Props) {
+export function DiffLog() {
   const onContextMenu = createContextMenuHandler([
     { label: 'Clear Diff Log', onClick: () => props.onClear() },
     { label: 'Clear All Filters', onClick: () => props.onClearFilters() },
   ]);
 
-  const frames = () => {
-    return props.frames
+  const frames = createMemo(() => {
+    const filteredPaths = getFilteredPaths();
+    return getDiffFrames()
       .map((frame) => ({
         ...frame,
-        changes: frame.changes.filter((c) => !props.filteredPaths.includes(c.path.join('.'))),
+        changes: frame.changes.filter(
+          (frameChanges) => !filteredPaths.some((path) => pathEquals(path, frameChanges.path)),
+        ),
       }))
       .filter((frame) => frame.changes.length > 0)
       .slice(0, 30);
-  };
+  });
 
   return (
     <div onContextMenu={onContextMenu} class="p-4 flex flex-col h-full">
@@ -38,13 +32,7 @@ export function DiffLog(props: Props) {
         <For each={frames()}>
           {(frame, index) => (
             <li>
-              <DiffFrame
-                frame={frame}
-                setPath={props.setPath}
-                first={index() === 0}
-                onAddFilter={props.onAddFilter}
-                passageData={props.passageData}
-              />
+              <DiffFrame frame={frame} first={index() === 0} />
             </li>
           )}
         </For>

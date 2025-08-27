@@ -109,6 +109,12 @@ export interface DiffFrame {
   changes: Diff[];
 }
 
+export interface StateFrame {
+  id: number;
+  diffingFrame: DiffFrame | undefined;
+  state: ObjectValue;
+}
+
 export type LockStatus = 'locked' | 'ancestor-lock' | 'unlocked';
 
 type KnownPassageAttribute = 'content' | 'pid' | 'name' | 'tags' | 'position' | 'size';

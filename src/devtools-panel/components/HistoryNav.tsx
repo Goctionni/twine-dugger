@@ -1,29 +1,41 @@
 import clsx from 'clsx';
-import { For } from 'solid-js';
+import { createMemo, For } from 'solid-js';
 
-import { HistoryNode } from './StateView/watchState/types';
+import { createGetViewState, getHistoryIds, setViewState } from '../store/store';
 
-interface Props {
-  historyItems: HistoryNode[];
-  setHistoryId: (historyId: 'latest' | number) => void;
+interface HistoryNode {
+  text: string;
+  active: boolean;
+  onClick: () => void;
 }
 
-export function HistoryNav(props: Props) {
+export function HistoryNav() {
+  const getHistoryId = createGetViewState('state', 'historyId');
+  const items = createMemo(() => {
+    return getHistoryIds().map((id, index): HistoryNode => {
+      return {
+        text: index === 0 ? 'latest' : `-${index}`,
+        active: getHistoryId() === id,
+        onClick: () => setViewState('state', 'historyId', id),
+      };
+    });
+  });
+
   return (
     <div class="flex gap-4 items-center justify-start p-2">
       <span class="text-lg font-bold">History slice:</span>
       <ul class="flex justify-center items-center gap-2">
-        <For each={props.historyItems.toReversed()}>
+        <For each={items()}>
           {(item, index) => {
             return (
               <li>
-                <button class="cursor-pointer" onClick={() => props.setHistoryId(item.id)}>
+                <button class="cursor-pointer" onClick={item.onClick}>
                   <div
                     class={clsx('px-1 rounded-full outline text-xs', {
                       'outline-2 outline-offset-2': item.active,
                     })}
                   >
-                    {item.id === 'latest' ? 'current' : `-${index()}`}
+                    {item.text}
                   </div>
                 </button>
               </li>

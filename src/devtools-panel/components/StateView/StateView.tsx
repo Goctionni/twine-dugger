@@ -1,65 +1,34 @@
-import { Index } from 'solid-js';
+import { createMemo, Index } from 'solid-js';
 
-import { getLockStatus } from '@/devtools-panel/utils/is-locked';
-import { Path as TPath, Value } from '@/shared/shared-types';
+import { createGetViewState, getActiveState } from '@/devtools-panel/store/store';
+import { getObjectPathValue } from '@/shared/get-object-path-value';
 
 import { ObjectNav } from './ObjectNav';
-import { Path } from './Path';
-import { NavLayers, PathChunk } from './types';
 import { ValueView } from './ValueView';
 
-function pathsMatch(path1: TPath, path2: TPath) {
-  if (path1 === path2) return true;
-  if (path1.length !== path2.length) return false;
-  return path1.every((value, index) => value === path2[index]);
-}
+export function StateView() {
+  const getPath = createGetViewState('state', 'path');
 
-interface Props {
-  navLayers: NavLayers;
-  viewValue: Value;
-  path: TPath;
-  setPath: (newPath: TPath) => void;
-  readonly?: boolean;
-  setViewValue: (newValue: unknown) => void;
-  setViewPropertyValue: (property: string | number, newValue: unknown) => void;
-  onDeleteProperty: (path: TPath) => void;
-  getLockedPaths: () => TPath[];
-  addLockPath: (path: TPath) => void;
-  removeLockPath: (path: TPath) => void;
-}
+  const getNavLayers = createMemo(() => {
+    const fullPath = getPath();
+    const state = getActiveState()!;
+    const value = getObjectPathValue(state, fullPath);
+    const leafIsObj = !!value && typeof value === 'object';
+    const numLayers = fullPath.length + (leafIsObj ? 1 : 0);
 
-export function StateView(props: Props) {
-  const onPropertyClick = (chunk: PathChunk, property: string | number) => {
-    const newPath = [...chunk.path, property];
-    const isEqual = pathsMatch(props.path, newPath);
-    props.setPath(isEqual ? chunk.path : newPath);
-  };
+    return new Array(numLayers).fill(0).map((_, index) => {
+      const path = fullPath.slice(0, index);
+      const selectedProperty = fullPath[index + 1];
+      return { path, selectedProperty };
+    });
+  });
+
   return (
     <div class="flex h-[calc(100%_-_3rem)] py-1">
-      <Index each={props.navLayers.pathChunks}>
-        {(chunk) => (
-          <ObjectNav
-            chunk={chunk()}
-            selectedProperty={props.path[chunk().path.length]}
-            onClick={(childKey) => onPropertyClick(chunk(), childKey)}
-            onDeleteProperty={props.onDeleteProperty}
-            addLockPath={props.addLockPath}
-            removeLockPath={props.removeLockPath}
-            getLockedPaths={props.getLockedPaths}
-          />
-        )}
+      <Index each={getNavLayers()}>
+        {(layer) => <ObjectNav path={layer().path} selectedProperty={layer().selectedProperty} />}
       </Index>
-      <ValueView
-        value={props.viewValue}
-        pathJsx={<Path chunks={props.navLayers.pathChunks} path={props.path} />}
-        editable={!props.readonly}
-        onChange={props.setViewValue}
-        onPropertyChange={props.setViewPropertyValue}
-        path={props.path}
-        addLockPath={props.addLockPath}
-        removeLockPath={props.removeLockPath}
-        getLockedPaths={props.getLockedPaths}
-      />
+      <ValueView />
     </div>
   );
 }

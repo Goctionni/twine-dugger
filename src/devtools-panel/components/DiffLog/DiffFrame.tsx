@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { For } from 'solid-js';
 
-import { getDiffLogFontSize } from '@/devtools-panel/stores/settingsStore';
+import { getDiffLogFontSize } from '@/devtools-panel/store/settingsStore';
 import type { DiffFrame as TDiffFrame, PassageData, Path } from '@/shared/shared-types';
 
 import { navItems, setNavItem } from '../Layout/nav-items';

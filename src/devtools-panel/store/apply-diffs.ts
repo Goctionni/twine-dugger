@@ -1,36 +1,18 @@
-import { Accessor, createMemo, createResource } from 'solid-js';
-
-import { getState } from '@/devtools-panel/utils/api';
 import { copy } from '@/shared/copy';
+import { getObjectPathValue } from '@/shared/get-object-path-value';
 import {
   ArrayValue,
   ContainerValue,
   Diff,
-  DiffFrame,
   DiffPrimitiveUpdate,
   MapValue,
   ObjectValue,
-  Path,
   SetValue,
-  Value,
 } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
-import { HistoryItem } from './types';
-import { getContainerItem } from './watchHelpers';
-
-function getByPath(container: ContainerValue | SetValue, path: Path) {
-  let current: Value = container;
-  for (const pathSlug of path) {
-    if (!current) return;
-    if (typeof current !== 'object') return;
-    current = getContainerItem(current, pathSlug);
-  }
-  return current;
-}
-
-function applyDiffsToState(oldState: ObjectValue, diffs: Diff[]): ObjectValue {
-  const state = copy(oldState) as ContainerValue | SetValue;
+export function applyDiffsToState(oldState: ObjectValue, diffs: Diff[]): ObjectValue {
+  const state = copy(oldState) as ContainerValue;
   for (const diff of diffs) {
     if (
       diff.type === 'object' ||
@@ -38,7 +20,7 @@ function applyDiffsToState(oldState: ObjectValue, diffs: Diff[]): ObjectValue {
       diff.type === 'array' ||
       diff.type === 'set'
     ) {
-      const obj = getByPath(state, diff.path);
+      const obj = getObjectPathValue(state, diff.path);
       if (!obj) {
         console.error('Unable to resolve path in state', { path: diff.path, state });
         continue;
@@ -65,12 +47,6 @@ function applyDiffsToState(oldState: ObjectValue, diffs: Diff[]): ObjectValue {
         } else if (diff.subtype === 'remove') {
           (obj as MapValue).delete(diff.key);
         }
-      } else if (diff.type === 'set') {
-        if (diff.subtype === 'add') {
-          (obj as SetValue).add(diff.newValue);
-        } else if (diff.subtype === 'remove') {
-          (obj as SetValue).delete(diff.oldValue);
-        }
       } else if (diff.type === 'array') {
         const arr = obj as ArrayValue;
         if (diff.subtype !== 'instructions') continue;
@@ -84,10 +60,17 @@ function applyDiffsToState(oldState: ObjectValue, diffs: Diff[]): ObjectValue {
             arr.splice(instruction.to, 0, ...moved);
           }
         }
+      } else if (diff.type === 'set') {
+        const set = obj as SetValue;
+        if (diff.subtype === 'add') {
+          set.add(diff.newValue);
+        } else if (diff.subtype === 'remove') {
+          set.delete(diff.oldValue);
+        }
       }
     } else {
       const parentPath = diff.path.slice(0, -1);
-      const parent = getByPath(state, parentPath);
+      const parent = getObjectPathValue(state, parentPath);
       if (!parent) {
         console.error('Unable to resolve parent of path in state', { parentPath, state });
         continue;
@@ -115,47 +98,4 @@ function applyDiffsToState(oldState: ObjectValue, diffs: Diff[]): ObjectValue {
     }
   }
   return state as ObjectValue;
-}
-
-let historyId = 0;
-export function createStateHistory(getFrames: Accessor<DiffFrame[]>) {
-  const [getInitialState] = createResource(async () => {
-    const result = await getState();
-    if (!result) throw new Error('getState returned empty value');
-    return result.state;
-  });
-
-  const getLines = createMemo<HistoryItem[]>((prev): HistoryItem[] => {
-    const [lastItem] = prev;
-    if (!lastItem) {
-      const initialState = getInitialState();
-      if (!initialState) return [];
-
-      return [{ id: historyId++, diffingFrame: getFrames()[0], state: initialState }];
-    }
-
-    const frames = getFrames();
-    const firstProcessedIndex = frames.findIndex((frame) => lastItem.diffingFrame === frame);
-    const unprocessedFrames = frames
-      .slice(0, firstProcessedIndex >= 0 ? firstProcessedIndex : undefined)
-      .filter((frame) => frame.changes.length);
-    if (unprocessedFrames.length === 0) return prev;
-
-    const newFrameItems: HistoryItem[] = new Array(unprocessedFrames.length);
-    let lastState = lastItem.state;
-    // Process frames in reverse order (old to new)
-    for (let i = unprocessedFrames.length - 1; i >= 0; i--) {
-      const diffingFrame = unprocessedFrames[i]!;
-      const frameState = applyDiffsToState(lastState, diffingFrame.changes);
-      newFrameItems[i] = {
-        id: historyId++,
-        diffingFrame,
-        state: frameState,
-      };
-      lastState = frameState;
-    }
-    return [...newFrameItems, ...prev].slice(0, 25);
-  }, []);
-
-  return getLines;
 }

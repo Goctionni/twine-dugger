@@ -1,8 +1,10 @@
 import clsx from 'clsx';
-import { For } from 'solid-js';
+import { createMemo, For } from 'solid-js';
 
+import { getActiveState } from '@/devtools-panel/store/store';
 import { getLockStatus } from '@/devtools-panel/utils/is-locked';
-import { LockStatus, Path } from '@/shared/shared-types';
+import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { LockStatus, ObjectValue, Path } from '@/shared/shared-types';
 
 import { duplicateStateProperty, setState } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
@@ -12,34 +14,40 @@ import { DuplicateKeyDialog } from './DuplicateKeyDialog';
 import { TypeIcon } from './TypeIcon';
 import { PathChunk } from './types';
 
+const getNameForProperty = () =>
+  showPromptDialog<string>('Name for property', (resolve) => (
+    <DuplicateKeyDialog onConfirm={resolve} />
+  ));
+
 interface Props {
-  chunk: PathChunk;
+  path: Path;
   selectedProperty?: string | number;
-  onClick: (childKey: string | number) => void;
-  onDeleteProperty: (path: Path) => void;
-  getLockedPaths: () => Path[];
-  addLockPath: (path: Path) => void;
-  removeLockPath: (path: Path) => void;
 }
 
 export function ObjectNav(props: Props) {
+  const getName = () => props.path[props.path.length - 1];
+  const getObject = createMemo(
+    () => getObjectPathValue(getActiveState()!, props.path) as ObjectValue,
+  );
+
+  const getKeys = createMemo(() => {
+    // TODO: Sort by type
+    const object = getObject();
+    if (object instanceof Map) return Array.from(object.keys());
+    if (object instanceof Array) return Array.from(Array(object.length).keys());
+    return Object.keys(object);
+  });
+
   const onDuplicate = async (property: string | number) => {
-    const object = props.chunk.getValue();
-    if (Array.isArray(object)) {
-      // For arrays, the duplicated value is added to the end of the array
-      duplicateStateProperty(props.chunk.path, property);
-      return;
-    }
+    const object = getObject();
+    // For arrays, the duplicated value is added to the end of the array
+    if (Array.isArray(object)) return duplicateStateProperty(props.path, property);
 
     // For Objects/Maps, we need a name for the duplicated property
-    const newPropertyKey = await showPromptDialog<string>('Name for property', (resolve) => (
-      <DuplicateKeyDialog onConfirm={resolve} />
-    ));
-
-    if (newPropertyKey && typeof newPropertyKey === 'string') {
-      duplicateStateProperty(props.chunk.path, property, newPropertyKey);
-    }
+    const newPropertyKey = await getNameForProperty();
+    if (newPropertyKey) return duplicateStateProperty(props.path, property, newPropertyKey);
   };
+
   const onAdd = async () => {
     const result = await showPromptDialog<{ name: string; value: unknown }>(
       'Add new',
@@ -52,13 +60,14 @@ export function ObjectNav(props: Props) {
     );
 
     if (result && result.name) {
-      const fullPath = [...props.chunk.path, result.name];
+      const fullPath = [...props.path, result.name];
       await setState(fullPath, result.value);
     }
   };
+
   return (
     <div class="w-max max-w-3xs flex flex-col h-full px-2 border-r border-r-gray-700">
-      <p class="text-lg">{props.chunk.name}</p>
+      <p class="text-lg">{getName()}</p>
       <ul>
         <li>
           <a
@@ -70,9 +79,9 @@ export function ObjectNav(props: Props) {
         </li>
       </ul>
       <ul class="flex flex-1 flex-col overflow-auto">
-        <For each={props.chunk.childKeys}>
+        <For each={getKeys()}>
           {(child) => {
-            const childPath = () => [...props.chunk.path, child.text];
+            const childPath = () => [...props.path, child.text];
             const lockStatus = () => getLockStatus(childPath, props.getLockedPaths);
             return (
               <NavItem

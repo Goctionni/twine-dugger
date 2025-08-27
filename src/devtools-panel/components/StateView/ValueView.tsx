@@ -1,45 +1,51 @@
-import { JSX, Match, Show, Switch } from 'solid-js';
+import { createMemo, JSX, Match, Show, Switch } from 'solid-js';
 
+import {
+  addLockPath,
+  createGetViewState,
+  getActiveState,
+  removeLockPath,
+} from '@/devtools-panel/store/store';
 import { getLockStatus } from '@/devtools-panel/utils/is-locked';
+import { getObjectPathValue } from '@/shared/get-object-path-value';
 import { ArrayValue, MapValue, ObjectValue, Path, Value, ValueType } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
+import { PrettyPath } from './PrettyPath';
 import { TypeIcon } from './TypeIcon';
 import { ArrayInput, MapInput, ObjectInput } from './ValueView/ContainerInputs';
 import { BooleanInput, NumberInput, StringInput } from './ValueView/PrimitiveInputs';
 
-interface Props {
-  path: Path;
-  pathJsx: JSX.Element;
-  value: Value;
-  onChange: (newValue: unknown) => void;
-  onPropertyChange: (keyOrIndex: string | number, newValue: unknown) => void;
-  editable?: boolean;
-  getLockedPaths: () => Path[];
-  addLockPath: (path: Path) => void;
-  removeLockPath: (path: Path) => void;
-}
-
 const nonEditable: ValueType[] = ['function', 'null', 'undefined'];
 
-export function ValueView(props: Props) {
-  const type = () => getSpecificType(props.value);
+export function ValueView() {
+  const getPath = createGetViewState('state', 'path');
+  const getValue = createMemo(() => getObjectPathValue(getActiveState()!, getPath()));
+  const type = () => getSpecificType(getValue());
+  const getLockedPaths = createGetViewState('state', 'lockedPaths');
+
   const value = () => {
     const valueType = type();
     if (valueType === 'null') return null;
     if (valueType === 'undefined') return undefined;
     if (valueType === 'function') return 'function';
-    return props.value;
+    return getValue();
   };
+
   const toggleLock = (path: Path) => {
-    if (getLockStatus(() => path, props.getLockedPaths) === 'locked') props.removeLockPath(path);
-    if (getLockStatus(() => path, props.getLockedPaths) === 'unlocked') props.addLockPath(path);
+    if (getLockStatus(() => path, getLockedPaths) === 'locked') removeLockPath(path);
+    if (getLockStatus(() => path, getLockedPaths) === 'unlocked') addLockPath(path);
   };
+
+  const readOnly = () => getLockStatus(() => getPath(), getLockedPaths) !== 'unlocked';
+
   return (
     <div class="flex gap-2 flex-col py-1 px-2 overflow-auto flex-1">
       <p>
-        <span class="font-bold text-sm">{props.pathJsx}</span>
-        <Show when={!props.editable}>
+        <span class="font-bold text-sm">
+          <PrettyPath path={getPath()} statePrefix />
+        </span>
+        <Show when={!readOnly()}>
           <span class="ml-2 text-red-400">(readonly)</span>
         </Show>
       </p>
@@ -53,10 +59,13 @@ export function ValueView(props: Props) {
         </Match>
         <Match when={type() === 'string'}>
           <StringInput
+            // TODO: Dont pass these, just pass props
+            // TODO: create separate StringInput & StateInput
+
             value={value() as string}
-            editable={props.editable}
+            editable={readOnly()}
             onChange={props.onChange}
-            lockStatus={getLockStatus(() => props.path, props.getLockedPaths)}
+            lockStatus={getLockStatus(() => getPath(), getLockedPaths)}
             toggleLock={() => toggleLock(props.path)}
           />
         </Match>
