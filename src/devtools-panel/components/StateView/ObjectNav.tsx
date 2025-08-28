@@ -16,6 +16,7 @@ import { getSpecificType } from '@/shared/type-helpers';
 import { deleteFromState, duplicateStateProperty, setState } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
 import { createContextMenuHandler } from '../ContextMenu';
+import { AddPropertyDialog } from './AddPropertyDialog';
 import { DuplicateKeyDialog } from './DuplicateKeyDialog';
 import { TypeIcon } from './TypeIcon';
 
@@ -67,8 +68,20 @@ export function ObjectNav(props: Props) {
   };
 
   const onAdd = async () => {
-    // TODO: Update AddPropertyDialog to work without PathChunk
-    console.log('Add property functionality temporarily disabled');
+    const result = await showPromptDialog<{ name: string; value: unknown }>(
+      'Add new',
+      (resolve) => (
+        <AddPropertyDialog
+          path={props.path}
+          onConfirm={(name, value) => resolve({ name, value })}
+        />
+      ),
+    );
+
+    if (result && result.name) {
+      const fullPath = [...props.path, result.name];
+      await setState(fullPath, result.value);
+    }
   };
 
   const handlePropertyClick = (property: string | number) => {

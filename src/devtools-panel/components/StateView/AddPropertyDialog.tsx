@@ -1,7 +1,11 @@
 import clsx from 'clsx';
-import { createSignal, Show } from 'solid-js';
+import { createMemo, createSignal, Show } from 'solid-js';
 
-import { PathChunk } from './types';
+import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { Path } from '@/shared/shared-types';
+import { getSpecificType } from '@/shared/type-helpers';
+
+import { getActiveState } from '../../store/store';
 
 const inputClasses =
   'block px-2 py-1 bg-gray-700 border border-gray-600 text-sm shadow-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500';
@@ -13,11 +17,34 @@ type NewValueType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'map'
 
 export function AddPropertyDialog(props: {
   onConfirm: (name: string, value: unknown) => void;
-  chunk: PathChunk;
+  path: Path;
 }) {
   const [name, setName] = createSignal('');
   const [type, setType] = createSignal<NewValueType>('string');
   const [primitiveValue, setPrimitiveValue] = createSignal<string | number | boolean>('');
+
+  // Derive container info from current state and path
+  const containerValue = createMemo(() => {
+    const state = getActiveState();
+    return state ? getObjectPathValue(state, props.path) : null;
+  });
+
+  const containerType = createMemo(() => {
+    const value = containerValue();
+    return getSpecificType(value);
+  });
+
+  const existingKeys = createMemo(() => {
+    const value = containerValue();
+    if (Array.isArray(value)) {
+      return value.length;
+    } else if (value instanceof Map) {
+      return Array.from(value.keys());
+    } else if (value && typeof value === 'object') {
+      return Object.keys(value);
+    }
+    return [];
+  });
 
   function getValueFromType(
     type: NewValueType,
@@ -41,27 +68,15 @@ export function AddPropertyDialog(props: {
     }
   }
 
-  const getParentType = (): 'object' | 'array' | 'map' | 'set' | 'primitive' => {
-    const value = props.chunk.getValue();
-
-    if (Array.isArray(value)) return 'array';
-    if (value instanceof Map) return 'map';
-    if (value instanceof Set) return 'set';
-    if (value !== null && typeof value === 'object') return 'object';
-
-    return 'primitive';
-  };
-
   function handleSubmit(e: Event) {
     e.preventDefault();
     const value = getValueFromType(type(), primitiveValue());
-    const childKeys = props.chunk.childKeys.length;
+    const cType = containerType();
+    const keys = existingKeys();
 
     let key: string;
-    if (getParentType() === 'array') {
-      key = String(childKeys ?? 0);
-    } else if (getParentType() === 'set' || getParentType() === 'map') {
-      key = '';
+    if (cType === 'array') {
+      key = String(typeof keys === 'number' ? keys : 0);
     } else {
       key = name();
     }
@@ -69,8 +84,10 @@ export function AddPropertyDialog(props: {
     props.onConfirm(key, value);
   }
 
-  const parentIsContainer = () =>
-    getParentType() !== 'set' && getParentType() !== 'map' && getParentType() !== 'array';
+  const needsPropertyName = createMemo(() => {
+    const cType = containerType();
+    return cType === 'object' || cType === 'map';
+  });
 
   const setSafePrimitiveValue = (e: InputEvent & { currentTarget: HTMLInputElement }) => {
     if (isNaN(e.currentTarget.valueAsNumber)) return;
@@ -80,7 +97,7 @@ export function AddPropertyDialog(props: {
 
   return (
     <form onSubmit={handleSubmit} class="flex flex-col gap-2">
-      <Show when={parentIsContainer()}>
+      <Show when={needsPropertyName()}>
         <input
           autofocus
           type="text"
@@ -133,7 +150,7 @@ export function AddPropertyDialog(props: {
           'text-white px-4 rounded-md bg-green-600 hover:bg-green-700 focus:ring-green-500',
         )}
       >
-        Add {parentIsContainer() ? 'Item' : 'Property'}
+        Add {containerType() === 'array' ? 'Item' : 'Property'}
       </button>
     </form>
   );
