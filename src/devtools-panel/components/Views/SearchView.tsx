@@ -1,35 +1,35 @@
-import { createMemo, createSignal, For, JSX, Show } from 'solid-js';
+import { createMemo, For, JSX, Show } from 'solid-js';
 
-import { ContainerValue, ObjectValue, PassageData, Path, Value } from '@/shared/shared-types';
+import { ContainerValue, ObjectValue, Path, Value } from '@/shared/shared-types';
 import { isPrimitive } from '@/shared/type-helpers';
 
+import {
+  createGetViewState,
+  getLatestStateFrame,
+  getPassageData,
+  setViewState,
+} from '../../store/store';
+import { StringInput } from '../Common/Inputs/StringInput';
 import { navItems, setNavItem } from '../Layout/nav-items';
-import { ParsedPassageData, parsePassage, setSelectedPassage } from './passageDataStore';
+import { ParsedPassageData, setSelectedPassage } from './passageDataStore';
 import { ListItem as PassageListItem } from './PassagesView';
 
-interface Props {
-  gameState?: ObjectValue;
-  passageData?: PassageData[];
-  setPath: (path: Path) => void;
-}
+export function SearchView() {
+  const getQuery = createGetViewState('search', 'query');
+  const setQuery = (value: string) => setViewState('search', 'query', value);
 
-const inputClasses =
-  'block px-2 py-1 bg-gray-700 border border-gray-600 text-sm shadow-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 max-w-[200px]';
-
-export function SearchView(props: Props) {
-  const [query, setQuery] = createSignal('');
-  const passages = createMemo(() => props.passageData?.map(parsePassage) ?? []);
   const searchResults = createMemo(() => {
-    if (!query()) return { state: [] };
-    if (!props.gameState) return { state: [] };
+    if (!getQuery()) return { state: [] };
+    const gameState = getLatestStateFrame();
+    if (!gameState) return { state: [] };
     return {
-      state: findStateMatches(props.gameState, query()),
-      passage: findPassageMatches(passages(), query()),
+      state: findStateMatches(gameState.state, getQuery()),
+      passage: findPassageMatches(getPassageData(), getQuery()),
     };
   });
   const onPathClick = (path: Path) => {
     setNavItem(navItems[0]);
-    props.setPath(path);
+    setViewState('state', 'path', path);
   };
   const onPassageClick = (passage: ParsedPassageData) => {
     setNavItem(navItems[2]);
@@ -39,12 +39,12 @@ export function SearchView(props: Props) {
   return (
     <div class="px-4 py-2 w-full h-full flex flex-col overflow-hidden">
       <h1 class="font-bold text-xl pb-2">Search</h1>
-      <input
-        type="text"
-        value={query()}
-        onInput={(e) => setQuery(e.target.value)}
-        class={inputClasses}
-        autofocus
+      <StringInput
+        value={getQuery()}
+        onChange={setQuery}
+        placeholder="Search..."
+        autoFocus
+        class="max-w-[200px]"
       />
       <Show when={Object.values(searchResults()).some((arr) => arr.length > 0)}>
         <div class="flex-1 overflow-hidden">
@@ -60,7 +60,7 @@ export function SearchView(props: Props) {
                         class="px-4 py-2 font-mono cursor-pointer hover:bg-slate-600 flex-1 text-left"
                         onClick={() => onPathClick(result)}
                       >
-                        <NicePath path={result} state={props.gameState!} />
+                        <NicePath path={result} />
                       </button>
                     </li>
                   )}
@@ -86,13 +86,12 @@ export function SearchView(props: Props) {
 
 interface NicePathProps {
   path: Path;
-  state: ObjectValue;
 }
 
-export function NicePath(props: NicePathProps) {
+function NicePath(props: NicePathProps) {
   const parts = createMemo(() => {
     const uiParts: JSX.Element[] = [];
-    let parentObject: ContainerValue = props.state;
+    let parentObject: ContainerValue = getLatestStateFrame()?.state ?? {};
     for (let i = 0; i < props.path.length; i++) {
       const part = props.path[i]!;
       if (Array.isArray(parentObject)) {

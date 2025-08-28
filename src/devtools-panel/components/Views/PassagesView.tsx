@@ -1,27 +1,13 @@
 import clsx from 'clsx';
-import { createMemo, For } from 'solid-js';
+import { For } from 'solid-js';
 
-import { PassageData } from '@/shared/shared-types';
-
+import { getGameMetaData, getPassageData } from '../../store/store';
 import { MovableSplit } from '../Layout/MovableSplit';
 import { PassageCode } from '../SyntaxHighlight/PassageCode';
-import {
-  getSelectedPassage,
-  ParsedPassageData,
-  parsePassage,
-  setSelectedPassage,
-} from './passageDataStore';
+import { getSelectedPassage, ParsedPassageData, setSelectedPassage } from './passageDataStore';
 
-interface Props {
-  passageData?: PassageData[];
-  format?: 'SugarCube' | 'Harlowe';
-}
-
-export function PassagesView(props: Props) {
-  const formatted = createMemo(() => {
-    if (!props.passageData?.length) return null;
-    return props.passageData.map(parsePassage);
-  });
+export function PassagesView() {
+  const format = () => getGameMetaData()?.format;
   return (
     <MovableSplit
       initialLeftWidthPercent={35}
@@ -29,7 +15,7 @@ export function PassagesView(props: Props) {
         <div class="px-4 py-2 h-full flex flex-col overflow-auto">
           <h1 class="font-bold text-xl mb-2">Passages</h1>
           <ul class="flex-1 flex flex-col overflow-auto">
-            <For each={formatted()}>
+            <For each={getPassageData()}>
               {(item) => (
                 <ListItem
                   passageData={item}
@@ -49,7 +35,7 @@ export function PassagesView(props: Props) {
               <For each={getSelectedPassage()?.tags}>{(tag) => <Tag tag={tag} />}</For>
             </div>
           </div>
-          <PassageCode code={getSelectedPassage()?.content ?? ''} format={props.format} />
+          <PassageCode code={getSelectedPassage()?.content ?? ''} format={format()?.name ?? ''} />
         </div>
       }
     />

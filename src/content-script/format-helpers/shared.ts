@@ -83,13 +83,10 @@ export function setState(
   }
 }
 
-export function deleteFromState(
-  stateRoot: ObjectValue | MapValue | ArrayValue,
-  path: Array<string | number>,
-) {
+export function deleteFromState(stateRoot: ContainerValue, path: Array<string | number>) {
   const objPath = path.slice(0, -1);
   const valueKey = path.at(-1)!;
-  const stateObj = getStateValue(stateRoot, objPath) as StateObj;
+  const stateObj = getStateValue(stateRoot, objPath) as ContainerValue;
 
   if (Array.isArray(stateObj)) {
     stateObj.splice(Number(valueKey), 1);

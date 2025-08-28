@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import { For } from 'solid-js';
 
-import { getDiffLogFontSize } from '@/devtools-panel/store/settingsStore';
-import type { DiffFrame as TDiffFrame, PassageData, Path } from '@/shared/shared-types';
+import { createGetSetting } from '@/devtools-panel/store/store';
+import type { DiffFrame as TDiffFrame, PassageData } from '@/shared/shared-types';
 
 import { navItems, setNavItem } from '../Layout/nav-items';
 import { parsePassage, setSelectedPassage } from '../Views/passageDataStore';
@@ -12,16 +12,15 @@ import { RelativeTime } from './RelativeTime';
 interface Props {
   first?: boolean;
   frame: TDiffFrame;
-  setPath: (path: Path) => void;
-  onAddFilter: (path: string) => void;
   passageData?: PassageData[];
 }
 
 export function DiffFrame(props: Props) {
   const showSeparator = () => !props.first;
+  const getFontSize = createGetSetting('diffLog.fontSize');
 
   return (
-    <div class="group" style={{ 'font-size': `${getDiffLogFontSize()}px` }}>
+    <div class="group" style={{ 'font-size': `${getFontSize()}px` }}>
       <div
         class={clsx(
           'flex items-center gap-2',
@@ -43,11 +42,7 @@ export function DiffFrame(props: Props) {
 
       {/* lines */}
       <div class="mt-1 space-y-0.5 text-gray-400">
-        <For each={props.frame.changes}>
-          {(diff) => (
-            <DiffItem diff={diff} setPath={props.setPath} onAddFilter={props.onAddFilter} />
-          )}
-        </For>
+        <For each={props.frame.changes}>{(diff) => <DiffItem diff={diff} />}</For>
       </div>
     </div>
   );

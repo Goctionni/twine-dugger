@@ -7,7 +7,7 @@ import sugarcubeLangDef from './language-defs/sugarcube-grammar.json';
 
 interface PassageCodeProps {
   code: string;
-  format?: 'SugarCube' | 'Harlowe';
+  format?: string;
 }
 
 export function PassageCode(props: PassageCodeProps) {

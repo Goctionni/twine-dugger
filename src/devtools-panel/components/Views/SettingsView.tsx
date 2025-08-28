@@ -1,20 +1,18 @@
 import { JSX, Match, Switch } from 'solid-js';
 
-import {
-  getDiffLogFontSize,
-  getDiffLogHeadingStyle,
-  getDiffLogPollingInterval,
-  setDiffLogFontSize,
-  setDiffLogHeadingStyle,
-  setDiffLogPollingInterval,
-} from '../../store/settingsStore';
-import { BooleanInput, NumberInput } from '../StateView/ValueView/PrimitiveInputs';
+import { createGetSetting, setSetting } from '../../store/store';
+import { BooleanInput } from '../Common/Inputs/BooleanInput';
+import { NumberInput } from '../Common/Inputs/NumberInput';
 
 function setterWithValidation<T>(setter: (v: T) => void, validator: (v: T) => boolean) {
   return (value: T) => (validator(value) ? setter(value) : undefined);
 }
 
 export function SettingsView() {
+  const getDiffLogFontSize = createGetSetting('diffLog.fontSize');
+  const getDiffLogPollingInterval = createGetSetting('diffLog.pollingInterval');
+  const getDiffLogHeadingStyle = createGetSetting('diffLog.headingStyle');
+
   return (
     <div class="bg-gray-700 flex-1 flex">
       <div class="mx-auto max-w-6xl w-full bg-slate-900 flex-1 py-3 px-6">
@@ -25,42 +23,33 @@ export function SettingsView() {
             <SettingControl label="Font size">
               {(id) => (
                 <NumberInput
-                  lockStatus="no-lock"
-                  toggleLock={() => {}}
                   value={getDiffLogFontSize()}
                   onChange={setterWithValidation(
-                    setDiffLogFontSize,
+                    (size) => setSetting('diffLog.fontSize', size),
                     (size) => size > 10 && size < 40,
                   )}
-                  id={id}
-                  editable
                 />
               )}
             </SettingControl>
             <SettingControl label="Polling interval">
               {(id) => (
                 <NumberInput
-                  lockStatus="no-lock"
-                  toggleLock={() => {}}
                   value={getDiffLogPollingInterval()}
                   onChange={setterWithValidation(
-                    setDiffLogPollingInterval,
+                    (interval) => setSetting('diffLog.pollingInterval', interval),
                     (interval) => interval > 100 && interval < 5000,
                   )}
-                  id={id}
-                  editable
                 />
               )}
             </SettingControl>
             <SettingControl label="Heading Emphasis" noLabel>
               {(id) => (
                 <BooleanInput
-                  lockStatus="no-lock"
-                  toggleLock={() => {}}
                   value={getDiffLogHeadingStyle() === 'distinct'}
-                  onChange={(value) => setDiffLogHeadingStyle(value ? 'distinct' : 'default')}
+                  onChange={(value) =>
+                    setSetting('diffLog.headingStyle', value ? 'distinct' : 'default')
+                  }
                   id={id}
-                  editable
                 />
               )}
             </SettingControl>

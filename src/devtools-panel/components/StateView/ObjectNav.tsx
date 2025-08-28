@@ -1,18 +1,23 @@
 import clsx from 'clsx';
 import { createMemo, For } from 'solid-js';
 
-import { getActiveState } from '@/devtools-panel/store/store';
+import {
+  addLockPath,
+  createGetViewState,
+  getActiveState,
+  removeLockPath,
+  setViewState,
+} from '@/devtools-panel/store/store';
 import { getLockStatus } from '@/devtools-panel/utils/is-locked';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { LockStatus, ObjectValue, Path } from '@/shared/shared-types';
+import { LockStatus, ObjectValue, Path, ValueType } from '@/shared/shared-types';
+import { getSpecificType } from '@/shared/type-helpers';
 
-import { duplicateStateProperty, setState } from '../../utils/api';
+import { deleteFromState, duplicateStateProperty, setState } from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
 import { createContextMenuHandler } from '../ContextMenu';
-import { AddPropertyDialog } from './AddPropertyDialog';
 import { DuplicateKeyDialog } from './DuplicateKeyDialog';
 import { TypeIcon } from './TypeIcon';
-import { PathChunk } from './types';
 
 const getNameForProperty = () =>
   showPromptDialog<string>('Name for property', (resolve) => (
@@ -25,17 +30,30 @@ interface Props {
 }
 
 export function ObjectNav(props: Props) {
+  const getLockedPaths = createGetViewState('state', 'lockedPaths');
+
   const getName = () => props.path[props.path.length - 1];
   const getObject = createMemo(
     () => getObjectPathValue(getActiveState()!, props.path) as ObjectValue,
   );
 
-  const getKeys = createMemo(() => {
+  const getChildren = createMemo(() => {
     // TODO: Sort by type
     const object = getObject();
-    if (object instanceof Map) return Array.from(object.keys());
-    if (object instanceof Array) return Array.from(Array(object.length).keys());
-    return Object.keys(object);
+    const rawKeys =
+      object instanceof Map
+        ? Array.from(object.keys())
+        : object instanceof Array
+          ? Array.from(Array(object.length).keys())
+          : Object.keys(object);
+
+    // Convert to child key format
+    return rawKeys.map(
+      (key): ContainerChild => ({
+        text: key,
+        type: getSpecificType(object instanceof Map ? object.get(key) : object[key]),
+      }),
+    );
   });
 
   const onDuplicate = async (property: string | number) => {
@@ -49,20 +67,21 @@ export function ObjectNav(props: Props) {
   };
 
   const onAdd = async () => {
-    const result = await showPromptDialog<{ name: string; value: unknown }>(
-      'Add new',
-      (resolve) => (
-        <AddPropertyDialog
-          chunk={props.chunk}
-          onConfirm={(name, value) => resolve({ name, value })}
-        />
-      ),
-    );
+    // TODO: Update AddPropertyDialog to work without PathChunk
+    console.log('Add property functionality temporarily disabled');
+  };
 
-    if (result && result.name) {
-      const fullPath = [...props.path, result.name];
-      await setState(fullPath, result.value);
-    }
+  const handlePropertyClick = (property: string | number) => {
+    const currentPath = createGetViewState('state', 'path')();
+    const newPath = [...props.path, property];
+    const isEqual =
+      currentPath.length === newPath.length &&
+      currentPath.every((val, idx) => val === newPath[idx]);
+    setViewState('state', 'path', isEqual ? props.path : newPath);
+  };
+
+  const handleDelete = async (path: Path) => {
+    await deleteFromState(path);
   };
 
   return (
@@ -79,21 +98,21 @@ export function ObjectNav(props: Props) {
         </li>
       </ul>
       <ul class="flex flex-1 flex-col overflow-auto">
-        <For each={getKeys()}>
+        <For each={getChildren()}>
           {(child) => {
             const childPath = () => [...props.path, child.text];
-            const lockStatus = () => getLockStatus(childPath, props.getLockedPaths);
+            const lockStatus = () => getLockStatus(childPath, getLockedPaths);
             return (
               <NavItem
                 child={child}
                 lockStatus={lockStatus()}
                 setLockState={(lock) => {
-                  if (lock) props.addLockPath(childPath());
-                  else props.removeLockPath(childPath());
+                  if (lock) addLockPath(childPath());
+                  else removeLockPath(childPath());
                 }}
                 active={child.text === props.selectedProperty}
-                onClick={() => props.onClick(child.text)}
-                onDelete={() => props.onDeleteProperty(childPath())}
+                onClick={() => handlePropertyClick(child.text)}
+                onDelete={() => handleDelete(childPath())}
                 onDuplicate={() => onDuplicate(child.text)}
               />
             );
@@ -104,8 +123,13 @@ export function ObjectNav(props: Props) {
   );
 }
 
+interface ContainerChild {
+  text: string | number;
+  type: ValueType;
+}
+
 interface NavItemProps {
-  child: PathChunk['childKeys'][number];
+  child: ContainerChild;
   active: boolean;
   onClick: () => void;
   onDelete: () => void;

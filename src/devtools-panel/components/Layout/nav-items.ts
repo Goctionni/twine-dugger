@@ -1,7 +1,7 @@
 import { createMemo } from 'solid-js';
 import { createStore } from 'solid-js/store';
 
-export interface NavItem {
+interface NavItem {
   text: string;
   icon: string;
 }

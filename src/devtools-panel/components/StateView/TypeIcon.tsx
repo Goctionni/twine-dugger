@@ -1,6 +1,6 @@
 import { Match, Switch } from 'solid-js';
 
-import { ValueType } from './types';
+import { ValueType } from '@/shared/shared-types';
 
 interface Props {
   type: ValueType;

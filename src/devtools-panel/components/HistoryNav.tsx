@@ -11,12 +11,14 @@ interface HistoryNode {
 
 export function HistoryNav() {
   const getHistoryId = createGetViewState('state', 'historyId');
+
   const items = createMemo(() => {
+    const historyId = getHistoryId();
     return getHistoryIds().map((id, index): HistoryNode => {
       return {
         text: index === 0 ? 'latest' : `-${index}`,
-        active: getHistoryId() === id,
-        onClick: () => setViewState('state', 'historyId', id),
+        active: id === historyId || (historyId === -1 && index === 0),
+        onClick: () => setViewState('state', 'historyId', index ? id : -1),
       };
     });
   });

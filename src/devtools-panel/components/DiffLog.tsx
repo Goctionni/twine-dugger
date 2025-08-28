@@ -2,19 +2,27 @@ import { createMemo, For } from 'solid-js';
 
 import { pathEquals } from '@/shared/path-equals';
 
-import { getDiffFrames, getFilteredPaths } from '../store/store';
+import {
+  clearDiffFrames,
+  clearFilteredPaths,
+  getDiffFrames,
+  getFilteredPaths,
+} from '../store/store';
 import { createContextMenuHandler } from './ContextMenu';
 import { DiffFrame } from './DiffLog/DiffFrame';
 
 export function DiffLog() {
   const onContextMenu = createContextMenuHandler([
-    { label: 'Clear Diff Log', onClick: () => props.onClear() },
-    { label: 'Clear All Filters', onClick: () => props.onClearFilters() },
+    { label: 'Clear Diff Log', onClick: () => clearDiffFrames() },
+    { label: 'Clear All Filters', onClick: () => clearFilteredPaths() },
   ]);
 
   const frames = createMemo(() => {
     const filteredPaths = getFilteredPaths();
-    return getDiffFrames()
+    const diffFrames = getDiffFrames();
+    if (!filteredPaths.length) return diffFrames.slice(0, 30);
+
+    return diffFrames
       .map((frame) => ({
         ...frame,
         changes: frame.changes.filter(

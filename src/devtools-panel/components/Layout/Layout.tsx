@@ -1,13 +1,11 @@
 import { JSX } from 'solid-js';
 
-import { GameMetaData } from '@/devtools-panel/utils/remote-functions/getMetaData';
-
+import { getGameMetaData } from '../../store/store';
 import { createContextMenuHandler } from '../ContextMenu';
 import { MetaInfo } from './MetaInfo';
 import { Navigation } from './Navigation';
 
 interface LayoutProps {
-  meta?: GameMetaData | null;
   children: JSX.Element;
 }
 
@@ -26,7 +24,7 @@ export function Layout(props: LayoutProps) {
         <header class="bg-gray-800 p-3 shadow-md flex justify-between items-center sticky top-0 z-10">
           <div class="flex items-center space-x-4">
             <h1 class="text-xl font-semibold text-sky-400">Twine Dugger</h1>
-            {props.meta && <MetaInfo {...props.meta} />}
+            {getGameMetaData() && <MetaInfo />}
           </div>
           <Navigation />
         </header>

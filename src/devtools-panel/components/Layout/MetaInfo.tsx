@@ -1,30 +1,27 @@
 import { GameMetaData } from '@/devtools-panel/utils/remote-functions/getMetaData';
 
-export interface MetaInfoProps {
-  gameName: string;
-  gameEngine: string;
-}
+import { getGameMetaData } from '../../store/store';
 
-export function MetaInfo(props: GameMetaData) {
+export function MetaInfo() {
   return (
     <div class="flex items-center space-x-3 text-sm text-gray-400">
       <span>|</span>
       <span>
-        Game: <span class="font-medium text-gray-300">{props.name}</span>
+        Game: <span class="font-medium text-gray-300">{getGameMetaData()?.name}</span>
       </span>
-      {props.format && (
+      {getGameMetaData() && (
         <span>
           StoryFormat:{' '}
           <span class="font-medium text-gray-300">
-            {props.format.name} {props.format.version?.shortStr}
+            {getGameMetaData()?.format?.name} {getGameMetaData()?.format?.version?.shortStr}
           </span>
         </span>
       )}
-      {props.compiler && (
+      {getGameMetaData()?.compiler && (
         <span>
           Compiled with:{' '}
           <span class="font-medium text-gray-300">
-            {props.compiler.name} {props.compiler.version}
+            {getGameMetaData()?.compiler?.name} {getGameMetaData()?.compiler?.version}
           </span>
         </span>
       )}

@@ -32,12 +32,12 @@ export async function getUpdates() {
 
 export async function setState(path: Array<string | number>, value: unknown) {
   await injectContentScript();
-  return execDuggerFunction('setState', [path, value]);
+  return execDuggerFunction('setState', [[...path], value]);
 }
 
 export async function setStatePropertyLock(path: Path, lock: boolean) {
   await injectContentScript();
-  return execDuggerFunction('setStatePropertyLock', [path, lock]);
+  return execDuggerFunction('setStatePropertyLock', [[...path], lock]);
 }
 
 export async function duplicateStateProperty(
@@ -46,12 +46,16 @@ export async function duplicateStateProperty(
   targetKey?: string,
 ) {
   await injectContentScript();
-  return execDuggerFunction('duplicateStateProperty', [parentPath, sourceKey, targetKey ?? null]);
+  return execDuggerFunction('duplicateStateProperty', [
+    [...parentPath],
+    sourceKey,
+    targetKey ?? null,
+  ]);
 }
 
 export async function deleteFromState(path: Array<string | number>) {
   await injectContentScript();
-  return execDuggerFunction('deleteFromState', [path]);
+  return execDuggerFunction('deleteFromState', [[...path]]);
 }
 
 export async function getPassageData() {

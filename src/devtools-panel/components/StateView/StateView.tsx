@@ -18,7 +18,7 @@ export function StateView() {
 
     return new Array(numLayers).fill(0).map((_, index) => {
       const path = fullPath.slice(0, index);
-      const selectedProperty = fullPath[index + 1];
+      const selectedProperty = fullPath[index];
       return { path, selectedProperty };
     });
   });

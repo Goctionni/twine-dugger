@@ -11,19 +11,21 @@ import {
   Value,
 } from '@/shared/shared-types';
 
+import { addFilteredPath, setViewState } from '../../store/store';
 import { Badge } from './Badge';
-import { RenderPath } from './RenderPath';
+import { DiffPath } from './DiffPath';
 import { RenderValue } from './RenderValue';
+
+const setPath = (path: Path) => setViewState('state', 'path', path);
 
 function DiffItemTypeChanged(props: DiffChangeProps<DiffTypeChange>) {
   return (
     <div class="whitespace-normal">
       <Badge kind="typ" />
-      <RenderPath
+      <DiffPath
         path={props.diff.path}
-        onClick={() => props.setPath(props.diff.path)}
-        onAddFilter={props.onAddFilter}
-        showColon
+        onClick={() => setPath(props.diff.path)}
+        onAddFilter={addFilteredPath}
       />
       <code class="text-white">{': '}</code>
       <RenderValue value={props.diff.oldValue} />
@@ -37,11 +39,10 @@ function DiffPrimitiveChanged(props: DiffChangeProps<DiffPrimitiveUpdate>) {
   return (
     <div class="whitespace-normal">
       <Badge kind="chg" />
-      <RenderPath
+      <DiffPath
         path={props.diff.path}
-        onClick={() => props.setPath(props.diff.path)}
-        onAddFilter={props.onAddFilter}
-        showColon
+        onClick={() => setPath(props.diff.path)}
+        onAddFilter={addFilteredPath}
       />
       <code class="text-white">{': '}</code>
       <RenderValue value={props.diff.oldValue} />
@@ -52,9 +53,10 @@ function DiffPrimitiveChanged(props: DiffChangeProps<DiffPrimitiveUpdate>) {
 }
 
 function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>) {
-  const leafMode = () => {
-    if (props.diff.subtype === 'add') return 'add';
-    if (props.diff.subtype === 'remove') return 'del';
+  const action = () => {
+    if (props.diff.subtype === 'add') return 'added' as const;
+    if (props.diff.subtype === 'remove') return 'removed' as const;
+    return undefined;
   };
 
   type AddDiff = (DiffSetChange | DiffArrayChange) & { subtype: 'add'; newValue: Value };
@@ -65,11 +67,10 @@ function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>
       <Match when={props.diff.subtype === 'instructions'}>
         <div class="whitespace-normal">
           <Badge kind="mov" />
-          <RenderPath
+          <DiffPath
             path={props.diff.path}
-            onClick={() => props.setPath(props.diff.path)}
-            onAddFilter={props.onAddFilter}
-            showColon
+            onClick={() => setPath(props.diff.path)}
+            onAddFilter={addFilteredPath}
           />
           {' items reordered'}
         </div>
@@ -77,12 +78,11 @@ function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>
       <Match when={props.diff.subtype === 'add'}>
         <div class="whitespace-normal">
           <Badge kind="add" />
-          <RenderPath
+          <DiffPath
             path={props.diff.path}
-            onClick={() => props.setPath(props.diff.path)}
-            onAddFilter={props.onAddFilter}
-            leafMode={leafMode()}
-            showColon
+            onClick={() => setPath(props.diff.path)}
+            onAddFilter={addFilteredPath}
+            action={action()}
           />
           <code class="text-white">{': '}</code>
           <RenderValue value={(props.diff as AddDiff).newValue} />
@@ -91,12 +91,11 @@ function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>
       <Match when={props.diff.subtype === 'remove'}>
         <div class="whitespace-normal">
           <Badge kind="del" />
-          <RenderPath
+          <DiffPath
             path={props.diff.path}
-            onClick={() => props.setPath(props.diff.path)}
-            onAddFilter={props.onAddFilter}
-            leafMode={leafMode()}
-            showColon
+            onClick={() => setPath(props.diff.path)}
+            onAddFilter={addFilteredPath}
+            action={action()}
           />
           <code class="text-white">{': '}</code>
           <RenderValue value={(props.diff as RemoveDiff).oldValue} faded />
@@ -108,8 +107,8 @@ function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>
 
 function DiffRecordChanged(props: DiffChangeProps<DiffObjectMapChange>) {
   const onClick = () => {
-    if (props.diff.subtype === 'add') props.setPath([...props.diff.path, props.diff.key]);
-    else props.setPath(props.diff.path);
+    if (props.diff.subtype === 'add') setPath([...props.diff.path, props.diff.key]);
+    else setPath(props.diff.path);
   };
 
   type AddDiff = DiffObjectMapChange & { subtype: 'add'; newValue: Value };
@@ -120,28 +119,26 @@ function DiffRecordChanged(props: DiffChangeProps<DiffObjectMapChange>) {
       <Match when={props.diff.subtype === 'add'}>
         <div class="whitespace-normal">
           <Badge kind="add" />
-          <RenderPath
+          <DiffPath
             path={props.diff.path}
             leafKey={props.diff.key}
             onClick={onClick}
-            onAddFilter={props.onAddFilter}
-            leafMode="add"
-            showColon
+            onAddFilter={addFilteredPath}
+            action="added"
           />
           <code class="text-white">{': '}</code>
           <RenderValue value={(props.diff as AddDiff).newValue} />
         </div>
       </Match>
-      <Match when={props.diff.subtype === 'add'}>
+      <Match when={props.diff.subtype === 'remove'}>
         <div class="whitespace-normal">
           <Badge kind="del" />
-          <RenderPath
+          <DiffPath
             path={props.diff.path}
             leafKey={props.diff.key}
             onClick={onClick}
-            onAddFilter={props.onAddFilter}
-            leafMode="del"
-            showColon
+            onAddFilter={addFilteredPath}
+            action="removed"
           />
           <code class="text-white">{': '}</code>
           <RenderValue value={(props.diff as RemoveDiff).oldValue} faded />
@@ -151,17 +148,11 @@ function DiffRecordChanged(props: DiffChangeProps<DiffObjectMapChange>) {
   );
 }
 
-interface DiffChangeProps<T> {
+interface DiffChangeProps<T extends Diff> {
   diff: T;
-  setPath: (path: Path) => void;
-  onAddFilter: (path: string) => void;
 }
 
-export function DiffItem(props: {
-  diff: Diff;
-  setPath: (path: Path) => void;
-  onAddFilter: (path: string) => void;
-}) {
+export function DiffItem(props: DiffChangeProps<Diff>) {
   const type = () => {
     if (props.diff.type !== 'array') return props.diff.type;
     if (props.diff.subtype !== 'instructions') return props.diff.type;
@@ -169,26 +160,25 @@ export function DiffItem(props: {
     return 'hide';
   };
   const primitives = ['string', 'number', 'boolean'];
-  const baseProps = () => ({ setPath: props.setPath, onAddFilter: props.onAddFilter });
   return (
     <Switch>
       <Match when={type() === 'type-changed'}>
-        <DiffItemTypeChanged diff={props.diff as DiffTypeChange} {...baseProps()} />
+        <DiffItemTypeChanged diff={props.diff as DiffTypeChange} />
       </Match>
       <Match when={primitives.includes(type() as string)}>
-        <DiffPrimitiveChanged diff={props.diff as DiffPrimitiveUpdate} {...baseProps()} />
+        <DiffPrimitiveChanged diff={props.diff as DiffPrimitiveUpdate} />
       </Match>
       <Match when={type() === 'set'}>
-        <DiffListChanged diff={props.diff as DiffSetChange} {...baseProps()} />
+        <DiffListChanged diff={props.diff as DiffSetChange} />
       </Match>
       <Match when={type() === 'array'}>
-        <DiffListChanged diff={props.diff as DiffArrayChange} {...baseProps()} />
+        <DiffListChanged diff={props.diff as DiffArrayChange} />
       </Match>
       <Match when={type() === 'map'}>
-        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} {...baseProps()} />
+        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} />
       </Match>
       <Match when={type() === 'object'}>
-        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} {...baseProps()} />
+        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} />
       </Match>
     </Switch>
   );

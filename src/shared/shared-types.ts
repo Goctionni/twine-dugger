@@ -66,7 +66,7 @@ export type ProcessDiffResult = {
   locksUpdate: Path[] | null;
 };
 
-export type DiffPackage = {
+type DiffPackage = {
   passage: string;
   diffs: Diff[];
 };
@@ -111,12 +111,12 @@ export interface DiffFrame {
 
 export interface StateFrame {
   id: number;
-  diffingFrame: DiffFrame | undefined;
+  diffingFrame?: DiffFrame;
   state: ObjectValue;
 }
 
 export type LockStatus = 'locked' | 'ancestor-lock' | 'unlocked';
 
 type KnownPassageAttribute = 'content' | 'pid' | 'name' | 'tags' | 'position' | 'size';
-export type PassageAttribute = KnownPassageAttribute | (string & {});
+type PassageAttribute = KnownPassageAttribute | (string & {});
 export type PassageData = Record<PassageAttribute, string>;

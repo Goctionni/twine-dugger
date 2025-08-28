@@ -16,7 +16,7 @@ const HarloweSchema = z.object({
   }),
 });
 
-export function sanitize(obj: ObjectValue) {
+function sanitize(obj: ObjectValue) {
   const result: ObjectValue = {};
   for (const [key, value] of Object.entries(obj)) {
     if (key.startsWith('TwineScript_')) continue;

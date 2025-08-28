@@ -10,7 +10,7 @@
     "lint:fix": "eslint . --fix",
     "prettier": "prettier . -c",
     "prettier:fix": "prettier . -w",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc -p tsconfig.app.json --noEmit"
   },
   "dependencies": {
     "clsx": "2.1.1",

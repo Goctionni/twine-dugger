@@ -67,7 +67,7 @@ const [store, setStore] = createStore<Store>({
       query: '',
     },
     state: {
-      historyId: 0,
+      historyId: -1,
       lockedPaths: [],
       path: [],
     },
@@ -84,22 +84,17 @@ export { getDiffFrames, getPassageData };
 export const getConnectionState = createMemo(() => store.connection);
 export const getFilteredPaths = createMemo(() => store.gameConfig?.filteredPaths ?? []);
 export const getGameMetaData = createMemo(() => store.gameMetaData);
-export const getNavigationView = createMemo(() => store.navigation.view);
 
-export const getActiveStateFrame = createMemo(() => {
+export const getLatestStateFrame = createMemo(() => getStateFrames()[0]!);
+
+const getActiveStateFrame = createMemo(() => {
   const historyId = store.viewState.state.historyId;
-  if (historyId === 'latest') return getStateFrames()[0];
-  return getStateFrames().find((frame) => frame.id === historyId);
+  const stateFrames = getStateFrames();
+  if (historyId === -1) return stateFrames[0];
+  return stateFrames.find((frame) => frame.id === historyId) ?? getStateFrames()[0];
 });
 
 export const getActiveState = createMemo(() => getActiveStateFrame()?.state);
-
-export const getActiveStatePathValue = createMemo(() => {
-  const path = store.viewState.state.path;
-  const activeStateFrame = getActiveStateFrame();
-  if (!activeStateFrame) return null;
-  return getObjectPathValue(activeStateFrame.state, path);
-});
 
 export const getHistoryIds = createMemo(() => getStateFrames().map((frame) => frame.id));
 
@@ -131,8 +126,7 @@ export const setViewState = <
   setStore('viewState', view, property as any, value);
 };
 
-export const setConnectionState = (connection: Store['connection']) =>
-  setStore('connection', connection);
+const setConnectionState = (connection: Store['connection']) => setStore('connection', connection);
 
 export function setGameMetaData(meta: GameMetaData) {
   batch(() => {
@@ -157,6 +151,10 @@ export const removeFilteredPath = (path: Path) => {
   setStore('gameConfig', 'filteredPaths', newPaths);
 };
 
+export const clearFilteredPaths = () => {
+  setStore('gameConfig', 'filteredPaths', []);
+};
+
 export const addLockPath = (path: Path) => {
   const current = store.viewState.state.lockedPaths;
   if (current.some((currentPath) => pathEquals(currentPath, path))) return;
@@ -166,7 +164,7 @@ export const addLockPath = (path: Path) => {
 export const removeLockPath = (path: Path) => {
   const current = store.viewState.state.lockedPaths;
   const newPaths = current.filter((currentPath) => !pathEquals(currentPath, path));
-  setStore('gameConfig', 'filteredPaths', newPaths);
+  setStore('viewState', 'state', 'lockedPaths', newPaths);
 };
 
 export const setSetting = <T extends keyof Store['settings']>(
@@ -204,6 +202,7 @@ export async function startTrackingFrames() {
             passage: diffPackage.passage,
             changes: diffPackage.diffs,
           };
+
           setDiffFrames((cur) => [newFrame, ...cur].slice(0, 50));
           setStateFrames((cur) => {
             const latestFrame = cur[0];
@@ -228,6 +227,10 @@ export async function startTrackingFrames() {
     setConnectionState('error');
   }
   return () => clearTimeout(timeout);
+}
+
+export function clearDiffFrames() {
+  setDiffFrames([]);
 }
 
 // Utility functions
