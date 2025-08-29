@@ -1,18 +1,17 @@
 import clsx from 'clsx';
 import { For } from 'solid-js';
 
-import { createGetSetting } from '@/devtools-panel/store/store';
-import type { DiffFrame as TDiffFrame, PassageData } from '@/shared/shared-types';
+import { createGetSetting, setViewState } from '@/devtools-panel/store/store';
+import type { DiffFrame as TDiffFrame, ParsedPassageData } from '@/shared/shared-types';
 
 import { navItems, setNavItem } from '../Layout/nav-items';
-import { parsePassage, setSelectedPassage } from '../Views/passageDataStore';
 import { DiffItem } from './Diff';
 import { RelativeTime } from './RelativeTime';
 
 interface Props {
   first?: boolean;
   frame: TDiffFrame;
-  passageData?: PassageData[];
+  passageData?: ParsedPassageData[];
 }
 
 export function DiffFrame(props: Props) {
@@ -32,7 +31,7 @@ export function DiffFrame(props: Props) {
           onClick={() => {
             setNavItem(navItems[2]);
             const passage = props.passageData?.find((p) => p.name === props.frame.passage);
-            if (passage) setSelectedPassage(parsePassage(passage));
+            if (passage) setSelectedPassage(passage);
           }}
         >
           {props.frame.passage}
@@ -46,4 +45,8 @@ export function DiffFrame(props: Props) {
       </div>
     </div>
   );
+}
+
+function setSelectedPassage(passage: ParsedPassageData) {
+  setViewState('passage', 'selected', passage);
 }

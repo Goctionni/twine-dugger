@@ -120,3 +120,12 @@ export type LockStatus = 'locked' | 'ancestor-lock' | 'unlocked';
 type KnownPassageAttribute = 'content' | 'pid' | 'name' | 'tags' | 'position' | 'size';
 type PassageAttribute = KnownPassageAttribute | (string & {});
 export type PassageData = Record<PassageAttribute, string>;
+
+export interface ParsedPassageData {
+  id: number;
+  name: string;
+  size: [number, number] | null;
+  position: [number, number] | null;
+  content: string;
+  tags: string[];
+}

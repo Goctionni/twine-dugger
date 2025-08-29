@@ -1,6 +1,6 @@
 import { createMemo, For, JSX, Show } from 'solid-js';
 
-import { ContainerValue, ObjectValue, Path, Value } from '@/shared/shared-types';
+import { ContainerValue, ObjectValue, ParsedPassageData, Path, Value } from '@/shared/shared-types';
 import { isPrimitive } from '@/shared/type-helpers';
 
 import {
@@ -11,7 +11,6 @@ import {
 } from '../../store/store';
 import { StringInput } from '../Common/Inputs/StringInput';
 import { navItems, setNavItem } from '../Layout/nav-items';
-import { ParsedPassageData, setSelectedPassage } from './passageDataStore';
 import { ListItem as PassageListItem } from './PassagesView';
 
 export function SearchView() {
@@ -230,4 +229,8 @@ function dedupe(paths: Path[]): Path[] {
     }
   }
   return res;
+}
+
+function setSelectedPassage(passage: ParsedPassageData) {
+  setViewState('passage', 'selected', passage);
 }

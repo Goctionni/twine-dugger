@@ -1,13 +1,20 @@
 import clsx from 'clsx';
 import { For } from 'solid-js';
 
-import { getGameMetaData, getPassageData } from '../../store/store';
+import { ParsedPassageData } from '@/shared/shared-types';
+
+import {
+  createGetViewState,
+  getGameMetaData,
+  getPassageData,
+  setViewState,
+} from '../../store/store';
 import { MovableSplit } from '../Layout/MovableSplit';
 import { PassageCode } from '../SyntaxHighlight/PassageCode';
-import { getSelectedPassage, ParsedPassageData, setSelectedPassage } from './passageDataStore';
 
 export function PassagesView() {
   const format = () => getGameMetaData()?.format;
+  const getSelectedPassage = createGetViewState('passage', 'selected');
   return (
     <MovableSplit
       initialLeftWidthPercent={35}
@@ -93,4 +100,8 @@ function Tag(props: TagProps) {
       {props.tag}
     </span>
   );
+}
+
+function setSelectedPassage(passage: ParsedPassageData) {
+  setViewState('passage', 'selected', passage);
 }

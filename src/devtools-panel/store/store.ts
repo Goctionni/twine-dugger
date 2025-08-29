@@ -3,9 +3,8 @@ import { createStore } from 'solid-js/store';
 
 import { getObjectPathValue } from '@/shared/get-object-path-value';
 import { pathEquals } from '@/shared/path-equals';
-import { DiffFrame, Path, StateFrame } from '@/shared/shared-types';
+import { DiffFrame, ParsedPassageData, PassageData, Path, StateFrame } from '@/shared/shared-types';
 
-import { ParsedPassageData, parsePassage } from '../components/Views/passageDataStore';
 import {
   getPassageData as apiGetPassageData,
   getState as apiGetState,
@@ -234,6 +233,20 @@ export function clearDiffFrames() {
 }
 
 // Utility functions
+function parseDoubleIntAttr(str: string) {
+  return str.split(',').map(Number) as [number, number];
+}
+
+function parsePassage(passage: PassageData): ParsedPassageData {
+  return {
+    id: parseInt(passage.pid),
+    name: passage.name,
+    size: passage.size ? parseDoubleIntAttr(passage.size) : null,
+    position: passage.position ? parseDoubleIntAttr(passage.position) : null,
+    content: passage.content,
+    tags: passage.tags?.split(' ').filter(Boolean),
+  };
+}
 
 function loadGameSettings() {
   const defaultConfig: GameConfig = { filteredPaths: [] };
