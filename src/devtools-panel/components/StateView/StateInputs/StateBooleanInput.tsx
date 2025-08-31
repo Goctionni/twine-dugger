@@ -10,6 +10,7 @@ import {
   removeLockPath,
 } from '../../../store/store';
 import { setState } from '../../../utils/api';
+import { setStatePropertyLock } from '../../../utils/api';
 import { getLockStatus } from '../../../utils/is-locked';
 import { BooleanInput } from '../../Common/Inputs/BooleanInput';
 import { LockButton } from '../../Common/Inputs/LockButton';
@@ -47,8 +48,10 @@ export function StateBooleanInput(props: StateBooleanInputProps) {
 
   const handleToggleLock = () => {
     if (lockStatus() === 'locked') {
+      setStatePropertyLock(props.path, false);
       removeLockPath(props.path);
     } else if (lockStatus() === 'unlocked') {
+      setStatePropertyLock(props.path, true);
       addLockPath(props.path);
     }
   };

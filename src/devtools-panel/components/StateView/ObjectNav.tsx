@@ -13,7 +13,12 @@ import { getObjectPathValue } from '@/shared/get-object-path-value';
 import { LockStatus, ObjectValue, Path, ValueType } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
-import { deleteFromState, duplicateStateProperty, setState } from '../../utils/api';
+import {
+  deleteFromState,
+  duplicateStateProperty,
+  setState,
+  setStatePropertyLock,
+} from '../../utils/api';
 import { showPromptDialog } from '../Common/PromptProvider';
 import { createContextMenuHandler } from '../ContextMenu';
 import { AddPropertyDialog } from './AddPropertyDialog';
@@ -120,6 +125,7 @@ export function ObjectNav(props: Props) {
                 child={child}
                 lockStatus={lockStatus()}
                 setLockState={(lock) => {
+                  setStatePropertyLock(props.path, lock);
                   if (lock) addLockPath(childPath());
                   else removeLockPath(childPath());
                 }}

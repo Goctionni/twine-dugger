@@ -1,0 +1,104 @@
+src/devtools-panel/
+├── app/
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── layout/
+│       ├── Layout.tsx
+│       ├── Navigation.tsx
+│       └── MetaInfo.tsx
+│
+├── pages/
+│   ├── StatePage.tsx
+│   ├── PassagePage.tsx
+│   ├── SearchPage.tsx
+│   └── SettingsPage.tsx
+│
+├── features/
+│   ├── state/
+│   │   ├── StateView.tsx
+│   │   ├── ObjectNav.tsx
+│   │   ├── ValueView.tsx
+│   │   ├── PrettyPath.tsx
+│   │   ├── HistoryNav.tsx
+│   │   ├── dialogs/
+│   │   │   ├── AddPropertyDialog.tsx
+│   │   │   └── DuplicateKeyDialog.tsx
+│   │   ├── inputs/
+│   │   │   ├── StateStringInput.tsx
+│   │   │   ├── StateNumberInput.tsx
+│   │   │   ├── StateBooleanInput.tsx
+│   │   │   ├── StateObjectInput.tsx
+│   │   │   ├── StateArrayInput.tsx
+│   │   │   ├── StateMapInput.tsx
+│   │   │   └── StateContainerInput.tsx
+│   │   └── types.ts
+│   │
+│   ├── diff-log/
+│   │   ├── DiffLog.tsx
+│   │   ├── DiffFrame.tsx
+│   │   ├── DiffPreview.tsx
+│   │   ├── Diff.tsx
+│   │   ├── DiffPath.tsx
+│   │   └── RenderValue.tsx
+│   │
+│   ├── passage/
+│   │   ├── PassagesView.tsx
+│   │   ├── PassageCode.tsx
+│   │   ├── syntax/
+│   │   │   ├── highlighter.ts
+│   │   │   └── grammars/
+│   │   │       ├── harlowe-grammar.json
+│   │   │       └── sugarcube-grammar.json
+│   │   └── store/
+│   │       └── passageDataStore.ts
+│   │
+│   ├── search/
+│   │   ├── SearchInput.tsx
+│   │   ├── SearchResults.tsx
+│   │   └── SearchView.tsx
+│   │
+│   └── settings/
+│       └── SettingsView.tsx
+│
+├── ui/
+│   ├── inputs/
+│   │   ├── StringInput.tsx
+│   │   ├── NumberInput.tsx
+│   │   ├── BooleanInput.tsx
+│   │   ├── SaveButton.tsx
+│   │   └── LockButton.tsx
+│   ├── dialogs/
+│   │   ├── Dialog.tsx
+│   │   └── PromptProvider.tsx
+│   ├── layout/
+│   │   └── MovableSplit.tsx
+│   ├── display/
+│   │   ├── Tooltip.tsx
+│   │   ├── Badge.tsx
+│   │   └── TypeIcon.tsx
+│   └── menus/
+│       └── ContextMenu.tsx
+│
+├── store/
+│   ├── store.ts
+│   └── apply-diffs.ts
+│
+├── api/
+│   ├── api.ts
+│   ├── remote-execute.ts
+│   └── remote-functions/
+│       └── getMetaData.ts
+│
+├── utils/
+│   └── is-locked.ts
+│
+├── styles/
+│   ├── index.css
+│   ├── nav.css
+│   ├── tooltip.css
+│   ├── harlowe.css
+│   └── sugarcube.css
+│
+└── public/
+    ├── index.html
+    └── manifest.json

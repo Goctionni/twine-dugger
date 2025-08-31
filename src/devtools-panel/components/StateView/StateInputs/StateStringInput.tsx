@@ -9,7 +9,7 @@ import {
   getActiveState,
   removeLockPath,
 } from '../../../store/store';
-import { setState } from '../../../utils/api';
+import { setState, setStatePropertyLock } from '../../../utils/api';
 import { getLockStatus } from '../../../utils/is-locked';
 import { LockButton } from '../../Common/Inputs/LockButton';
 import { SaveButton } from '../../Common/Inputs/SaveButton';
@@ -62,8 +62,10 @@ export function StateStringInput(props: StateStringInputProps) {
   const handleToggleLock = () => {
     if (lockStatus() === 'locked') {
       removeLockPath(props.path);
+      setStatePropertyLock(props.path, false);
     } else if (lockStatus() === 'unlocked') {
       addLockPath(props.path);
+      setStatePropertyLock(props.path, true);
     }
   };
 
