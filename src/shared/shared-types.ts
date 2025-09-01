@@ -129,3 +129,40 @@ export interface ParsedPassageData {
   content: string;
   tags: string[];
 }
+
+export type Page = 'state' | 'search' | 'passages' | 'settings';
+export type ConnectionState = 'killed' | 'loading' | 'error' | 'live' | 'not-enabled';
+
+export interface GameMetaData {
+  name: string;
+  ifId: string;
+  save?: {
+    numSlots: number;
+    slotsUsed: number;
+    storage?: string;
+    storageCapacity?: number;
+    storageUsed?: number;
+    storageUsedPct?: number;
+  };
+  passages?: {
+    start: string;
+    count?: number;
+  };
+  format?: {
+    name: 'SugarCube' | 'Harlowe';
+    version?: {
+      major: number | undefined;
+      minor: number | undefined;
+      patch: number | undefined;
+      shortStr: string;
+    };
+  };
+  compiler?: {
+    name: string;
+    version?: string;
+  };
+  settings?: {
+    historyControls: boolean;
+    historyMax: number;
+  };
+}

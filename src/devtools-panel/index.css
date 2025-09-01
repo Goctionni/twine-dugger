@@ -1,25 +1,6 @@
 @import 'tailwindcss';
-@import './tooltip.css';
-@import './nav.css';
-@import './sugarcube.css';
-@import './harlowe.css';
-
-/* width */
-::-webkit-scrollbar {
-  @apply w-2.5;
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-  @apply bg-gray-900;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-  @apply border-2 border-r-3 border-gray-900 bg-gray-500 rounded-full;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400;
-}
+@import './styles/tooltip.css';
+@import './styles/nav.css';
+@import './styles/sugarcube.css';
+@import './styles/harlowe.css';
+@import './styles/scrollbar.css';
