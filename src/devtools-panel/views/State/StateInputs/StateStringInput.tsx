@@ -4,7 +4,13 @@ import { getObjectPathValue } from '@/shared/get-object-path-value';
 import { Path } from '@/shared/shared-types';
 
 import { setState, setStatePropertyLock } from '../../../api/api';
-import { addLockPath, createGetViewState, getActiveState, removeLockPath } from '../../../store';
+import {
+  addLockPath,
+  createGetViewState,
+  getActiveState,
+  getLockedPaths,
+  removeLockPath,
+} from '../../../store';
 import { LockButton } from '../../../ui/inputs/LockButton';
 import { SaveButton } from '../../../ui/inputs/SaveButton';
 import { StringInput } from '../../../ui/inputs/StringInput';
@@ -15,7 +21,6 @@ interface StateStringInputProps {
 }
 
 export function StateStringInput(props: StateStringInputProps) {
-  const getLockedPaths = createGetViewState('state', 'lockedPaths');
   const getHistoryId = createGetViewState('state', 'historyId');
 
   const currentValue = () => {

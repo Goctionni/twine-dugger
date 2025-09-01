@@ -5,7 +5,13 @@ import { Path } from '@/shared/shared-types';
 
 import { setState } from '../../../api/api';
 import { setStatePropertyLock } from '../../../api/api';
-import { addLockPath, createGetViewState, getActiveState, removeLockPath } from '../../../store';
+import {
+  addLockPath,
+  createGetViewState,
+  getActiveState,
+  getLockedPaths,
+  removeLockPath,
+} from '../../../store';
 import { BooleanInput } from '../../../ui/inputs/BooleanInput';
 import { LockButton } from '../../../ui/inputs/LockButton';
 import { getLockStatus } from '../lock-helper';
@@ -15,7 +21,6 @@ interface StateBooleanInputProps {
 }
 
 export function StateBooleanInput(props: StateBooleanInputProps) {
-  const getLockedPaths = createGetViewState('state', 'lockedPaths');
   const getHistoryId = createGetViewState('state', 'historyId');
 
   const currentValue = () => {

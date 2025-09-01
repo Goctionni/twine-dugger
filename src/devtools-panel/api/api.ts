@@ -40,6 +40,13 @@ export async function setStatePropertyLock(path: Path, lock: boolean) {
   return execDuggerFunction('setStatePropertyLock', [[...path], lock]);
 }
 
+export async function setStatePropertyLocks(paths: Path[]) {
+  await injectContentScript();
+  return execDuggerFunction('setStatePropertyLocks', [
+    paths.map((path) => path.map((slug) => slug)),
+  ]);
+}
+
 export async function duplicateStateProperty(
   parentPath: Path,
   sourceKey: string | number,

@@ -78,6 +78,7 @@ declare global {
         targetKey?: string | null,
       ) => void;
       setStatePropertyLock: (path: Path, lock: boolean) => Path[];
+      setStatePropertyLocks: (paths: Path[]) => void;
       utils: {
         jsonReplacer(key: string, value: any): any;
         jsonReviver(key: string, value: any): any;

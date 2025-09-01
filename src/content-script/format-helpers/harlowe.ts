@@ -54,5 +54,6 @@ export default {
   deleteFromState: (path) => deleteFromState(getBaseState(), path),
   getPassage: () => window.Harlowe.API_ACCESS.STATE.passage,
   setStatePropertyLock: setPathLock,
+  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
   processDiffs,
 } satisfies FormatHelpers;

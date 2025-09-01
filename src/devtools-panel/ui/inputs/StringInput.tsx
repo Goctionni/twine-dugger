@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { JSX } from 'solid-js';
+import { createEffect, createSignal, JSX } from 'solid-js';
 
 interface StringInputProps {
   value: string;
@@ -18,9 +18,15 @@ const baseInputClasses =
 
 export function StringInput(props: StringInputProps) {
   const onKeyDown = (e: KeyboardEvent) => props.onKeyDown?.(e);
+  const [ref, setRef] = createSignal<HTMLElement | null>(null);
+
+  createEffect(() => {
+    if (props.autoFocus && ref()) ref()!.focus();
+  });
 
   return (
     <input
+      ref={setRef}
       type="text"
       value={props.value}
       onInput={(e) => props.onChange(e.target.value)}

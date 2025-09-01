@@ -10,6 +10,7 @@ import {
   ParsedPassageData,
   PassageData,
   Path,
+  PropertyOrder,
   StateFrame,
 } from '@/shared/shared-types';
 
@@ -17,6 +18,7 @@ import {
   getPassageData as apiGetPassageData,
   getState as apiGetState,
   getUpdates,
+  setStatePropertyLocks,
 } from '../api/api';
 import { applyDiffsToState } from './apply-diffs';
 
@@ -25,6 +27,7 @@ const getGameSettingsKey = (ifId: string) => `${LS_PREFIX}${ifId}`;
 const getGlobalSettingsKey = () => `${LS_PREFIX}settings`;
 
 interface GameConfig {
+  lockedPaths: Path[];
   filteredPaths: Path[];
 }
 
@@ -32,10 +35,12 @@ interface Settings {
   'diffLog.fontSize': number;
   'diffLog.pollingInterval': number;
   'diffLog.headingStyle': 'default' | 'distinct';
+  'state.propertyOrder': PropertyOrder;
 }
 
 interface Store {
   connection: ConnectionState;
+  candidateIframes?: string[];
   gameMetaData: GameMetaData | null;
 
   navigation: {
@@ -45,7 +50,6 @@ interface Store {
     state: {
       historyId: number;
       path: Path;
-      lockedPaths: Path[];
     };
     passage: {
       selected: ParsedPassageData | null;
@@ -59,7 +63,7 @@ interface Store {
 }
 
 const [store, setStore] = createStore<Store>({
-  connection: 'not-enabled',
+  connection: 'loading-meta',
   gameConfig: null,
   gameMetaData: null,
   navigation: {
@@ -74,7 +78,6 @@ const [store, setStore] = createStore<Store>({
     },
     state: {
       historyId: -1,
-      lockedPaths: [],
       path: [],
     },
   },
@@ -89,6 +92,7 @@ export { getDiffFrames, getPassageData };
 
 export const getConnectionState = createMemo(() => store.connection);
 export const getFilteredPaths = createMemo(() => store.gameConfig?.filteredPaths ?? []);
+export const getLockedPaths = createMemo(() => store.gameConfig?.lockedPaths ?? []);
 export const getGameMetaData = createMemo(() => store.gameMetaData);
 
 export const getLatestStateFrame = createMemo(() => getStateFrames()[0]!);
@@ -134,7 +138,12 @@ export const setViewState = <
   setStore('viewState', view, property as any, value);
 };
 
-const setConnectionState = (connection: Store['connection']) => setStore('connection', connection);
+export const setConnectionState = (connection: Store['connection']) =>
+  setStore('connection', connection);
+
+export const setCandidateIframes = (urls: string[]) => setStore('candidateIframes', urls);
+
+export const getCandidateIframes = createMemo(() => store.candidateIframes);
 
 export function setGameMetaData(meta: GameMetaData) {
   batch(() => {
@@ -164,15 +173,15 @@ export const clearFilteredPaths = () => {
 };
 
 export const addLockPath = (path: Path) => {
-  const current = store.viewState.state.lockedPaths;
+  const current = store.gameConfig?.lockedPaths ?? [];
   if (current.some((currentPath) => pathEquals(currentPath, path))) return;
-  setStore('viewState', 'state', 'lockedPaths', [...current, path]);
+  setStore('gameConfig', 'lockedPaths', [...current, path]);
 };
 
 export const removeLockPath = (path: Path) => {
-  const current = store.viewState.state.lockedPaths;
+  const current = store.gameConfig?.lockedPaths ?? [];
   const newPaths = current.filter((currentPath) => !pathEquals(currentPath, path));
-  setStore('viewState', 'state', 'lockedPaths', newPaths);
+  setStore('gameConfig', 'lockedPaths', newPaths);
 };
 
 export const setSetting = <T extends keyof Store['settings']>(
@@ -184,7 +193,7 @@ export const setSetting = <T extends keyof Store['settings']>(
 
 export async function startTrackingFrames() {
   let timeout = 0;
-  setConnectionState('loading');
+  setConnectionState('loading-game');
   try {
     const [initialState, passageData] = await Promise.all([
       apiGetState(),
@@ -192,6 +201,8 @@ export async function startTrackingFrames() {
       getUpdates(), // this initializes the differ in the content script
     ]);
     if (!initialState) throw new Error();
+
+    if (store.gameConfig?.lockedPaths) setStatePropertyLocks(store.gameConfig.lockedPaths);
 
     setStateFrames([{ id: 0, state: initialState.state }]);
     setPassageData(passageData.map(parsePassage));
@@ -203,7 +214,7 @@ export async function startTrackingFrames() {
       const updates = await getUpdates();
       if (updates) {
         const { diffPackage, locksUpdate } = updates;
-        if (locksUpdate) setStore('viewState', 'state', 'lockedPaths', locksUpdate);
+        if (locksUpdate) setStore('gameConfig', 'lockedPaths', locksUpdate);
         if (diffPackage?.diffs.length) {
           const newFrame: DiffFrame = {
             timestamp,
@@ -258,7 +269,7 @@ function parsePassage(passage: PassageData): ParsedPassageData {
 }
 
 function loadGameSettings() {
-  const defaultConfig: GameConfig = { filteredPaths: [] };
+  const defaultConfig: GameConfig = { filteredPaths: [], lockedPaths: [] };
   const ifId = store.gameMetaData?.ifId;
   if (!ifId) return defaultConfig;
 
@@ -282,6 +293,7 @@ function loadGlobalSettings() {
     ['diffLog.fontSize']: 14,
     ['diffLog.pollingInterval']: 200,
     ['diffLog.headingStyle']: 'default',
+    ['state.propertyOrder']: 'type',
   };
   const lsData = localStorage.getItem(getGlobalSettingsKey());
   if (!lsData) return defaultSettings;

@@ -7,20 +7,33 @@ import { StatePage } from '../pages/StatePage';
 import { getConnectionState, getNavigationPage, startTrackingFrames } from '../store';
 import { ContextMenuUI } from '../ui/util/ContextMenu';
 import { PromptDialogOutlet } from '../ui/util/Prompt';
+import { Candidates } from './CandidateFrames';
+import { initMeta } from './initMeta';
 import { Layout } from './Layout';
 
-function App() {
+initMeta();
+
+export function App() {
   const state = () => getConnectionState();
   return (
     <Layout>
       <PromptDialogOutlet />
       <ContextMenuUI />
       <Switch>
+        <Match when={state() === 'no-game-detected'}>
+          <span class="m-auto">No supported game detected</span>
+        </Match>
+        <Match when={state() === 'candidate-iframes'}>
+          <Candidates />
+        </Match>
         <Match when={state() === 'killed'}>
           <span class="m-auto">Extension has disconnected. Re-open devtools to reinitialize.</span>
         </Match>
-        <Match when={state() === 'loading'}>
+        <Match when={state() === 'loading-meta'}>
           <span class="m-auto">Retrieving game metadata</span>
+        </Match>
+        <Match when={state() === 'loading-game'}>
+          <span class="m-auto">Initializing link to game</span>
         </Match>
         <Match when={state() === 'error'}>
           <span class="m-auto">An error has occured</span>
@@ -63,5 +76,3 @@ function LiveContent() {
     </Switch>
   );
 }
-
-export default App;

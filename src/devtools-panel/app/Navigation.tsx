@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { For } from 'solid-js';
+import { For, onCleanup } from 'solid-js';
 
 import { Page } from '@/shared/shared-types';
 
@@ -36,6 +36,18 @@ const navItems = [
 
 export function Navigation() {
   const isCurrentNavItem = (item: NavItem) => getNavigationPage() === item.id;
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'f' && e.ctrlKey) {
+      setNavigationPage('search');
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  };
+
+  window.addEventListener('keydown', onKeyDown, { capture: true });
+  onCleanup(() => window.removeEventListener('keydown', onKeyDown, { capture: true }));
+
   return (
     <nav>
       <ul class="flex">

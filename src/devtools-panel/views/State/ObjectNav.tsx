@@ -3,15 +3,24 @@ import { createMemo, For } from 'solid-js';
 
 import {
   addLockPath,
+  createGetSetting,
   createGetViewState,
   getActiveState,
+  getLockedPaths,
   removeLockPath,
   setViewState,
 } from '@/devtools-panel/store';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { getLockStatus } from '@/devtools-panel/views/State/lock-helper';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { LockStatus, ObjectValue, Path, ValueType } from '@/shared/shared-types';
+import {
+  ContainerValue,
+  LockStatus,
+  ObjectValue,
+  Path,
+  PropertyOrder,
+  ValueType,
+} from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import {
@@ -24,6 +33,7 @@ import { TypeIcon } from '../../ui/display/TypeIcon';
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 import { AddPropertyDialog } from './dialogs/AddPropertyDialog';
 import { DuplicateKeyDialog } from './dialogs/DuplicateKeyDialog';
+import { createSorter } from './property-sorter';
 
 const getNameForProperty = () =>
   showPromptDialog<string>('Name for property', (resolve) => (
@@ -36,22 +46,23 @@ interface Props {
 }
 
 export function ObjectNav(props: Props) {
-  const getLockedPaths = createGetViewState('state', 'lockedPaths');
-
   const getName = () => props.path[props.path.length - 1];
   const getObject = createMemo(
     () => getObjectPathValue(getActiveState()!, props.path) as ObjectValue,
   );
+  const getPropertyOrder = createGetSetting('state.propertyOrder');
 
   const getChildren = createMemo(() => {
-    // TODO: Sort by type
+    const propertyOrder = getPropertyOrder();
     const object = getObject();
+    const sorter = createSorter(object, propertyOrder);
+
     const rawKeys =
       object instanceof Map
-        ? Array.from(object.keys())
+        ? sorter(Array.from(object.keys()))
         : object instanceof Array
           ? Array.from(Array(object.length).keys())
-          : Object.keys(object);
+          : sorter(Object.keys(object));
 
     // Convert to child key format
     return rawKeys.map(
@@ -125,7 +136,7 @@ export function ObjectNav(props: Props) {
                 child={child}
                 lockStatus={lockStatus()}
                 setLockState={(lock) => {
-                  setStatePropertyLock(props.path, lock);
+                  setStatePropertyLock(childPath(), lock);
                   if (lock) addLockPath(childPath());
                   else removeLockPath(childPath());
                 }}

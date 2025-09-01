@@ -55,6 +55,7 @@ function init() {
     deleteFromState: formatHelper.deleteFromState,
     duplicateStateProperty: formatHelper.duplicateStateProperty,
     setStatePropertyLock: formatHelper.setStatePropertyLock,
+    setStatePropertyLocks: formatHelper.setStatePropertyLocks,
     getPassageData,
   };
 }

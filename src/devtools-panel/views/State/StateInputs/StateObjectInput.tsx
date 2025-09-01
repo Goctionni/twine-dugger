@@ -1,5 +1,9 @@
+import { createMemo } from 'solid-js';
+
+import { createGetSetting } from '@/devtools-panel/store';
 import { ObjectValue, Path } from '@/shared/shared-types';
 
+import { createSorter } from '../property-sorter';
 import { StateContainerInput } from './StateContainerInput';
 
 interface StateObjectInputProps {
@@ -8,9 +12,19 @@ interface StateObjectInputProps {
 }
 
 export function StateObjectInput(props: StateObjectInputProps) {
-  const keys = () => Object.keys(props.value).sort();
+  const getPropertyOrder = createGetSetting('state.propertyOrder');
+
+  const getKeys = createMemo(() => {
+    const sorter = createSorter(props.value, getPropertyOrder());
+    const keys = Object.keys(props.value);
+    return sorter(keys);
+  });
 
   return (
-    <StateContainerInput path={props.path} keys={keys()} getKeyValue={(key) => props.value[key]} />
+    <StateContainerInput
+      path={props.path}
+      keys={getKeys()}
+      getKeyValue={(key) => props.value[key]}
+    />
   );
 }

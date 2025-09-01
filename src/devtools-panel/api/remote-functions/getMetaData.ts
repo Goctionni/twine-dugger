@@ -1,8 +1,24 @@
-import { GameMetaData } from '@/shared/shared-types';
+import { CandidateGameIframes, GameMetaData } from '@/shared/shared-types';
 
-export function getGameMetaFn(): GameMetaData | null {
+export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   if ('SugarCube' in window) return getSugarCubeMeta();
   if ('Harlowe' in window) return getHarloweMeta();
+  // If neither is detected, look for a large-ish iframes
+  const iframes = Array.from(document.querySelectorAll('iframe[src]'));
+  const candidateGameIframes = iframes.filter((iframe) => {
+    const size = getElVisibleSize(iframe);
+    if (!size) return false;
+    if (size > 300 * 200) return true;
+    if (size > (window.innerWidth * window.innerHeight) / 2) return true;
+    return false;
+  });
+  if (candidateGameIframes.length) {
+    return {
+      __type: 'candidate-game-iframes',
+      urls: candidateGameIframes.map((iframe) => iframe.getAttribute('src')!),
+    };
+  }
+
   return null;
 
   function getSugarCubeMeta(): GameMetaData | null {
@@ -111,7 +127,7 @@ export function getGameMetaFn(): GameMetaData | null {
   function getHarloweMeta(): GameMetaData | null {
     const storyData = document.querySelector('tw-storydata');
     const getName = () => {
-      return storyData?.getAttribute('name') || 'Untitled';
+      return storyData?.getAttribute('name') || document.title || 'Untitled';
     };
     const getIfid = () => {
       return storyData?.getAttribute('ifid') || '';
@@ -169,5 +185,22 @@ export function getGameMetaFn(): GameMetaData | null {
       }
     }
     return used;
+  }
+
+  function getElVisibleSize(el: Element) {
+    const elRect = el.getBoundingClientRect();
+    const elSize = Math.max(0, elRect.width * elRect.height);
+    if (!elSize) return null;
+
+    const visibleWidth = Math.max(
+      0,
+      Math.min(elRect.right, window.innerWidth) - Math.max(elRect.left, 0),
+    );
+    const visibleHeight = Math.max(
+      0,
+      Math.min(elRect.bottom, window.innerHeight) - Math.max(elRect.top, 0),
+    );
+
+    return visibleWidth * visibleHeight;
   }
 }

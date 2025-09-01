@@ -129,9 +129,22 @@ export interface ParsedPassageData {
   content: string;
   tags: string[];
 }
-
+export type PropertyOrder = 'alphabetic' | 'type' | 'none';
 export type Page = 'state' | 'search' | 'passages' | 'settings';
-export type ConnectionState = 'killed' | 'loading' | 'error' | 'live' | 'not-enabled';
+export type ConnectionState =
+  | 'candidate-iframes'
+  | 'killed'
+  | 'loading-meta'
+  | 'no-game-detected'
+  | 'loading-game'
+  | 'error'
+  | 'live'
+  | 'not-enabled';
+
+export interface CandidateGameIframes {
+  __type: 'candidate-game-iframes';
+  urls: string[];
+}
 
 export interface GameMetaData {
   name: string;
