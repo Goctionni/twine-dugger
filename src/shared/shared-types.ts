@@ -66,7 +66,7 @@ export type ProcessDiffResult = {
   locksUpdate: Path[] | null;
 };
 
-export type DiffPackage = {
+type DiffPackage = {
   passage: string;
   diffs: Diff[];
 };
@@ -109,8 +109,73 @@ export interface DiffFrame {
   changes: Diff[];
 }
 
+export interface StateFrame {
+  id: number;
+  diffingFrame?: DiffFrame;
+  state: ObjectValue;
+}
+
 export type LockStatus = 'locked' | 'ancestor-lock' | 'unlocked';
 
 type KnownPassageAttribute = 'content' | 'pid' | 'name' | 'tags' | 'position' | 'size';
-export type PassageAttribute = KnownPassageAttribute | (string & {});
+type PassageAttribute = KnownPassageAttribute | (string & {});
 export type PassageData = Record<PassageAttribute, string>;
+
+export interface ParsedPassageData {
+  id: number;
+  name: string;
+  size: [number, number] | null;
+  position: [number, number] | null;
+  content: string;
+  tags: string[];
+}
+export type PropertyOrder = 'alphabetic' | 'type' | 'none';
+export type Page = 'state' | 'search' | 'passages' | 'settings';
+export type ConnectionState =
+  | 'candidate-iframes'
+  | 'killed'
+  | 'loading-meta'
+  | 'no-game-detected'
+  | 'loading-game'
+  | 'error'
+  | 'live'
+  | 'not-enabled';
+
+export interface CandidateGameIframes {
+  __type: 'candidate-game-iframes';
+  urls: string[];
+}
+
+export interface GameMetaData {
+  name: string;
+  ifId: string;
+  save?: {
+    numSlots: number;
+    slotsUsed: number;
+    storage?: string;
+    storageCapacity?: number;
+    storageUsed?: number;
+    storageUsedPct?: number;
+  };
+  passages?: {
+    start: string;
+    count?: number;
+  };
+  format?: {
+    name: 'SugarCube' | 'Harlowe';
+    version?: {
+      major: number | undefined;
+      minor: number | undefined;
+      patch: number | undefined;
+      shortStr: string;
+    };
+  };
+  compiler?: {
+    name: string;
+    version?: string;
+  };
+  settings?: {
+    historyControls: boolean;
+    historyMax: number;
+  };
+}

@@ -16,7 +16,7 @@ const HarloweSchema = z.object({
   }),
 });
 
-export function sanitize(obj: ObjectValue) {
+function sanitize(obj: ObjectValue) {
   const result: ObjectValue = {};
   for (const [key, value] of Object.entries(obj)) {
     if (key.startsWith('TwineScript_')) continue;
@@ -54,5 +54,6 @@ export default {
   deleteFromState: (path) => deleteFromState(getBaseState(), path),
   getPassage: () => window.Harlowe.API_ACCESS.STATE.passage,
   setStatePropertyLock: setPathLock,
+  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
   processDiffs,
 } satisfies FormatHelpers;

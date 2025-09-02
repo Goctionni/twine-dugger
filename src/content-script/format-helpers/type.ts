@@ -14,4 +14,5 @@ export interface FormatHelpers {
   getDiffer: () => (clonedOldValue: Value, liveNewValue: Value) => Diff[];
   processDiffs?: (diffs: Diff[]) => ProcessDiffResult;
   setStatePropertyLock: (path: Path, lock: boolean) => Path[];
+  setStatePropertyLocks: (paths: Path[]) => void;
 }

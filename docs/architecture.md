@@ -3,13 +3,11 @@
 The extension has three main parts:
 
 1. **DevTools Panel UI** (`src/devtools-panel`)
-
    - SolidJS app rendered into a custom DevTools panel.
    - Talks to the inspected page using `chrome.scripting.executeScript` (see `utils/remote-execute.ts`).
    - Displays game **state**, **diff history**, and **metadata**; allows editing state paths.
 
 2. **Content Script** (`src/content-script`)
-
    - Injected **on demand** into the inspected tab (not auto-run).
    - Detects the **Twine format** (SugarCube or Harlowe) via `format-helpers/*` and exposes a stable API on `window.TwineDugger`.
    - Produces sanitized snapshots and **diff frames** between consecutive states.

@@ -1,8 +1,14 @@
-import { ArrayValue, MapValue, ObjectValue, PassageData, Path, Value } from '@/shared/shared-types';
+import {
+  ArrayValue,
+  ContainerValue,
+  MapValue,
+  ObjectValue,
+  PassageData,
+  Path,
+  Value,
+} from '@/shared/shared-types';
 
 import { isObj } from '../util/type-helpers';
-
-type StateObj = ObjectValue | MapValue | ArrayValue;
 
 export function getStateValue(
   stateRoot: ObjectValue | MapValue | ArrayValue,
@@ -17,11 +23,11 @@ export function getStateValue(
 
     const key = path[i];
     if (Array.isArray(stateObj)) {
-      stateObj = stateObj[Number(key)] as StateObj;
+      stateObj = stateObj[Number(key)] as ContainerValue;
     } else if (stateObj instanceof Map) {
-      stateObj = stateObj.get(`${key}`) as StateObj;
+      stateObj = stateObj.get(`${key}`) as ContainerValue;
     } else {
-      stateObj = stateObj[`${key}`] as StateObj;
+      stateObj = stateObj[`${key}`] as ContainerValue;
     }
   }
 
@@ -66,7 +72,7 @@ export function setState(
 ) {
   const objPath = path.slice(0, -1);
   const valueKey = path.at(-1)!;
-  const stateObj = getStateValue(stateRoot, objPath) as StateObj;
+  const stateObj = getStateValue(stateRoot, objPath) as ContainerValue;
 
   if (Array.isArray(stateObj)) {
     stateObj[Number(valueKey)] = value as Value;
@@ -77,13 +83,10 @@ export function setState(
   }
 }
 
-export function deleteFromState(
-  stateRoot: ObjectValue | MapValue | ArrayValue,
-  path: Array<string | number>,
-) {
+export function deleteFromState(stateRoot: ContainerValue, path: Array<string | number>) {
   const objPath = path.slice(0, -1);
   const valueKey = path.at(-1)!;
-  const stateObj = getStateValue(stateRoot, objPath) as StateObj;
+  const stateObj = getStateValue(stateRoot, objPath) as ContainerValue;
 
   if (Array.isArray(stateObj)) {
     stateObj.splice(Number(valueKey), 1);

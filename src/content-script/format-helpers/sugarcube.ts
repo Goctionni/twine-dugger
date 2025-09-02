@@ -51,5 +51,6 @@ export default {
     duplicateStateProperty(getBaseState(), parentPath, sourceKey, targetKey),
   deleteFromState: (path) => deleteFromState(getBaseState(), path),
   setStatePropertyLock: setPathLock,
+  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
   processDiffs,
 } satisfies FormatHelpers;
