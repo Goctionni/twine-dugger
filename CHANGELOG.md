@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.1.0
+
+### Minor Changes
+
+- 5152391: project refactor
+
 ## 1.0.2
 
 ### Patch Changes
