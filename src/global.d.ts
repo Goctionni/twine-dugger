@@ -10,7 +10,20 @@ declare module 'solid-js/types/jsx.d.ts' {
   }
 }
 
+type SchedulerTask<T> = () => T | Promise<T>;
+type TaskOptions = {
+  priority?: 'user-blocking' | 'user-visible' | 'background';
+  signal?: AbortSignal;
+  delay?: number;
+};
+interface Scheduler {
+  postTask<T = unknown>(task: SchedulerTask<T>, options?: TaskOptions): Promise<T>;
+  yield(): Promise<void>;
+}
+
 declare global {
+  declare const scheduler: Scheduler;
+
   interface Window {
     Harlowe: {
       API_ACCESS: {

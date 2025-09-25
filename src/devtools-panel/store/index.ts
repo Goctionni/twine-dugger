@@ -56,6 +56,7 @@ interface Store {
     };
     search: {
       query: string;
+      resultTab?: 'state' | 'passage';
     };
   };
   gameConfig: GameConfig | null;

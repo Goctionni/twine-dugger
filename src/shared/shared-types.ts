@@ -179,3 +179,8 @@ export interface GameMetaData {
     historyMax: number;
   };
 }
+
+export interface SearchResultState {
+  path: Path;
+  value: Value;
+}

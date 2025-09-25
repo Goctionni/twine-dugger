@@ -1,9 +1,13 @@
-import { For } from 'solid-js';
+import { For, Match, Switch } from 'solid-js';
 
+import { Code } from '@/devtools-panel/ui/code';
+import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
 import { ParsedPassageData } from '@/shared/shared-types';
 
-import { setNavigationPage, setViewState } from '../../store';
+import { createGetViewState, getGameMetaData, setNavigationPage, setViewState } from '../../store';
+import { PassageHeader } from '../Passage/PassageHeader';
 import { PassageListItem } from '../Passage/PassageListItem';
+import { PassageView } from '../Passage/PassageView';
 
 interface Props {
   results: ParsedPassageData[];
@@ -11,20 +15,37 @@ interface Props {
 
 export function PassageResults(props: Props) {
   const onPassageClick = (passage: ParsedPassageData) => {
-    setNavigationPage('passages');
     setViewState('passage', 'selected', passage);
   };
 
+  const format = () => getGameMetaData()!.format;
+  const getSelectedPassage = createGetViewState('passage', 'selected');
+
   return (
-    <div class="h-full flex-1 overflow-hidden flex flex-col">
-      <h1 class="font-bold text-base pt-4 pb-2">Passage Results</h1>
-      <ul class="h-full overflow-auto flex-1">
-        <For each={props.results}>
-          {(result) => (
-            <PassageListItem passageData={result} onClick={() => onPassageClick(result)} />
-          )}
-        </For>
-      </ul>
-    </div>
+    <MovableSplit
+      class="flex flex-grow w-full overflow-hidden h-full"
+      initialLeftWidthPercent={50}
+      leftContent={
+        <ul class="h-full overflow-auto">
+          <For each={props.results}>
+            {(result) => (
+              <PassageListItem passageData={result} onClick={() => onPassageClick(result)} />
+            )}
+          </For>
+        </ul>
+      }
+      rightContent={
+        <div class="w-full h-full flex flex-col">
+          <Switch>
+            <Match when={getSelectedPassage()}>
+              <div class="px-3 -mt-3 -mb-1">
+                <PassageHeader passage={getSelectedPassage()!} />
+              </div>
+              <Code code={getSelectedPassage()!.content ?? ''} format={format()!.name} />
+            </Match>
+          </Switch>
+        </div>
+      }
+    />
   );
 }

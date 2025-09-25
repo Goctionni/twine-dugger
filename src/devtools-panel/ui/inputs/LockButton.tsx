@@ -3,13 +3,12 @@ import { Match, Switch } from 'solid-js';
 
 import { LockStatus } from '@/shared/shared-types';
 
+import { btnClass } from '../util/btnClass';
+
 interface LockButtonProps {
   status: LockStatus;
   onToggle: () => void;
 }
-
-const outlinedButtonClasses =
-  'py-1 cursor-pointer shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-500';
 
 export function LockButton(props: LockButtonProps) {
   return (
@@ -18,10 +17,7 @@ export function LockButton(props: LockButtonProps) {
         <button
           type="button"
           onClick={() => props.onToggle()}
-          class={clsx(
-            outlinedButtonClasses,
-            'min-w-16 text-white px-4 rounded-md -outline-offset-2 outline-2 outline-gray-500 hover:outline-transparent hover:bg-sky-700 focus:ring-sky-500',
-          )}
+          class={btnClass('clr-gray hover:clr-sky min-w-16')}
         >
           Unlock
         </button>
@@ -30,10 +26,7 @@ export function LockButton(props: LockButtonProps) {
         <button
           type="button"
           onClick={() => props.onToggle()}
-          class={clsx(
-            outlinedButtonClasses,
-            'min-w-16 text-white px-4 rounded-md -outline-offset-2 outline-2 outline-gray-500 hover:outline-transparent hover:bg-sky-700 focus:ring-sky-500',
-          )}
+          class={btnClass('clr-gray hover:clr-sky min-w-16')}
         >
           Lock
         </button>

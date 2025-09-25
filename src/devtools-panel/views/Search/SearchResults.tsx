@@ -1,31 +1,127 @@
-import { createMemo, Show } from 'solid-js';
+import clsx from 'clsx';
+import {
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  For,
+  Match,
+  Show,
+  Switch,
+} from 'solid-js';
 
-import { createGetViewState, getLatestStateFrame, getPassageData } from '../../store';
+import { btnClass } from '@/devtools-panel/ui/util/btnClass';
+import { ParsedPassageData, SearchResultState } from '@/shared/shared-types';
+
+import { createGetViewState, getLatestStateFrame, getPassageData, setViewState } from '../../store';
 import { PassageResults } from './PassageResults';
 import { findPassageMatches, findStateMatches } from './search-utils';
 import { StateResults } from './StateResults';
 
+type AbortFn = () => void;
+
+interface SearchResults {
+  state: SearchResultState[];
+  passage: ParsedPassageData[];
+}
+
+interface Tab {
+  text: string;
+  id: 'state' | 'passage';
+  active: boolean;
+  num: number;
+}
+
 export function SearchResults() {
   const getQuery = createGetViewState('search', 'query');
+  const getResultTab = createGetViewState('search', 'resultTab');
+  const setResultTab = (tab: 'state' | 'passage') => setViewState('search', 'resultTab', tab);
 
-  const searchResults = createMemo(() => {
-    if (!getQuery()) return { state: [], passage: [] };
-    const gameState = getLatestStateFrame();
-    if (!gameState) return { state: [], passage: [] };
-    return {
-      state: findStateMatches(gameState.state, getQuery()),
-      passage: findPassageMatches(getPassageData(), getQuery()),
-    };
+  const [getSearchResults, setSearchResults] = createSignal<SearchResults>({
+    state: [],
+    passage: [],
   });
 
-  const hasResults = createMemo(() => Object.values(searchResults()).some((arr) => arr.length > 0));
+  createEffect((abortPrev: null | AbortFn) => {
+    if (abortPrev) abortPrev();
+
+    const query = getQuery();
+    if (!query) return null;
+    const gameState = getLatestStateFrame();
+    if (!gameState) return null;
+
+    const [statePromise, stateAbort] = findStateMatches(gameState.state, query);
+    const [passagePromise, passageAbort] = findPassageMatches(getPassageData(), query);
+
+    let alive = true;
+    const abortCurr = () => {
+      alive = false;
+      stateAbort();
+      passageAbort();
+    };
+
+    Promise.all([statePromise, passagePromise]).then(([state, passage]) => {
+      if (!alive) return;
+      setSearchResults({ state, passage });
+    });
+
+    return abortCurr;
+  }, null);
+
+  const resultTabs = createMemo(() => {
+    const { state, passage } = getSearchResults();
+    const activeTab = getResultTab();
+    const tabs: Tab[] = [];
+    if (state.length) {
+      tabs.push({ text: 'State', id: 'state', active: activeTab === 'state', num: state.length });
+    }
+    if (passage.length) {
+      tabs.push({
+        text: 'Passage',
+        id: 'passage',
+        active: activeTab === 'passage',
+        num: passage.length,
+      });
+    }
+    if (!activeTab && tabs[0]) tabs[0].active = true;
+    return tabs;
+  });
+
+  const activeTab = () => resultTabs().find((tab) => tab.active)?.id;
 
   return (
-    <Show when={hasResults()}>
-      <div class="flex-1 overflow-hidden px-4">
-        <div class="w-full h-full flex gap-2 overflow-hidden">
-          <StateResults results={searchResults().state} />
-          <PassageResults results={searchResults().passage} />
+    <Show when={resultTabs().length}>
+      <div class="flex flex-col overflow-hidden">
+        <div class="px-4">
+          <div class="flex gap-2 mb-2">
+            <h2 class="font-bold text-xl">Search results</h2>
+            <For each={resultTabs()}>
+              {(tab) => (
+                <button
+                  class={btnClass(
+                    tab.active ? 'contained' : 'outline',
+                    { 'clr-gray': !tab.active },
+                    { 'pointer-events-none': tab.active },
+                    'hover:clr-sky',
+                  )}
+                  type="button"
+                  onClick={() => setResultTab(tab.id)}
+                >
+                  {tab.text} <span class="text-white">({tab.num})</span>
+                </button>
+              )}
+            </For>
+          </div>
+        </div>
+        <div class="px-3 flex-1 overflow-hidden">
+          <Switch>
+            <Match when={activeTab() === 'state'}>
+              <StateResults results={getSearchResults().state} />
+            </Match>
+            <Match when={activeTab() === 'passage'}>
+              <PassageResults results={getSearchResults().passage} />
+            </Match>
+          </Switch>
         </div>
       </div>
     </Show>

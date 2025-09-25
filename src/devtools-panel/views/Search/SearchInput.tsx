@@ -6,14 +6,13 @@ export function SearchInput() {
   const setQuery = (value: string) => setViewState('search', 'query', value);
 
   return (
-    <div class="px-4 py-2">
-      <h1 class="font-bold text-xl pb-2">Search</h1>
+    <div class="px-4 py-3">
       <StringInput
         value={getQuery()}
         onChange={setQuery}
         placeholder="Search..."
         autoFocus
-        class="max-w-[200px]"
+        class="w-full"
       />
     </div>
   );

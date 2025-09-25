@@ -1,0 +1,84 @@
+@theme inline {
+  --color-clr-50: var(--palette-50);
+  --color-clr-100: var(--palette-100);
+  --color-clr-200: var(--palette-200);
+  --color-clr-300: var(--palette-300);
+  --color-clr-400: var(--palette-400);
+  --color-clr-500: var(--palette-500);
+  --color-clr-600: var(--palette-600);
+  --color-clr-700: var(--palette-700);
+  --color-clr-800: var(--palette-800);
+  --color-clr-900: var(--palette-900);
+  --color-clr-950: var(--palette-950);
+}
+
+@layer utilities {
+  .clr-sky,
+  .hover\:clr-sky:hover,
+  .focus\:clr-sky:focus,
+  .active\:clr-sky:active,
+  .disabled\:clr-sky:disabled {
+    --palette-50: var(--color-sky-50);
+    --palette-100: var(--color-sky-100);
+    --palette-200: var(--color-sky-200);
+    --palette-300: var(--color-sky-300);
+    --palette-400: var(--color-sky-400);
+    --palette-500: var(--color-sky-500);
+    --palette-600: var(--color-sky-600);
+    --palette-700: var(--color-sky-700);
+    --palette-800: var(--color-sky-800);
+    --palette-900: var(--color-sky-900);
+    --palette-950: var(--color-sky-950);
+  }
+  .clr-gray,
+  .hover\:clr-gray:hover,
+  .focus\:clr-gray:focus,
+  .active\:clr-gray:active,
+  .disabled\:clr-gray:disabled {
+    --palette-50: var(--color-gray-50);
+    --palette-100: var(--color-gray-100);
+    --palette-200: var(--color-gray-200);
+    --palette-300: var(--color-gray-300);
+    --palette-400: var(--color-gray-400);
+    --palette-500: var(--color-gray-500);
+    --palette-600: var(--color-gray-600);
+    --palette-700: var(--color-gray-700);
+    --palette-800: var(--color-gray-800);
+    --palette-900: var(--color-gray-900);
+    --palette-950: var(--color-gray-950);
+  }
+  .clr-slate,
+  .hover\:clr-slate:hover,
+  .focus\:clr-slate:focus,
+  .active\:clr-slate:active,
+  .disabled\:clr-slate:disabled {
+    --palette-50: var(--color-slate-50);
+    --palette-100: var(--color-slate-100);
+    --palette-200: var(--color-slate-200);
+    --palette-300: var(--color-slate-300);
+    --palette-400: var(--color-slate-400);
+    --palette-500: var(--color-slate-500);
+    --palette-600: var(--color-slate-600);
+    --palette-700: var(--color-slate-700);
+    --palette-800: var(--color-slate-800);
+    --palette-900: var(--color-slate-900);
+    --palette-950: var(--color-slate-950);
+  }
+  .clr-green,
+  .hover\:clr-green:hover,
+  .focus\:clr-green:focus,
+  .active\:clr-green:active,
+  .disabled\:clr-green:disabled {
+    --palette-50: var(--color-green-50);
+    --palette-100: var(--color-green-100);
+    --palette-200: var(--color-green-200);
+    --palette-300: var(--color-green-300);
+    --palette-400: var(--color-green-400);
+    --palette-500: var(--color-green-500);
+    --palette-600: var(--color-green-600);
+    --palette-700: var(--color-green-700);
+    --palette-800: var(--color-green-800);
+    --palette-900: var(--color-green-900);
+    --palette-950: var(--color-green-950);
+  }
+}

@@ -1,8 +1,9 @@
-import { For, Match, Switch } from 'solid-js';
+import { Match, Switch } from 'solid-js';
 
 import { Code } from '@/devtools-panel/ui/code';
-import { Tag } from '@/devtools-panel/ui/display/Tag';
 import { ParsedPassageData } from '@/shared/shared-types';
+
+import { PassageHeader } from './PassageHeader';
 
 interface Props {
   passage: ParsedPassageData | null;
@@ -19,20 +20,5 @@ export function PassageView(props: Props) {
         </div>
       </Match>
     </Switch>
-  );
-}
-
-interface PassageHeaderProps {
-  passage: ParsedPassageData;
-}
-
-function PassageHeader(props: PassageHeaderProps) {
-  return (
-    <div class="py-2 flex gap-2">
-      <h3 class="text-lg">Selected Passage: {props.passage!.name}</h3>
-      <div class="flex gap-1 ">
-        <For each={props.passage!.tags}>{(tag) => <Tag tag={tag} />}</For>
-      </div>
-    </div>
   );
 }

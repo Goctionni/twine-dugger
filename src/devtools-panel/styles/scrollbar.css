@@ -1,5 +1,6 @@
 ::-webkit-scrollbar {
   @apply w-2.5;
+  @apply h-2.5;
 }
 
 ::-webkit-scrollbar-track {
@@ -12,4 +13,8 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
+}
+
+::-webkit-scrollbar-corner {
+  @apply bg-gray-900;
 }
