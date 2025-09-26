@@ -1,27 +1,35 @@
 import { createEffect, createSignal } from 'solid-js';
 
-import { createGetViewState, getLatestStateFrame, getPassageData } from '@/devtools-panel/store';
+import {
+  createGetViewState,
+  getLatestStateFrame,
+  getNavigationPage,
+  getPassageData,
+} from '@/devtools-panel/store';
 import { SearchResultsCombined } from '@/shared/shared-types';
 
 import { findPassageMatches, findStateMatches } from './search-utils';
 
 type AbortFn = () => void;
+const EMPTY: SearchResultsCombined = { state: [], passage: [] };
 
 export function createSearchResults() {
   const getQuery = createGetViewState('search', 'query');
 
-  const [getSearchResults, setSearchResults] = createSignal<SearchResultsCombined>({
-    state: [],
-    passage: [],
-  });
+  const [getSearchResults, setSearchResults] = createSignal<SearchResultsCombined>(EMPTY);
 
   createEffect((abortPrev: null | AbortFn) => {
     if (abortPrev) abortPrev();
 
+    // If we're not looking at the search results tab, dont both updating
+    if (getNavigationPage() !== 'search') return null;
+
     const query = getQuery();
-    if (!query) return null;
     const gameState = getLatestStateFrame();
-    if (!gameState) return null;
+    if (!query || !gameState) {
+      setSearchResults(EMPTY);
+      return null;
+    }
 
     const [statePromise, stateAbort] = findStateMatches(gameState.state, query);
     const [passagePromise, passageAbort] = findPassageMatches(getPassageData(), query);
