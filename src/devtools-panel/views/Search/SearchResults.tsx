@@ -1,29 +1,11 @@
-import clsx from 'clsx';
-import {
-  createEffect,
-  createMemo,
-  createResource,
-  createSignal,
-  For,
-  Match,
-  Show,
-  Switch,
-} from 'solid-js';
+import { createMemo, For, Match, Show, Switch } from 'solid-js';
 
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
-import { ParsedPassageData, SearchResultState } from '@/shared/shared-types';
 
-import { createGetViewState, getLatestStateFrame, getPassageData, setViewState } from '../../store';
+import { createGetViewState, setViewState } from '../../store';
+import { createSearchResults } from './create-searchResults';
 import { PassageResults } from './PassageResults';
-import { findPassageMatches, findStateMatches } from './search-utils';
 import { StateResults } from './StateResults';
-
-type AbortFn = () => void;
-
-interface SearchResults {
-  state: SearchResultState[];
-  passage: ParsedPassageData[];
-}
 
 interface Tab {
   text: string;
@@ -33,40 +15,9 @@ interface Tab {
 }
 
 export function SearchResults() {
-  const getQuery = createGetViewState('search', 'query');
   const getResultTab = createGetViewState('search', 'resultTab');
   const setResultTab = (tab: 'state' | 'passage') => setViewState('search', 'resultTab', tab);
-
-  const [getSearchResults, setSearchResults] = createSignal<SearchResults>({
-    state: [],
-    passage: [],
-  });
-
-  createEffect((abortPrev: null | AbortFn) => {
-    if (abortPrev) abortPrev();
-
-    const query = getQuery();
-    if (!query) return null;
-    const gameState = getLatestStateFrame();
-    if (!gameState) return null;
-
-    const [statePromise, stateAbort] = findStateMatches(gameState.state, query);
-    const [passagePromise, passageAbort] = findPassageMatches(getPassageData(), query);
-
-    let alive = true;
-    const abortCurr = () => {
-      alive = false;
-      stateAbort();
-      passageAbort();
-    };
-
-    Promise.all([statePromise, passagePromise]).then(([state, passage]) => {
-      if (!alive) return;
-      setSearchResults({ state, passage });
-    });
-
-    return abortCurr;
-  }, null);
+  const getSearchResults = createSearchResults();
 
   const resultTabs = createMemo(() => {
     const { state, passage } = getSearchResults();

@@ -6,6 +6,7 @@ import { getSpecificType } from '@/shared/type-helpers';
 
 import { setNavigationPage, setViewState } from '../../store';
 import { PrettyPath } from '../../ui/display/PrettyPath';
+import { StateBooleanInput } from '../State/StateInputs/StateBooleanInput';
 import { StateNumberInput } from '../State/StateInputs/StateNumberInput';
 import { StateStringInput } from '../State/StateInputs/StateStringInput';
 
@@ -92,6 +93,9 @@ export function StateResults(props: Props) {
                     </Match>
                     <Match when={type() === 'number'}>
                       <StateNumberInput path={result.path} />
+                    </Match>
+                    <Match when={type() === 'boolean'}>
+                      <StateBooleanInput path={result.path} />
                     </Match>
                   </Switch>
                 </div>

@@ -118,6 +118,10 @@ export function findStateMatches(
         } else if (String(v).includes(String(qNum))) {
           partialMatches.push({ path: [...path, key], value: v });
         }
+      } else if (typeof v === 'boolean') {
+        if ((query === 'true' && v) || (query === 'false' && !v)) {
+          fullMatches.push({ path: [...path, key], value: v });
+        }
       }
     }
 
