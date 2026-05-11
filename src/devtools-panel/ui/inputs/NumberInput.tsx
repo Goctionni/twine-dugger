@@ -1,7 +1,8 @@
 import clsx from 'clsx';
-import { JSX } from 'solid-js';
+import { createSignal, JSX } from 'solid-js';
 
 import { btnClass } from '../util/btnClass';
+import { createInputContextMenuHandler } from '../util/InputContextMenu';
 
 interface NumberInputProps {
   value: number;
@@ -17,8 +18,20 @@ const baseInputClasses =
   'block px-2 py-1 bg-gray-700 border border-gray-600 text-sm shadow-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500';
 
 export function NumberInput(props: NumberInputProps) {
-  const isDisabled = () => props.disabled || props.readOnly;
+  const [inputRef, setInputRef] = createSignal<HTMLInputElement | null>(null);
+  const isDisabled = () => !!(props.disabled || props.readOnly);
   const onKeyDown = (e: KeyboardEvent) => props.onKeyDown?.(e);
+
+  const onContextMenu = createInputContextMenuHandler({
+    getInput: () => inputRef(),
+    getRawValue: () => inputRef()?.value ?? String(props.value),
+    applyRawValue: (rawValue) => {
+      const parsed = Number(rawValue);
+      if (Number.isFinite(parsed)) props.onChange(parsed);
+    },
+    isDisabled: () => isDisabled(),
+    isReadOnly: () => !!props.readOnly,
+  });
 
   return (
     <div class={clsx('flex', props.className)}>
@@ -37,10 +50,12 @@ export function NumberInput(props: NumberInputProps) {
         -
       </button>
       <input
+        ref={setInputRef}
         type="number"
         value={props.value}
         onInput={(e) => props.onChange(e.target.valueAsNumber)}
         onKeyDown={onKeyDown}
+        onContextMenu={onContextMenu}
         disabled={props.disabled}
         readOnly={props.readOnly}
         class={clsx(

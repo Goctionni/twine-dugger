@@ -1,6 +1,8 @@
 import clsx from 'clsx';
 import { createEffect, createSignal, JSX } from 'solid-js';
 
+import { createInputContextMenuHandler } from '../util/InputContextMenu';
+
 interface StringInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -18,7 +20,15 @@ const baseInputClasses =
 
 export function StringInput(props: StringInputProps) {
   const onKeyDown = (e: KeyboardEvent) => props.onKeyDown?.(e);
-  const [ref, setRef] = createSignal<HTMLElement | null>(null);
+  const [ref, setRef] = createSignal<HTMLInputElement | null>(null);
+
+  const onContextMenu = createInputContextMenuHandler({
+    getInput: () => ref(),
+    getRawValue: () => props.value,
+    applyRawValue: (value) => props.onChange(value),
+    isDisabled: () => !!props.disabled,
+    isReadOnly: () => !!props.readOnly,
+  });
 
   createEffect(() => {
     if (props.autoFocus && ref()) ref()!.focus();
@@ -31,6 +41,7 @@ export function StringInput(props: StringInputProps) {
       value={props.value}
       onInput={(e) => props.onChange(e.target.value)}
       onKeyDown={onKeyDown}
+      onContextMenu={onContextMenu}
       placeholder={props.placeholder}
       disabled={props.disabled}
       readOnly={props.readOnly}
