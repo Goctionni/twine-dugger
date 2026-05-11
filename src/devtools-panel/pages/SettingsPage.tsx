@@ -1,4 +1,5 @@
 import { DiffLogSettings } from '../views/Settings/DiffLogSettings';
+import { FilteredPathsSettings } from '../views/Settings/FilteredPathsSettings';
 
 export function SettingsPage() {
   return (
@@ -10,6 +11,11 @@ export function SettingsPage() {
           <div class="grid grid-cols-[auto_1fr] gap-4">
             <DiffLogSettings />
           </div>
+        </fieldset>
+
+        <fieldset class="mt-5 text-base">
+          <legend class="text-lg font-bold">Filtered Paths</legend>
+          <FilteredPathsSettings />
         </fieldset>
       </div>
     </div>
