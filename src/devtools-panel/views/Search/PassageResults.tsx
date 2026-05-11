@@ -23,6 +23,7 @@ export function PassageResults(props: Props) {
 
   return (
     <MovableSplit
+      splitKey="search-passage-results"
       class="flex flex-grow w-full overflow-hidden h-full"
       initialLeftWidthPercent={50}
       leftContent={
