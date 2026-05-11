@@ -1,4 +1,5 @@
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
+import { createFilterMenuItems } from '@/devtools-panel/views/util/filter-path';
 import { Path } from '@/shared/shared-types';
 
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
@@ -12,12 +13,8 @@ export function DiffPath(props: {
 }) {
   const fullPath = () =>
     props.leafKey === undefined ? props.path : [...props.path, props.leafKey];
-  const onContextMenu = createContextMenuHandler([
-    {
-      label: `Filter out changes to "${fullPath().join('.')}"`,
-      onClick: () => props.onAddFilter(fullPath()),
-    },
-  ]);
+  const onContextMenu = (event: MouseEvent) =>
+    createContextMenuHandler(createFilterMenuItems(fullPath(), props.onAddFilter))(event);
 
   return (
     <code

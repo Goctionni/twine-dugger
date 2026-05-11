@@ -1,6 +1,6 @@
 import { createMemo, For } from 'solid-js';
 
-import { pathEquals } from '@/shared/path-equals';
+import { pathStartsWith } from '@/shared/path-equals';
 
 import { clearDiffFrames, clearFilteredPaths, getDiffFrames, getFilteredPaths } from '../../store';
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
@@ -21,7 +21,7 @@ export function DiffLog() {
       .map((frame) => ({
         ...frame,
         changes: frame.changes.filter(
-          (frameChanges) => !filteredPaths.some((path) => pathEquals(path, frameChanges.path)),
+          (frameChanges) => !filteredPaths.some((path) => pathStartsWith(frameChanges.path, path)),
         ),
       }))
       .filter((frame) => frame.changes.length > 0)
