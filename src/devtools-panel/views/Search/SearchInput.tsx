@@ -13,10 +13,7 @@ export function SearchInput() {
   let debounceTimeout: number | undefined;
 
   createEffect(() => {
-    const currentQuery = getQuery();
-    if (currentQuery !== localValue()) {
-      setLocalValue(currentQuery);
-    }
+    setLocalValue(getQuery());
   });
 
   createEffect(() => {
