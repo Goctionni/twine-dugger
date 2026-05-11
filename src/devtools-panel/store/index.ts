@@ -185,6 +185,10 @@ export const removeLockPath = (path: Path) => {
   setStore('gameConfig', 'lockedPaths', newPaths);
 };
 
+export const clearLockPaths = () => {
+  setStore('gameConfig', 'lockedPaths', []);
+};
+
 export const setSetting = <T extends keyof Store['settings']>(
   setting: T,
   value: Store['settings'][T],
