@@ -14,7 +14,7 @@ export function SettingsPage() {
         </fieldset>
 
         <fieldset class="mt-5 text-base">
-          <legend class="text-lg font-bold">Filtered Paths</legend>
+          <legend class="text-lg font-bold mb-2">Filtered Paths</legend>
           <FilteredPathsSettings />
         </fieldset>
       </div>
