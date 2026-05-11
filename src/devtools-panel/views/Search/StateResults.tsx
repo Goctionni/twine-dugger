@@ -14,8 +14,10 @@ interface Props {
   results: SearchResultState[];
 }
 
+let persistedSearchStatePathWidth = 256;
+
 export function StateResults(props: Props) {
-  const [getWidth, setWidth] = createSignal(256);
+  const [getWidth, setWidth] = createSignal(persistedSearchStatePathWidth);
   const onPathClick = (path: Path) => {
     setNavigationPage('state');
     setViewState('state', 'path', path);
@@ -35,7 +37,9 @@ export function StateResults(props: Props) {
     let newLeftWidth = e.clientX - containerRect.left;
 
     // -44 to cancel out icon column and col-gap
-    setWidth(newLeftWidth - 44);
+    const width = newLeftWidth - 44;
+    setWidth(width);
+    persistedSearchStatePathWidth = width;
   };
 
   const handleMouseUp = () => {
