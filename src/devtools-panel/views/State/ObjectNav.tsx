@@ -13,6 +13,7 @@ import {
 } from '@/devtools-panel/store';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { getLockStatus } from '@/devtools-panel/views/State/lock-helper';
+import { createObjectNavExtraMenuItems } from '@/devtools-panel/views/util/context-menu-hooks';
 import { createFilterMenuItems } from '@/devtools-panel/views/util/filter-path';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
 import {
@@ -195,6 +196,7 @@ function NavItem(props: NavItemProps) {
         disabled: () => props.lockStatus !== 'unlocked',
       },
       ...createFilterMenuItems(props.path, addFilteredPath),
+      ...createObjectNavExtraMenuItems(props.path),
     ])(event);
 
   return (

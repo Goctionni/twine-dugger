@@ -1,4 +1,5 @@
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
+import { createDiffPathExtraMenuItems } from '@/devtools-panel/views/util/context-menu-hooks';
 import { createFilterMenuItems } from '@/devtools-panel/views/util/filter-path';
 import { Path } from '@/shared/shared-types';
 
@@ -13,8 +14,13 @@ export function DiffPath(props: {
 }) {
   const fullPath = () =>
     props.leafKey === undefined ? props.path : [...props.path, props.leafKey];
-  const onContextMenu = (event: MouseEvent) =>
-    createContextMenuHandler(createFilterMenuItems(fullPath(), props.onAddFilter))(event);
+  const onContextMenu = (event: MouseEvent) => {
+    const path = fullPath();
+    createContextMenuHandler([
+      ...createFilterMenuItems(path, props.onAddFilter),
+      ...createDiffPathExtraMenuItems(path),
+    ])(event);
+  };
 
   return (
     <code
