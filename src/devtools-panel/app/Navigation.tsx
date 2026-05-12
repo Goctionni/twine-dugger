@@ -28,6 +28,11 @@ const navItems = [
     icon: 'content_copy',
   },
   {
+    id: 'watchlist',
+    text: 'Watchlist',
+    icon: 'visibility',
+  },
+  {
     id: 'settings',
     text: 'Settings',
     icon: 'settings',

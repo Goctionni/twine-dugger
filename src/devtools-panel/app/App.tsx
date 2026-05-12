@@ -4,6 +4,7 @@ import { PassagesPage } from '../pages/PassagesPage';
 import { SearchPage } from '../pages/SearchPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { StatePage } from '../pages/StatePage';
+import { WatchlistPage } from '../pages/WatchlistPage';
 import { getConnectionState, getNavigationPage, startTrackingFrames } from '../store';
 import { ContextMenuUI } from '../ui/util/ContextMenu';
 import { PromptDialogOutlet } from '../ui/util/Prompt';
@@ -69,6 +70,9 @@ function LiveContent() {
       </Match>
       <Match when={getNavigationPage() === 'passages'}>
         <PassagesPage />
+      </Match>
+      <Match when={getNavigationPage() === 'watchlist'}>
+        <WatchlistPage />
       </Match>
       <Match when={getNavigationPage() === 'settings'}>
         <SettingsPage />
