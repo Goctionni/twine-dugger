@@ -4,17 +4,10 @@ import { Path } from '@/shared/shared-types';
 
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 
-type ContextMenuItem = {
-  disabled?: boolean | (() => boolean);
-  label: string | (() => string);
-  onClick: () => void;
-};
-
 export function DiffPath(props: {
   path: Path;
   onClick: () => void;
   onAddFilter: (path: Path) => void;
-  getExtraMenuItems?: (path: Path) => ContextMenuItem[];
   action?: 'added' | 'removed';
   leafKey?: Path[number];
 }) {
@@ -22,10 +15,12 @@ export function DiffPath(props: {
     props.leafKey === undefined ? props.path : [...props.path, props.leafKey];
   const onContextMenu = (event: MouseEvent) => {
     const path = fullPath();
-    const menuItems = [
-      ...createFilterMenuItems(path, props.onAddFilter),
-      ...(props.getExtraMenuItems?.(path) ?? []),
-    ];
+
+    // Merge note: watchlist branch also edits this menu.
+    // Keep filter items in this branch, then append watchlist item after this array.
+    const filterItems = createFilterMenuItems(path, props.onAddFilter);
+    const menuItems = [...filterItems];
+
     createContextMenuHandler(menuItems)(event);
   };
 

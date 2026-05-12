@@ -13,7 +13,6 @@ import {
 } from '@/devtools-panel/store';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { getLockStatus } from '@/devtools-panel/views/State/lock-helper';
-import { createObjectNavExtraMenuItems } from '@/devtools-panel/views/util/context-menu-hooks';
 import { createFilterMenuItems } from '@/devtools-panel/views/util/filter-path';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
 import {
@@ -174,8 +173,8 @@ interface NavItemProps {
 }
 
 function NavItem(props: NavItemProps) {
-  const onContextMenu = (event: MouseEvent) =>
-    createContextMenuHandler([
+  const onContextMenu = (event: MouseEvent) => {
+    const baseItems = [
       {
         disabled: () => props.lockStatus === 'ancestor-lock',
         label: () => {
@@ -195,9 +194,13 @@ function NavItem(props: NavItemProps) {
         onClick: () => props.onDelete(),
         disabled: () => props.lockStatus !== 'unlocked',
       },
-      ...createFilterMenuItems(props.path, addFilteredPath),
-      ...createObjectNavExtraMenuItems(props.path),
-    ])(event);
+    ];
+
+    // Merge note: watchlist branch inserts its watchlist action between base items and filter items.
+    const filterItems = createFilterMenuItems(props.path, addFilteredPath);
+
+    createContextMenuHandler([...baseItems, ...filterItems])(event);
+  };
 
   return (
     <li onContextMenu={onContextMenu}>
