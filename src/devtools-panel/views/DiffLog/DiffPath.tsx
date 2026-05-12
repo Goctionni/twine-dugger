@@ -1,14 +1,20 @@
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
-import { createDiffPathExtraMenuItems } from '@/devtools-panel/views/util/context-menu-hooks';
 import { createFilterMenuItems } from '@/devtools-panel/views/util/filter-path';
 import { Path } from '@/shared/shared-types';
 
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 
+type ContextMenuItem = {
+  disabled?: boolean | (() => boolean);
+  label: string | (() => string);
+  onClick: () => void;
+};
+
 export function DiffPath(props: {
   path: Path;
   onClick: () => void;
   onAddFilter: (path: Path) => void;
+  getExtraMenuItems?: (path: Path) => ContextMenuItem[];
   action?: 'added' | 'removed';
   leafKey?: Path[number];
 }) {
@@ -16,10 +22,11 @@ export function DiffPath(props: {
     props.leafKey === undefined ? props.path : [...props.path, props.leafKey];
   const onContextMenu = (event: MouseEvent) => {
     const path = fullPath();
-    createContextMenuHandler([
+    const menuItems = [
       ...createFilterMenuItems(path, props.onAddFilter),
-      ...createDiffPathExtraMenuItems(path),
-    ])(event);
+      ...(props.getExtraMenuItems?.(path) ?? []),
+    ];
+    createContextMenuHandler(menuItems)(event);
   };
 
   return (
