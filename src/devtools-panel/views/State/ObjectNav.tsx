@@ -3,16 +3,19 @@ import { createMemo, For } from 'solid-js';
 
 import {
   addLockPath,
+  addWatchlistPath,
   createGetSetting,
   createGetViewState,
   getActiveState,
   getLockedPaths,
+  getWatchlistPaths,
   removeLockPath,
   setViewState,
 } from '@/devtools-panel/store';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { getLockStatus } from '@/devtools-panel/views/State/lock-helper';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { pathEquals } from '@/shared/path-equals';
 import {
   ContainerValue,
   LockStatus,
@@ -134,6 +137,7 @@ export function ObjectNav(props: Props) {
             return (
               <NavItem
                 child={child}
+                childPath={childPath()}
                 lockStatus={lockStatus()}
                 setLockState={(lock) => {
                   setStatePropertyLock(childPath(), lock);
@@ -160,6 +164,7 @@ interface ContainerChild {
 
 interface NavItemProps {
   child: ContainerChild;
+  childPath: Path;
   active: boolean;
   onClick: () => void;
   onDelete: () => void;
@@ -169,27 +174,38 @@ interface NavItemProps {
 }
 
 function NavItem(props: NavItemProps) {
-  const onContextMenu = createContextMenuHandler([
-    {
-      disabled: () => props.lockStatus === 'ancestor-lock',
-      label: () => {
-        return props.lockStatus !== 'locked'
-          ? `Lock "${props.child.text}"`
-          : `Unlock "${props.child.text}"`;
+  const isWatchlisted = () => getWatchlistPaths().some((path) => pathEquals(path, props.childPath));
+
+  const onContextMenu = (event: MouseEvent) =>
+    createContextMenuHandler([
+      {
+        disabled: () => props.lockStatus === 'ancestor-lock',
+        label: () => {
+          return props.lockStatus !== 'locked'
+            ? `Lock "${props.child.text}"`
+            : `Unlock "${props.child.text}"`;
+        },
+        onClick: () => props.setLockState(props.lockStatus === 'unlocked'),
       },
-      onClick: () => props.setLockState(props.lockStatus === 'unlocked'),
-    },
-    {
-      label: () => `Duplicate "${props.child.text}"`,
-      onClick: () => props.onDuplicate(),
-      disabled: () => props.lockStatus === 'ancestor-lock',
-    },
-    {
-      label: () => `Delete "${props.child.text}"`,
-      onClick: () => props.onDelete(),
-      disabled: () => props.lockStatus !== 'unlocked',
-    },
-  ]);
+      {
+        label: () => `Duplicate "${props.child.text}"`,
+        onClick: () => props.onDuplicate(),
+        disabled: () => props.lockStatus === 'ancestor-lock',
+      },
+      {
+        label: () =>
+          isWatchlisted()
+            ? `Already in watchlist: "${props.child.text}"`
+            : `Add "${props.child.text}" to watchlist`,
+        onClick: () => addWatchlistPath(props.childPath),
+        disabled: () => isWatchlisted(),
+      },
+      {
+        label: () => `Delete "${props.child.text}"`,
+        onClick: () => props.onDelete(),
+        disabled: () => props.lockStatus !== 'unlocked',
+      },
+    ])(event);
 
   return (
     <li onContextMenu={onContextMenu}>

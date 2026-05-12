@@ -130,7 +130,7 @@ export interface ParsedPassageData {
   tags: string[];
 }
 export type PropertyOrder = 'alphabetic' | 'type' | 'none';
-export type Page = 'state' | 'search' | 'passages' | 'settings';
+export type Page = 'state' | 'search' | 'passages' | 'watchlist' | 'settings';
 export type ConnectionState =
   | 'candidate-iframes'
   | 'killed'

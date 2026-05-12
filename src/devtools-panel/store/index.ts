@@ -29,6 +29,7 @@ const getGlobalSettingsKey = () => `${LS_PREFIX}settings`;
 interface GameConfig {
   lockedPaths: Path[];
   filteredPaths: Path[];
+  watchlistPaths: Path[];
 }
 
 interface Settings {
@@ -89,14 +90,16 @@ const [getStateFrames, setStateFrames] = createSignal<StateFrame[]>([]);
 const [getDiffFrames, setDiffFrames] = createSignal<DiffFrame[]>([]);
 const [getPassageData, setPassageData] = createSignal<ParsedPassageData[]>([]);
 
-export { getDiffFrames, getPassageData };
+export { getDiffFrames, getPassageData, getStateFrames };
 
 export const getConnectionState = createMemo(() => store.connection);
 export const getFilteredPaths = createMemo(() => store.gameConfig?.filteredPaths ?? []);
 export const getLockedPaths = createMemo(() => store.gameConfig?.lockedPaths ?? []);
+export const getWatchlistPaths = createMemo(() => store.gameConfig?.watchlistPaths ?? []);
 export const getGameMetaData = createMemo(() => store.gameMetaData);
 
 export const getLatestStateFrame = createMemo(() => getStateFrames()[0]!);
+export const getPreviousStateFrame = createMemo(() => getStateFrames()[1]);
 
 const getActiveStateFrame = createMemo(() => {
   const historyId = store.viewState.state.historyId;
@@ -171,6 +174,22 @@ export const removeFilteredPath = (path: Path) => {
 
 export const clearFilteredPaths = () => {
   setStore('gameConfig', 'filteredPaths', []);
+};
+
+export const addWatchlistPath = (path: Path) => {
+  const current = store.gameConfig?.watchlistPaths ?? [];
+  if (current.some((currentPath) => pathEquals(currentPath, path))) return;
+  setStore('gameConfig', 'watchlistPaths', [...current, path]);
+};
+
+export const removeWatchlistPath = (path: Path) => {
+  const current = store.gameConfig?.watchlistPaths ?? [];
+  const newPaths = current.filter((currentPath) => !pathEquals(currentPath, path));
+  setStore('gameConfig', 'watchlistPaths', newPaths);
+};
+
+export const clearWatchlistPaths = () => {
+  setStore('gameConfig', 'watchlistPaths', []);
 };
 
 export const addLockPath = (path: Path) => {
@@ -270,7 +289,7 @@ function parsePassage(passage: PassageData): ParsedPassageData {
 }
 
 function loadGameSettings() {
-  const defaultConfig: GameConfig = { filteredPaths: [], lockedPaths: [] };
+  const defaultConfig: GameConfig = { filteredPaths: [], lockedPaths: [], watchlistPaths: [] };
   const ifId = store.gameMetaData?.ifId;
   if (!ifId) return defaultConfig;
 
@@ -278,7 +297,9 @@ function loadGameSettings() {
   const lsData = localStorage.getItem(key);
   if (!lsData) return defaultConfig;
 
-  return { ...defaultConfig, ...(JSON.parse(lsData) as Partial<GameConfig>) };
+  const parsed = JSON.parse(lsData) as Partial<GameConfig> & { favoritePaths?: Path[] };
+  const migratedWatchlist = parsed.watchlistPaths ?? parsed.favoritePaths ?? [];
+  return { ...defaultConfig, ...parsed, watchlistPaths: migratedWatchlist };
 }
 
 function saveGameSettings() {

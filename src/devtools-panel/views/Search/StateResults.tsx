@@ -1,11 +1,14 @@
 import { createSignal, For, Match, onCleanup, onMount, Switch } from 'solid-js';
 
+import { addWatchlistPath, getWatchlistPaths } from '@/devtools-panel/store';
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
+import { pathEquals } from '@/shared/path-equals';
 import { Path, SearchResultState } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import { setNavigationPage, setViewState } from '../../store';
 import { PrettyPath } from '../../ui/display/PrettyPath';
+import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 import { StateBooleanInput } from '../State/StateInputs/StateBooleanInput';
 import { StateNumberInput } from '../State/StateInputs/StateNumberInput';
 import { StateStringInput } from '../State/StateInputs/StateStringInput';
@@ -14,8 +17,10 @@ interface Props {
   results: SearchResultState[];
 }
 
+let persistedSearchStatePathWidth = 256;
+
 export function StateResults(props: Props) {
-  const [getWidth, setWidth] = createSignal(256);
+  const [getWidth, setWidth] = createSignal(persistedSearchStatePathWidth);
   const onPathClick = (path: Path) => {
     setNavigationPage('state');
     setViewState('state', 'path', path);
@@ -32,10 +37,12 @@ export function StateResults(props: Props) {
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging() || !containerRef) return;
     const containerRect = containerRef.getBoundingClientRect();
-    let newLeftWidth = e.clientX - containerRect.left;
+    const newLeftWidth = e.clientX - containerRect.left;
 
     // -44 to cancel out icon column and col-gap
-    setWidth(newLeftWidth - 44);
+    const width = newLeftWidth - 44;
+    setWidth(width);
+    persistedSearchStatePathWidth = width;
   };
 
   const handleMouseUp = () => {
@@ -66,8 +73,25 @@ export function StateResults(props: Props) {
         <For each={props.results}>
           {(result) => {
             const type = () => getSpecificType(result.value);
+            const isWatchlisted = () =>
+              getWatchlistPaths().some((path) => pathEquals(path, result.path));
+            const pathLabel = result.path.join('.');
+            const onContextMenu = createContextMenuHandler([
+              {
+                label: () =>
+                  isWatchlisted()
+                    ? `Already in watchlist: "${pathLabel}"`
+                    : `Add "${pathLabel}" to watchlist`,
+                onClick: () => addWatchlistPath(result.path),
+                disabled: () => isWatchlisted(),
+              },
+            ]);
+
             return (
-              <li class="grid grid-cols-subgrid col-span-full items-center px-2">
+              <li
+                class="grid grid-cols-subgrid col-span-full items-center px-2"
+                onContextMenu={onContextMenu}
+              >
                 {/* col 1: icon */}
                 <span class="col-start-1">
                   <TypeIcon type={type()} />
