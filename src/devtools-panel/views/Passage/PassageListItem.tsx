@@ -12,7 +12,7 @@ interface ListItemProps {
 
 export function PassageListItem(props: ListItemProps) {
   return (
-    <li class="border-t last:border-b border-slate-400 flex">
+    <div class="border-t border-slate-400 flex">
       <button
         type="button"
         onClick={() => props.onClick()}
@@ -28,6 +28,6 @@ export function PassageListItem(props: ListItemProps) {
           <For each={props.passageData.tags}>{(tag) => <Tag tag={tag} />}</For>
         </div>
       </button>
-    </li>
+    </div>
   );
 }

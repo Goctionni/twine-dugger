@@ -6,6 +6,7 @@ import { getSpecificType } from '@/shared/type-helpers';
 
 import { setNavigationPage, setViewState } from '../../store';
 import { PrettyPath } from '../../ui/display/PrettyPath';
+import { VirtualizedList } from '../../ui/util/VirtualizedList';
 import { StateBooleanInput } from '../State/StateInputs/StateBooleanInput';
 import { StateNumberInput } from '../State/StateInputs/StateNumberInput';
 import { StateStringInput } from '../State/StateInputs/StateStringInput';
@@ -13,6 +14,9 @@ import { StateStringInput } from '../State/StateInputs/StateStringInput';
 interface Props {
   results: SearchResultState[];
 }
+
+const VIRTUALIZE_THRESHOLD = 300;
+const STATE_ROW_HEIGHT = 44;
 
 export function StateResults(props: Props) {
   const [getWidth, setWidth] = createSignal(256);
@@ -42,6 +46,47 @@ export function StateResults(props: Props) {
     setIsDragging(false);
   };
 
+  const renderRow = (result: SearchResultState) => {
+    const type = () => getSpecificType(result.value);
+    return (
+      <div
+        class="grid items-center px-2 gap-x-2 h-full"
+        style={{ 'grid-template-columns': rowTemplate() }}
+      >
+        <span>
+          <TypeIcon type={type()} />
+        </span>
+
+        <span>
+          <button
+            type="button"
+            class="py-2 font-mono cursor-pointer hover:underline text-left text-nowrap overflow-hidden text-ellipsis max-w-full"
+            onClick={() => onPathClick(result.path)}
+          >
+            <PrettyPath path={result.path} />
+          </button>
+        </span>
+        <div />
+
+        <div class="justify-self-start w-full">
+          <Switch>
+            <Match when={type() === 'string'}>
+              <StateStringInput path={result.path} />
+            </Match>
+            <Match when={type() === 'number'}>
+              <StateNumberInput path={result.path} />
+            </Match>
+            <Match when={type() === 'boolean'}>
+              <StateBooleanInput path={result.path} />
+            </Match>
+          </Switch>
+        </div>
+      </div>
+    );
+  };
+
+  const rowTemplate = () => `auto minmax(auto,${getWidth()}px) 8px 1fr`;
+
   onMount(() => {
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
@@ -59,51 +104,23 @@ export function StateResults(props: Props) {
         style={{ left: `${44 + getWidth()}px` }}
         onMouseDown={handleMouseDown}
       />
-      <ul
-        class="grid items-center gap-x-2 gap-y-1 auto-rows-max h-full overflow-auto"
-        style={{ 'grid-template-columns': `auto minmax(auto,${getWidth()}px) 8px 1fr` }}
-      >
-        <For each={props.results}>
-          {(result) => {
-            const type = () => getSpecificType(result.value);
-            return (
-              <li class="grid grid-cols-subgrid col-span-full items-center px-2">
-                {/* col 1: icon */}
-                <span class="col-start-1">
-                  <TypeIcon type={type()} />
-                </span>
-
-                {/* col 2: path */}
-                <span class="col-start-2">
-                  <button
-                    type="button"
-                    class="py-2 font-mono cursor-pointer hover:underline text-left text-nowrap overflow-hidden text-ellipsis max-w-full"
-                    onClick={() => onPathClick(result.path)}
-                  >
-                    <PrettyPath path={result.path} />
-                  </button>
-                </span>
-                <div class="col-start-3" />
-
-                {/* col 3: input (aligned across rows) */}
-                <div class="col-start-4 justify-self-start w-full">
-                  <Switch>
-                    <Match when={type() === 'string'}>
-                      <StateStringInput path={result.path} />
-                    </Match>
-                    <Match when={type() === 'number'}>
-                      <StateNumberInput path={result.path} />
-                    </Match>
-                    <Match when={type() === 'boolean'}>
-                      <StateBooleanInput path={result.path} />
-                    </Match>
-                  </Switch>
-                </div>
-              </li>
-            );
-          }}
-        </For>
-      </ul>
+      {props.results.length > VIRTUALIZE_THRESHOLD ? (
+        <VirtualizedList
+          class="h-full overflow-auto"
+          items={props.results}
+          itemHeight={STATE_ROW_HEIGHT}
+          renderItem={(result) => renderRow(result)}
+        />
+      ) : (
+        <ul
+          class="grid items-center gap-x-2 gap-y-1 auto-rows-max h-full overflow-auto"
+          style={{ 'grid-template-columns': rowTemplate() }}
+        >
+          <For each={props.results}>
+            {(result) => <li class="col-span-full">{renderRow(result)}</li>}
+          </For>
+        </ul>
+      )}
     </div>
   );
 }

@@ -31,6 +31,7 @@ import {
 } from '../../api/api';
 import { TypeIcon } from '../../ui/display/TypeIcon';
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
+import { VirtualizedList } from '../../ui/util/VirtualizedList';
 import { AddPropertyDialog } from './dialogs/AddPropertyDialog';
 import { DuplicateKeyDialog } from './dialogs/DuplicateKeyDialog';
 import { createSorter } from './property-sorter';
@@ -44,6 +45,9 @@ interface Props {
   path: Path;
   selectedProperty?: string | number;
 }
+
+const NAV_VIRTUALIZE_THRESHOLD = 200;
+const NAV_ROW_HEIGHT = 30;
 
 export function ObjectNav(props: Props) {
   const getName = () => props.path[props.path.length - 1];
@@ -65,12 +69,13 @@ export function ObjectNav(props: Props) {
           : sorter(Object.keys(object));
 
     // Convert to child key format
-    return rawKeys.map(
+    const children = rawKeys.map(
       (key): ContainerChild => ({
         text: key,
         type: getSpecificType(object instanceof Map ? object.get(key) : object[key]),
       }),
     );
+    return children;
   });
 
   const onDuplicate = async (property: string | number) => {
@@ -113,8 +118,28 @@ export function ObjectNav(props: Props) {
     await deleteFromState(path);
   };
 
+  const renderChild = (child: ContainerChild) => {
+    const childPath = () => [...props.path, child.text] as Path;
+    const lockStatus = () => getLockStatus(childPath, getLockedPaths);
+    return (
+      <NavItem
+        child={child}
+        lockStatus={lockStatus}
+        setLockState={(lock) => {
+          setStatePropertyLock(childPath(), lock);
+          if (lock) addLockPath(childPath());
+          else removeLockPath(childPath());
+        }}
+        active={child.text === props.selectedProperty}
+        onClick={() => handlePropertyClick(child.text)}
+        onDelete={() => handleDelete(childPath())}
+        onDuplicate={() => onDuplicate(child.text)}
+      />
+    );
+  };
+
   return (
-    <div class="w-max max-w-3xs flex flex-col h-full px-2 border-r border-r-gray-700">
+    <div class="w-max min-w-3xs max-w-3xs flex flex-col h-full px-2 border-r border-r-gray-700">
       <p class="text-lg">{getName()}</p>
       <ul>
         <li>
@@ -126,29 +151,18 @@ export function ObjectNav(props: Props) {
           </a>
         </li>
       </ul>
-      <ul class="flex flex-1 flex-col overflow-auto">
-        <For each={getChildren()}>
-          {(child) => {
-            const childPath = () => [...props.path, child.text];
-            const lockStatus = () => getLockStatus(childPath, getLockedPaths);
-            return (
-              <NavItem
-                child={child}
-                lockStatus={lockStatus()}
-                setLockState={(lock) => {
-                  setStatePropertyLock(childPath(), lock);
-                  if (lock) addLockPath(childPath());
-                  else removeLockPath(childPath());
-                }}
-                active={child.text === props.selectedProperty}
-                onClick={() => handlePropertyClick(child.text)}
-                onDelete={() => handleDelete(childPath())}
-                onDuplicate={() => onDuplicate(child.text)}
-              />
-            );
-          }}
-        </For>
-      </ul>
+      {getChildren().length > NAV_VIRTUALIZE_THRESHOLD ? (
+        <VirtualizedList
+          class="flex-1 overflow-auto"
+          items={getChildren()}
+          itemHeight={NAV_ROW_HEIGHT}
+          renderItem={(child) => renderChild(child)}
+        />
+      ) : (
+        <ul class="flex flex-1 flex-col overflow-auto">
+          <For each={getChildren()}>{(child) => renderChild(child)}</For>
+        </ul>
+      )}
     </div>
   );
 }
@@ -164,35 +178,35 @@ interface NavItemProps {
   onClick: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
-  lockStatus: LockStatus;
+  lockStatus: () => LockStatus;
   setLockState: (lock: boolean) => void;
 }
 
 function NavItem(props: NavItemProps) {
   const onContextMenu = createContextMenuHandler([
     {
-      disabled: () => props.lockStatus === 'ancestor-lock',
+      disabled: () => props.lockStatus() === 'ancestor-lock',
       label: () => {
-        return props.lockStatus !== 'locked'
+        return props.lockStatus() !== 'locked'
           ? `Lock "${props.child.text}"`
           : `Unlock "${props.child.text}"`;
       },
-      onClick: () => props.setLockState(props.lockStatus === 'unlocked'),
+      onClick: () => props.setLockState(props.lockStatus() === 'unlocked'),
     },
     {
       label: () => `Duplicate "${props.child.text}"`,
       onClick: () => props.onDuplicate(),
-      disabled: () => props.lockStatus === 'ancestor-lock',
+      disabled: () => props.lockStatus() === 'ancestor-lock',
     },
     {
       label: () => `Delete "${props.child.text}"`,
       onClick: () => props.onDelete(),
-      disabled: () => props.lockStatus !== 'unlocked',
+      disabled: () => props.lockStatus() !== 'unlocked',
     },
   ]);
 
   return (
-    <li onContextMenu={onContextMenu}>
+    <div onContextMenu={onContextMenu}>
       <a
         onClick={() => props.onClick()}
         class={clsx(
@@ -205,10 +219,10 @@ function NavItem(props: NavItemProps) {
         <TypeIcon type={props.child.type} />
         <span class="flex-1 overflow-hidden overflow-ellipsis">
           {props.child.text}
-          {props.lockStatus === 'locked' && '🔒'}
-          {props.lockStatus === 'ancestor-lock' && <span class="saturate-0">🔒</span>}
+          {props.lockStatus() === 'locked' && '🔒'}
+          {props.lockStatus() === 'ancestor-lock' && <span class="saturate-0">🔒</span>}
         </span>
       </a>
-    </li>
+    </div>
   );
 }
