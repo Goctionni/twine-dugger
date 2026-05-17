@@ -1,10 +1,10 @@
-import { For, Show } from 'solid-js';
+import { For, JSX, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { Portal } from 'solid-js/web';
 
 interface ContextMenuItem {
   disabled?: boolean | (() => boolean);
-  label: string | (() => string);
+  label: JSX.Element | (() => JSX.Element);
   onClick: () => void;
 }
 
@@ -17,10 +17,25 @@ interface ContextMenuStore {
 const [contextMenu, setStore] = createStore<ContextMenuStore>({ event: null, items: null });
 const clearContextMenu = () => setStore({ event: null, items: null });
 
+function isInput(el: unknown) {
+  if (!(el instanceof HTMLElement)) return false;
+  // If its an input, its an input
+  if (el.matches(`input, textarea, select`)) return true;
+
+  // if its a label for a radio or checkbox, we also consider it an input
+  if (!(el instanceof HTMLLabelElement)) return false;
+  // Determine if any radio or checkbox is labelled by this input
+  const inputs = [
+    ...document.querySelectorAll<HTMLInputElement>('input[type=radio], input[type=checkbox]'),
+  ];
+  return inputs.some((input) => [...(input.labels ?? [])].includes(el));
+}
+
 // Returns event-handler for onContextMenu
 export function createContextMenuHandler(menuItems: ContextMenuItem[]) {
   return (event: MouseEvent) => {
     if (event.ctrlKey) return;
+    if (isInput(event.target)) return;
     setStore({ event, items: menuItems });
     event.preventDefault();
     event.stopPropagation();

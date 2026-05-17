@@ -1,5 +1,6 @@
 import { DiffLogSettings } from '../views/Settings/DiffLogSettings';
 import { FilteredPathsSettings } from '../views/Settings/FilteredPathsSettings';
+import { LockSettings } from '../views/Settings/LockSettings';
 
 export function SettingsPage() {
   return (
@@ -16,6 +17,11 @@ export function SettingsPage() {
         <fieldset class="mt-5 text-base">
           <legend class="text-lg font-bold mb-2">Filtered Paths</legend>
           <FilteredPathsSettings />
+        </fieldset>
+
+        <fieldset class="mt-5 text-base">
+          <legend class="text-lg font-bold mb-2">Locked Variables</legend>
+          <LockSettings />
         </fieldset>
       </div>
     </div>

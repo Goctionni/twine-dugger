@@ -2,12 +2,17 @@ import { createGetSetting, setSetting } from '@/devtools-panel/store';
 import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
 import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
 
-import { onFontSizeChange, onPollingIntervalChange } from './diffLogSetters';
+import {
+  onFontSizeChange,
+  onMaxHistorySlicesChange,
+  onPollingIntervalChange,
+} from './diffLogSetters';
 import { SettingControl } from './SettingControl';
 
 export function DiffLogSettings() {
   const getDiffLogFontSize = createGetSetting('diffLog.fontSize');
   const getDiffLogPollingInterval = createGetSetting('diffLog.pollingInterval');
+  const getDiffLogMaxHistorySlices = createGetSetting('diffLog.maxHistorySlices');
   const getDiffLogHeadingStyle = createGetSetting('diffLog.headingStyle');
 
   return (
@@ -27,6 +32,15 @@ export function DiffLogSettings() {
             inputProps={{ id }}
             value={getDiffLogPollingInterval()}
             onChange={onPollingIntervalChange}
+          />
+        )}
+      </SettingControl>
+      <SettingControl label="Max history slices">
+        {(id) => (
+          <NumberInput
+            inputProps={{ id }}
+            value={getDiffLogMaxHistorySlices()}
+            onChange={onMaxHistorySlicesChange}
           />
         )}
       </SettingControl>

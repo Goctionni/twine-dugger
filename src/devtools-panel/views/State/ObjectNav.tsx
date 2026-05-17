@@ -1,26 +1,22 @@
 import clsx from 'clsx';
-import { createMemo, For } from 'solid-js';
+import { createMemo, For, Show } from 'solid-js';
 
 import {
+  addFilteredPath,
   addLockPath,
   createGetSetting,
   createGetViewState,
   getActiveState,
   getLockedPaths,
+  isPathFiltered,
   removeLockPath,
   setViewState,
 } from '@/devtools-panel/store';
+import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { getLockStatus } from '@/devtools-panel/views/State/lock-helper';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import {
-  ContainerValue,
-  LockStatus,
-  ObjectValue,
-  Path,
-  PropertyOrder,
-  ValueType,
-} from '@/shared/shared-types';
+import { LockStatus, ObjectValue, Path, ValueType } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import {
@@ -53,8 +49,10 @@ export function ObjectNav(props: Props) {
   const getPropertyOrder = createGetSetting('state.propertyOrder');
 
   const getChildren = createMemo(() => {
-    const propertyOrder = getPropertyOrder();
     const object = getObject();
+    if (!object) return [];
+
+    const propertyOrder = getPropertyOrder();
     const sorter = createSorter(object, propertyOrder);
 
     const rawKeys =
@@ -106,7 +104,7 @@ export function ObjectNav(props: Props) {
     const isEqual =
       currentPath.length === newPath.length &&
       currentPath.every((val, idx) => val === newPath[idx]);
-    setViewState('state', 'path', isEqual ? props.path : newPath);
+    setViewState('state', 'path', [...(isEqual ? props.path : newPath)]);
   };
 
   const handleDelete = async (path: Path) => {
@@ -122,7 +120,7 @@ export function ObjectNav(props: Props) {
             onClick={onAdd}
             class="flex items-center gap-1 p-1 cursor-pointer rounded-md text-green-400 hover:bg-gray-700"
           >
-            ➕ <span class="flex-1 overflow-hidden overflow-ellipsis">Add new...</span>
+            ➕ <span class="flex-1 overflow-hidden text-ellipsis">Add new...</span>
           </a>
         </li>
       </ul>
@@ -144,6 +142,7 @@ export function ObjectNav(props: Props) {
                 onClick={() => handlePropertyClick(child.text)}
                 onDelete={() => handleDelete(childPath())}
                 onDuplicate={() => onDuplicate(child.text)}
+                path={childPath()}
               />
             );
           }}
@@ -159,6 +158,7 @@ interface ContainerChild {
 }
 
 interface NavItemProps {
+  path: Path;
   child: ContainerChild;
   active: boolean;
   onClick: () => void;
@@ -172,20 +172,42 @@ function NavItem(props: NavItemProps) {
   const onContextMenu = createContextMenuHandler([
     {
       disabled: () => props.lockStatus === 'ancestor-lock',
-      label: () => {
-        return props.lockStatus !== 'locked'
-          ? `Lock "${props.child.text}"`
-          : `Unlock "${props.child.text}"`;
-      },
+      label: () => (
+        <>
+          <Show when={props.lockStatus !== 'locked'}>
+            Lock "<PrettyPath path={props.path} class="font-mono" />"
+          </Show>
+          <Show when={props.lockStatus === 'locked'}>
+            Unlock "<PrettyPath path={props.path} class="font-mono" />"
+          </Show>
+        </>
+      ),
       onClick: () => props.setLockState(props.lockStatus === 'unlocked'),
     },
     {
-      label: () => `Duplicate "${props.child.text}"`,
+      label: () => (
+        <>
+          Filter "<PrettyPath path={props.path} class="font-mono" />" from DiffLog
+        </>
+      ),
+      onClick: () => addFilteredPath(props.path),
+      disabled: () => isPathFiltered(props.path),
+    },
+    {
+      label: () => (
+        <>
+          Duplicate "<PrettyPath path={props.path} class="font-mono" />"
+        </>
+      ),
       onClick: () => props.onDuplicate(),
       disabled: () => props.lockStatus === 'ancestor-lock',
     },
     {
-      label: () => `Delete "${props.child.text}"`,
+      label: () => (
+        <>
+          Delete "<PrettyPath path={props.path} class="font-mono" />"
+        </>
+      ),
       onClick: () => props.onDelete(),
       disabled: () => props.lockStatus !== 'unlocked',
     },
@@ -203,7 +225,7 @@ function NavItem(props: NavItemProps) {
         )}
       >
         <TypeIcon type={props.child.type} />
-        <span class="flex-1 overflow-hidden overflow-ellipsis">
+        <span class="flex-1 overflow-hidden text-ellipsis">
           {props.child.text}
           {props.lockStatus === 'locked' && '🔒'}
           {props.lockStatus === 'ancestor-lock' && <span class="saturate-0">🔒</span>}
