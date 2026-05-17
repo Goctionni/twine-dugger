@@ -11,16 +11,15 @@
     "strict": true, // Enable all strict type-checking options
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true, // Skip type checking of declaration files
-    "baseUrl": ".", // Base directory for module resolution
     "lib": ["ESNext", "DOM", "DOM.Iterable"], // Libraries available in the execution environment
     "types": ["chrome", "solid-js"], // Include types for Vite client and SolidJS
     "resolveJsonModule": true, // Allow importing JSON files
     "isolatedModules": true, // Ensure each file can be safely transpiled without relying on other imports
     "noEmit": true,
     "paths": {
-      "@/*": ["src/*"],
-      "@panel/*": ["src/devtools-panel/*"],
-      "@content/*": ["src/content-script/*"]
+      "@/*": ["./src/*"],
+      "@panel/*": ["./src/devtools-panel/*"],
+      "@content/*": ["./src/content-script/*"]
     }
   },
   "files": ["src/global.d.ts"],

@@ -1,5 +1,5 @@
 import { defineConfig } from 'tsdown';
-import type { Options } from 'tsdown';
+import type { UserConfig } from 'tsdown';
 import solidPlugin from 'vite-plugin-solid';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from '@tailwindcss/postcss';
@@ -19,12 +19,11 @@ const baseOptions = {
   format: 'esm',
   outDir: 'dist',
   treeshake: true,
-} satisfies Options;
+} satisfies UserConfig;
 
-export default defineConfig((): Options[] => [
+export default defineConfig((): UserConfig[] => [
   {
     clean: true,
-    copy: [{ from: 'public', to: 'dist' }],
     entry: { style: 'src/devtools-panel/index.css' },
     plugins: [
       postcss({
@@ -39,6 +38,12 @@ export default defineConfig((): Options[] => [
             from: 'src/devtools-panel/manifest.json',
             to: 'dist/manifest.json',
             transform: (content) => content.replace(/\$version/g, packageJson.version),
+          });
+
+          await copyTransform({
+            from: 'src/create-panel/create-panel.html',
+            to: 'dist/create-panel.html',
+            transform: async (content) => content.replace('./create-panel.ts', './create-panel.js'),
           });
 
           await copyTransform({
@@ -65,14 +70,17 @@ export default defineConfig((): Options[] => [
     ...baseOptions,
     clean: false,
     entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
-    noExternal: [
-      'solid-js/web',
-      'solid-js',
-      'solid-js/store',
-      'clsx',
-      'oniguruma-to-es',
-      'vscode-textmate',
-    ],
+    deps: {
+      onlyBundle: false,
+      alwaysBundle: [
+        'solid-js/web',
+        'solid-js',
+        'solid-js/store',
+        'clsx',
+        'oniguruma-to-es',
+        'vscode-textmate',
+      ],
+    },
     plugins: [solidPlugin()],
   },
   {
@@ -86,7 +94,10 @@ export default defineConfig((): Options[] => [
     ...baseOptions,
     clean: false,
     format: 'iife',
-    noExternal: ['zod'],
+    deps: {
+      onlyBundle: false,
+      alwaysBundle: ['zod'],
+    },
     entry: { 'content-script': 'src/content-script/content-script.ts' },
     outputOptions: (opts) => ({ ...opts, entryFileNames: `[name].js` }),
   },

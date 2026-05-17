@@ -13,3 +13,8 @@ export const onPollingIntervalChange = createValidatingSetter<number>(
   (size) => setSetting('diffLog.pollingInterval', size),
   (interval) => interval > 100 && interval < 5000,
 );
+
+export const onMaxHistorySlicesChange = createValidatingSetter<number>(
+  (maxSlices) => setSetting('diffLog.maxHistorySlices', maxSlices),
+  (maxSlices) => Number.isInteger(maxSlices) && maxSlices >= 1 && maxSlices <= 500,
+);
