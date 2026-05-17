@@ -71,6 +71,7 @@ export default defineConfig((): UserConfig[] => [
     clean: false,
     entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
     deps: {
+      onlyBundle: false,
       alwaysBundle: [
         'solid-js/web',
         'solid-js',
@@ -94,6 +95,7 @@ export default defineConfig((): UserConfig[] => [
     clean: false,
     format: 'iife',
     deps: {
+      onlyBundle: false,
       alwaysBundle: ['zod'],
     },
     entry: { 'content-script': 'src/content-script/content-script.ts' },
