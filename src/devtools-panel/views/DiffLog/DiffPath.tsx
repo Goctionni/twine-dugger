@@ -18,11 +18,16 @@ export function DiffPath(props: {
 
   const onContextMenu = createContextMenuHandler(
     getParentPaths(fullPath()).map((path, index) => ({
-      label: () => <>Filter out changes to "<PrettyPath path={path} class="font-mono" globSuffix={!isLast(index)} />"</>,
+      label: () => (
+        <>
+          Filter out changes to "
+          <PrettyPath path={path} class="font-mono" globSuffix={!isLast(index)} />"
+        </>
+      ),
       onClick: () => props.onAddFilter(path),
       disabled: () => isPathFiltered(path),
-    }))
-  )
+    })),
+  );
 
   return (
     <code

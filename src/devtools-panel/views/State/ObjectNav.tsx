@@ -16,12 +16,7 @@ import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { getLockStatus } from '@/devtools-panel/views/State/lock-helper';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import {
-  LockStatus,
-  ObjectValue,
-  Path,
-  ValueType,
-} from '@/shared/shared-types';
+import { LockStatus, ObjectValue, Path, ValueType } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import {
@@ -190,17 +185,29 @@ function NavItem(props: NavItemProps) {
       onClick: () => props.setLockState(props.lockStatus === 'unlocked'),
     },
     {
-      label: () => <>Filter "<PrettyPath path={props.path} class="font-mono" />" from DiffLog</>,
+      label: () => (
+        <>
+          Filter "<PrettyPath path={props.path} class="font-mono" />" from DiffLog
+        </>
+      ),
       onClick: () => addFilteredPath(props.path),
       disabled: () => isPathFiltered(props.path),
     },
     {
-      label: () => <>Duplicate "<PrettyPath path={props.path} class="font-mono" />"</>,
+      label: () => (
+        <>
+          Duplicate "<PrettyPath path={props.path} class="font-mono" />"
+        </>
+      ),
       onClick: () => props.onDuplicate(),
       disabled: () => props.lockStatus === 'ancestor-lock',
     },
     {
-      label: () => <>Delete "<PrettyPath path={props.path} class="font-mono" />"</>,
+      label: () => (
+        <>
+          Delete "<PrettyPath path={props.path} class="font-mono" />"
+        </>
+      ),
       onClick: () => props.onDelete(),
       disabled: () => props.lockStatus !== 'unlocked',
     },

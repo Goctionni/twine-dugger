@@ -97,7 +97,8 @@ export const getFilteredPaths = createMemo(() => store.gameConfig?.filteredPaths
 export const getLockedPaths = createMemo(() => store.gameConfig?.lockedPaths ?? []);
 export const getGameMetaData = createMemo(() => store.gameMetaData);
 
-export const isPathFiltered = (path: Path) => getFilteredPaths().some(filterPath => pathStartsWith(path, filterPath));
+export const isPathFiltered = (path: Path) =>
+  getFilteredPaths().some((filterPath) => pathStartsWith(path, filterPath));
 
 export const getLatestStateFrame = createMemo(() => getStateFrames()[0]!);
 
