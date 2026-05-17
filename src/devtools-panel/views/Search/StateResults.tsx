@@ -6,6 +6,7 @@ import { getSpecificType } from '@/shared/type-helpers';
 
 import { setNavigationPage, setViewState } from '../../store';
 import { PrettyPath } from '../../ui/display/PrettyPath';
+import { getPersistedValue, setPersistedValue } from '../../ui/util/persistedValue';
 import { StateBooleanInput } from '../State/StateInputs/StateBooleanInput';
 import { StateNumberInput } from '../State/StateInputs/StateNumberInput';
 import { StateStringInput } from '../State/StateInputs/StateStringInput';
@@ -14,10 +15,10 @@ interface Props {
   results: SearchResultState[];
 }
 
-let persistedSearchStatePathWidth = 256;
+const stateResultsPathWidthKey = 'search-state-results-path-width';
 
 export function StateResults(props: Props) {
-  const [getWidth, setWidth] = createSignal(persistedSearchStatePathWidth);
+  const [getWidth, setWidth] = createSignal(getPersistedValue(stateResultsPathWidthKey, 256));
   const onPathClick = (path: Path) => {
     setNavigationPage('state');
     setViewState('state', 'path', path);
@@ -39,7 +40,7 @@ export function StateResults(props: Props) {
     // -44 to cancel out icon column and col-gap
     const width = newLeftWidth - 44;
     setWidth(width);
-    persistedSearchStatePathWidth = width;
+    setPersistedValue(stateResultsPathWidthKey, width);
   };
 
   const handleMouseUp = () => {

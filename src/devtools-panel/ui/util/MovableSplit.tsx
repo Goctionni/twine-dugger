@@ -1,4 +1,6 @@
-import { createSignal, JSX, onCleanup, onMount, untrack } from 'solid-js';
+import { createSignal, JSX, onCleanup, onMount } from 'solid-js';
+
+import { getPersistedValue, setPersistedValue } from './persistedValue';
 
 interface Interface {
   leftContent: JSX.Element;
@@ -8,13 +10,12 @@ interface Interface {
   class?: string;
 }
 
-const splitWidthCache = new Map<string, string>();
-
 export function MovableSplit(props: Interface) {
-  const splitKey = props.splitKey;
+  const splitKey = () => props.splitKey;
   const initialWidthPct = props.initialLeftWidthPercent || 50;
+  const fallbackWidth = `${initialWidthPct}%`;
   const [leftWidth, setLeftWidth] = createSignal(
-    splitKey ? (splitWidthCache.get(splitKey) ?? `${initialWidthPct}%`) : `${initialWidthPct}%`,
+    splitKey() ? getPersistedValue(splitKey()!, fallbackWidth) : fallbackWidth,
   );
   const [isDragging, setIsDragging] = createSignal(false);
   let containerRef: HTMLDivElement | undefined;
@@ -32,7 +33,7 @@ export function MovableSplit(props: Interface) {
     // Constrain width (e.g., min 10%, max 90%)
     const width = `${newLeftWidth - 4}px`;
     setLeftWidth(width);
-    if (splitKey) splitWidthCache.set(splitKey, width);
+    if (splitKey()) setPersistedValue(splitKey()!, width);
   };
 
   const handleMouseUp = () => {
