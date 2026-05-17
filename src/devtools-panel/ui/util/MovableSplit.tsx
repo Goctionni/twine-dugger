@@ -11,7 +11,7 @@ interface Interface {
 const splitWidthCache = new Map<string, string>();
 
 export function MovableSplit(props: Interface) {
-  const splitKey = untrack(() => props.splitKey);
+  const splitKey = props.splitKey;
   const initialWidthPct = props.initialLeftWidthPercent || 50;
   const [leftWidth, setLeftWidth] = createSignal(
     splitKey ? (splitWidthCache.get(splitKey) ?? `${initialWidthPct}%`) : `${initialWidthPct}%`,
