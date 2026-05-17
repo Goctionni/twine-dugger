@@ -29,14 +29,18 @@ export type DiffObjectMapChange = DiffGeneric<'object' | 'map'> & {
   key: string;
 };
 
+export interface DiffArrayInstruction {
+  type: 'array';
+  subtype: 'instructions';
+  path: Path;
+  instructions: Instruction[];
+};
+
+export type DiffArrayChangeInfo = (DiffGeneric<'array'> & { index: number });
+
 export type DiffArrayChange =
-  | (DiffGeneric<'array'> & { index: number })
-  | {
-      type: 'array';
-      subtype: 'instructions';
-      path: Path;
-      instructions: Instruction[];
-    };
+  | DiffArrayChangeInfo
+  | DiffArrayInstruction;
 
 export type DiffSetChange = DiffGeneric<'set'>;
 

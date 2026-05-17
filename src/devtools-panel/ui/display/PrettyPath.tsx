@@ -37,8 +37,8 @@ interface Props {
 
 export function PrettyPath(props: Props) {
   const chunks = createMemo(() => {
-    const state = getActiveState()!;
     const lastIndex = props.path.length - 1;
+    const state = getActiveState()!;
 
     return props.path
       .flatMap((slug, index): Array<false | AtomProps> => {
@@ -86,6 +86,12 @@ export function PrettyPath(props: Props) {
       .map((atomProps) => <PathAtom {...atomProps} />);
   });
 
+  const isObjectValue = () => {
+    const state = getActiveState()!;
+    const value = getObjectPathValue(state, props.path);
+    return !!value && typeof value === 'object';
+  }
+
   return (
     <Dynamic
       component={props.class ? 'span' : (p: { children: JSX.Element }) => p.children}
@@ -95,7 +101,7 @@ export function PrettyPath(props: Props) {
         <span class={colorClasses.pathRoot}>State</span>
       </Show>
       {chunks()}
-      <Show when={props.globSuffix}>
+      <Show when={props.globSuffix && isObjectValue()}>
         <span class={colorClasses.pathDot}>.</span>
         <span class={colorClasses.glob}>*</span>
       </Show>

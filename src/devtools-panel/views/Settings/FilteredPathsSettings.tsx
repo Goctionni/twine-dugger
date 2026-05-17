@@ -1,19 +1,10 @@
 import { For, Show } from 'solid-js';
 
 import { clearFilteredPaths, getFilteredPaths, removeFilteredPath } from '@/devtools-panel/store';
-import { Path } from '@/shared/shared-types';
+import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 
 import { btnClass } from '../../ui/util/btnClass';
 
-const identifierRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
-
-function formatPath(path: Path) {
-  return path.reduce((formatted, chunk) => {
-    if (typeof chunk === 'number') return `${formatted}[${chunk}]`;
-    if (identifierRegex.test(chunk)) return `${formatted}.${chunk}`;
-    return `${formatted}[${JSON.stringify(chunk)}]`;
-  }, 'State');
-}
 
 export function FilteredPathsSettings() {
   return (
@@ -41,9 +32,7 @@ export function FilteredPathsSettings() {
           <For each={getFilteredPaths()}>
             {(path) => (
               <li class="flex items-center gap-2 rounded border border-gray-700 bg-gray-900/70 px-2 py-1">
-                <span class="min-w-0 flex-1 break-all font-mono text-xs text-sky-300">
-                  {formatPath(path)}
-                </span>
+                <PrettyPath path={path} class="min-w-0 flex-1 break-all font-mono text-xs" globSuffix />
                 <button
                   type="button"
                   class={btnClass('clr-gray hover:clr-sky py-0.5 px-2 text-xs')}
