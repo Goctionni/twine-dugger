@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.3.0
+
+### Minor Changes
+
+- 27c8caf: Lots of QoL fixes for locked values and filtered paths, big thanks to czer323
+
 ## 1.2.0
 
 ### Minor Changes
