@@ -16,7 +16,7 @@ import { DiffPath } from './DiffPath';
 import { MutationBadge } from './MutationBadge';
 import { RenderValue } from './RenderValue';
 
-const setPath = (path: Path) => setViewState('state', 'path', path);
+const setPath = (path: Path) => setViewState('state', 'path', [...path]);
 
 function DiffItemTypeChanged(props: DiffChangeProps<DiffTypeChange>) {
   return (

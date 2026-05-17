@@ -47,5 +47,5 @@ export function DiffFrame(props: Props) {
 }
 
 function setSelectedPassage(passage: ParsedPassageData) {
-  setViewState('passage', 'selected', passage);
+  setViewState('passage', 'selected', { ...passage });
 }

@@ -25,5 +25,5 @@ export function PassagesPage() {
 }
 
 function setSelectedPassage(passage: ParsedPassageData) {
-  setViewState('passage', 'selected', passage);
+  setViewState('passage', 'selected', { ...passage });
 }

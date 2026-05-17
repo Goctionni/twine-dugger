@@ -14,6 +14,8 @@ export function PassageListItem(props: ListItemProps) {
   return (
     <li class="border-t last:border-b border-slate-400 flex">
       <button
+        data-id={props.passageData.id}
+        data-name={props.passageData.name}
         type="button"
         onClick={() => props.onClick()}
         class={clsx(
