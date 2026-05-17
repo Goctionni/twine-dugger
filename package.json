@@ -13,6 +13,7 @@
     "tsc": "tsc -p tsconfig.app.json --noEmit"
   },
   "dependencies": {
+    "@solid-primitives/scheduled": "1.5.3",
     "clsx": "2.1.1",
     "eslint-plugin-simple-import-sort": "13.0.0",
     "oniguruma-to-es": "4.3.4",

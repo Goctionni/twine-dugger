@@ -73,6 +73,7 @@ export default defineConfig((): UserConfig[] => [
     deps: {
       onlyBundle: false,
       alwaysBundle: [
+        '@solid-primitives/scheduled',
         'solid-js/web',
         'solid-js',
         'solid-js/store',
