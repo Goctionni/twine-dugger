@@ -70,14 +70,16 @@ export default defineConfig((): UserConfig[] => [
     ...baseOptions,
     clean: false,
     entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
-    noExternal: [
-      'solid-js/web',
-      'solid-js',
-      'solid-js/store',
-      'clsx',
-      'oniguruma-to-es',
-      'vscode-textmate',
-    ],
+    deps: {
+      alwaysBundle: [
+        'solid-js/web',
+        'solid-js',
+        'solid-js/store',
+        'clsx',
+        'oniguruma-to-es',
+        'vscode-textmate',
+      ]
+    },
     plugins: [solidPlugin()],
   },
   {
@@ -91,7 +93,9 @@ export default defineConfig((): UserConfig[] => [
     ...baseOptions,
     clean: false,
     format: 'iife',
-    noExternal: ['zod'],
+    deps: {
+      alwaysBundle: ['zod']
+    },
     entry: { 'content-script': 'src/content-script/content-script.ts' },
     outputOptions: (opts) => ({ ...opts, entryFileNames: `[name].js` }),
   },
