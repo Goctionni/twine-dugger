@@ -1,9 +1,7 @@
 import clsx from 'clsx';
 import { createMemo, For } from 'solid-js';
 
-import { addFilteredPath, createGetViewState, getHistoryIds, setViewState } from '../../store';
-import { createContextMenuHandler } from '../../ui/util/ContextMenu';
-import { createFilterMenuItems } from '../util/filter-path';
+import { createGetViewState, getHistoryIds, setViewState } from '../../store';
 
 interface HistoryNode {
   text: string;
@@ -13,7 +11,6 @@ interface HistoryNode {
 
 export function HistoryNav() {
   const getHistoryId = createGetViewState('state', 'historyId');
-  const getPath = createGetViewState('state', 'path');
 
   const items = createMemo(() => {
     const historyId = getHistoryId();
@@ -31,22 +28,9 @@ export function HistoryNav() {
       <span class="text-lg font-bold">History slice:</span>
       <ul class="flex justify-center items-center gap-2">
         <For each={items()}>
-          {(item, index) => {
-            const onContextMenu = createContextMenuHandler([
-              {
-                label: () => {
-                  const path = getPath();
-                  if (!path.length) return 'Select a state path first';
-                  return 'Filter selected path in Diff Log';
-                },
-                disabled: () => !getPath().length,
-                onClick: () => addFilteredPath(getPath()),
-              },
-              ...createFilterMenuItems(getPath(), addFilteredPath),
-            ]);
-
+          {(item) => {
             return (
-              <li onContextMenu={onContextMenu}>
+              <li>
                 <button class="cursor-pointer" onClick={item.onClick}>
                   <div
                     class={clsx('px-1 rounded-full outline text-xs', {
