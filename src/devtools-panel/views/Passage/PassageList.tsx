@@ -1,4 +1,4 @@
-import { createEffect, For } from 'solid-js';
+import { For } from 'solid-js';
 
 import { ParsedPassageData } from '@/shared/shared-types';
 
@@ -11,9 +11,6 @@ interface Props {
 }
 
 export function PassageList(props: Props) {
-  createEffect(() => {
-    console.log('passages', props.passages);
-  })
   return (
     <div class="px-4 py-2 h-full flex flex-col overflow-auto">
       <h1 class="font-bold text-xl mb-2">Passages</h1>
