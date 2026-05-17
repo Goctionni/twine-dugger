@@ -14,14 +14,12 @@ export function DiffPath(props: {
   const fullPath = () =>
     props.leafKey === undefined ? props.path : [...props.path, props.leafKey];
 
-  const isLast = (index: number) => index === fullPath().length - 1;
-
   const onContextMenu = createContextMenuHandler(
     getParentPaths(fullPath()).map((path, index) => ({
       label: () => (
         <>
           Filter out changes to "
-          <PrettyPath path={path} class="font-mono" globSuffix={!isLast(index)} />"
+          <PrettyPath path={path} class="font-mono" globSuffix />"
         </>
       ),
       onClick: () => props.onAddFilter(path),

@@ -3,6 +3,7 @@ import { Match, Switch } from 'solid-js';
 import {
   Diff,
   DiffArrayChange,
+  DiffArrayChangeInfo,
   DiffObjectMapChange,
   DiffPrimitiveUpdate,
   DiffSetChange,
@@ -80,6 +81,7 @@ function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>
           <MutationBadge kind="add" />
           <DiffPath
             path={props.diff.path}
+            leafKey={(props.diff as DiffArrayChangeInfo).index}
             onClick={() => setPath(props.diff.path)}
             onAddFilter={addFilteredPath}
             action={action()}
@@ -93,6 +95,7 @@ function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>
           <MutationBadge kind="del" />
           <DiffPath
             path={props.diff.path}
+            leafKey={(props.diff as DiffArrayChangeInfo).index}
             onClick={() => setPath(props.diff.path)}
             onAddFilter={addFilteredPath}
             action={action()}
