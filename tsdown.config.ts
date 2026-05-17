@@ -33,7 +33,7 @@ export default defineConfig((): UserConfig[] => [
       {
         name: 'copy-transform',
         transform: async (code) => {
-          await mkdir('dist', { recursive: true }).catch(() => { });
+          await mkdir('dist', { recursive: true }).catch(() => {});
           await copyTransform({
             from: 'src/devtools-panel/manifest.json',
             to: 'dist/manifest.json',
