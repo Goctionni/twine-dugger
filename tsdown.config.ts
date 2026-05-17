@@ -33,7 +33,7 @@ export default defineConfig((): UserConfig[] => [
       {
         name: 'copy-transform',
         transform: async (code) => {
-          await mkdir('dist', { recursive: true }).catch(() => { });
+          await mkdir('dist', { recursive: true }).catch(() => {});
           await copyTransform({
             from: 'src/devtools-panel/manifest.json',
             to: 'dist/manifest.json',
@@ -43,7 +43,7 @@ export default defineConfig((): UserConfig[] => [
           await copyTransform({
             from: 'src/create-panel/create-panel.html',
             to: 'dist/create-panel.html',
-            transform: async (content) => content.replace('./create-panel.ts', './create-panel.js')
+            transform: async (content) => content.replace('./create-panel.ts', './create-panel.js'),
           });
 
           await copyTransform({
@@ -78,7 +78,7 @@ export default defineConfig((): UserConfig[] => [
         'clsx',
         'oniguruma-to-es',
         'vscode-textmate',
-      ]
+      ],
     },
     plugins: [solidPlugin()],
   },
@@ -94,7 +94,7 @@ export default defineConfig((): UserConfig[] => [
     clean: false,
     format: 'iife',
     deps: {
-      alwaysBundle: ['zod']
+      alwaysBundle: ['zod'],
     },
     entry: { 'content-script': 'src/content-script/content-script.ts' },
     outputOptions: (opts) => ({ ...opts, entryFileNames: `[name].js` }),

@@ -108,7 +108,7 @@ export function ObjectNav(props: Props) {
     const isEqual =
       currentPath.length === newPath.length &&
       currentPath.every((val, idx) => val === newPath[idx]);
-    setViewState('state', 'path', [... (isEqual ? props.path : newPath)]);
+    setViewState('state', 'path', [...(isEqual ? props.path : newPath)]);
   };
 
   const handleDelete = async (path: Path) => {

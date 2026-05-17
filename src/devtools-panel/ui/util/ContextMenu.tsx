@@ -25,8 +25,10 @@ function isInput(el: unknown) {
   // if its a label for a radio or checkbox, we also consider it an input
   if (!(el instanceof HTMLLabelElement)) return false;
   // Determine if any radio or checkbox is labelled by this input
-  const inputs = [...document.querySelectorAll<HTMLInputElement>('input[type=radio], input[type=checkbox]')];
-  return inputs.some((input) => [...input.labels ?? []].includes(el));
+  const inputs = [
+    ...document.querySelectorAll<HTMLInputElement>('input[type=radio], input[type=checkbox]'),
+  ];
+  return inputs.some((input) => [...(input.labels ?? [])].includes(el));
 }
 
 // Returns event-handler for onContextMenu

@@ -30,7 +30,11 @@ export function PassageResults(props: Props) {
         <ul class="h-full overflow-auto">
           <Index each={props.results}>
             {(result) => (
-              <PassageListItem passageData={result()} onClick={() => onPassageClick(result())} active={getSelectedPassage()?.id === result().id} />
+              <PassageListItem
+                passageData={result()}
+                onClick={() => onPassageClick(result())}
+                active={getSelectedPassage()?.id === result().id}
+              />
             )}
           </Index>
         </ul>
