@@ -25,7 +25,10 @@ type FilterMenuItem = {
   onClick: () => void;
 };
 
-export function createFilterMenuItems(path: Path, onAddFilter: (path: Path) => void): FilterMenuItem[] {
+export function createFilterMenuItems(
+  path: Path,
+  onAddFilter: (path: Path) => void,
+): FilterMenuItem[] {
   const scopes = getFilterPathScopes(path);
   const lastIndex = scopes.length - 1;
 
