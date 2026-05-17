@@ -15,13 +15,8 @@ export function DiffPath(props: {
     props.leafKey === undefined ? props.path : [...props.path, props.leafKey];
   const onContextMenu = (event: MouseEvent) => {
     const path = fullPath();
-
-    // Merge note: watchlist branch also edits this menu.
-    // Keep filter items in this branch, then append watchlist item after this array.
     const filterItems = createFilterMenuItems(path, props.onAddFilter);
-    const menuItems = [...filterItems];
-
-    createContextMenuHandler(menuItems)(event);
+    createContextMenuHandler([...filterItems])(event);
   };
 
   return (
