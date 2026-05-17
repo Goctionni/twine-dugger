@@ -43,9 +43,7 @@ export function LockSettings() {
           <For each={getLockedPaths()}>
             {(path) => (
               <li class="flex items-center gap-2 rounded border border-gray-700 bg-gray-900/70 px-2 py-1">
-                <span class="min-w-0 flex-1 break-all font-mono">
-                  <PrettyPath path={path} />
-                </span>
+                <PrettyPath path={path} class="min-w-0 flex-1 break-all font-mono" />
                 <button
                   type="button"
                   class={btnClass('clr-gray hover:clr-sky py-0.5 px-2 text-xs')}

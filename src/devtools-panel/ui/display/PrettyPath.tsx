@@ -1,4 +1,5 @@
-import { createMemo } from 'solid-js';
+import { createMemo, JSX, Show } from 'solid-js';
+import { Dynamic } from 'solid-js/web';
 
 import { getActiveState } from '@/devtools-panel/store';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
@@ -14,6 +15,7 @@ const colorClasses = {
   typeString: 'text-orange-300 saturate-50',
   added: 'text-green-400!',
   removed: 'text-red-400!',
+  glob: 'text-red-300',
 } as const;
 
 // Check if a property name needs bracket notation
@@ -28,7 +30,9 @@ function needsBracketNotation(propertyName: string | number): boolean {
 interface Props {
   path: Path;
   statePrefix?: boolean;
+  globSuffix?: boolean;
   action?: 'added' | 'removed';
+  class?: string;
 }
 
 export function PrettyPath(props: Props) {
@@ -83,10 +87,19 @@ export function PrettyPath(props: Props) {
   });
 
   return (
-    <>
-      {props.statePrefix && <span class={colorClasses.pathRoot}>State</span>}
+    <Dynamic
+      component={props.class ? 'span' : (p: { children: JSX.Element }) => p.children}
+      class={props.class}
+    >
+      <Show when={props.statePrefix}>
+        <span class={colorClasses.pathRoot}>State</span>
+      </Show>
       {chunks()}
-    </>
+      <Show when={props.globSuffix}>
+        <span class={colorClasses.pathDot}>.</span>
+        <span class={colorClasses.glob}>*</span>
+      </Show>
+    </Dynamic>
   );
 }
 

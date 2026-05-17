@@ -7,3 +7,11 @@ export function pathEquals(path1: Path, path2: Path) {
   }
   return true;
 }
+
+export function pathStartsWith(path: Path, prefix: Path) {
+  if (prefix.length > path.length) return false;
+  for (let i = 0; i < prefix.length; i++) {
+    if (path[i] !== prefix[i]) return false;
+  }
+  return true;
+}

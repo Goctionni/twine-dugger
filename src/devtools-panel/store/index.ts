@@ -1,7 +1,7 @@
 import { Accessor, batch, createEffect, createMemo, createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
 
-import { pathEquals } from '@/shared/path-equals';
+import { pathEquals, pathStartsWith } from '@/shared/path-equals';
 import {
   ConnectionState,
   DiffFrame,
@@ -96,6 +96,9 @@ export const getConnectionState = createMemo(() => store.connection);
 export const getFilteredPaths = createMemo(() => store.gameConfig?.filteredPaths ?? []);
 export const getLockedPaths = createMemo(() => store.gameConfig?.lockedPaths ?? []);
 export const getGameMetaData = createMemo(() => store.gameMetaData);
+
+export const isPathFiltered = (path: Path) =>
+  getFilteredPaths().some((filterPath) => pathStartsWith(path, filterPath));
 
 export const getLatestStateFrame = createMemo(() => getStateFrames()[0]!);
 

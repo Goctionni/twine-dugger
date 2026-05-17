@@ -28,7 +28,7 @@ export function HistoryNav() {
       <span class="text-lg font-bold">History slice:</span>
       <ul class="flex justify-center items-center gap-2">
         <For each={items()}>
-          {(item, index) => {
+          {(item) => {
             return (
               <li>
                 <button class="cursor-pointer" onClick={item.onClick}>
