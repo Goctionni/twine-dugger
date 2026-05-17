@@ -72,6 +72,7 @@ export default defineConfig((): UserConfig[] => [
     entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
     deps: {
       alwaysBundle: [
+        '@solid-primitives/scheduled',
         'solid-js/web',
         'solid-js',
         'solid-js/store',

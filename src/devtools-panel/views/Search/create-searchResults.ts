@@ -1,3 +1,4 @@
+import { createScheduled, debounce } from '@solid-primitives/scheduled';
 import { createEffect, createSignal } from 'solid-js';
 
 import {
@@ -12,9 +13,13 @@ import { findPassageMatches, findStateMatches } from './search-utils';
 
 type AbortFn = () => void;
 const EMPTY: SearchResultsCombined = { state: [], passage: [] };
+const FIRST_KEY_DEBOUNCE_MS = 450;
+const SUBSEQUENT_KEY_DEBOUNCE_MS = 150;
 
 export function createSearchResults() {
   const getQuery = createGetViewState('search', 'query');
+  const scheduleFirstKey = createScheduled((fn) => debounce(fn, FIRST_KEY_DEBOUNCE_MS));
+  const scheduleSubsequentKeys = createScheduled((fn) => debounce(fn, SUBSEQUENT_KEY_DEBOUNCE_MS));
 
   const [getSearchResults, setSearchResults] = createSignal<SearchResultsCombined>(EMPTY);
 
@@ -25,11 +30,13 @@ export function createSearchResults() {
     if (getNavigationPage() !== 'search') return null;
 
     const query = getQuery();
+    const shouldRunSearch = query.length <= 1 ? scheduleFirstKey() : scheduleSubsequentKeys();
     const gameState = getLatestStateFrame();
     if (!query || !gameState) {
       setSearchResults(EMPTY);
       return null;
     }
+    if (!shouldRunSearch) return null;
 
     const [statePromise, stateAbort] = findStateMatches(gameState.state, query);
     const [passagePromise, passageAbort] = findPassageMatches(getPassageData(), query);
