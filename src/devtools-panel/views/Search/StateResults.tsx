@@ -21,7 +21,7 @@ export function StateResults(props: Props) {
   const [getWidth, setWidth] = createSignal(getPersistedValue(stateResultsPathWidthKey, 256));
   const onPathClick = (path: Path) => {
     setNavigationPage('state');
-    setViewState('state', 'path', path);
+    setViewState('state', 'path', [...path]);
   };
 
   const [isDragging, setIsDragging] = createSignal(false);

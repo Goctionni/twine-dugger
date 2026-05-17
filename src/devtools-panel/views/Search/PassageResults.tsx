@@ -1,4 +1,4 @@
-import { For, Match, Switch } from 'solid-js';
+import { For, Index, Match, Switch } from 'solid-js';
 
 import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
@@ -15,7 +15,7 @@ interface Props {
 
 export function PassageResults(props: Props) {
   const onPassageClick = (passage: ParsedPassageData) => {
-    setViewState('passage', 'selected', passage);
+    setViewState('passage', 'selected', { ...passage });
   };
 
   const format = () => getGameMetaData()!.format;
@@ -24,15 +24,15 @@ export function PassageResults(props: Props) {
   return (
     <MovableSplit
       splitKey="search-passage-results"
-      class="flex flex-grow w-full overflow-hidden h-full"
+      class="flex grow w-full overflow-hidden h-full"
       initialLeftWidthPercent={50}
       leftContent={
         <ul class="h-full overflow-auto">
-          <For each={props.results}>
+          <Index each={props.results}>
             {(result) => (
-              <PassageListItem passageData={result} onClick={() => onPassageClick(result)} />
+              <PassageListItem passageData={result()} onClick={() => onPassageClick(result())} active={getSelectedPassage()?.id === result().id} />
             )}
-          </For>
+          </Index>
         </ul>
       }
       rightContent={

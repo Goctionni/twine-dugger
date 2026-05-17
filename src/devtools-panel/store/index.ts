@@ -167,7 +167,7 @@ export const addFilteredPath = (path: Path) => {
 export const removeFilteredPath = (path: Path) => {
   const current = store.gameConfig?.filteredPaths ?? [];
   const newPaths = current.filter((currentPath) => !pathEquals(currentPath, path));
-  setStore('gameConfig', 'filteredPaths', newPaths);
+  setStore('gameConfig', 'filteredPaths', newPaths.map((pathItem => [...pathItem])));
 };
 
 export const clearFilteredPaths = () => {
@@ -183,7 +183,7 @@ export const addLockPath = (path: Path) => {
 export const removeLockPath = (path: Path) => {
   const current = store.gameConfig?.lockedPaths ?? [];
   const newPaths = current.filter((currentPath) => !pathEquals(currentPath, path));
-  setStore('gameConfig', 'lockedPaths', newPaths);
+  setStore('gameConfig', 'lockedPaths', newPaths.map((pathItem => [...pathItem])));
 };
 
 export const setSetting = <T extends keyof Store['settings']>(
@@ -206,7 +206,7 @@ export async function startTrackingFrames() {
     ]);
     if (!initialState) throw new Error();
 
-    if (store.gameConfig?.lockedPaths) setStatePropertyLocks(store.gameConfig.lockedPaths);
+    if (store.gameConfig?.lockedPaths) setStatePropertyLocks(store.gameConfig.lockedPaths.map((pathItem) => [...pathItem]));
 
     setStateFrames([{ id: 0, state: initialState.state }]);
     setPassageData(passageData.map(parsePassage));
@@ -276,13 +276,13 @@ function parsePassage(passage: PassageData): ParsedPassageData {
 function loadGameSettings() {
   const defaultConfig: GameConfig = { filteredPaths: [], lockedPaths: [] };
   const ifId = store.gameMetaData?.ifId;
-  if (!ifId) return defaultConfig;
+  if (!ifId || Math.random()) return defaultConfig;
 
   const key = getGameSettingsKey(ifId);
   const lsData = localStorage.getItem(key);
   if (!lsData) return defaultConfig;
 
-  return { ...defaultConfig, ...(JSON.parse(lsData) as Partial<GameConfig>) };
+  return { ...defaultConfig, ...(JSON.parse(lsData) as Partial<GameConfig>), lockedPAths: [] };
 }
 
 function saveGameSettings() {
