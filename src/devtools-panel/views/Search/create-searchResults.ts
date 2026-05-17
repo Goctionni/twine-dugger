@@ -38,13 +38,15 @@ export function createSearchResults() {
     const abortCurr = () => {
       alive = false;
       stateAbort();
-      passageAbort();
+      passageAbort('Updated search');
     };
 
-    Promise.all([statePromise, passagePromise]).then(([state, passage]) => {
-      if (!alive) return;
-      setSearchResults({ state, passage });
-    });
+    Promise.all([statePromise, passagePromise])
+      .then(([state, passage]) => {
+        if (!alive) return;
+        setSearchResults({ state, passage });
+      })
+      .catch(() => {});
 
     return abortCurr;
   }, null);

@@ -34,6 +34,7 @@ interface GameConfig {
 interface Settings {
   'diffLog.fontSize': number;
   'diffLog.pollingInterval': number;
+  'diffLog.maxHistorySlices': number;
   'diffLog.headingStyle': 'default' | 'distinct';
   'state.propertyOrder': PropertyOrder;
 }
@@ -166,7 +167,11 @@ export const addFilteredPath = (path: Path) => {
 export const removeFilteredPath = (path: Path) => {
   const current = store.gameConfig?.filteredPaths ?? [];
   const newPaths = current.filter((currentPath) => !pathEquals(currentPath, path));
-  setStore('gameConfig', 'filteredPaths', newPaths);
+  setStore(
+    'gameConfig',
+    'filteredPaths',
+    newPaths.map((pathItem) => [...pathItem]),
+  );
 };
 
 export const clearFilteredPaths = () => {
@@ -182,7 +187,11 @@ export const addLockPath = (path: Path) => {
 export const removeLockPath = (path: Path) => {
   const current = store.gameConfig?.lockedPaths ?? [];
   const newPaths = current.filter((currentPath) => !pathEquals(currentPath, path));
-  setStore('gameConfig', 'lockedPaths', newPaths);
+  setStore(
+    'gameConfig',
+    'lockedPaths',
+    newPaths.map((pathItem) => [...pathItem]),
+  );
 };
 
 export const clearLockPaths = () => {
@@ -196,6 +205,8 @@ export const setSetting = <T extends keyof Store['settings']>(
   setStore('settings', setting, value);
 };
 
+const getMaxHistorySlices = () => store.settings['diffLog.maxHistorySlices'];
+
 export async function startTrackingFrames() {
   let timeout = 0;
   setConnectionState('loading-game');
@@ -207,7 +218,8 @@ export async function startTrackingFrames() {
     ]);
     if (!initialState) throw new Error();
 
-    if (store.gameConfig?.lockedPaths) setStatePropertyLocks(store.gameConfig.lockedPaths);
+    if (store.gameConfig?.lockedPaths)
+      setStatePropertyLocks(store.gameConfig.lockedPaths.map((pathItem) => [...pathItem]));
 
     setStateFrames([{ id: 0, state: initialState.state }]);
     setPassageData(passageData.map(parsePassage));
@@ -226,8 +238,9 @@ export async function startTrackingFrames() {
             passage: diffPackage.passage,
             changes: diffPackage.diffs,
           };
+          const maxFrames = getMaxHistorySlices();
 
-          setDiffFrames((cur) => [newFrame, ...cur].slice(0, 50));
+          setDiffFrames((cur) => [newFrame, ...cur].slice(0, maxFrames));
           setStateFrames((cur) => {
             const latestFrame = cur[0];
             if (!latestFrame) return cur;
@@ -237,7 +250,7 @@ export async function startTrackingFrames() {
               state: newState,
               diffingFrame: newFrame,
             };
-            return [newStateFrame, ...cur].slice(0, 50);
+            return [newStateFrame, ...cur].slice(0, maxFrames);
           });
         }
       }
@@ -276,13 +289,13 @@ function parsePassage(passage: PassageData): ParsedPassageData {
 function loadGameSettings() {
   const defaultConfig: GameConfig = { filteredPaths: [], lockedPaths: [] };
   const ifId = store.gameMetaData?.ifId;
-  if (!ifId) return defaultConfig;
+  if (!ifId || Math.random()) return defaultConfig;
 
   const key = getGameSettingsKey(ifId);
   const lsData = localStorage.getItem(key);
   if (!lsData) return defaultConfig;
 
-  return { ...defaultConfig, ...(JSON.parse(lsData) as Partial<GameConfig>) };
+  return { ...defaultConfig, ...(JSON.parse(lsData) as Partial<GameConfig>), lockedPAths: [] };
 }
 
 function saveGameSettings() {
@@ -297,6 +310,7 @@ function loadGlobalSettings() {
   const defaultSettings: Settings = {
     ['diffLog.fontSize']: 14,
     ['diffLog.pollingInterval']: 200,
+    ['diffLog.maxHistorySlices']: 50,
     ['diffLog.headingStyle']: 'default',
     ['state.propertyOrder']: 'type',
   };
@@ -312,6 +326,12 @@ function saveGlobalSettings() {
 
 createEffect(() => {
   if (store.settings) saveGlobalSettings();
+});
+
+createEffect(() => {
+  const maxFrames = store.settings['diffLog.maxHistorySlices'];
+  setDiffFrames((cur) => cur.slice(0, maxFrames));
+  setStateFrames((cur) => cur.slice(0, maxFrames));
 });
 
 createEffect(() => {

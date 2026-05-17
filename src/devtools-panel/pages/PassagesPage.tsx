@@ -10,6 +10,7 @@ export function PassagesPage() {
   const getSelectedPassage = createGetViewState('passage', 'selected');
   return (
     <MovableSplit
+      splitKey="passages-page"
       initialLeftWidthPercent={35}
       leftContent={
         <PassageList
@@ -24,5 +25,5 @@ export function PassagesPage() {
 }
 
 function setSelectedPassage(passage: ParsedPassageData) {
-  setViewState('passage', 'selected', passage);
+  setViewState('passage', 'selected', { ...passage });
 }

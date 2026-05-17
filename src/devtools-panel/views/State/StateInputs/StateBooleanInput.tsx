@@ -34,6 +34,11 @@ export function StateBooleanInput(props: StateBooleanInputProps) {
   const isReadOnly = () => getHistoryId() !== -1; // Not on latest
   const lockStatus = () => getLockStatus(getPath, getLockedPaths);
   const isDisabled = () => lockStatus() !== 'unlocked' || isReadOnly();
+  const getId = () =>
+    getPath()
+      .join('_')
+      .replaceAll(/[^a-zA-z0-9]/g, '_')
+      .replaceAll(/_{2,}/g, '_');
 
   const handleChange = async (newValue: boolean) => {
     const disabled = isDisabled();
@@ -58,7 +63,12 @@ export function StateBooleanInput(props: StateBooleanInputProps) {
 
   return (
     <div class="flex justify-start select-none gap-2">
-      <BooleanInput value={currentValue()} onChange={handleChange} disabled={isDisabled()} />
+      <BooleanInput
+        value={currentValue()}
+        onChange={handleChange}
+        disabled={isDisabled()}
+        id={getId()}
+      />
 
       <Show when={!isReadOnly()}>
         <LockButton status={lockStatus()} onToggle={handleToggleLock} />

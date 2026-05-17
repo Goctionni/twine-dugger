@@ -6,6 +6,7 @@ import { StateView } from '../views/State/StateView';
 export function StatePage() {
   return (
     <MovableSplit
+      splitKey="state-page"
       leftContent={<DiffLog />}
       rightContent={
         <>

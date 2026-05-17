@@ -7,7 +7,7 @@ import {
 } from '@/shared/shared-types';
 import { isPrimitive } from '@/shared/type-helpers';
 
-type FindResult<T> = [Promise<T[]>, () => void];
+type FindResult<T> = [Promise<T[]>, (reason?: string) => void];
 
 export function findPassageMatches(
   data: ParsedPassageData[],
@@ -36,7 +36,7 @@ export function findPassageMatches(
     { signal: abortController.signal },
   );
 
-  return [promise, () => abortController.abort()];
+  return [promise, (reason?: string) => abortController.abort(reason)];
 }
 
 export function findStateMatches(
