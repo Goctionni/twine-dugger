@@ -33,7 +33,7 @@ export default defineConfig((): UserConfig[] => [
       {
         name: 'copy-transform',
         transform: async (code) => {
-          await mkdir('dist', { recursive: true }).catch(() => {});
+          await mkdir('dist', { recursive: true }).catch(() => { });
           await copyTransform({
             from: 'src/devtools-panel/manifest.json',
             to: 'dist/manifest.json',
@@ -71,6 +71,7 @@ export default defineConfig((): UserConfig[] => [
     clean: false,
     entry: { 'devtools-panel': 'src/devtools-panel/main.tsx' },
     deps: {
+      onlyBundle: false,
       alwaysBundle: [
         'solid-js/web',
         'solid-js',
@@ -94,6 +95,7 @@ export default defineConfig((): UserConfig[] => [
     clean: false,
     format: 'iife',
     deps: {
+      onlyBundle: false,
       alwaysBundle: ['zod'],
     },
     entry: { 'content-script': 'src/content-script/content-script.ts' },

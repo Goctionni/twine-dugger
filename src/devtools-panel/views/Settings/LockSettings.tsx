@@ -2,19 +2,10 @@ import { For, Show } from 'solid-js';
 
 import { setStatePropertyLock, setStatePropertyLocks } from '@/devtools-panel/api/api';
 import { clearLockPaths, getLockedPaths, removeLockPath } from '@/devtools-panel/store';
+import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { Path } from '@/shared/shared-types';
 
 import { btnClass } from '../../ui/util/btnClass';
-
-const identifierRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
-
-function formatPath(path: Path) {
-  return path.reduce((formatted, chunk) => {
-    if (typeof chunk === 'number') return `${formatted}[${chunk}]`;
-    if (identifierRegex.test(chunk)) return `${formatted}.${chunk}`;
-    return `${formatted}[${JSON.stringify(chunk)}]`;
-  }, 'State');
-}
 
 export function LockSettings() {
   const onUnlock = (path: Path) => {
@@ -52,8 +43,8 @@ export function LockSettings() {
           <For each={getLockedPaths()}>
             {(path) => (
               <li class="flex items-center gap-2 rounded border border-gray-700 bg-gray-900/70 px-2 py-1">
-                <span class="min-w-0 flex-1 break-all font-mono text-xs text-sky-300">
-                  {formatPath(path)}
+                <span class="min-w-0 flex-1 break-all font-mono">
+                  <PrettyPath path={path} />
                 </span>
                 <button
                   type="button"
