@@ -5,7 +5,6 @@ import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 
 import { btnClass } from '../../ui/util/btnClass';
 
-
 export function FilteredPathsSettings() {
   return (
     <section class="rounded-md border border-gray-700 bg-gray-800/40 p-3">
@@ -32,7 +31,11 @@ export function FilteredPathsSettings() {
           <For each={getFilteredPaths()}>
             {(path) => (
               <li class="flex items-center gap-2 rounded border border-gray-700 bg-gray-900/70 px-2 py-1">
-                <PrettyPath path={path} class="min-w-0 flex-1 break-all font-mono text-xs" globSuffix />
+                <PrettyPath
+                  path={path}
+                  class="min-w-0 flex-1 break-all font-mono text-xs"
+                  globSuffix
+                />
                 <button
                   type="button"
                   class={btnClass('clr-gray hover:clr-sky py-0.5 px-2 text-xs')}

@@ -37,8 +37,8 @@ interface Props {
 
 export function PrettyPath(props: Props) {
   const chunks = createMemo(() => {
-    const lastIndex = props.path.length - 1;
     const state = getActiveState()!;
+    const lastIndex = props.path.length - 1;
 
     return props.path
       .flatMap((slug, index): Array<false | AtomProps> => {
@@ -90,7 +90,7 @@ export function PrettyPath(props: Props) {
     const state = getActiveState()!;
     const value = getObjectPathValue(state, props.path);
     return !!value && typeof value === 'object';
-  }
+  };
 
   return (
     <Dynamic

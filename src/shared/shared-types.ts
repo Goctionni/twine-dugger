@@ -34,13 +34,11 @@ export interface DiffArrayInstruction {
   subtype: 'instructions';
   path: Path;
   instructions: Instruction[];
-};
+}
 
-export type DiffArrayChangeInfo = (DiffGeneric<'array'> & { index: number });
+export type DiffArrayChangeInfo = DiffGeneric<'array'> & { index: number };
 
-export type DiffArrayChange =
-  | DiffArrayChangeInfo
-  | DiffArrayInstruction;
+export type DiffArrayChange = DiffArrayChangeInfo | DiffArrayInstruction;
 
 export type DiffSetChange = DiffGeneric<'set'>;
 
