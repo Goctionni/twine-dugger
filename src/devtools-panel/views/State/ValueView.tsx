@@ -35,9 +35,7 @@ export function ValueView() {
   return (
     <div class="flex gap-2 flex-col py-1 px-2 overflow-auto flex-1">
       <p>
-        <span class="font-bold text-sm">
-          <PrettyPath path={getPath()} statePrefix />
-        </span>
+        <PrettyPath class="font-bold text-sm" path={getPath()} statePrefix />
         <Show when={isReadOnly()}>
           <span class="ml-2 text-red-400">(readonly)</span>
         </Show>

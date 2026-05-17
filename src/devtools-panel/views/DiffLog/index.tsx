@@ -1,8 +1,6 @@
 import { createMemo, For } from 'solid-js';
 
-import { pathStartsWith } from '@/shared/path-equals';
-
-import { clearDiffFrames, clearFilteredPaths, getDiffFrames, getFilteredPaths } from '../../store';
+import { clearDiffFrames, clearFilteredPaths, getDiffFrames, isPathFiltered } from '../../store';
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 import { DiffFrame } from './DiffFrame';
 
@@ -13,16 +11,10 @@ export function DiffLog() {
   ]);
 
   const frames = createMemo(() => {
-    const filteredPaths = getFilteredPaths();
-    const diffFrames = getDiffFrames();
-    if (!filteredPaths.length) return diffFrames.slice(0, 30);
-
-    return diffFrames
+    return getDiffFrames()
       .map((frame) => ({
         ...frame,
-        changes: frame.changes.filter(
-          (frameChanges) => !filteredPaths.some((path) => pathStartsWith(frameChanges.path, path)),
-        ),
+        changes: frame.changes.filter((frameChanges) => !isPathFiltered(frameChanges.path)),
       }))
       .filter((frame) => frame.changes.length > 0)
       .slice(0, 30);

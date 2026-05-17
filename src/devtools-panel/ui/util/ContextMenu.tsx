@@ -1,10 +1,10 @@
-import { For, Show } from 'solid-js';
+import { For, JSX, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { Portal } from 'solid-js/web';
 
 interface ContextMenuItem {
   disabled?: boolean | (() => boolean);
-  label: string | (() => string);
+  label: JSX.Element | (() => JSX.Element);
   onClick: () => void;
 }
 
