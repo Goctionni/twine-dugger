@@ -304,7 +304,7 @@ function loadGameSettings() {
       ...defaultConfig,
       ...parsedConfig,
       filteredPaths: parsedConfig.filteredPaths ?? defaultConfig.filteredPaths,
-      lockedPaths: parsedConfig.lockedPaths ?? defaultConfig.lockedPaths,
+      lockedPaths: defaultConfig.lockedPaths,
     };
   } catch {
     return defaultConfig;
