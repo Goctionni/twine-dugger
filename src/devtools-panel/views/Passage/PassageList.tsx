@@ -14,9 +14,11 @@ interface Props {
 export function PassageList(props: Props) {
   let scrollElRef: HTMLDivElement | undefined;
   const virtualizer = createVirtualizer({
-    getScrollElement: () => (scrollElRef ?? null),
+    getScrollElement: () => scrollElRef ?? null,
     estimateSize: () => 35,
-    get count() { return props.passages.length },
+    get count() {
+      return props.passages.length;
+    },
     overscan: 5,
   });
   return (
@@ -35,13 +37,13 @@ export function PassageList(props: Props) {
                     left: 0,
                     width: '100%',
                     height: `${virtualItem.size}px`,
-                    transform: `translateY(${virtualItem.start}px)`
+                    transform: `translateY(${virtualItem.start}px)`,
                   }}
                   passageData={passage()}
                   onClick={() => props.onPassageClick(passage())}
                   active={props.selectedPassage?.id === passage().id}
                 />
-              )
+              );
             }}
           </For>
         </ul>

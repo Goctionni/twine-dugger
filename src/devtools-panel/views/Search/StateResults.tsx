@@ -27,9 +27,11 @@ export function StateResults(props: Props) {
 
   let scrollElRef: HTMLDivElement | undefined;
   const virtualizer = createVirtualizer({
-    getScrollElement: () => (scrollElRef ?? null),
+    getScrollElement: () => scrollElRef ?? null,
     estimateSize: () => 38,
-    get count() { return props.results.length },
+    get count() {
+      return props.results.length;
+    },
     overscan: 5,
   });
 
@@ -69,25 +71,23 @@ export function StateResults(props: Props) {
   return (
     <div class="h-full relative overflow-hidden flex-1 py-1" ref={containerRef}>
       <div class="h-full overflow-auto" ref={scrollElRef}>
-        <ul
-          class="relative"
-          style={{ height: `${virtualizer.getTotalSize()}px` }}
-        >
+        <ul class="relative" style={{ height: `${virtualizer.getTotalSize()}px` }}>
           <For each={virtualizer.getVirtualItems()}>
             {(virtualItem) => {
               const result = () => props.results[virtualItem.index]!;
               const type = () => getSpecificType(result().value);
 
               return (
-                <li class="grid items-center px-2 gap-x-2"
+                <li
+                  class="grid items-center px-2 gap-x-2"
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: `${virtualItem.size}px`,
-                    transform: `translateY(${virtualItem.start}px)`,
-                    'grid-template-columns': `auto minmax(auto,${getWidth()}px) 8px 1fr`
+                    'position': 'absolute',
+                    'top': 0,
+                    'left': 0,
+                    'width': '100%',
+                    'height': `${virtualItem.size}px`,
+                    'transform': `translateY(${virtualItem.start}px)`,
+                    'grid-template-columns': `auto minmax(auto,${getWidth()}px) 8px 1fr`,
                   }}
                 >
                   {/* col 1: icon */}
