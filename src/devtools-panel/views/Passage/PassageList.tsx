@@ -1,5 +1,5 @@
 import { createVirtualizer } from '@tanstack/solid-virtual';
-import { For } from 'solid-js';
+import { For, Show } from 'solid-js';
 
 import { ParsedPassageData } from '@/shared/shared-types';
 
@@ -30,19 +30,21 @@ export function PassageList(props: Props) {
             {(virtualItem) => {
               const passage = () => props.passages[virtualItem.index]!;
               return (
-                <PassageListItem
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: `${virtualItem.size}px`,
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }}
-                  passageData={passage()}
-                  onClick={() => props.onPassageClick(passage())}
-                  active={props.selectedPassage?.id === passage().id}
-                />
+                <Show when={passage()}>
+                  <PassageListItem
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${virtualItem.size}px`,
+                      transform: `translateY(${virtualItem.start}px)`,
+                    }}
+                    passageData={passage()}
+                    onClick={() => props.onPassageClick(passage())}
+                    active={props.selectedPassage?.id === passage().id}
+                  />
+                </Show>
               );
             }}
           </For>

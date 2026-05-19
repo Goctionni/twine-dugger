@@ -1,5 +1,5 @@
 import { createVirtualizer } from '@tanstack/solid-virtual';
-import { For, Index, Match, Switch } from 'solid-js';
+import { For, Index, Match, Show, Switch } from 'solid-js';
 
 import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
@@ -44,19 +44,21 @@ export function PassageResults(props: Props) {
               {(virtualItem) => {
                 const result = () => props.results[virtualItem.index]!;
                 return (
-                  <PassageListItem
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${virtualItem.size}px`,
-                      transform: `translateY(${virtualItem.start}px)`,
-                    }}
-                    passageData={result()}
-                    onClick={() => onPassageClick(result())}
-                    active={getSelectedPassage()?.id === result().id}
-                  />
+                  <Show when={result()}>
+                    <PassageListItem
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualItem.size}px`,
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                      passageData={result()}
+                      onClick={() => onPassageClick(result())}
+                      active={getSelectedPassage()?.id === result().id}
+                    />
+                  </Show>
                 );
               }}
             </For>

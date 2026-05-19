@@ -1,5 +1,5 @@
 import { createVirtualizer } from '@tanstack/solid-virtual';
-import { createSignal, For, Match, onCleanup, onMount, Switch } from 'solid-js';
+import { createSignal, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js';
 
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import { Path, SearchResultState } from '@/shared/shared-types';
@@ -78,50 +78,52 @@ export function StateResults(props: Props) {
               const type = () => getSpecificType(result().value);
 
               return (
-                <li
-                  class="grid items-center px-2 gap-x-2"
-                  style={{
-                    'position': 'absolute',
-                    'top': 0,
-                    'left': 0,
-                    'width': '100%',
-                    'height': `${virtualItem.size}px`,
-                    'transform': `translateY(${virtualItem.start}px)`,
-                    'grid-template-columns': `auto minmax(auto,${getWidth()}px) 8px 1fr`,
-                  }}
-                >
-                  {/* col 1: icon */}
-                  <span class="col-start-1">
-                    <TypeIcon type={type()} />
-                  </span>
+                <Show when={result()}>
+                  <li
+                    class="grid items-center px-2 gap-x-2"
+                    style={{
+                      'position': 'absolute',
+                      'top': 0,
+                      'left': 0,
+                      'width': '100%',
+                      'height': `${virtualItem.size}px`,
+                      'transform': `translateY(${virtualItem.start}px)`,
+                      'grid-template-columns': `auto minmax(auto,${getWidth()}px) 8px 1fr`,
+                    }}
+                  >
+                    {/* col 1: icon */}
+                    <span class="col-start-1">
+                      <TypeIcon type={type()} />
+                    </span>
 
-                  {/* col 2: path */}
-                  <span class="col-start-2">
-                    <button
-                      type="button"
-                      class="py-2 font-mono cursor-pointer hover:underline text-left text-nowrap overflow-hidden text-ellipsis max-w-full"
-                      onClick={() => onPathClick(result().path)}
-                    >
-                      <PrettyPath path={result().path} />
-                    </button>
-                  </span>
-                  <div class="col-start-3" />
+                    {/* col 2: path */}
+                    <span class="col-start-2">
+                      <button
+                        type="button"
+                        class="py-2 font-mono cursor-pointer hover:underline text-left text-nowrap overflow-hidden text-ellipsis max-w-full"
+                        onClick={() => onPathClick(result().path)}
+                      >
+                        <PrettyPath path={result().path} />
+                      </button>
+                    </span>
+                    <div class="col-start-3" />
 
-                  {/* col 3: input (aligned across rows) */}
-                  <div class="col-start-4 justify-self-start w-full">
-                    <Switch>
-                      <Match when={type() === 'string'}>
-                        <StateStringInput path={result().path} />
-                      </Match>
-                      <Match when={type() === 'number'}>
-                        <StateNumberInput path={result().path} />
-                      </Match>
-                      <Match when={type() === 'boolean'}>
-                        <StateBooleanInput path={result().path} />
-                      </Match>
-                    </Switch>
-                  </div>
-                </li>
+                    {/* col 3: input (aligned across rows) */}
+                    <div class="col-start-4 justify-self-start w-full">
+                      <Switch>
+                        <Match when={type() === 'string'}>
+                          <StateStringInput path={result().path} />
+                        </Match>
+                        <Match when={type() === 'number'}>
+                          <StateNumberInput path={result().path} />
+                        </Match>
+                        <Match when={type() === 'boolean'}>
+                          <StateBooleanInput path={result().path} />
+                        </Match>
+                      </Switch>
+                    </div>
+                  </li>
+                </Show>
               );
             }}
           </For>
