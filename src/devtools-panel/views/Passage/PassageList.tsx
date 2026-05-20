@@ -1,4 +1,5 @@
-import { For } from 'solid-js';
+import { createVirtualizer } from '@tanstack/solid-virtual';
+import { For, Show } from 'solid-js';
 
 import { ParsedPassageData } from '@/shared/shared-types';
 
@@ -11,20 +12,44 @@ interface Props {
 }
 
 export function PassageList(props: Props) {
+  let scrollElRef: HTMLDivElement | undefined;
+  const virtualizer = createVirtualizer({
+    getScrollElement: () => scrollElRef ?? null,
+    estimateSize: () => 35,
+    get count() {
+      return props.passages.length;
+    },
+    overscan: 5,
+  });
   return (
     <div class="px-4 py-2 h-full flex flex-col overflow-auto">
       <h1 class="font-bold text-xl mb-2">Passages</h1>
-      <ul class="flex-1 flex flex-col overflow-auto">
-        <For each={props.passages}>
-          {(item) => (
-            <PassageListItem
-              passageData={item}
-              onClick={() => props.onPassageClick(item)}
-              active={props.selectedPassage?.id === item.id}
-            />
-          )}
-        </For>
-      </ul>
+      <div class="flex-1 overflow-auto" ref={scrollElRef}>
+        <ul class="w-full relative" style={{ height: `${virtualizer.getTotalSize()}px` }}>
+          <For each={virtualizer.getVirtualItems()}>
+            {(virtualItem) => {
+              const passage = () => props.passages[virtualItem.index]!;
+              return (
+                <Show when={passage()}>
+                  <PassageListItem
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${virtualItem.size}px`,
+                      transform: `translateY(${virtualItem.start}px)`,
+                    }}
+                    passageData={passage()}
+                    onClick={() => props.onPassageClick(passage())}
+                    active={props.selectedPassage?.id === passage().id}
+                  />
+                </Show>
+              );
+            }}
+          </For>
+        </ul>
+      </div>
     </div>
   );
 }

@@ -77,6 +77,7 @@ export default defineConfig((): UserConfig[] => [
         'solid-js/web',
         'solid-js',
         'solid-js/store',
+        '@tanstack/solid-virtual',
         'clsx',
         'oniguruma-to-es',
         'vscode-textmate',
