@@ -1,4 +1,5 @@
-import { For, Index, Match, Switch } from 'solid-js';
+import { createVirtualizer } from '@tanstack/solid-virtual';
+import { For, Index, Match, Show, Switch } from 'solid-js';
 
 import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
@@ -14,6 +15,16 @@ interface Props {
 }
 
 export function PassageResults(props: Props) {
+  let scrollElRef: HTMLDivElement | undefined;
+  const virtualizer = createVirtualizer({
+    getScrollElement: () => scrollElRef ?? null,
+    estimateSize: () => 35,
+    get count() {
+      return props.results.length;
+    },
+    overscan: 5,
+  });
+
   const onPassageClick = (passage: ParsedPassageData) => {
     setViewState('passage', 'selected', { ...passage });
   };
@@ -27,17 +38,32 @@ export function PassageResults(props: Props) {
       class="flex grow w-full overflow-hidden h-full"
       initialLeftWidthPercent={50}
       leftContent={
-        <ul class="h-full overflow-auto">
-          <Index each={props.results}>
-            {(result) => (
-              <PassageListItem
-                passageData={result()}
-                onClick={() => onPassageClick(result())}
-                active={getSelectedPassage()?.id === result().id}
-              />
-            )}
-          </Index>
-        </ul>
+        <div class="h-full overflow-auto" ref={scrollElRef}>
+          <ul class="w-full relative" style={{ height: `${virtualizer.getTotalSize()}px` }}>
+            <For each={virtualizer.getVirtualItems()}>
+              {(virtualItem) => {
+                const result = () => props.results[virtualItem.index]!;
+                return (
+                  <Show when={result()}>
+                    <PassageListItem
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualItem.size}px`,
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                      passageData={result()}
+                      onClick={() => onPassageClick(result())}
+                      active={getSelectedPassage()?.id === result().id}
+                    />
+                  </Show>
+                );
+              }}
+            </For>
+          </ul>
+        </div>
       }
       rightContent={
         <div class="w-full h-full flex flex-col">
