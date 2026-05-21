@@ -292,13 +292,23 @@ function parsePassage(passage: PassageData): ParsedPassageData {
 function loadGameSettings() {
   const defaultConfig: GameConfig = { filteredPaths: [], lockedPaths: [] };
   const ifId = store.gameMetaData?.ifId;
-  if (!ifId || Math.random()) return defaultConfig;
+  if (!ifId) return defaultConfig;
 
   const key = getGameSettingsKey(ifId);
   const lsData = localStorage.getItem(key);
   if (!lsData) return defaultConfig;
 
-  return { ...defaultConfig, ...(JSON.parse(lsData) as Partial<GameConfig>), lockedPAths: [] };
+  try {
+    const parsedConfig = JSON.parse(lsData) as Partial<GameConfig>;
+    return {
+      ...defaultConfig,
+      ...parsedConfig,
+      filteredPaths: parsedConfig.filteredPaths ?? defaultConfig.filteredPaths,
+      lockedPaths: defaultConfig.lockedPaths,
+    };
+  } catch {
+    return defaultConfig;
+  }
 }
 
 function saveGameSettings() {
