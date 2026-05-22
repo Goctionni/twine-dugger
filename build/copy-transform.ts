@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
-import { cwd } from 'process';
 import { resolve } from 'path';
+import { cwd } from 'process';
 
 interface Options {
   from: string;

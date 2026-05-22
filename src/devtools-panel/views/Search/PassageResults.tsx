@@ -1,14 +1,13 @@
 import { createVirtualizer } from '@tanstack/solid-virtual';
-import { For, Index, Match, Show, Switch } from 'solid-js';
+import { For, Match, Show, Switch } from 'solid-js';
 
 import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
 import { ParsedPassageData } from '@/shared/shared-types';
 
-import { createGetViewState, getGameMetaData, setNavigationPage, setViewState } from '../../store';
+import { createGetViewState, getGameMetaData, setViewState } from '../../store';
 import { PassageHeader } from '../Passage/PassageHeader';
 import { PassageListItem } from '../Passage/PassageListItem';
-import { PassageView } from '../Passage/PassageView';
 
 interface Props {
   results: ParsedPassageData[];

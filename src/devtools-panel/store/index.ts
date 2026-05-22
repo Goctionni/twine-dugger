@@ -263,7 +263,7 @@ export async function startTrackingFrames() {
       timeout = setTimeout(update, remainingDelay);
     };
     timeout = setTimeout(update, store.settings['diffLog.pollingInterval']);
-  } catch (ex) {
+  } catch {
     setConnectionState('error');
   }
   return () => clearTimeout(timeout);

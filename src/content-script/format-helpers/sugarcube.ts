@@ -27,7 +27,7 @@ function copy(value: Value): Value {
     const entries = [...value.entries()] as Array<[string, Value]>;
     return new Map(entries.map(([key, itemValue]) => [key, copy(itemValue)]));
   }
-  if (value instanceof Set) return new Set([...value]);
+  if (value instanceof Set) return new Set(value);
   const object: Record<string, Value> = {};
   for (const [key, itemValue] of Object.entries(value)) {
     object[key] = copy(itemValue);
