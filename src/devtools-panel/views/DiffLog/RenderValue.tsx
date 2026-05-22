@@ -66,9 +66,9 @@ function RenderValueFallback(props: RenderValueFallbackProps) {
           element={(elProps) => (
             <span
               {...elProps}
-              class={clsx('inline-flex items-center gap-1 cursor-help', elProps.class)}
+              class={clsx('inline-flex cursor-help items-center gap-1', elProps.class)}
             >
-              <span class="material-symbols-outlined text-xs align-middle text-white">search</span>
+              <span class="material-symbols-outlined align-middle text-xs text-white">search</span>
               {base()}
             </span>
           )}

@@ -22,10 +22,10 @@ export function PassageList(props: Props) {
     overscan: 5,
   });
   return (
-    <div class="px-4 py-2 h-full flex flex-col overflow-auto">
-      <h1 class="font-bold text-xl mb-2">Passages</h1>
+    <div class="flex h-full flex-col overflow-auto px-4 py-2">
+      <h1 class="mb-2 text-xl font-bold">Passages</h1>
       <div class="flex-1 overflow-auto" ref={scrollElRef}>
-        <ul class="w-full relative" style={{ height: `${virtualizer.getTotalSize()}px` }}>
+        <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
           <For each={virtualizer.getVirtualItems()}>
             {(virtualItem) => {
               const passage = () => props.passages[virtualItem.index]!;

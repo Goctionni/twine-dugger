@@ -69,7 +69,7 @@ export function StateResults(props: Props) {
   });
 
   return (
-    <div class="h-full relative overflow-hidden flex-1 py-1" ref={containerRef}>
+    <div class="relative h-full flex-1 overflow-hidden py-1" ref={containerRef}>
       <div class="h-full overflow-auto" ref={scrollElRef}>
         <ul class="relative" style={{ height: `${virtualizer.getTotalSize()}px` }}>
           <For each={virtualizer.getVirtualItems()}>
@@ -80,7 +80,7 @@ export function StateResults(props: Props) {
               return (
                 <Show when={result()}>
                   <li
-                    class="grid items-center px-2 gap-x-2"
+                    class="grid items-center gap-x-2 px-2"
                     style={{
                       'position': 'absolute',
                       'top': 0,
@@ -100,7 +100,7 @@ export function StateResults(props: Props) {
                     <span class="col-start-2">
                       <button
                         type="button"
-                        class="py-2 font-mono cursor-pointer hover:underline text-left text-nowrap overflow-hidden text-ellipsis max-w-full"
+                        class="max-w-full cursor-pointer overflow-hidden py-2 text-left font-mono text-nowrap text-ellipsis hover:underline"
                         onClick={() => onPathClick(result().path)}
                       >
                         <PrettyPath path={result().path} />
@@ -109,7 +109,7 @@ export function StateResults(props: Props) {
                     <div class="col-start-3" />
 
                     {/* col 3: input (aligned across rows) */}
-                    <div class="col-start-4 justify-self-start w-full">
+                    <div class="col-start-4 w-full justify-self-start">
                       <Switch>
                         <Match when={type() === 'string'}>
                           <StateStringInput path={result().path} />
@@ -130,7 +130,7 @@ export function StateResults(props: Props) {
         </ul>
       </div>
       <div
-        class="absolute top-0 bottom-2 w-2 bg-slate-700 hover:bg-slate-500 rounded-full cursor-col-resize"
+        class="absolute top-0 bottom-2 w-2 cursor-col-resize rounded-full bg-slate-700 hover:bg-slate-500"
         style={{ left: `${44 + getWidth()}px` }}
         onMouseDown={handleMouseDown}
       />

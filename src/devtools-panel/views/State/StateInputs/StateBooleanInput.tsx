@@ -62,7 +62,7 @@ export function StateBooleanInput(props: StateBooleanInputProps) {
   };
 
   return (
-    <div class="flex justify-start select-none gap-2">
+    <div class="flex justify-start gap-2 select-none">
       <BooleanInput
         value={currentValue()}
         onChange={handleChange}

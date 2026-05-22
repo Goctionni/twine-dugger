@@ -22,7 +22,7 @@ export function DiffFrame(props: Props) {
       <div
         class={clsx(
           'flex items-center gap-2',
-          showSeparator() && 'mt-3 pt-3 border-t border-gray-700/50',
+          showSeparator() && 'mt-3 border-t border-gray-700/50 pt-3',
         )}
       >
         <button

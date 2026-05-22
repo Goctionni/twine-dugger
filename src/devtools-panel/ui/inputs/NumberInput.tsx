@@ -29,8 +29,8 @@ export function NumberInput(props: NumberInputProps) {
         class={clsx(
           btnClass(
             'contained',
-            '- px-4 rounded-md',
-            'clr-gray font-mono px-2 w-7 rounded-l-md hover:clr-sky',
+            '[REMOVE]: rounded-md px-4',
+            'clr-gray hover:clr-sky w-7 rounded-l-md px-2 font-mono',
           ),
         )}
       >
@@ -45,7 +45,7 @@ export function NumberInput(props: NumberInputProps) {
         readOnly={props.readOnly}
         class={clsx(
           baseInputClasses,
-          '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+          '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
           'w-32 rounded-none',
         )}
         {...props.inputProps}
@@ -57,8 +57,8 @@ export function NumberInput(props: NumberInputProps) {
         class={clsx(
           btnClass(
             'contained',
-            '- px-4 rounded-md',
-            'clr-gray font-mono px-2 w-7 rounded-r-md hover:clr-sky',
+            '[REMOVE]: rounded-md px-4',
+            'clr-gray hover:clr-sky w-7 rounded-r-md px-2 font-mono',
           ),
         )}
       >

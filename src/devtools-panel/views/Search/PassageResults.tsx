@@ -35,11 +35,11 @@ export function PassageResults(props: Props) {
   return (
     <MovableSplit
       splitKey="search-passage-results"
-      class="flex grow w-full overflow-hidden h-full"
+      class="flex h-full w-full grow overflow-hidden"
       initialLeftWidthPercent={50}
       leftContent={
         <div class="h-full overflow-auto" ref={scrollElRef}>
-          <ul class="w-full relative" style={{ height: `${virtualizer.getTotalSize()}px` }}>
+          <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
             <For each={virtualizer.getVirtualItems()}>
               {(virtualItem) => {
                 const result = () => props.results[virtualItem.index]!;
@@ -66,10 +66,10 @@ export function PassageResults(props: Props) {
         </div>
       }
       rightContent={
-        <div class="w-full h-full flex flex-col">
+        <div class="flex h-full w-full flex-col">
           <Switch>
             <Match when={getSelectedPassage()}>
-              <div class="px-3 -mt-3 -mb-1">
+              <div class="-mt-3 -mb-1 px-3">
                 <PassageHeader passage={getSelectedPassage()!} />
               </div>
               <Code code={getSelectedPassage()!.content ?? ''} format={format()!.name} />

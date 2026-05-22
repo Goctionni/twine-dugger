@@ -22,7 +22,7 @@ export function Tooltip(props: Props) {
         <div
           class="
           tp-tooltip-inner
-          rounded px-2 py-1 text-sm text-white bg-gray-900/95 outline -outline-offset-1 outline-gray-100/50
+          rounded bg-gray-900/95 px-2 py-1 text-sm text-white outline -outline-offset-1 outline-gray-100/50
         "
         >
           {props.tooltip}

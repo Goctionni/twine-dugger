@@ -15,7 +15,7 @@ export function FilteredPathsSettings() {
         </p>
         <button
           type="button"
-          class={btnClass('clr-gray hover:clr-sky py-0.5 px-2 text-xs')}
+          class={btnClass('clr-gray hover:clr-sky px-2 py-0.5 text-xs')}
           onClick={() => clearFilteredPaths()}
           disabled={!getFilteredPaths().length}
         >
@@ -33,12 +33,12 @@ export function FilteredPathsSettings() {
               <li class="flex items-center gap-2 rounded border border-gray-700 bg-gray-900/70 px-2 py-1">
                 <PrettyPath
                   path={path}
-                  class="min-w-0 flex-1 break-all font-mono text-xs"
+                  class="min-w-0 flex-1 font-mono text-xs break-all"
                   globSuffix
                 />
                 <button
                   type="button"
-                  class={btnClass('clr-gray hover:clr-sky py-0.5 px-2 text-xs')}
+                  class={btnClass('clr-gray hover:clr-sky px-2 py-0.5 text-xs')}
                   onClick={() => removeFilteredPath(path)}
                 >
                   Remove

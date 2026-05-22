@@ -13,18 +13,18 @@ interface ListItemProps {
 
 export function PassageListItem(props: ListItemProps) {
   return (
-    <li class="border-t last:border-b border-slate-400 flex" style={props.style}>
+    <li class="flex border-t border-slate-400 last:border-b" style={props.style}>
       <button
         data-id={props.passageData.id}
         data-name={props.passageData.name}
         type="button"
         onClick={() => props.onClick()}
         class={clsx(
-          'py-2 px-4 cursor-pointer hover:bg-slate-600 flex gap-2 flex-1 items-start overflow-hidden',
+          'flex flex-1 cursor-pointer items-start gap-2 overflow-hidden px-4 py-2 hover:bg-slate-600',
           { 'bg-slate-700': props.active },
         )}
       >
-        <span class="flex-1 font-mono text-left overflow-hidden whitespace-nowrap text-ellipsis">
+        <span class="flex-1 overflow-hidden text-left font-mono text-ellipsis whitespace-nowrap">
           {props.passageData.name}
         </span>
         <div class="flex gap-1">

@@ -51,7 +51,7 @@ export function MovableSplit(props: Interface) {
   });
 
   return (
-    <div ref={containerRef} class={props.class || 'flex flex-grow w-full overflow-hidden'}>
+    <div ref={containerRef} class={props.class || 'flex w-full grow overflow-hidden'}>
       {/* Left Panel */}
       <div
         class="bg-gray-900" // Slightly different bg for panels
@@ -62,12 +62,12 @@ export function MovableSplit(props: Interface) {
 
       {/* Divider */}
       <div
-        class="w-2 bg-gray-700 hover:bg-sky-600 cursor-col-resize flex-shrink-0"
+        class="w-2 shrink-0 cursor-col-resize bg-gray-700 hover:bg-sky-600"
         onMouseDown={handleMouseDown}
       />
 
       {/* Right Panel */}
-      <div class="bg-gray-900 flex-grow" style={{ width: `calc(100% - 8px - ${leftWidth()}` }}>
+      <div class="grow bg-gray-900" style={{ width: `calc(100% - 8px - ${leftWidth()}` }}>
         {props.rightContent}
       </div>
     </div>

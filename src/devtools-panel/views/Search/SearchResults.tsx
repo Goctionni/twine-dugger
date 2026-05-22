@@ -44,8 +44,8 @@ export function SearchResults() {
     <Show when={resultTabs().length}>
       <div class="flex flex-col overflow-hidden">
         <div class="px-4">
-          <div class="flex gap-2 mb-2">
-            <h2 class="font-bold text-xl">Search results</h2>
+          <div class="mb-2 flex gap-2">
+            <h2 class="text-xl font-bold">Search results</h2>
             <For each={resultTabs()}>
               {(tab) => (
                 <button
@@ -64,7 +64,7 @@ export function SearchResults() {
             </For>
           </div>
         </div>
-        <div class="px-3 flex-1 overflow-hidden">
+        <div class="flex-1 overflow-hidden px-3">
           <Switch>
             <Match when={activeTab() === 'state'}>
               <StateResults results={getSearchResults().state} />

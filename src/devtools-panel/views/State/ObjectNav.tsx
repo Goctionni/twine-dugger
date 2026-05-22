@@ -112,13 +112,13 @@ export function ObjectNav(props: Props) {
   };
 
   return (
-    <div class="w-max max-w-3xs flex flex-col h-full px-2 border-r border-r-gray-700">
+    <div class="flex h-full w-max max-w-3xs flex-col border-r border-r-gray-700 px-2">
       <p class="text-lg">{getName()}</p>
       <ul>
         <li>
           <a
             onClick={onAdd}
-            class="flex items-center gap-1 p-1 cursor-pointer rounded-md text-green-400 hover:bg-gray-700"
+            class="flex cursor-pointer items-center gap-1 rounded-md p-1 text-green-400 hover:bg-gray-700"
           >
             ➕ <span class="flex-1 overflow-hidden text-ellipsis">Add new...</span>
           </a>
@@ -218,9 +218,9 @@ function NavItem(props: NavItemProps) {
       <a
         onClick={() => props.onClick()}
         class={clsx(
-          'flex items-center gap-1 p-1 cursor-pointer rounded-md',
+          'flex cursor-pointer items-center gap-1 rounded-md p-1',
           props.active
-            ? 'outline-gray-300 outline-2 -outline-offset-2'
+            ? 'outline-2 -outline-offset-2 outline-gray-300'
             : 'outline-transparent hover:bg-gray-700',
         )}
       >

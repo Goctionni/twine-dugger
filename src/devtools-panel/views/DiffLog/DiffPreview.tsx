@@ -18,7 +18,7 @@ export function DiffPreview(props: Props) {
   const layout = usePreviewLayout();
 
   return (
-    <code class={clsx('font-mono text-gray-200 whitespace-pre-wrap leading-4', props.class)}>
+    <code class={clsx('font-mono leading-4 whitespace-pre-wrap text-gray-200', props.class)}>
       <DiffPreviewInner
         value={props.value}
         remainingDepth={depth()}

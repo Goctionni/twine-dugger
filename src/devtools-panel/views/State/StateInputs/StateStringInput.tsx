@@ -78,7 +78,7 @@ export function StateStringInput(props: StateStringInputProps) {
         onChange={setLocalValue}
         onKeyDown={handleKeyDown}
         disabled={isDisabled()}
-        class="w-[184px]"
+        class="w-46"
       />
 
       <Show when={hasChanges() && !isDisabled()}>

@@ -33,9 +33,9 @@ export function ValueView() {
   const isReadOnly = () => getHistoryId() !== -1;
 
   return (
-    <div class="flex gap-2 flex-col py-1 px-2 overflow-auto flex-1">
+    <div class="flex flex-1 flex-col gap-2 overflow-auto px-2 py-1">
       <p>
-        <PrettyPath class="font-bold text-sm" path={getPath()} statePrefix />
+        <PrettyPath class="text-sm font-bold" path={getPath()} statePrefix />
         <Show when={isReadOnly()}>
           <span class="ml-2 text-red-400">(readonly)</span>
         </Show>
