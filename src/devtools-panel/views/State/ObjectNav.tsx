@@ -16,7 +16,7 @@ import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { getLockStatus } from '@/devtools-panel/views/State/lock-helper';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { LockStatus, ObjectValue, Path, ValueType } from '@/shared/shared-types';
+import { ContainerValue, LockStatus, Path, Value, ValueType } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import {
@@ -44,7 +44,7 @@ interface Props {
 export function ObjectNav(props: Props) {
   const getName = () => props.path[props.path.length - 1];
   const getObject = createMemo(
-    () => getObjectPathValue(getActiveState()!, props.path) as ObjectValue,
+    () => getObjectPathValue(getActiveState()!, props.path) as ContainerValue,
   );
   const getPropertyOrder = createGetSetting('state.propertyOrder');
 
@@ -63,12 +63,14 @@ export function ObjectNav(props: Props) {
           : sorter(Object.keys(object));
 
     // Convert to child key format
-    return rawKeys.map(
-      (key): ContainerChild => ({
-        text: key,
-        type: getSpecificType(object instanceof Map ? object.get(key) : object[key]),
-      }),
-    );
+    return rawKeys.map((key): ContainerChild => {
+      let value: Value = {};
+      if (object instanceof Map) value = object.get(key);
+      else if (Array.isArray(object)) value = object[Number(key)];
+      else value = object[key];
+
+      return { text: key, type: getSpecificType(value) };
+    });
   });
 
   const onDuplicate = async (property: string | number) => {
@@ -113,7 +115,7 @@ export function ObjectNav(props: Props) {
 
   return (
     <div class="flex h-full w-max max-w-3xs flex-col border-r border-r-gray-700 px-2">
-      <p class="text-lg">{getName()}</p>
+      <p class="w-full overflow-hidden text-lg text-ellipsis">{getName()}</p>
       <ul>
         <li>
           <a

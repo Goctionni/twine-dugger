@@ -77,15 +77,15 @@ function deepEquals(val1: Value, val2: Value): boolean {
 }
 
 // --- Public API Factory ---
-export function getDiffer(ignoreCheck?: (key: string, value: Value) => boolean) {
+export function getDiffer(ignoreCheck?: (key: string | number, value: Value) => boolean) {
   let storedIdentityMap: IdentityMap = new Map(); // State is private to this instance
 
   // --- Diffing Logic Helpers (Defined inside factory) ---
 
   function diffEntries(
     containerType: 'object' | 'map', // Specify container type
-    oldEntries: Map<string, Value>,
-    newEntries: Map<string, Value>,
+    oldEntries: Map<string | number, Value>,
+    newEntries: Map<string | number, Value>,
     path: Path, // Path to the container
     diffs: Diff[],
     newMap: IdentityMap,

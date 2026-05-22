@@ -16,11 +16,7 @@
     "resolveJsonModule": true, // Allow importing JSON files
     "isolatedModules": true, // Ensure each file can be safely transpiled without relying on other imports
     "noEmit": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "@panel/*": ["./src/devtools-panel/*"],
-      "@content/*": ["./src/content-script/*"]
-    }
+    "paths": { "@/*": ["./src/*"] }
   },
   "files": ["src/global.d.ts"],
   "include": ["src/**/*.ts", "src/**/*.tsx"], // Files to be included in compilation

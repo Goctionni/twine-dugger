@@ -66,20 +66,27 @@ export function PrettyPath(props: Props) {
           }
           return [{ color: leafClass ?? 'pathRoot', text: slug }];
         }
-        if (parentType === 'array')
+        if (parentType === 'array') {
           return [
             { color: 'pathBrackets', text: '[' },
             { color: leafClass ?? 'typeNumber', text: slug },
             { color: 'pathBrackets', text: ']' },
           ];
-        if (parentType === 'map')
+        }
+        if (parentType === 'map') {
+          const keyNode: AtomProps =
+            typeof slug === 'string'
+              ? { color: leafClass ?? 'typeString', text: `"${slug}"` }
+              : { color: leafClass ?? 'typeNumber', text: slug };
+
           return [
             { color: 'pathDot', text: '.' },
             { color: 'typeString', text: 'get' },
             { color: 'pathBrackets', text: '(' },
-            { color: leafClass ?? 'typeString', text: `"${slug}"` },
+            keyNode,
             { color: 'pathBrackets', text: ')' },
           ];
+        }
         return [];
       })
       .filter((v): v is AtomProps => !!v)

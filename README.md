@@ -5,16 +5,24 @@ SugarCube or Harlowe), or to cheat in those games.
 
 ## Dependencies / Technologies
 
+- vite-plus - cli tool
 - pnpm - Package manager
 - typescript - Types
-- tsdown - Build
+- vite - build tool
 - SolidJS - UI
 - Tailwindcs - Styling
 
 ## Commands
 
-`pnpm i` - install dependencies
-`pnpm build` - build extension
+You will need vite-plus installed on your machine.
+
+See: https://viteplus.dev/guide/
+
+`vp i` - install dependencies
+`vp check` - lint & format
+`vp check --fix` - lint & format, autofix
+`vp build` - build extension
+`vp build --watch` - build extension and watch for file changes
 
 ## Status
 

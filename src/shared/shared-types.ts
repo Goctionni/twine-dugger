@@ -5,14 +5,14 @@ export type Value =
   | Value[]
   | { [key: string]: Value }
   | Set<Value>
-  | Map<string, Value>
+  | Map<string | number, Value>
   | Function;
 
 export type ObjectValue = { [key: string]: Value };
 
 export type ArrayValue = Value[];
 
-export type MapValue = Map<string, Value>;
+export type MapValue = Map<string | number, Value>;
 
 export type SetValue = Set<Value>;
 
@@ -26,7 +26,7 @@ type DiffGeneric<T extends string> = { type: T; path: Path } & (
 );
 
 export type DiffObjectMapChange = DiffGeneric<'object' | 'map'> & {
-  key: string;
+  key: string | number;
 };
 
 export interface DiffArrayInstruction {
@@ -91,7 +91,7 @@ export type ValueType =
   | 'number'
   | 'boolean';
 
-export type IdentityMap = Map<string, Value>;
+export type IdentityMap = Map<string | number, Value>;
 
 export type MatchPair = {
   oldIndex: number;

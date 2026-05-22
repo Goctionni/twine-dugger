@@ -16,6 +16,6 @@ export default defineConfig({
   sortTailwindcss: {
     functions: ['clsx', 'btnClass'],
     preserveWhitespace: true,
-    stylesheet: './src/devtools-panel/index.css',
+    stylesheet: './src/devtools-panel/style.css',
   },
 });

@@ -1,3 +1,4 @@
+import solid from 'eslint-plugin-solid';
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
@@ -10,27 +11,25 @@ export default defineConfig({
   },
   ignorePatterns: ['dist'],
   rules: {
+    'typescript/no-floating-promises': 'off',
+    'unicorn/no-new-array': 'off',
     'vite-plus/prefer-vite-plus-imports': 'error',
+    'typescript/unbound-method': 'off',
+    'eslint/no-unassigned-vars': 'off',
   },
   overrides: [
     {
       files: ['src/**/*.{ts,tsx}'],
-      rules: {
-        'unicorn/no-new-array': 'off',
-        'typescript/no-floating-promises': 'off',
-        'typescript/unbound-method': 'off',
-        'eslint/init-declarations': 'off',
-        'eslint/no-unassigned-vars': 'off',
-      },
       jsPlugins: ['eslint-plugin-solid'],
-      env: {
-        browser: true,
-      },
+      env: { browser: true },
+      rules: solid.configs['flat/typescript'].rules,
     },
   ],
   options: {
     typeAware: true,
     typeCheck: true,
+    reportUnusedDisableDirectives: 'warn',
+    denyWarnings: true,
   },
   jsPlugins: [
     {

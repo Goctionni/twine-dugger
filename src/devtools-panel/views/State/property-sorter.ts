@@ -2,9 +2,11 @@ import { getObjectPathValue } from '@/shared/get-object-path-value';
 import { ContainerValue, PropertyOrder } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
+type ContainerKey = string | number;
+
 export function createSorter(object: ContainerValue, order: PropertyOrder) {
   if (order === 'alphabetic') {
-    return (keys: string[]) =>
+    return (keys: ContainerKey[]) =>
       keys.toSorted((key1, key2) => {
         if (typeof key1 === 'number' && typeof key2 === 'number') return key1 - key2;
         return `${key1}`.localeCompare(`${key2}`);
@@ -24,10 +26,12 @@ export function createSorter(object: ContainerValue, order: PropertyOrder) {
       'undefined',
       'other',
     ] as const;
-    const getValue = (key: string) => getObjectPathValue(object, [key]);
-    return (keys: string[]) => {
+    const getValue = (key: ContainerKey) => getObjectPathValue(object, [key]);
+    return (keys: ContainerKey[]) => {
       return keys.toSorted((key1, key2) => {
         if (typeof key1 === 'number' && typeof key2 === 'number') return key1 - key2;
+        if (typeof key1 === 'number') return -1;
+        if (typeof key2 === 'number') return 1;
         const value1 = getValue(key1);
         const value2 = getValue(key2);
         const type1 = getSpecificType(value1);
@@ -39,5 +43,5 @@ export function createSorter(object: ContainerValue, order: PropertyOrder) {
     };
   }
 
-  return (keys: string[]) => keys;
+  return (keys: ContainerKey[]) => keys;
 }

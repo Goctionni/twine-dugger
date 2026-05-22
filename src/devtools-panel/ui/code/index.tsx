@@ -26,6 +26,6 @@ export function Code(props: PassageCodeProps) {
     });
   });
 
-  // eslint-disable-next-line solid/no-innerhtml
+  // oxlint-disable-next-line solid/no-innerhtml
   return <code class="passage-code flex-1 overflow-auto whitespace-pre" innerHTML={html()} />;
 }

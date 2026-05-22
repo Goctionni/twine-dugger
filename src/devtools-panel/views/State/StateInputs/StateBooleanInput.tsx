@@ -1,19 +1,19 @@
 import { Show } from 'solid-js';
 
-import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { Path } from '@/shared/shared-types';
-
-import { setState } from '../../../api/api';
-import { setStatePropertyLock } from '../../../api/api';
+import { setState } from '@/devtools-panel/api/api';
+import { setStatePropertyLock } from '@/devtools-panel/api/api';
 import {
   addLockPath,
   createGetViewState,
   getActiveState,
   getLockedPaths,
   removeLockPath,
-} from '../../../store';
-import { BooleanInput } from '../../../ui/inputs/BooleanInput';
-import { LockButton } from '../../../ui/inputs/LockButton';
+} from '@/devtools-panel/store';
+import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
+import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
+import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { Path } from '@/shared/shared-types';
+
 import { getLockStatus } from '../lock-helper';
 
 interface StateBooleanInputProps {

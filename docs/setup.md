@@ -21,10 +21,3 @@ This runs the `tsdown` build, emitting artifacts to `dist/`.
 2. Toggle **Developer mode**.
 3. Click **Load unpacked** and select the project **`dist/`** folder.
 4. Open DevTools on a Twine game page; a panel named **Twine Dugger** appears.
-
-Manifest snapshot:
-
-- Manifest v3 — **Twine Dugger 0.2.0**
-- Permissions: `scripting`, `activeTab`
-- Web accessible: `content-script.js`
-- DevTools page: `create-panel.html`
