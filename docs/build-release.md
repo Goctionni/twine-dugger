@@ -3,7 +3,7 @@
 ## Build
 
 ```bash
-pnpm build
+vp build
 ```
 
 Artifacts land in `dist/`:

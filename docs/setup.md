@@ -2,18 +2,19 @@
 
 ## Prerequisites
 
+- **vite-plus** (Toolchain manager)
 - **pnpm** (package manager)
-- **Node.js** LTS
+- **Node.js** 24
 - Chrome 135+ (build target)
 
 ## Install & build
 
 ```bash
-pnpm i
-pnpm build
+vp i
+vp build
 ```
 
-This runs the `tsdown` build, emitting artifacts to `dist/`.
+This runs the `vite` build, emitting artifacts to `dist/`.
 
 ## Load the extension in Chrome
 
