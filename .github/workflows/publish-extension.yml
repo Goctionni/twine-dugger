@@ -17,7 +17,8 @@ jobs:
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: .node-version
-          run-install: vp install --frozen-lockfile
+          run-install: |
+            args: ['--frozen-lockfile']
           cache: true
 
       - name: Build
