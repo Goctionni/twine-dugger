@@ -24,16 +24,16 @@ export function HistoryNav() {
   });
 
   return (
-    <div class="flex gap-4 items-center justify-start p-2">
+    <div class="flex items-center justify-start gap-4 p-2">
       <span class="text-lg font-bold">History slice:</span>
-      <ul class="flex justify-center items-center gap-2">
+      <ul class="flex items-center justify-center gap-2">
         <For each={items()}>
           {(item) => {
             return (
               <li>
                 <button class="cursor-pointer" onClick={item.onClick}>
                   <div
-                    class={clsx('px-1 rounded-full outline text-xs', {
+                    class={clsx('rounded-full px-1 text-xs outline', {
                       'outline-2 outline-offset-2': item.active,
                     })}
                   >

@@ -54,16 +54,16 @@ export function ContextMenuUI() {
           />
           <div
             style={{ top: `${contextMenu.event?.y}px`, left: `${contextMenu.event?.x}px` }}
-            class="fixed flex flex-col items-stretch bg-gray-800 text-white rounded shadow-lg z-50 p-2"
+            class="fixed z-50 flex flex-col items-stretch rounded bg-gray-800 p-2 text-white shadow-lg"
             onContextMenu={(e) => e.preventDefault()}
           >
             <For each={contextMenu.items}>
               {(item) => (
                 <button
                   class="
-                  px-4 py-2 hover:bg-gray-600 cursor-pointer text-left
-                  disabled:text-slate-400 disabled:hover:bg-transparent disabled:cursor-default
-                "
+                    cursor-pointer px-4 py-2 text-left hover:bg-gray-600
+                    disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-transparent
+                  "
                   type="button"
                   disabled={typeof item.disabled === 'function' ? item.disabled() : item.disabled}
                   onClick={(e) => {

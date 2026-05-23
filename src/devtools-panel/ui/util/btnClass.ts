@@ -40,7 +40,7 @@ type ParsedInput = {
   variant: Variant;
   classes: ClassValue[];
 };
-function parseInput(variantOrClass?: Variant | ClassValue, ...rest: ClassValue[]): ParsedInput {
+function parseInput(variantOrClass?: ClassValue, ...rest: ClassValue[]): ParsedInput {
   if (typeof variantOrClass === 'string' && variantKeys.includes(variantOrClass as Variant)) {
     return { variant: variantOrClass as Variant, classes: rest };
   }
@@ -51,7 +51,7 @@ function forEachClass(classStr: string, callback: (c: string) => void) {
   return classStr.split(/\s+/).filter(Boolean).forEach(callback);
 }
 
-export function btnClass(variantOrClass?: Variant | ClassValue, ...rest: ClassValue[]): string {
+export function btnClass(variantOrClass?: ClassValue, ...rest: ClassValue[]): string {
   const { variant, classes: classValues } = parseInput(variantOrClass, ...rest);
 
   // Base classes
@@ -63,7 +63,7 @@ export function btnClass(variantOrClass?: Variant | ClassValue, ...rest: ClassVa
   // Parse class values
   for (const classValue of classValues) {
     const classStr = clsx(classValue);
-    if (classStr.startsWith('- ')) {
+    if (classStr.startsWith('[REMOVE]: ')) {
       forEachClass(classStr.slice(2), (c) => classes.delete(c));
     } else {
       forEachClass(classStr, (c) => classes.add(c));

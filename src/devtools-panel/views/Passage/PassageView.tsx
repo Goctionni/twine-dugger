@@ -14,7 +14,7 @@ export function PassageView(props: Props) {
   return (
     <Switch fallback={<div class="py-2">No passage selected.</div>}>
       <Match when={props.passage}>
-        <div class="w-full h-full overflow-auto px-4 py-2 flex flex-col">
+        <div class="flex h-full w-full flex-col overflow-auto px-4 py-2">
           <PassageHeader passage={props.passage!} />
           <Code code={props.passage!.content ?? ''} format={props.language} />
         </div>

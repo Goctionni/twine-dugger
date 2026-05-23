@@ -17,7 +17,7 @@ export function Layout(props: LayoutProps) {
 
   return (
     <>
-      <div class="bg-gray-900 text-gray-100 h-screen flex flex-col" onContextMenu={onContextMenu}>
+      <div class="flex h-screen flex-col bg-gray-900 text-gray-100" onContextMenu={onContextMenu}>
         <Header />
         {props.children}
       </div>

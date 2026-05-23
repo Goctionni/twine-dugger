@@ -18,7 +18,7 @@ export function DiffPreview(props: Props) {
   const layout = usePreviewLayout();
 
   return (
-    <code class={clsx('font-mono text-gray-200 whitespace-pre-wrap leading-4', props.class)}>
+    <code class={clsx('font-mono leading-4 whitespace-pre-wrap text-gray-200', props.class)}>
       <DiffPreviewInner
         value={props.value}
         remainingDepth={depth()}
@@ -34,13 +34,13 @@ const ELLIPSIS = '…';
 
 type Layout = 'inline' | 'pretty';
 
-interface InnerProps {
-  value: Value;
+type InnerProps<T = Value, Rest = unknown> = {
+  value: T;
   remainingDepth: number;
   maxItems: number;
   layout: Layout;
   level: number;
-}
+} & Rest;
 
 function DiffPreviewInner(props: InnerProps): JSX.Element {
   return (
@@ -64,16 +64,16 @@ function DiffPreviewInner(props: InnerProps): JSX.Element {
   );
 }
 
-function ArrayPreview(props: InnerProps & { value: ArrayValue }) {
+function ArrayPreview(props: InnerProps<ArrayValue>) {
   return <ArraySetPreview {...props} prefix="[" suffix="]" />;
 }
 
-function SetPreview(props: InnerProps & { value: SetValue }) {
+function SetPreview(props: InnerProps<SetValue>) {
   return <ArraySetPreview {...props} prefix="new Set(" suffix=")" value={[...props.value]} />;
 }
 
 function ArraySetPreview(
-  props: InnerProps & { value: ArrayValue; prefix: string; suffix: string },
+  props: InnerProps<ArrayValue, { prefix: string; suffix: string }>,
 ): JSX.Element {
   const result = createMemo(() => {
     if (props.remainingDepth <= 0) return <span>{`[Array(${props.value.length})]`}</span>;
@@ -109,21 +109,23 @@ function ArraySetPreview(
   return <>{result()}</>;
 }
 
-function MapPreview(props: InnerProps & { value: MapValue }) {
+function MapPreview(props: InnerProps<MapValue>) {
   return (
     <ObjectMapPreview {...props} prefix="new Map([" suffix="])" value={mapToObj(props.value)} />
   );
 }
 
-function ObjectPreview(props: InnerProps & { value: ObjectValue }) {
+function ObjectPreview(props: InnerProps<ObjectValue>) {
   return <ObjectMapPreview {...props} prefix="{" suffix="}" />;
 }
 
 function ObjectMapPreview(
-  props: InnerProps & { value: ObjectValue; prefix: string; suffix: string },
+  props: InnerProps<ObjectValue, { prefix: string; suffix: string }>,
 ): JSX.Element {
   const result = createMemo(() => {
-    if (props.remainingDepth <= 0) return <span>{`[Array(${props.value.length})]`}</span>;
+    if (props.remainingDepth <= 0) {
+      return <span>{`[Object(${Object.keys(props).length} properties)]`}</span>;
+    }
     const entries = Object.entries(props.value);
     const items = entries.slice(0, props.maxItems) as Array<[string, Value]>;
     const indent = (plus = 1) => '  '.repeat(props.level + plus);

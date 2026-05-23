@@ -1,19 +1,19 @@
 import { createEffect, createSignal, Show } from 'solid-js';
 
-import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { Path } from '@/shared/shared-types';
-
-import { setState, setStatePropertyLock } from '../../../api/api';
+import { setState, setStatePropertyLock } from '@/devtools-panel/api/api';
 import {
   addLockPath,
   createGetViewState,
   getActiveState,
   getLockedPaths,
   removeLockPath,
-} from '../../../store';
-import { LockButton } from '../../../ui/inputs/LockButton';
-import { NumberInput } from '../../../ui/inputs/NumberInput';
-import { SaveButton } from '../../../ui/inputs/SaveButton';
+} from '@/devtools-panel/store';
+import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
+import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
+import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
+import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { Path } from '@/shared/shared-types';
+
 import { getLockStatus } from '../lock-helper';
 
 interface StateNumberInputProps {

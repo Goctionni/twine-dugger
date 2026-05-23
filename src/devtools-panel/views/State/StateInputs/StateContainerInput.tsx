@@ -18,7 +18,7 @@ export function StateContainerInput<TKey extends string | number>(
   props: StateContainerInputProps<TKey>,
 ) {
   return (
-    <div class="grid grid-cols-[20px_auto_1fr] auto-rows-fr items-center gap-2 py-2 px-3">
+    <div class="grid auto-rows-fr grid-cols-[20px_auto_1fr] items-center gap-2 px-3 py-2">
       <Index each={props.keys}>
         {(key) => {
           const value = () => props.getKeyValue(key());

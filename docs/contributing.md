@@ -1,6 +1,6 @@
 # Contributing & Conventions
 
-- **Code style**: Prettier enforced. Run `pnpm prettier:fix` before committing.
+- **Code style**: Prettier enforced. Run `vp check --fix` before committing.
 - **Types**: Keep types in `src/shared` where they are reused across bundles.
 - **Components**: Prefer small Solid components with clear props. Co-locate styles and logic.
 - **State editing UX**: Validate inputs where possible; surface errors inline.

@@ -1,24 +1,20 @@
 .navitem {
   @apply flex items-center
-    transition-[padding-inline] duration-100
-    cursor-pointer
-    p-2 rounded-full text-slate-400;
-  transition-timing-function: linear;
+    rounded-full p-2 text-slate-400
+    transition-[padding-inline] duration-100 ease-linear;
 }
 
 .navitem-label {
-  @apply text-base leading-none align-middle whitespace-nowrap transition-all duration-100 overflow-hidden pb-0.5;
-  width: 0;
-  text-align: left;
-  text-indent: 1ch;
-  transition-timing-function: linear;
+  @apply w-0 overflow-hidden pb-0.5
+    text-left indent-[1ch] align-middle text-base leading-none whitespace-nowrap
+    transition-all duration-100 ease-linear;
 }
 
 .navitem:hover,
 nav:not(:has(.navitem:hover)) .navitem.active {
   @apply px-3 text-white outline-2 -outline-offset-2 outline-white/50;
   .navitem-label {
-    width: 9ch;
+    @apply w-[9ch];
   }
 }
 

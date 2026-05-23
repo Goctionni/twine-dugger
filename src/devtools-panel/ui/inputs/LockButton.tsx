@@ -1,4 +1,3 @@
-import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
 
 import { LockStatus } from '@/shared/shared-types';

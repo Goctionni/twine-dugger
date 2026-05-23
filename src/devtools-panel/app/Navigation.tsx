@@ -62,7 +62,7 @@ export function Navigation() {
                   class={clsx('navitem', active() && 'active')}
                 >
                   <span
-                    class="material-symbols-outlined leading-none align-middle translate-y-[3%]"
+                    class="material-symbols-outlined translate-y-[3%] align-middle leading-none"
                     aria-hidden="true"
                   >
                     {item.icon}

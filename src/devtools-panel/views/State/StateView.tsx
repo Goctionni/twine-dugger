@@ -24,7 +24,7 @@ export function StateView() {
   });
 
   return (
-    <div class="flex h-[calc(100%_-_3rem)] py-1">
+    <div class="flex h-[calc(100%-3rem)] py-1">
       <Index each={getNavLayers()}>
         {(layer) => <ObjectNav path={layer().path} selectedProperty={layer().selectedProperty} />}
       </Index>

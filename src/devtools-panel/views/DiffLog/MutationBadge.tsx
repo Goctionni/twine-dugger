@@ -47,7 +47,7 @@ export function MutationBadge(props: Props) {
   return (
     <span
       class={clsx(
-        'inline-block text-[11px] leading-none px-1.5 py-0.5 rounded-md border mr-1.5',
+        'mr-1.5 inline-block rounded-md border px-1.5 py-0.5 text-[11px] leading-none',
         badgeStyle().bg,
         badgeStyle().text,
         badgeStyle().border,

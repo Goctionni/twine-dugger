@@ -27,7 +27,7 @@ export function LockSettings() {
         </p>
         <button
           type="button"
-          class={btnClass('clr-gray hover:clr-sky py-0.5 px-2 text-xs')}
+          class={btnClass('clr-gray hover:clr-sky px-2 py-0.5 text-xs')}
           onClick={onClearAll}
           disabled={!getLockedPaths().length}
         >
@@ -43,10 +43,10 @@ export function LockSettings() {
           <For each={getLockedPaths()}>
             {(path) => (
               <li class="flex items-center gap-2 rounded border border-gray-700 bg-gray-900/70 px-2 py-1">
-                <PrettyPath path={path} class="min-w-0 flex-1 break-all font-mono text-xs" />
+                <PrettyPath path={path} class="min-w-0 flex-1 font-mono text-xs break-all" />
                 <button
                   type="button"
-                  class={btnClass('clr-gray hover:clr-sky py-0.5 px-2 text-xs')}
+                  class={btnClass('clr-gray hover:clr-sky px-2 py-0.5 text-xs')}
                   onClick={() => onUnlock(path)}
                 >
                   Unlock

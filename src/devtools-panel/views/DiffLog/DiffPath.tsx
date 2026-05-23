@@ -15,7 +15,7 @@ export function DiffPath(props: {
     props.leafKey === undefined ? props.path : [...props.path, props.leafKey];
 
   const onContextMenu = createContextMenuHandler(
-    getParentPaths(fullPath()).map((path, index) => ({
+    getParentPaths(fullPath()).map((path) => ({
       label: () => (
         <>
           Filter out changes to "
@@ -31,7 +31,7 @@ export function DiffPath(props: {
     <code
       onContextMenu={onContextMenu}
       onClick={() => props.onClick()}
-      class="hover:underline cursor-pointer"
+      class="cursor-pointer hover:underline"
     >
       <PrettyPath path={fullPath()} action={props.action} />
     </code>

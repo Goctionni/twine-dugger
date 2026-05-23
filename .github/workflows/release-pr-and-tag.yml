@@ -19,19 +19,13 @@ jobs:
         with:
           fetch-depth: 0 # we will push a tag
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install vite-plus
+        uses: voidzero-dev/setup-vp@v1
         with:
-          version: 10
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          node-version-file: .node-version
+          run-install: |
+            args: ['--frozen-lockfile']
+          cache: true
 
       - name: Create/Update Release PR
         id: changesets

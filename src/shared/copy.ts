@@ -3,7 +3,7 @@ import { ObjectValue, Value } from './shared-types';
 export function copy<T extends Value>(value: T): Value {
   try {
     return structuredClone(value);
-  } catch (ex) {
+  } catch {
     if (typeof value === 'function') return value;
     if (typeof value !== 'object') return value;
     if (!value) return !value;

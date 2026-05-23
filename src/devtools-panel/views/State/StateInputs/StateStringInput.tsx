@@ -1,19 +1,19 @@
 import { createEffect, createSignal, Show } from 'solid-js';
 
-import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { Path } from '@/shared/shared-types';
-
-import { setState, setStatePropertyLock } from '../../../api/api';
+import { setState, setStatePropertyLock } from '@/devtools-panel/api/api';
 import {
   addLockPath,
   createGetViewState,
   getActiveState,
   getLockedPaths,
   removeLockPath,
-} from '../../../store';
-import { LockButton } from '../../../ui/inputs/LockButton';
-import { SaveButton } from '../../../ui/inputs/SaveButton';
-import { StringInput } from '../../../ui/inputs/StringInput';
+} from '@/devtools-panel/store';
+import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
+import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
+import { StringInput } from '@/devtools-panel/ui/inputs/StringInput';
+import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { Path } from '@/shared/shared-types';
+
 import { getLockStatus } from '../lock-helper';
 
 interface StateStringInputProps {
@@ -78,7 +78,7 @@ export function StateStringInput(props: StateStringInputProps) {
         onChange={setLocalValue}
         onKeyDown={handleKeyDown}
         disabled={isDisabled()}
-        class="w-[184px]"
+        class="w-46"
       />
 
       <Show when={hasChanges() && !isDisabled()}>

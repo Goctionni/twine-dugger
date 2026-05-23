@@ -1,4 +1,4 @@
-import { createScheduled, debounce } from '@solid-primitives/scheduled';
+import { createScheduled, scheduleIdle } from '@solid-primitives/scheduled';
 import { createEffect, createSignal } from 'solid-js';
 
 import {
@@ -13,11 +13,10 @@ import { findPassageMatches, findStateMatches } from './search-utils';
 
 type AbortFn = () => void;
 const EMPTY: SearchResultsCombined = { state: [], passage: [] };
-const SEARCH_RESULTS_DEBOUNCE_DELAY_MS = 450;
 
 export function createSearchResults() {
   const getQuery = createGetViewState('search', 'query');
-  const scheduleSearch = createScheduled((fn) => debounce(fn, SEARCH_RESULTS_DEBOUNCE_DELAY_MS));
+  const scheduleSearch = createScheduled((fn) => scheduleIdle(fn));
 
   const [getSearchResults, setSearchResults] = createSignal<SearchResultsCombined>(EMPTY);
 

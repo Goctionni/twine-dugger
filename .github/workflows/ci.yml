@@ -13,25 +13,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install vite-plus
+        uses: voidzero-dev/setup-vp@v1
         with:
-          version: 10
+          node-version-file: .node-version
+          run-install: |
+            args: ['--frozen-lockfile']
+          cache: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run Lint
-        run: pnpm run lint
-
-      - name: Run Prettier Check
-        run: pnpm prettier
-
-      - name: Run TypeScript Check
-        run: pnpm tsc
+      - name: Check formatting, lint and types
+        run: vp check

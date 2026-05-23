@@ -1,11 +1,9 @@
 {
   "recommendations": [
-    "dbaeumer.vscode-eslint", // eslint integration
-    "esbenp.prettier-vscode", // prettier integration
-    "rohit-gohri.format-code-action", // on-save code action (prettier and lint fix)
-    "alexdima.copy-relative-path", // right click -> copy relative path
-    "codeandstuff.package-json-upgrade", // see available updates in package.json
-    "yoavbls.pretty-ts-errors", // readable typescript errors
-    "mylesmurphy.prettify-ts" // type merging in tooltips
+    "alexdima.copy-relative-path",
+    "codeandstuff.package-json-upgrade",
+    "yoavbls.pretty-ts-errors",
+    "mylesmurphy.prettify-ts",
+    "VoidZero.vite-plus-extension-pack"
   ]
 }

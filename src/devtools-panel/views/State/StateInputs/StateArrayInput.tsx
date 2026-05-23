@@ -8,7 +8,7 @@ interface StateArrayInputProps {
 }
 
 export function StateArrayInput(props: StateArrayInputProps) {
-  const keys = () => [...props.value.keys()].sort();
+  const keys = () => [...props.value.keys()].sort((a, b) => a - b);
 
   return (
     <StateContainerInput path={props.path} keys={keys()} getKeyValue={(key) => props.value[key]} />

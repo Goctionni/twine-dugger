@@ -3,11 +3,11 @@ interface TagProps {
 }
 
 const lightness = 0.45;
-const chrome = 0.18;
+const chroma = 0.18;
 
 export function Tag(props: TagProps) {
   const hue = () => hashToHue(props.tag.toLowerCase());
-  const bg = () => `oklch(${lightness} ${chrome} ${hue()}deg)`;
+  const bg = () => `oklch(${lightness} ${chroma} ${hue()}deg)`;
 
   return (
     <span

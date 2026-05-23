@@ -13,25 +13,25 @@ export function BooleanInput(props: BooleanInputProps) {
   const isDisabled = () => props.disabled || props.readOnly;
 
   return (
-    <div class={clsx('flex justify-start select-none gap-2', props.className)}>
+    <div class={clsx('flex justify-start gap-2 select-none', props.className)}>
       <div
         class={clsx(
-          'relative flex justify-between w-[184px] h-7',
+          'relative flex h-7 w-46 justify-between',
           !isDisabled() ? 'cursor-pointer' : 'pointer-events-none',
         )}
       >
         <input
           type="checkbox"
-          class="hidden peer"
+          class="peer hidden"
           checked={props.value}
           readOnly={props.readOnly}
           disabled={props.disabled}
           onChange={(e) => props.onChange(e.target.checked)}
           id={props.id}
         />
-        <span class="absolute toggle border-2 border-gray-500 h-7 w-1/2 rounded-sm transition-all top-0 left-1/2 peer-checked:left-0" />
+        <span class="toggle absolute top-0 left-1/2 h-7 w-1/2 rounded-sm border-2 border-gray-500 transition-all peer-checked:left-0" />
         <label
-          class="text-center flex-grow relative self-center transition text-white cursor-pointer"
+          class="relative grow cursor-pointer self-center text-center text-white transition"
           for={props.id}
           onClick={(e) => {
             e.preventDefault();
@@ -41,7 +41,7 @@ export function BooleanInput(props: BooleanInputProps) {
           True
         </label>
         <label
-          class="text-center flex-grow relative self-center transition text-white cursor-pointer"
+          class="relative grow cursor-pointer self-center text-center text-white transition"
           for={props.id}
           onClick={(e) => {
             e.preventDefault();

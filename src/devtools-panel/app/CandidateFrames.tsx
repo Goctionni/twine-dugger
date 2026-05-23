@@ -45,16 +45,16 @@ export function Candidates() {
       <ul class="mt-4 flex flex-col gap-2">
         <Index each={urls()}>
           {(item) => (
-            <li class="flex gap-2 items-center">
+            <li class="flex items-center gap-2">
               <button
                 class="
+                  cursor-pointer rounded-md
                   px-2 py-0.5
-                  shadow-sm rounded-md cursor-pointer
-                  text-white text-xs font-medium
-                  -outline-offset-2 outline-2 outline-gray-500
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800
-                  disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-500
-                  hover:outline-transparent hover:bg-sky-700 focus:ring-sky-500
+                  text-xs font-medium text-white shadow-sm
+                  outline-2 -outline-offset-2 outline-gray-500
+                  hover:bg-sky-700 hover:outline-transparent
+                  focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-none
+                  disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300 disabled:hover:bg-gray-500
                 "
                 onClick={() => openIframeUrl(item())}
               >
