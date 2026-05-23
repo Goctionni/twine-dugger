@@ -16,11 +16,9 @@ jobs:
       - name: Install vite-plus
         uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 24
+          node-version-file: .node-version
+          run-install: vp install --frozen-lockfile
           cache: true
-
-      - name: Install dependencies
-        run: vp install --frozen-lockfile
 
       - name: Check formatting, lint and types
         run: vp check
