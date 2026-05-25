@@ -13,6 +13,6 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"] // Include Node.js types and Vite types
   },
-  "include": ["vite.config.ts", "oxfmt.config.ts", "oxlint.config.ts", "build"],
+  "include": ["vite.config.ts", "oxfmt.config.ts", "oxlint.config.ts", "build", "tools/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

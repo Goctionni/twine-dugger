@@ -6,9 +6,11 @@
   "type": "module",
   "scripts": {
     "prepare": "vp config",
+    "test:missing": "ts-node-esm tools/find-missing-tests.ts",
     "test:unit": "vp test",
     "test:unit:watch": "vp test watch",
     "test:coverage": "vp test run --coverage",
+    "test:coverage:minimal": "vp test run --reporter=agent --coverage --coverage.skipFull --coverage.reporter=text-summary --coverage.reporter=text",
     "test:e2e": "vp build && playwright test",
     "test:e2e:smoke": "vp build && playwright test tests/e2e/smoke.test.ts"
   },

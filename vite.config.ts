@@ -16,7 +16,7 @@ export default defineConfig({
   staged: { '*': 'vp check --fix' },
   test: {
     coverage: { provider: 'v8' },
-    include: ['src/**/*.test.{ts,tsx}'],
+    include: ['src/**/*.test.{ts,tsx}', 'tools/**/*.test.ts'],
     exclude: ['tests/e2e/**'],
   },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
