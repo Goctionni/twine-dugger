@@ -47,6 +47,20 @@ describe('Candidates', () => {
     expect(screen.getByRole('button', { name: 'Open' })).toBeTruthy();
   });
 
+  it('should render fallback message when no candidates are available', () => {
+    getCandidateIframesMock.mockReturnValue([]);
+    render(() => <Candidates />);
+
+    expect(screen.getByText('And something went wrong?')).toBeTruthy();
+  });
+
+  it('should render plural iframe message when multiple candidates exist', () => {
+    getCandidateIframesMock.mockReturnValue(['https://game.local/a', 'https://game.local/b']);
+    render(() => <Candidates />);
+
+    expect(screen.getByText(/did find some iframes/)).toBeTruthy();
+  });
+
   it('should execute open action for selected iframe url', () => {
     getCandidateIframesMock.mockReturnValue(['https://game.local/frame']);
 

@@ -1,5 +1,6 @@
 /** @vitest-environment jsdom */
 
+import { createRoot } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 vi.mock('../api/api', () => ({
@@ -10,17 +11,52 @@ vi.mock('../api/api', () => ({
 }));
 
 describe('store/index', () => {
+  let disposeStoreRoot: (() => void) | null = null;
+  let errorSpy: { mockRestore: () => void } | null = null;
+  let warnSpy: { mockRestore: () => void } | null = null;
+
   beforeEach(() => {
     vi.resetModules();
     localStorage.clear();
+
+    const shouldSuppress = (args: unknown[]) =>
+      args.some((arg) =>
+        String(arg).includes('computations created outside a `createRoot` or `render`'),
+      );
+
+    const originalError = console.error;
+    const originalWarn = console.warn;
+
+    errorSpy = vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+      if (shouldSuppress(args)) return;
+      originalError(...(args as Parameters<typeof console.error>));
+    });
+
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation((...args: unknown[]) => {
+      if (shouldSuppress(args)) return;
+      originalWarn(...(args as Parameters<typeof console.warn>));
+    });
   });
 
   afterEach(() => {
+    disposeStoreRoot?.();
+    disposeStoreRoot = null;
+    errorSpy?.mockRestore();
+    warnSpy?.mockRestore();
+    errorSpy = null;
+    warnSpy = null;
     vi.useRealTimers();
   });
 
+  const importStoreInRoot = async () => {
+    return createRoot(async (dispose) => {
+      disposeStoreRoot = dispose;
+      return import('./index');
+    });
+  };
+
   it('should use default global settings and allow updates', async () => {
-    const store = await import('./index');
+    const store = await importStoreInRoot();
 
     expect(store.createGetSetting('diffLog.pollingInterval')()).toBe(200);
 
@@ -34,14 +70,14 @@ describe('store/index', () => {
       JSON.stringify({ 'diffLog.pollingInterval': 350, 'state.propertyOrder': 'none' }),
     );
 
-    const store = await import('./index');
+    const store = await importStoreInRoot();
 
     expect(store.createGetSetting('diffLog.pollingInterval')()).toBe(350);
     expect(store.createGetSetting('state.propertyOrder')()).toBe('none');
   });
 
   it('should add/remove filtered and locked paths without duplicates', async () => {
-    const store = await import('./index');
+    const store = await importStoreInRoot();
     store.setGameMetaData({ ifId: 'IFID-LOCKS', name: 'Mock' } as any);
 
     store.addFilteredPath(['a']);
@@ -60,7 +96,7 @@ describe('store/index', () => {
   });
 
   it.skip('BUG_TEST: addFilteredPath/addLockPath before metadata initialization can throw', async () => {
-    const store = await import('./index');
+    const store = await importStoreInRoot();
 
     expect(() => store.addFilteredPath(['a'])).not.toThrow();
     expect(() => store.addLockPath(['a'])).not.toThrow();
@@ -72,7 +108,7 @@ describe('store/index', () => {
       JSON.stringify({ filteredPaths: [['player', 'hp']], lockedPaths: [['old', 'lock']] }),
     );
 
-    const store = await import('./index');
+    const store = await importStoreInRoot();
     store.setGameMetaData({ ifId: 'IFID-TEST', name: 'Mock' } as any);
 
     expect(store.getFilteredPaths()).toEqual([['player', 'hp']]);
@@ -83,7 +119,7 @@ describe('store/index', () => {
   it('should tolerate malformed game config JSON and fall back to defaults', async () => {
     localStorage.setItem('twine-dugger-IFID-TEST', '{bad-json');
 
-    const store = await import('./index');
+    const store = await importStoreInRoot();
     store.setGameMetaData({ ifId: 'IFID-TEST', name: 'Mock' } as any);
 
     expect(store.getFilteredPaths()).toEqual([]);
@@ -93,7 +129,7 @@ describe('store/index', () => {
   it.skip('BUG_TEST: malformed global settings JSON should not throw during module init', async () => {
     localStorage.setItem('twine-dugger-settings', '{bad-json');
 
-    await expect(import('./index')).resolves.toBeTruthy();
+    await expect(importStoreInRoot()).resolves.toBeTruthy();
   });
 
   it('should start tracking frames, parse passage data, and append diff/history frames', async () => {
@@ -121,7 +157,7 @@ describe('store/index', () => {
         locksUpdate: null,
       } as any);
 
-    const store = await import('./index');
+    const store = await importStoreInRoot();
     const stop = await store.startTrackingFrames();
 
     expect(store.getConnectionState()).toBe('live');
@@ -154,7 +190,7 @@ describe('store/index', () => {
     vi.mocked(api.getPassageData).mockResolvedValue([] as any);
     vi.mocked(api.getUpdates).mockResolvedValue(null as any);
 
-    const store = await import('./index');
+    const store = await importStoreInRoot();
     const stop = await store.startTrackingFrames();
 
     expect(store.getConnectionState()).toBe('error');
@@ -169,7 +205,7 @@ describe('store/index', () => {
     vi.mocked(api.getPassageData).mockResolvedValue([] as any);
     vi.mocked(api.getUpdates).mockResolvedValue(null as any);
 
-    const store = await import('./index');
+    const store = await importStoreInRoot();
     store.setGameMetaData({ ifId: 'IFID-LOCKS', name: 'Mock' } as any);
     store.addLockPath(['hp']);
 
@@ -188,7 +224,7 @@ describe('store/index', () => {
       .mockResolvedValueOnce(null as any)
       .mockResolvedValueOnce({ diffPackage: null, locksUpdate: [['hp']] } as any);
 
-    const store = await import('./index');
+    const store = await importStoreInRoot();
     store.setGameMetaData({ ifId: 'IFID-UPDATE', name: 'Mock' } as any);
 
     const stop = await store.startTrackingFrames();
@@ -199,7 +235,7 @@ describe('store/index', () => {
   });
 
   it('should persist game settings to localStorage after config updates', async () => {
-    const store = await import('./index');
+    const store = await importStoreInRoot();
     store.setGameMetaData({ ifId: 'IFID-PERSIST', name: 'Mock' } as any);
     store.addFilteredPath(['player', 'hp']);
 
@@ -219,7 +255,7 @@ describe('store/index', () => {
       .mockResolvedValueOnce(null as any)
       .mockResolvedValueOnce({ diffPackage: null, locksUpdate: [['hp']] } as any);
 
-    const store = await import('./index');
+    const store = await importStoreInRoot();
     const stop = await store.startTrackingFrames();
     await vi.advanceTimersByTimeAsync(220);
     stop();

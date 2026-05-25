@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { copy } from './copy';
 
@@ -39,5 +39,29 @@ describe('copy', () => {
     const fn = () => 123;
 
     expect(copy(fn)).toBe(fn);
+  });
+
+  it('should use recursive fallback paths when structuredClone throws', () => {
+    const cloneSpy = vi.spyOn(globalThis, 'structuredClone').mockImplementation(() => {
+      throw new Error('clone-fail');
+    });
+
+    const source: any = {
+      arr: [1, { x: 2 }],
+      map: new Map<string, unknown>([['k', { deep: true }]]),
+      set: new Set<unknown>([{ flag: true }]),
+      obj: { nested: 'value' },
+    };
+
+    try {
+      const cloned = copy(source) as typeof source;
+
+      expect(cloned.arr).toEqual([1, { x: 2 }]);
+      expect(cloned.map).toBeInstanceOf(Map);
+      expect(cloned.set).toBeInstanceOf(Set);
+      expect(cloned.obj).toEqual({ nested: 'value' });
+    } finally {
+      cloneSpy.mockRestore();
+    }
   });
 });

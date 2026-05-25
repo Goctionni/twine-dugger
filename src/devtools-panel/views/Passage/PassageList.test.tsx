@@ -75,4 +75,10 @@ describe('PassageList', () => {
     expect(screen.getByTestId('passage-1').getAttribute('data-active')).toBe('false');
     expect(screen.getByTestId('passage-2').getAttribute('data-active')).toBe('true');
   });
+
+  it('should render no rows when passage list is empty', () => {
+    render(() => <PassageList passages={[]} selectedPassage={null} onPassageClick={vi.fn()} />);
+
+    expect(screen.queryByTestId('passage-1')).toBeNull();
+  });
 });

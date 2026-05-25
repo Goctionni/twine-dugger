@@ -108,4 +108,12 @@ describe('PassageResults', () => {
     expect(screen.getByTestId('passage-header').textContent).toBe('Start');
     expect(screen.getByTestId('code-view').textContent).toBe('SugarCube:Body');
   });
+
+  it('should keep right pane empty when no passage is selected', () => {
+    getSelectedPassageMock.mockReturnValue(null);
+    render(() => <PassageResults results={[]} />);
+
+    expect(screen.queryByTestId('passage-header')).toBeNull();
+    expect(screen.queryByTestId('code-view')).toBeNull();
+  });
 });
