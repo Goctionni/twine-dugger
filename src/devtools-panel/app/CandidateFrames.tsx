@@ -1,6 +1,6 @@
 import { Index, Match, Switch } from 'solid-js';
 
-import { executeCode } from '../api/remote-execute';
+import { gotoUrl } from '../api/api';
 import { getCandidateIframes, setConnectionState } from '../store';
 import { initMeta } from './initMeta';
 function openIframeUrl(url: string) {
@@ -14,12 +14,7 @@ function openIframeUrl(url: string) {
     if (retryCount) await tryLoadMeta(retryCount - 1);
   };
 
-  executeCode(
-    (url) => {
-      location.href = url as string;
-    },
-    { args: [url] },
-  ).finally(() => tryLoadMeta());
+  gotoUrl(url).finally(() => tryLoadMeta());
 }
 
 export function Candidates() {

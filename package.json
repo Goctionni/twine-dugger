@@ -33,6 +33,7 @@
     "oxlint": "^1.66.0",
     "postcss": "8.5.15",
     "rollup-plugin-postcss": "4.0.2",
+    "solid-devtools": "^0.34.5",
     "ts-node": "10.9.2",
     "typescript": "6.0.3",
     "vite-plugin-solid": "2.11.12",
