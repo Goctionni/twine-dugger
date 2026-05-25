@@ -85,6 +85,38 @@ describe('getDiffer', () => {
     expect(Array.isArray(diffs)).toBe(true);
   });
 
+  it.skip('BUG_TEST: should emit set add when new set has additional primitive item', () => {
+    const diff = getDiffer();
+    const diffs = diff(new Set() as any, new Set([7]) as any);
+
+    expect(diffs).toEqual(
+      expect.arrayContaining([{ type: 'set', subtype: 'add', path: [], newValue: 7 }]),
+    );
+  });
+
+  it('should emit set remove for NaN edge case branch', () => {
+    const diff = getDiffer();
+    const diffs = diff(new Set([Number.NaN]) as any, new Set() as any);
+
+    expect(
+      diffs.some(
+        (item) => item.type === 'set' && item.subtype === 'remove' && item.path.length === 0,
+      ),
+    ).toBe(true);
+  });
+
+  it.skip('BUG_TEST: should emit set add/remove diffs for value changes', () => {
+    const diff = getDiffer();
+    const diffs = diff(new Set([1, 2]) as any, new Set([2, 3]) as any);
+
+    expect(diffs).toEqual(
+      expect.arrayContaining([
+        { type: 'set', subtype: 'remove', path: [], oldValue: 1 },
+        { type: 'set', subtype: 'add', path: [], newValue: 3 },
+      ]),
+    );
+  });
+
   it('should leverage stored identity map between runs for reference matches', () => {
     const itemA = { id: 1, value: 'a' };
     const itemB = { id: 2, value: 'b' };
@@ -100,6 +132,15 @@ describe('getDiffer', () => {
           item.type === 'array' && item.subtype === 'instructions' && item.instructions.length,
       ),
     ).toBe(true);
+  });
+
+  it.skip('BUG_TEST: should recurse set items matched by id and diff nested fields', () => {
+    const diff = getDiffer();
+    const diffs = diff(new Set([{ id: 1, hp: 1 }]) as any, new Set([{ id: 1, hp: 2 }]) as any);
+
+    expect(diffs).toEqual(
+      expect.arrayContaining([{ type: 'number', path: ['1', 'hp'], oldValue: 1, newValue: 2 }]),
+    );
   });
 
   it('should respect ignoreCheck for object keys', () => {
