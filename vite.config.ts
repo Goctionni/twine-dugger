@@ -12,6 +12,10 @@ import packageJson from './package.json' with { type: 'json' };
 
 export default defineConfig({
   staged: { '*': 'vp check --fix' },
+  test: {
+    include: ['src/**/*.test.{ts,tsx}'],
+    exclude: ['tests/e2e/**'],
+  },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
   build: { minify: false, sourcemap: true },
   plugins: [solidPlugin(), tailwindcss(), htmlInsertFontPlugin],

@@ -5,7 +5,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "prepare": "vp config"
+    "prepare": "vp config",
+    "test:e2e": "vp build && playwright test",
+    "test:e2e:smoke": "vp build && playwright test tests/e2e/smoke.spec.ts"
   },
   "dependencies": {
     "@solid-primitives/scheduled": "1.5.3",
@@ -20,6 +22,7 @@
   "devDependencies": {
     "@changesets/cli": "2.31.0",
     "@microsoft/api-extractor": "7.58.7",
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "4.3.0",
     "@tailwindcss/vite": "^4.3.0",
     "@tsdown/css": "0.22.0",
@@ -29,6 +32,8 @@
     "archiver": "8.0.0",
     "eslint-plugin-solid": "0.14.5",
     "globals": "17.6.0",
+    "http-server": "^14.1.1",
+    "jsdom": "^29.1.1",
     "oxfmt": "^0.51.0",
     "oxlint": "^1.66.0",
     "postcss": "8.5.15",
