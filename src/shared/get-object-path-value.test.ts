@@ -21,6 +21,20 @@ describe('getObjectPathValue', () => {
     expect(getObjectPathValue(map, [1, 'ready'])).toBe(true);
   });
 
+  it('reads values from array index path', () => {
+    const state = [{ name: 'zero' }, { name: 'one' }];
+
+    expect(getObjectPathValue(state, [1, 'name'])).toBe('one');
+  });
+
+  it('skips undefined key segments in runtime path input', () => {
+    const state = { player: { stats: { hp: 10 } } };
+
+    expect(
+      getObjectPathValue(state, ['player', undefined as unknown as string, 'stats', 'hp']),
+    ).toBe(10);
+  });
+
   it('returns null when path cannot be resolved', () => {
     const state = { player: 7 };
 
