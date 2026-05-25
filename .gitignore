@@ -5,3 +5,4 @@ dist
 *.zip
 playwright-report
 test-results
+coverage
