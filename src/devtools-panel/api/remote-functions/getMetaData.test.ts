@@ -13,7 +13,8 @@ describe('getGameMetaFn', () => {
   afterEach(() => {
     document.head.innerHTML = '';
     document.body.innerHTML = '';
-    window.SugarCube = undefined as unknown as Window['SugarCube'];
+    Reflect.deleteProperty(window as any, 'SugarCube');
+    Reflect.deleteProperty(window as any, 'Harlowe');
   });
 
   it('should return metadata for mocked SugarCube game', () => {
@@ -42,5 +43,81 @@ describe('getGameMetaFn', () => {
     expect(meta.format?.name).toBe('SugarCube');
     expect(meta.format?.version?.shortStr).toBe('2.37.3');
     expect(meta.compiler?.name).toBe('Tweego');
+  });
+
+  it('should return metadata for detected Harlowe story', () => {
+    const storyData = document.createElement('tw-storydata');
+    storyData.setAttribute('name', 'Harlowe Story');
+    storyData.setAttribute('ifid', 'HARLOWE-IFID');
+    storyData.setAttribute('format-version', '3.2.1');
+    storyData.setAttribute('creator', 'Twine');
+    storyData.setAttribute('creator-version', '2.10.0');
+    storyData.setAttribute('startnode', '2');
+
+    const p1 = document.createElement('tw-passagedata');
+    p1.setAttribute('pid', '1');
+    p1.setAttribute('name', 'Intro');
+
+    const p2 = document.createElement('tw-passagedata');
+    p2.setAttribute('pid', '2');
+    p2.setAttribute('name', 'Start');
+
+    document.body.append(storyData, p1, p2);
+    (window as any).Harlowe = {};
+
+    const meta = getGameMetaFn();
+
+    if (!meta || '__type' in meta) {
+      throw new Error('Expected concrete game metadata');
+    }
+
+    expect(meta.name).toBe('Harlowe Story');
+    expect(meta.ifId).toBe('HARLOWE-IFID');
+    expect(meta.format?.name).toBe('Harlowe');
+    expect(meta.format?.version?.shortStr).toBe('3.2.1');
+    expect(meta.passages).toEqual({ start: 'Start', count: 2 });
+    expect(meta.compiler).toEqual({ name: 'Twine', version: '2.10.0' });
+  });
+
+  it('should return candidate iframe urls when no format is detected', () => {
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('src', 'https://example.test/game.html');
+    iframe.getBoundingClientRect = () =>
+      ({
+        width: 800,
+        height: 600,
+        left: 0,
+        top: 0,
+        right: 800,
+        bottom: 600,
+      }) as DOMRect;
+
+    document.body.appendChild(iframe);
+    Reflect.deleteProperty(window as any, 'SugarCube');
+    Reflect.deleteProperty(window as any, 'Harlowe');
+
+    const meta = getGameMetaFn();
+
+    expect(meta).toEqual({
+      __type: 'candidate-game-iframes',
+      urls: ['https://example.test/game.html'],
+    });
+  });
+
+  it('should return null when no format and no candidate iframe is found', () => {
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('src', 'https://example.test/small.html');
+    iframe.getBoundingClientRect = () =>
+      ({
+        width: 10,
+        height: 10,
+        left: 0,
+        top: 0,
+        right: 10,
+        bottom: 10,
+      }) as DOMRect;
+    document.body.appendChild(iframe);
+
+    expect(getGameMetaFn()).toBeNull();
   });
 });
