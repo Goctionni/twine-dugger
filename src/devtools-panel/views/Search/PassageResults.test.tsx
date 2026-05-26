@@ -9,12 +9,12 @@ const { setViewStateMock, getGameMetaDataMock, getSelectedPassageMock } = vi.hoi
   getSelectedPassageMock: vi.fn(),
 }));
 
+const { createVirtualizerMock } = vi.hoisted(() => ({
+  createVirtualizerMock: vi.fn(),
+}));
+
 vi.mock('@tanstack/solid-virtual', () => ({
-  createVirtualizer: vi.fn((options: { count: number }) => ({
-    getTotalSize: () => options.count * 35,
-    getVirtualItems: () =>
-      Array.from({ length: options.count }, (_, index) => ({ index, size: 35, start: index * 35 })),
-  })),
+  createVirtualizer: createVirtualizerMock,
 }));
 
 vi.mock('../../store', () => ({
@@ -74,6 +74,16 @@ describe('PassageResults', () => {
     getSelectedPassageMock.mockReset();
     getGameMetaDataMock.mockReturnValue({ format: { name: 'SugarCube' } });
     getSelectedPassageMock.mockReturnValue(null);
+    createVirtualizerMock.mockReset();
+    createVirtualizerMock.mockImplementation((options: { count: number }) => ({
+      getTotalSize: () => options.count * 35,
+      getVirtualItems: () =>
+        Array.from({ length: options.count }, (_, index) => ({
+          index,
+          size: 35,
+          start: index * 35,
+        })),
+    }));
   });
 
   it('should dispatch selected passage to view state when row is clicked', () => {
@@ -92,6 +102,12 @@ describe('PassageResults', () => {
       size: null,
       position: null,
     });
+
+    const opts = createVirtualizerMock.mock.calls[0]?.[0];
+    expect(opts).toBeTruthy();
+    expect(opts.estimateSize()).toBe(35);
+    expect(opts.count).toBe(1);
+    expect(opts.getScrollElement()).toBeInstanceOf(HTMLElement);
   });
 
   it('should render selected passage header and code in right pane', () => {
@@ -115,5 +131,36 @@ describe('PassageResults', () => {
 
     expect(screen.queryByTestId('passage-header')).toBeNull();
     expect(screen.queryByTestId('code-view')).toBeNull();
+  });
+
+  it('should pass active flag to selected row', () => {
+    const results = [
+      { id: 1, name: 'Intro', content: 'Hello', tags: [], size: null, position: null },
+      { id: 2, name: 'Start', content: 'Body', tags: [], size: null, position: null },
+    ] as any;
+    getSelectedPassageMock.mockReturnValue(results[1]);
+
+    render(() => <PassageResults results={results} />);
+
+    expect(screen.getByTestId('row-Intro').getAttribute('data-active')).toBe('false');
+    expect(screen.getByTestId('row-Start').getAttribute('data-active')).toBe('true');
+  });
+
+  it('should ignore virtual rows that resolve to missing result entries', () => {
+    createVirtualizerMock.mockImplementation((options: { count: number }) => ({
+      getTotalSize: () => options.count * 35,
+      getVirtualItems: () => [
+        { index: 0, size: 35, start: 0 },
+        { index: options.count + 2, size: 35, start: 35 },
+      ],
+    }));
+    const results = [
+      { id: 1, name: 'Intro', content: 'Hello', tags: [], size: null, position: null },
+    ] as any;
+
+    render(() => <PassageResults results={results} />);
+
+    expect(screen.getByTestId('row-Intro')).toBeTruthy();
+    expect(screen.queryByTestId('row-undefined')).toBeNull();
   });
 });

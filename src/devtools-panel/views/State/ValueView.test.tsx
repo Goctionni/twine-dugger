@@ -39,11 +39,15 @@ vi.mock('./StateInputs/StateBooleanInput', () => ({
 }));
 
 vi.mock('./StateInputs/StateObjectInput', () => ({
-  StateObjectInput: () => <div data-testid="input-object" />,
+  StateObjectInput: (props: { value: unknown }) => (
+    <div data-testid="input-object">{JSON.stringify(props.value)}</div>
+  ),
 }));
 
 vi.mock('./StateInputs/StateMapInput', () => ({
-  StateMapInput: () => <div data-testid="input-map" />,
+  StateMapInput: (props: { value: Map<unknown, unknown> }) => (
+    <div data-testid="input-map">{String(props.value.size)}</div>
+  ),
 }));
 
 vi.mock('./StateInputs/StateArrayInput', () => ({
@@ -85,6 +89,17 @@ describe('ValueView', () => {
     expect(screen.getByText('Values of this type cannot be edited')).toBeTruthy();
   });
 
+  it('should render non-editable message for null and undefined values', () => {
+    getObjectPathValueMock.mockReturnValue(null);
+    render(() => <ValueView />);
+    expect(screen.getByText('Values of this type cannot be edited')).toBeTruthy();
+
+    cleanup();
+    getObjectPathValueMock.mockReturnValue(undefined);
+    render(() => <ValueView />);
+    expect(screen.getByText('Values of this type cannot be edited')).toBeTruthy();
+  });
+
   it('should render object input for object values', () => {
     getObjectPathValueMock.mockReturnValue({ hp: 10 });
     render(() => <ValueView />);
@@ -112,6 +127,11 @@ describe('ValueView', () => {
     getObjectPathValueMock.mockReturnValue([1, 2, 3]);
     render(() => <ValueView />);
     expect(screen.getByTestId('input-array')).toBeTruthy();
+
+    cleanup();
+    getObjectPathValueMock.mockReturnValue(new Set([1, 2]));
+    render(() => <ValueView />);
+    expect(screen.getByText('Input for this type is not implemented yet')).toBeTruthy();
   });
 
   it('should show readonly marker when viewing historical slice', () => {

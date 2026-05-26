@@ -57,6 +57,8 @@ import { StateBooleanInput } from './StateBooleanInput';
 afterEach(() => cleanup());
 
 describe('StateBooleanInput', () => {
+  let historyId = -1;
+
   beforeEach(() => {
     createGetViewStateMock.mockReset();
     getActiveStateMock.mockReset();
@@ -68,7 +70,8 @@ describe('StateBooleanInput', () => {
     booleanInputMock.mockReset();
     lockButtonMock.mockReset();
 
-    createGetViewStateMock.mockReturnValue(() => -1);
+    historyId = -1;
+    createGetViewStateMock.mockReturnValue(() => historyId);
     getActiveStateMock.mockReturnValue({ player: { alive: true } });
     getLockedPathsMock.mockReturnValue([]);
   });
@@ -86,5 +89,45 @@ describe('StateBooleanInput', () => {
     lockButtonMock.mock.calls[0]?.[0].onToggle();
     expect(addLockPathMock).toHaveBeenCalledWith(['player', 'alive']);
     expect(setStatePropertyLockMock).toHaveBeenCalledWith(['player', 'alive'], true);
+  });
+
+  it('should unlock and remove path when lock status is locked', () => {
+    getLockedPathsMock.mockReturnValue([['player', 'alive']]);
+    render(() => <StateBooleanInput path={['player', 'alive']} />);
+
+    lockButtonMock.mock.calls[0]?.[0].onToggle();
+
+    expect(removeLockPathMock).toHaveBeenCalledWith(['player', 'alive']);
+    expect(setStatePropertyLockMock).toHaveBeenCalledWith(['player', 'alive'], false);
+  });
+
+  it('should not call setState when input is disabled due to readonly mode', async () => {
+    historyId = 10;
+    render(() => <StateBooleanInput path={['player', 'alive']} />);
+
+    await booleanInputMock.mock.calls[0]?.[0].onChange(false);
+
+    expect(setStateMock).not.toHaveBeenCalled();
+    expect(lockButtonMock).not.toHaveBeenCalled();
+  });
+
+  it('should not call setState when path has ancestor lock', async () => {
+    getLockedPathsMock.mockReturnValue([['player']]);
+    render(() => <StateBooleanInput path={['player', 'alive']} />);
+
+    await booleanInputMock.mock.calls[0]?.[0].onChange(false);
+
+    expect(setStateMock).not.toHaveBeenCalled();
+  });
+
+  it('should swallow setState errors and continue', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    setStateMock.mockRejectedValueOnce(new Error('save failed'));
+    render(() => <StateBooleanInput path={['player', 'alive']} />);
+
+    await booleanInputMock.mock.calls[0]?.[0].onChange(false);
+
+    expect(errorSpy).toHaveBeenCalledWith('Failed to save state:', expect.any(Error));
+    errorSpy.mockRestore();
   });
 });

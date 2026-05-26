@@ -38,6 +38,10 @@ describe('Candidates', () => {
     initMetaMock.mockResolvedValue(true);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should render singular candidate message and open button', () => {
     getCandidateIframesMock.mockReturnValue(['https://game.local/frame']);
 
@@ -72,5 +76,31 @@ describe('Candidates', () => {
     expect(executeCodeMock.mock.calls[0]?.[1]).toEqual({
       args: ['https://game.local/frame'],
     });
+  });
+
+  it('should retry metadata loading until initMeta returns true', async () => {
+    vi.useFakeTimers();
+    getCandidateIframesMock.mockReturnValue(['https://game.local/frame']);
+    initMetaMock.mockResolvedValueOnce(false).mockResolvedValueOnce(false).mockResolvedValue(true);
+
+    render(() => <Candidates />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+
+    await vi.advanceTimersByTimeAsync(800);
+
+    expect(initMetaMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('should stop retrying after retry budget is exhausted', async () => {
+    vi.useFakeTimers();
+    getCandidateIframesMock.mockReturnValue(['https://game.local/frame']);
+    initMetaMock.mockResolvedValue(false);
+
+    render(() => <Candidates />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+
+    await vi.advanceTimersByTimeAsync(2000);
+
+    expect(initMetaMock).toHaveBeenCalledTimes(7);
   });
 });
