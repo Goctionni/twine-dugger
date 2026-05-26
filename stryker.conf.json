@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "command",
+  "commandRunner": {
+    "command": "vp test run --config vitest.stryker.config.ts --reporter=minimal"
+  },
+  "mutate": [
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.test.{ts,tsx}",
+    "!src/**/*.spec.{ts,tsx}",
+    "!src/devtools-panel/main.tsx"
+  ],
+  "incremental": true,
+  "incrementalFile": "reports/stryker-incremental.json",
+  "cleanTempDir": "always",
+  "reporters": ["clear-text", "progress", "html"],
+  "cleanSandbox": true,
+  "coverageAnalysis": "off",
+  "allowConsoleColors": true,
+  "ignorePatterns": ["dist", "coverage"],
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": 0
+  }
+}
