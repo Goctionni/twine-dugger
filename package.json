@@ -14,8 +14,7 @@
     "test:e2e": "vp build && playwright test",
     "test:e2e:smoke": "vp build && playwright test tests/e2e/smoke.test.ts",
     "test:mutation": "stryker run",
-    "test:mutation:smoke": "stryker run stryker.smoke.conf.json --dryRunOnly",
-    "test:mutation:smoke:run": "stryker run stryker.smoke.conf.json"
+    "test:mutation:smoke": "stryker run stryker.smoke.conf.json"
   },
   "dependencies": {
     "@solid-primitives/scheduled": "1.5.3",
@@ -33,6 +32,7 @@
     "@playwright/test": "1.60.0",
     "@solidjs/testing-library": "0.8.10",
     "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/typescript-checker": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
     "@tailwindcss/postcss": "4.3.0",
     "@tailwindcss/vite": "^4.3.0",
@@ -55,7 +55,8 @@
     "ts-node": "10.9.2",
     "typescript": "6.0.3",
     "vite-plugin-solid": "2.11.12",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "packageManager": "pnpm@11.2.2"
 }

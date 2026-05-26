@@ -1,26 +1,36 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "testRunner": "command",
-  "commandRunner": {
-    "command": "vp test run --config vitest.stryker.config.ts --reporter=minimal"
+  "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
+  "vitest": {
+    "configFile": "vitest.stryker.config.ts",
+    "related": true
   },
+  "mutate_comment": "Include-forward strategy: add positive globs as directories are onboarded.",
   "mutate": [
     "src/**/*.{ts,tsx}",
+    "!src/shared/testing/*.{ts,tsx}",
     "!src/**/*.test.{ts,tsx}",
-    "!src/**/*.spec.{ts,tsx}",
     "!src/devtools-panel/main.tsx"
   ],
+  "concurrency": "90%",
+  "timeoutFactor": 1,
+  "timeoutMS": 5000,
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
   "cleanTempDir": "always",
-  "reporters": ["clear-text", "progress", "html"],
-  "cleanSandbox": true,
-  "coverageAnalysis": "off",
+  "reporters": ["clear-text", "progress", "html", "json"],
+  "coverageAnalysis": "perTest",
   "allowConsoleColors": true,
-  "ignorePatterns": ["dist", "coverage"],
+  "ignorePatterns": ["dist", "coverage", ".stryker-tmp", "reports"],
   "thresholds": {
     "high": 80,
     "low": 60,
     "break": 0
+  },
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  "typescriptChecker": {
+    "prioritizePerformanceOverAccuracy": true
   }
 }

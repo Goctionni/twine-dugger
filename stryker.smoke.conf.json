@@ -1,14 +1,19 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "testRunner": "command",
-  "commandRunner": {
-    "command": "vp test run --config vitest.stryker.smoke.config.ts src/shared/type-helpers.test.ts --reporter=minimal"
+  "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
+  "vitest": {
+    "configFile": "vitest.stryker.smoke.config.ts",
+    "related": false
   },
-  "mutate": ["src/shared/type-helpers.ts"],
-  "reporters": ["clear-text"],
-  "coverageAnalysis": "off",
+  "mutate": ["tests/mutation/smoke.target.tsx"],
+  "reporters": ["clear-text", "progress"],
   "concurrency": 1,
-  "incremental": true,
-  "incrementalFile": "reports/stryker-incremental.json",
-  "cleanTempDir": true
+  "incremental": false,
+  "cleanTempDir": true,
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  "typescriptChecker": {
+    "prioritizePerformanceOverAccuracy": true
+  }
 }
