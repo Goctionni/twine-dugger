@@ -66,5 +66,8 @@ describe('DiffPath', () => {
     expect(onAddFilter).toHaveBeenNthCalledWith(2, ['a', 'b']);
     expect(menuItems[0].disabled()).toBe(false);
     expect(menuItems[1].disabled()).toBe(true);
+
+    render(() => <>{menuItems[1].label()}</>);
+    expect(screen.getByText(/Filter out changes to/)).toBeTruthy();
   });
 });

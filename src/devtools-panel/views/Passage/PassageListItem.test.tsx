@@ -56,5 +56,6 @@ describe('PassageListItem', () => {
 
     const button = container.querySelector('button');
     expect(button?.className.includes('bg-slate-700')).toBe(true);
+    expect(button?.className.includes('cursor-pointer')).toBe(true);
   });
 });

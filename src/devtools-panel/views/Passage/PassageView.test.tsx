@@ -38,4 +38,18 @@ describe('PassageView', () => {
     expect(screen.getByTestId('header').textContent).toBe('Start');
     expect(screen.getByTestId('code').textContent).toBe('SugarCube:Body');
   });
+
+  it('should pass empty code when passage content is nullish', () => {
+    const passageWithoutContent = {
+      id: 2,
+      name: 'Empty',
+      tags: [],
+      size: null,
+      position: null,
+    } as any;
+
+    render(() => <PassageView language="SugarCube" passage={passageWithoutContent} />);
+
+    expect(screen.getByTestId('code').textContent).toBe('SugarCube:');
+  });
 });

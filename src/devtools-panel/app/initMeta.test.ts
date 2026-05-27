@@ -74,6 +74,22 @@ describe('initMeta', () => {
     expect(setConnectionStateMock).toHaveBeenNthCalledWith(2, 'not-enabled');
   });
 
+  it('should treat non-candidate __type payload as normal metadata', async () => {
+    const meta = {
+      __type: 'not-candidate',
+      name: 'Demo',
+      ifId: 'ifid-2',
+    };
+    getGameMetaDataMock.mockResolvedValue(meta);
+
+    const result = await initMeta();
+
+    expect(result).toBe(true);
+    expect(setGameMetaDataMock).toHaveBeenCalledWith(meta);
+    expect(setCandidateIframesMock).not.toHaveBeenCalled();
+    expect(setConnectionStateMock).toHaveBeenNthCalledWith(2, 'not-enabled');
+  });
+
   it('should set error state and rethrow when metadata fetch fails', async () => {
     const error = new Error('metadata failed');
     getGameMetaDataMock.mockRejectedValue(error);

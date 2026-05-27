@@ -86,6 +86,14 @@ describe('PassagesPage', () => {
     expect(screen.getByTestId('selected-id').textContent).toBe('1');
   });
 
+  it('should pass empty language when game format is missing', () => {
+    getGameMetaDataMock.mockReturnValue(undefined);
+
+    render(() => <PassagesPage />);
+
+    expect(screen.getByTestId('view').textContent).toBe(':Start');
+  });
+
   it('should persist selected passage via view-state setter when list callback fires', () => {
     render(() => <PassagesPage />);
     fireEvent.click(screen.getByTestId('pick'));

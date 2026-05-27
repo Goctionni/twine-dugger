@@ -45,6 +45,7 @@ describe('Layout', () => {
 
     expect(menuItems).toHaveLength(1);
     expect(menuItems[0]?.label).toBe('Reload Twine Dugger');
+    expect(String(menuItems[0]?.onClick)).toContain('reload');
     expect(handler).toHaveBeenCalled();
   });
 });
