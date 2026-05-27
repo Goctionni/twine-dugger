@@ -4,8 +4,8 @@ import { cleanup, fireEvent, render } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const { getPersistedValueMock, setPersistedValueMock } = vi.hoisted(() => ({
-  getPersistedValueMock: vi.fn(),
-  setPersistedValueMock: vi.fn(),
+  getPersistedValueMock: vi.fn<(key: string, fallback: string) => string>(),
+  setPersistedValueMock: vi.fn<(key: string, value: string) => void>(),
 }));
 
 vi.mock('./persistedValue', () => ({
@@ -34,8 +34,11 @@ describe('MovableSplit', () => {
     ));
 
     const leftPanel = container.querySelector('.bg-gray-900[style]');
+    expect(leftPanel).toBeInstanceOf(HTMLElement);
+
+    const panel = leftPanel as HTMLElement;
     expect(getPersistedValueMock).toHaveBeenCalledWith('main-split', '50%');
-    expect(leftPanel?.getAttribute('style')).toContain('width: 35%');
+    expect(panel.getAttribute('style')).toBe('width: 35%;');
   });
 
   it('should resize and persist width while dragging divider', () => {
@@ -49,9 +52,10 @@ describe('MovableSplit', () => {
 
     const root = container.firstElementChild as HTMLDivElement;
     const divider = container.querySelector('.cursor-col-resize');
-    if (!(root instanceof HTMLDivElement) || !(divider instanceof HTMLDivElement)) {
-      throw new Error('Expected split root and divider to exist');
-    }
+    expect(root).toBeInstanceOf(HTMLDivElement);
+    expect(divider).toBeInstanceOf(HTMLDivElement);
+
+    const handle = divider as HTMLDivElement;
 
     root.getBoundingClientRect = () =>
       ({
@@ -65,7 +69,7 @@ describe('MovableSplit', () => {
         y: 0,
       }) as DOMRect;
 
-    fireEvent.mouseDown(divider, { clientX: 200 });
+    fireEvent.mouseDown(handle, { clientX: 200 });
     fireEvent.mouseMove(document, { clientX: 420 });
     fireEvent.mouseUp(document);
 
@@ -79,9 +83,10 @@ describe('MovableSplit', () => {
 
     const root = container.firstElementChild as HTMLDivElement;
     const divider = container.querySelector('.cursor-col-resize');
-    if (!(root instanceof HTMLDivElement) || !(divider instanceof HTMLDivElement)) {
-      throw new Error('Expected split root and divider to exist');
-    }
+    expect(root).toBeInstanceOf(HTMLDivElement);
+    expect(divider).toBeInstanceOf(HTMLDivElement);
+
+    const handle = divider as HTMLDivElement;
 
     root.getBoundingClientRect = () =>
       ({
@@ -95,10 +100,10 @@ describe('MovableSplit', () => {
         y: 0,
       }) as DOMRect;
 
-    fireEvent.mouseDown(divider, { clientX: 100 });
+    fireEvent.mouseDown(handle, { clientX: 100 });
     fireEvent.mouseMove(document, { clientX: 300 });
     fireEvent.mouseUp(document);
 
-    expect(setPersistedValueMock).not.toHaveBeenCalled();
+    expect(setPersistedValueMock.mock.calls).toStrictEqual([]);
   });
 });

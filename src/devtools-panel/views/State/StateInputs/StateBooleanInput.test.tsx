@@ -3,6 +3,8 @@
 import { cleanup, render } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const {
   createGetViewStateMock,
   getActiveStateMock,
@@ -14,15 +16,15 @@ const {
   booleanInputMock,
   lockButtonMock,
 } = vi.hoisted(() => ({
-  createGetViewStateMock: vi.fn(),
-  getActiveStateMock: vi.fn(),
-  getLockedPathsMock: vi.fn(),
-  addLockPathMock: vi.fn(),
-  removeLockPathMock: vi.fn(),
-  setStateMock: vi.fn(async () => undefined),
-  setStatePropertyLockMock: vi.fn(),
-  booleanInputMock: vi.fn(),
-  lockButtonMock: vi.fn(),
+  createGetViewStateMock: vi.fn<AnyFn>(),
+  getActiveStateMock: vi.fn<AnyFn>(),
+  getLockedPathsMock: vi.fn<AnyFn>(),
+  addLockPathMock: vi.fn<AnyFn>(),
+  removeLockPathMock: vi.fn<AnyFn>(),
+  setStateMock: vi.fn<AnyFn>(async () => undefined),
+  setStatePropertyLockMock: vi.fn<AnyFn>(),
+  booleanInputMock: vi.fn<AnyFn>(),
+  lockButtonMock: vi.fn<AnyFn>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({
@@ -107,8 +109,8 @@ describe('StateBooleanInput', () => {
 
     await booleanInputMock.mock.calls[0]?.[0].onChange(false);
 
-    expect(setStateMock).not.toHaveBeenCalled();
-    expect(lockButtonMock).not.toHaveBeenCalled();
+    expect(setStateMock.mock.calls).toStrictEqual([]);
+    expect(lockButtonMock.mock.calls).toStrictEqual([]);
   });
 
   it('should not call setState when path has ancestor lock', async () => {
@@ -117,7 +119,7 @@ describe('StateBooleanInput', () => {
 
     await booleanInputMock.mock.calls[0]?.[0].onChange(false);
 
-    expect(setStateMock).not.toHaveBeenCalled();
+    expect(setStateMock.mock.calls).toStrictEqual([]);
   });
 
   it('should swallow setState errors and continue', async () => {

@@ -3,9 +3,11 @@
 import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const { isPathFilteredMock, createContextMenuHandlerMock } = vi.hoisted(() => ({
-  isPathFilteredMock: vi.fn(),
-  createContextMenuHandlerMock: vi.fn(),
+  isPathFilteredMock: vi.fn<AnyFn>(),
+  createContextMenuHandlerMock: vi.fn<AnyFn>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({
@@ -29,14 +31,15 @@ describe('DiffPath', () => {
     isPathFilteredMock.mockReset();
     createContextMenuHandlerMock.mockReset();
     isPathFilteredMock.mockReturnValue(false);
-    createContextMenuHandlerMock.mockImplementation(() => vi.fn());
+    createContextMenuHandlerMock.mockImplementation(() => vi.fn<AnyFn>());
   });
 
   it('should render full path and trigger click handler', () => {
-    const onClick = vi.fn();
+    const onClick = vi.fn<() => void>();
+    const addFilter = vi.fn<(path: Array<string | number>) => void>();
 
     render(() => (
-      <DiffPath path={['player']} leafKey="hp" onClick={onClick} onAddFilter={vi.fn()} />
+      <DiffPath path={['player']} leafKey="hp" onClick={onClick} onAddFilter={addFilter} />
     ));
     fireEvent.click(screen.getByText('player.hp'));
 
@@ -44,19 +47,20 @@ describe('DiffPath', () => {
   });
 
   it('should build context menu options for each parent path and honor filter disabled state', () => {
-    const onAddFilter = vi.fn();
+    const onAddFilter = vi.fn<(path: Array<string | number>) => void>();
+    const onClick = vi.fn<() => void>();
     let menuItems: Array<any> = [];
 
     createContextMenuHandlerMock.mockImplementation((items: Array<any>) => {
       menuItems = items;
-      return vi.fn();
+      return vi.fn<AnyFn>();
     });
 
     isPathFilteredMock.mockImplementation(
       (path: Array<string | number>) => path.join('.') === 'a.b',
     );
 
-    render(() => <DiffPath path={['a', 'b']} onClick={vi.fn()} onAddFilter={onAddFilter} />);
+    render(() => <DiffPath path={['a', 'b']} onClick={onClick} onAddFilter={onAddFilter} />);
 
     expect(menuItems).toHaveLength(2);
     menuItems[0].onClick();

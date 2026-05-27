@@ -3,19 +3,21 @@
 import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const { setViewStateMock, getGameMetaDataMock, getPassageDataMock, getSelectedPassageMock } =
   vi.hoisted(() => ({
-    setViewStateMock: vi.fn(),
-    getGameMetaDataMock: vi.fn(),
-    getPassageDataMock: vi.fn(),
-    getSelectedPassageMock: vi.fn(),
+    setViewStateMock: vi.fn<AnyFn>(),
+    getGameMetaDataMock: vi.fn<AnyFn>(),
+    getPassageDataMock: vi.fn<AnyFn>(),
+    getSelectedPassageMock: vi.fn<AnyFn>(),
   }));
 
 vi.mock('../store', () => ({
   setViewState: setViewStateMock,
   getGameMetaData: getGameMetaDataMock,
   getPassageData: getPassageDataMock,
-  createGetViewState: vi.fn(() => getSelectedPassageMock),
+  createGetViewState: vi.fn<AnyFn>(() => getSelectedPassageMock),
 }));
 
 vi.mock('../ui/util/MovableSplit', () => ({

@@ -3,14 +3,47 @@
 import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type VirtualizerOptions = {
+  count: number;
+  estimateSize: () => number;
+  getScrollElement: () => Element | null;
+};
+
 const { setViewStateMock, getGameMetaDataMock, getSelectedPassageMock } = vi.hoisted(() => ({
-  setViewStateMock: vi.fn(),
-  getGameMetaDataMock: vi.fn(),
-  getSelectedPassageMock: vi.fn(),
+  setViewStateMock: vi.fn<
+    (
+      view: string,
+      key: string,
+      value: {
+        id: number;
+        name: string;
+        content: string;
+        tags: string[];
+        size: null;
+        position: null;
+      },
+    ) => void
+  >(),
+  getGameMetaDataMock: vi.fn<() => { format: { name: string } }>(),
+  getSelectedPassageMock: vi.fn<
+    () => {
+      id: number;
+      name: string;
+      content: string;
+      tags: string[];
+      size: null;
+      position: null;
+    } | null
+  >(),
 }));
 
 const { createVirtualizerMock } = vi.hoisted(() => ({
-  createVirtualizerMock: vi.fn(),
+  createVirtualizerMock: vi.fn<
+    (options: VirtualizerOptions) => {
+      getTotalSize: () => number;
+      getVirtualItems: () => Array<{ index: number; size: number; start: number }>;
+    }
+  >(),
 }));
 
 vi.mock('@tanstack/solid-virtual', () => ({
@@ -20,7 +53,9 @@ vi.mock('@tanstack/solid-virtual', () => ({
 vi.mock('../../store', () => ({
   setViewState: setViewStateMock,
   getGameMetaData: getGameMetaDataMock,
-  createGetViewState: vi.fn(() => getSelectedPassageMock),
+  createGetViewState: vi.fn<(view: string, key: string) => typeof getSelectedPassageMock>(
+    () => getSelectedPassageMock,
+  ),
 }));
 
 vi.mock('../../ui/util/MovableSplit', () => ({
@@ -75,7 +110,7 @@ describe('PassageResults', () => {
     getGameMetaDataMock.mockReturnValue({ format: { name: 'SugarCube' } });
     getSelectedPassageMock.mockReturnValue(null);
     createVirtualizerMock.mockReset();
-    createVirtualizerMock.mockImplementation((options: { count: number }) => ({
+    createVirtualizerMock.mockImplementation((options: VirtualizerOptions) => ({
       getTotalSize: () => options.count * 35,
       getVirtualItems: () =>
         Array.from({ length: options.count }, (_, index) => ({
@@ -103,8 +138,7 @@ describe('PassageResults', () => {
       position: null,
     });
 
-    const opts = createVirtualizerMock.mock.calls[0]?.[0];
-    expect(opts).toBeTruthy();
+    const opts = createVirtualizerMock.mock.calls[0]![0] as VirtualizerOptions;
     expect(opts.estimateSize()).toBe(35);
     expect(opts.count).toBe(1);
     expect(opts.getScrollElement()).toBeInstanceOf(HTMLElement);
@@ -147,7 +181,7 @@ describe('PassageResults', () => {
   });
 
   it('should ignore virtual rows that resolve to missing result entries', () => {
-    createVirtualizerMock.mockImplementation((options: { count: number }) => ({
+    createVirtualizerMock.mockImplementation((options: VirtualizerOptions) => ({
       getTotalSize: () => options.count * 35,
       getVirtualItems: () => [
         { index: 0, size: 35, start: 0 },

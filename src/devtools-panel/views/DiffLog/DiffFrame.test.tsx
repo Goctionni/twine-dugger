@@ -3,10 +3,12 @@
 import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const { createGetSettingMock, setNavigationPageMock, setViewStateMock } = vi.hoisted(() => ({
-  createGetSettingMock: vi.fn(),
-  setNavigationPageMock: vi.fn(),
-  setViewStateMock: vi.fn(),
+  createGetSettingMock: vi.fn<AnyFn>(),
+  setNavigationPageMock: vi.fn<AnyFn>(),
+  setViewStateMock: vi.fn<AnyFn>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({
@@ -50,13 +52,14 @@ describe('DiffFrame', () => {
     ));
 
     expect(createGetSettingMock).toHaveBeenCalledWith('diffLog.fontSize');
-    expect(container.querySelector('.group')?.getAttribute('style')).toContain('font-size: 14px');
+    expect(container.querySelector('.group')?.getAttribute('style')).toBe('font-size: 14px;');
     expect(screen.getByRole('button', { name: 'Start' })).toBeTruthy();
     expect(screen.getByTestId('relative-time')).toBeTruthy();
     expect(screen.getByTestId('diff-item')).toBeTruthy();
 
     const header = container.querySelector('.flex.items-center.gap-2');
-    expect(header?.className).not.toContain('mt-3');
+    expect(header).toBeInstanceOf(HTMLDivElement);
+    expect((header as HTMLDivElement).className.includes('mt-3')).toBe(false);
   });
 
   it('should add separator for non-first frame and navigate to matched passage', () => {
@@ -86,7 +89,8 @@ describe('DiffFrame', () => {
     expect(setViewStateMock).toHaveBeenCalledWith('passage', 'selected', { ...passage });
 
     const header = container.querySelector('.flex.items-center.gap-2');
-    expect(header?.className).toContain('mt-3');
+    expect(header).toBeInstanceOf(HTMLDivElement);
+    expect((header as HTMLDivElement).className.includes('mt-3')).toBe(true);
   });
 
   it('should skip selected passage update when no matching passage exists', () => {
@@ -104,7 +108,7 @@ describe('DiffFrame', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Missing Passage' }));
 
     expect(setNavigationPageMock).toHaveBeenCalledWith('passages');
-    expect(setViewStateMock).not.toHaveBeenCalled();
+    expect(setViewStateMock.mock.calls).toStrictEqual([]);
   });
 
   it('should not attempt selected passage update when passageData is undefined', () => {
@@ -121,6 +125,6 @@ describe('DiffFrame', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
 
     expect(setNavigationPageMock).toHaveBeenCalledWith('passages');
-    expect(setViewStateMock).not.toHaveBeenCalled();
+    expect(setViewStateMock.mock.calls).toStrictEqual([]);
   });
 });

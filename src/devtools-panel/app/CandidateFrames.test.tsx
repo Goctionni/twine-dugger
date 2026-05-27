@@ -3,12 +3,14 @@
 import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const { executeCodeMock, getCandidateIframesMock, setConnectionStateMock, initMetaMock } =
   vi.hoisted(() => ({
-    executeCodeMock: vi.fn(),
-    getCandidateIframesMock: vi.fn(),
-    setConnectionStateMock: vi.fn(),
-    initMetaMock: vi.fn(),
+    executeCodeMock: vi.fn<AnyFn>(),
+    getCandidateIframesMock: vi.fn<AnyFn>(),
+    setConnectionStateMock: vi.fn<AnyFn>(),
+    initMetaMock: vi.fn<AnyFn>(),
   }));
 
 vi.mock('../api/remote-execute', () => ({
@@ -72,8 +74,8 @@ describe('Candidates', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open' }));
 
     expect(setConnectionStateMock).toHaveBeenCalledWith('loading-meta');
-    expect(executeCodeMock).toHaveBeenCalled();
-    expect(executeCodeMock.mock.calls[0]?.[1]).toEqual({
+    expect(executeCodeMock.mock.calls.length).toBeGreaterThan(0);
+    expect(executeCodeMock.mock.calls[0]?.[1]).toStrictEqual({
       args: ['https://game.local/frame'],
     });
   });

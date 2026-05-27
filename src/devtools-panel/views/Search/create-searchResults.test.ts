@@ -3,6 +3,8 @@
 import { createRoot } from 'solid-js';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const mockedStore = vi.hoisted(() => ({
   nav: 'search' as 'search' | 'state',
   query: '',
@@ -11,24 +13,24 @@ const mockedStore = vi.hoisted(() => ({
 }));
 
 const { findStateMatchesMock, findPassageMatchesMock, scheduleGateMock } = vi.hoisted(() => ({
-  findStateMatchesMock: vi.fn(),
-  findPassageMatchesMock: vi.fn(),
-  scheduleGateMock: vi.fn(() => true),
+  findStateMatchesMock: vi.fn<AnyFn>(),
+  findPassageMatchesMock: vi.fn<AnyFn>(),
+  scheduleGateMock: vi.fn<() => boolean>(() => true),
 }));
 
 vi.mock('@solid-primitives/scheduled', () => ({
-  createScheduled: vi.fn(() => scheduleGateMock),
-  scheduleIdle: vi.fn((fn: () => void) => fn()),
+  createScheduled: vi.fn<AnyFn>(() => scheduleGateMock),
+  scheduleIdle: vi.fn<(fn: () => void) => void>((fn: () => void) => fn()),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({
-  createGetViewState: vi.fn((view: string, key: string) => {
+  createGetViewState: vi.fn<AnyFn>((view: string, key: string) => {
     if (view === 'search' && key === 'query') return () => mockedStore.query;
     return () => undefined;
   }),
-  getNavigationPage: vi.fn(() => mockedStore.nav),
-  getLatestStateFrame: vi.fn(() => mockedStore.stateFrame),
-  getPassageData: vi.fn(() => mockedStore.passages),
+  getNavigationPage: vi.fn<() => 'search' | 'state'>(() => mockedStore.nav),
+  getLatestStateFrame: vi.fn<AnyFn>(() => mockedStore.stateFrame),
+  getPassageData: vi.fn<() => any[]>(() => mockedStore.passages),
 }));
 
 vi.mock('./search-utils', () => ({
@@ -57,9 +59,9 @@ describe('createSearchResults', () => {
 
     const results = await runInRoot(async () => createSearchResults()());
 
-    expect(results).toEqual({ state: [], passage: [] });
-    expect(findStateMatchesMock).not.toHaveBeenCalled();
-    expect(findPassageMatchesMock).not.toHaveBeenCalled();
+    expect(results).toStrictEqual({ state: [], passage: [] });
+    expect(findStateMatchesMock.mock.calls).toStrictEqual([]);
+    expect(findPassageMatchesMock.mock.calls).toStrictEqual([]);
   });
 
   it('should return empty results when query or state is missing', async () => {
@@ -68,8 +70,8 @@ describe('createSearchResults', () => {
 
     const results = await runInRoot(async () => createSearchResults()());
 
-    expect(results).toEqual({ state: [], passage: [] });
-    expect(findStateMatchesMock).not.toHaveBeenCalled();
+    expect(results).toStrictEqual({ state: [], passage: [] });
+    expect(findStateMatchesMock.mock.calls).toStrictEqual([]);
   });
 
   it('should skip search when schedule gate returns false', async () => {
@@ -79,9 +81,9 @@ describe('createSearchResults', () => {
 
     const results = await runInRoot(async () => createSearchResults()());
 
-    expect(results).toEqual({ state: [], passage: [] });
-    expect(findStateMatchesMock).not.toHaveBeenCalled();
-    expect(findPassageMatchesMock).not.toHaveBeenCalled();
+    expect(results).toStrictEqual({ state: [], passage: [] });
+    expect(findStateMatchesMock.mock.calls).toStrictEqual([]);
+    expect(findPassageMatchesMock.mock.calls).toStrictEqual([]);
   });
 
   it('should merge state and passage results when search executes', async () => {
@@ -89,8 +91,14 @@ describe('createSearchResults', () => {
     mockedStore.stateFrame = { state: { hp: 10 } };
     mockedStore.passages = [{ id: 1, name: 'Start' }];
 
-    findStateMatchesMock.mockReturnValue([Promise.resolve([{ path: ['hp'], value: 10 }]), vi.fn()]);
-    findPassageMatchesMock.mockReturnValue([Promise.resolve([{ id: 1, name: 'Start' }]), vi.fn()]);
+    findStateMatchesMock.mockReturnValue([
+      Promise.resolve([{ path: ['hp'], value: 10 }]),
+      vi.fn<AnyFn>(),
+    ]);
+    findPassageMatchesMock.mockReturnValue([
+      Promise.resolve([{ id: 1, name: 'Start' }]),
+      vi.fn<AnyFn>(),
+    ]);
 
     const results = await runInRoot(async () => {
       const getResults = createSearchResults();
@@ -101,7 +109,7 @@ describe('createSearchResults', () => {
 
     expect(findStateMatchesMock).toHaveBeenCalledWith({ hp: 10 }, 'hp');
     expect(findPassageMatchesMock).toHaveBeenCalledWith([{ id: 1, name: 'Start' }], 'hp');
-    expect(results).toEqual({
+    expect(results).toStrictEqual({
       state: [{ path: ['hp'], value: 10 }],
       passage: [{ id: 1, name: 'Start' }],
     });
@@ -111,8 +119,11 @@ describe('createSearchResults', () => {
     mockedStore.query = 'hp';
     mockedStore.stateFrame = { state: { hp: 10 } };
 
-    findStateMatchesMock.mockReturnValue([Promise.reject(new Error('boom')), vi.fn()]);
-    findPassageMatchesMock.mockReturnValue([Promise.resolve([{ id: 1, name: 'Start' }]), vi.fn()]);
+    findStateMatchesMock.mockReturnValue([Promise.reject(new Error('boom')), vi.fn<AnyFn>()]);
+    findPassageMatchesMock.mockReturnValue([
+      Promise.resolve([{ id: 1, name: 'Start' }]),
+      vi.fn<AnyFn>(),
+    ]);
 
     const results = await runInRoot(async () => {
       const getResults = createSearchResults();
@@ -121,7 +132,7 @@ describe('createSearchResults', () => {
       return getResults();
     });
 
-    expect(results).toEqual({ state: [], passage: [] });
+    expect(results).toStrictEqual({ state: [], passage: [] });
   });
 });
 

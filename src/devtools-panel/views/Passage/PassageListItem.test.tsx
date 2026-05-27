@@ -13,6 +13,8 @@ afterEach(() => cleanup());
 
 describe('PassageListItem', () => {
   it('should render passage name and tags', () => {
+    const handleClick = vi.fn<() => void>();
+
     render(() => (
       <PassageListItem
         passageData={{
@@ -23,16 +25,16 @@ describe('PassageListItem', () => {
           size: null,
           position: null,
         }}
-        onClick={vi.fn()}
+        onClick={handleClick}
       />
     ));
 
     expect(screen.getByText('Intro')).toBeTruthy();
-    expect(screen.getAllByTestId('tag').map((n) => n.textContent)).toEqual(['a', 'b']);
+    expect(screen.getAllByTestId('tag').map((n) => n.textContent)).toStrictEqual(['a', 'b']);
   });
 
   it('should call click handler when row is pressed', () => {
-    const onClick = vi.fn();
+    const onClick = vi.fn<() => void>();
 
     render(() => (
       <PassageListItem
@@ -46,10 +48,12 @@ describe('PassageListItem', () => {
   });
 
   it('should apply active class when item is selected', () => {
+    const handleClick = vi.fn<() => void>();
+
     const { container } = render(() => (
       <PassageListItem
         passageData={{ id: 1, name: 'Intro', tags: [], content: '', size: null, position: null }}
-        onClick={vi.fn()}
+        onClick={handleClick}
         active
       />
     ));

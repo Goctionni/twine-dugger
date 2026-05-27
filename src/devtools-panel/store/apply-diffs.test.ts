@@ -23,7 +23,7 @@ describe('applyDiffsToState', () => {
 
     const next = applyDiffsToState(oldState as any, diffs);
 
-    expect(next.obj).toEqual({ keep: 1, added: 3 });
+    expect(next.obj).toStrictEqual({ keep: 1, added: 3 });
     expect((next.map as Map<string | number, unknown>).get('added')).toBe(3);
     expect((next.map as Map<string | number, unknown>).has('removeMe')).toBe(false);
   });
@@ -44,7 +44,7 @@ describe('applyDiffsToState', () => {
     ];
 
     const next = applyDiffsToState(oldState as any, diffs);
-    expect(next.arr).toEqual(['c', 'a', 'x']);
+    expect(next.arr).toStrictEqual(['c', 'a', 'x']);
   });
 
   it('should apply set add/remove changes', () => {
@@ -55,7 +55,7 @@ describe('applyDiffsToState', () => {
     ];
 
     const next = applyDiffsToState(oldState as any, diffs);
-    expect(Array.from(next.s as Set<number>).sort((a, b) => a - b)).toEqual([2, 3]);
+    expect(Array.from(next.s as Set<number>).sort((a, b) => a - b)).toStrictEqual([2, 3]);
   });
 
   it('should ignore array diffs when subtype is not instructions', () => {
@@ -70,7 +70,7 @@ describe('applyDiffsToState', () => {
     ];
 
     const next = applyDiffsToState(oldState as any, diffs);
-    expect(next.arr).toEqual(['a', 'b']);
+    expect(next.arr).toStrictEqual(['a', 'b']);
   });
 
   it('should ignore unknown array instruction types', () => {
@@ -85,7 +85,7 @@ describe('applyDiffsToState', () => {
     ];
 
     const next = applyDiffsToState(oldState as any, diffs);
-    expect(next.arr).toEqual(['a', 'b']);
+    expect(next.arr).toStrictEqual(['a', 'b']);
   });
 
   it('should not perform remove behavior for set add subtype', () => {
@@ -93,7 +93,7 @@ describe('applyDiffsToState', () => {
     const diffs: Diff[] = [{ type: 'set', subtype: 'add', path: ['s'], newValue: 2 }];
 
     const next = applyDiffsToState(oldState as any, diffs);
-    expect(Array.from(next.s as Set<number>).sort((a, b) => a - b)).toEqual([1, 2]);
+    expect(Array.from(next.s as Set<number>).sort((a, b) => a - b)).toStrictEqual([1, 2]);
   });
 
   it('should apply primitive updates into object, map, and array parents', () => {
@@ -122,8 +122,8 @@ describe('applyDiffsToState', () => {
       { type: 'object', subtype: 'add', path: ['missing'], key: 'k', newValue: 1 },
     ]);
 
-    expect(next).toEqual({ obj: {} });
-    expect(errorSpy).toHaveBeenCalled();
+    expect(next).toStrictEqual({ obj: {} });
+    expect(errorSpy.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should log and skip when resolved diff container type mismatches', () => {
@@ -132,8 +132,8 @@ describe('applyDiffsToState', () => {
       { type: 'map', subtype: 'add', path: ['obj'], key: 'k', newValue: 1 },
     ]);
 
-    expect(next).toEqual({ obj: {} });
-    expect(errorSpy).toHaveBeenCalled();
+    expect(next).toStrictEqual({ obj: {} });
+    expect(errorSpy.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should log and skip primitive update when parent path cannot resolve', () => {
@@ -142,8 +142,8 @@ describe('applyDiffsToState', () => {
       { type: 'number', path: ['missing', 'k'], oldValue: 1, newValue: 2 },
     ]);
 
-    expect(next).toEqual({ obj: {} });
-    expect(errorSpy).toHaveBeenCalled();
+    expect(next).toStrictEqual({ obj: {} });
+    expect(errorSpy.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should log and skip primitive update when parent is non-container', () => {
@@ -152,7 +152,7 @@ describe('applyDiffsToState', () => {
       { type: 'number', path: ['value', 'k'], oldValue: 1, newValue: 2 },
     ]);
 
-    expect(next).toEqual({ value: 1 });
-    expect(errorSpy).toHaveBeenCalled();
+    expect(next).toStrictEqual({ value: 1 });
+    expect(errorSpy.mock.calls.length).toBeGreaterThan(0);
   });
 });

@@ -7,38 +7,38 @@ describe('jsonReplacer', () => {
     const mapValue = new Map<string, number>([['k', 1]]);
     const setValue = new Set<number>([1, 2]);
 
-    expect(jsonReplacer('m', mapValue)).toEqual({
+    expect(jsonReplacer('m', mapValue)).toStrictEqual({
       ____JSON_type: 'MAP',
       entries: [['k', 1]],
     });
-    expect(jsonReplacer('s', setValue)).toEqual({
+    expect(jsonReplacer('s', setValue)).toStrictEqual({
       ____JSON_type: 'SET',
       values: [1, 2],
     });
   });
 
   it('should serialize Twine revive tuples for map and set', () => {
-    expect(jsonReplacer('', ['(revive:map)', [['a', 1]]])).toEqual({
+    expect(jsonReplacer('', ['(revive:map)', [['a', 1]]])).toStrictEqual({
       ____JSON_type: 'MAP',
       entries: [['a', 1]],
     });
 
-    expect(jsonReplacer('', ['(revive:set)', [1, 2]])).toEqual({
+    expect(jsonReplacer('', ['(revive:set)', [1, 2]])).toStrictEqual({
       ____JSON_type: 'SET',
       values: [1, 2],
     });
   });
 
   it('should mark revive eval function signatures and undefined payloads', () => {
-    expect(jsonReplacer('', ['(revive:eval)', 'undefined'])).toEqual({
+    expect(jsonReplacer('', ['(revive:eval)', 'undefined'])).toStrictEqual({
       ____JSON_type: 'UNDEFINED',
     });
 
-    expect(jsonReplacer('', ['(revive:eval)', '(function named(a){ return a; })'])).toEqual({
+    expect(jsonReplacer('', ['(revive:eval)', '(function named(a){ return a; })'])).toStrictEqual({
       ____JSON_type: 'function',
     });
 
-    expect(jsonReplacer('', ['(revive:eval)', '((a) => a + 1)'])).toEqual({
+    expect(jsonReplacer('', ['(revive:eval)', '((a) => a + 1)'])).toStrictEqual({
       ____JSON_type: 'function',
     });
   });
@@ -59,7 +59,7 @@ describe('jsonReviver', () => {
     expect(map).toBeInstanceOf(Map);
     expect((map as Map<string, number>).get('x')).toBe(7);
     expect(set).toBeInstanceOf(Set);
-    expect([...(set as Set<string>).values()]).toEqual(['a', 'b']);
+    expect([...(set as Set<string>).values()]).toStrictEqual(['a', 'b']);
   });
 
   it('should revive function marker into callable placeholder', () => {

@@ -3,6 +3,8 @@
 import { cleanup, render } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const {
   createGetViewStateMock,
   getActiveStateMock,
@@ -15,16 +17,16 @@ const {
   saveButtonMock,
   lockButtonMock,
 } = vi.hoisted(() => ({
-  createGetViewStateMock: vi.fn(),
-  getActiveStateMock: vi.fn(),
-  getLockedPathsMock: vi.fn(),
-  addLockPathMock: vi.fn(),
-  removeLockPathMock: vi.fn(),
-  setStateMock: vi.fn(async () => undefined),
-  setStatePropertyLockMock: vi.fn(),
-  stringInputMock: vi.fn(),
-  saveButtonMock: vi.fn(),
-  lockButtonMock: vi.fn(),
+  createGetViewStateMock: vi.fn<AnyFn>(),
+  getActiveStateMock: vi.fn<AnyFn>(),
+  getLockedPathsMock: vi.fn<AnyFn>(),
+  addLockPathMock: vi.fn<AnyFn>(),
+  removeLockPathMock: vi.fn<AnyFn>(),
+  setStateMock: vi.fn<AnyFn>(async () => undefined),
+  setStatePropertyLockMock: vi.fn<AnyFn>(),
+  stringInputMock: vi.fn<AnyFn>(),
+  saveButtonMock: vi.fn<AnyFn>(),
+  lockButtonMock: vi.fn<AnyFn>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({

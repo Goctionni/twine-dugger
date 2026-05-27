@@ -25,6 +25,6 @@ describe('Tooltip', () => {
     expect(anchorId?.startsWith('--a-')).toBe(true);
     expect(tooltip.getAttribute('data-anchor-target')).toBe(anchorId);
     expect(tooltip.getAttribute('data-area')).toBe('bottom right');
-    expect(tooltip.textContent?.includes('help')).toBe(true);
+    expect(tooltip.textContent).toBe('help');
   });
 });

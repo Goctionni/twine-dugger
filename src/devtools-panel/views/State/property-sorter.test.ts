@@ -6,7 +6,7 @@ describe('createSorter', () => {
   it('should sort keys alphabetically and keep numeric keys in ascending order', () => {
     const sorter = createSorter({}, 'alphabetic');
 
-    expect(sorter([3, 1, 'b', 'a'])).toEqual([1, 3, 'a', 'b']);
+    expect(sorter([3, 1, 'b', 'a'])).toStrictEqual([1, 3, 'a', 'b']);
   });
 
   it('should sort keys by value type priority and key fallback', () => {
@@ -37,7 +37,7 @@ describe('createSorter', () => {
       'epsilon',
     ]);
 
-    expect(sorted).toEqual([
+    expect(sorted).toStrictEqual([
       'alpha',
       'beta',
       'gamma',
@@ -59,7 +59,7 @@ describe('createSorter', () => {
     };
 
     const sorter = createSorter(object, 'type');
-    expect(sorter(['alpha', 5, 2])).toEqual([2, 5, 'alpha']);
+    expect(sorter(['alpha', 5, 2])).toStrictEqual([2, 5, 'alpha']);
   });
 
   it('should fallback to lexical key order when value types are equal', () => {
@@ -69,7 +69,7 @@ describe('createSorter', () => {
     };
 
     const sorter = createSorter(object, 'type');
-    expect(sorter(['bKey', 'aKey'])).toEqual(['aKey', 'bKey']);
+    expect(sorter(['bKey', 'aKey'])).toStrictEqual(['aKey', 'bKey']);
   });
 
   it('should return keys unchanged for none order', () => {

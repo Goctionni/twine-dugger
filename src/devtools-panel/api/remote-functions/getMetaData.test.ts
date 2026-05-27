@@ -19,30 +19,30 @@ describe('getGameMetaFn', () => {
 
   it('should return metadata for mocked SugarCube game', () => {
     const storyData = document.createElement('tw-storydata');
-    storyData.setAttribute('creator', baselineMockTwineGameSeed.meta.compiler?.name ?? 'Tweego');
-    storyData.setAttribute(
-      'creator-version',
-      baselineMockTwineGameSeed.meta.compiler?.version ?? '2.1.1',
-    );
+    storyData.setAttribute('creator', baselineMockTwineGameSeed.meta.compiler.name);
+    storyData.setAttribute('creator-version', baselineMockTwineGameSeed.meta.compiler.version);
     storyData.setAttribute(
       'format-version',
-      baselineMockTwineGameSeed.meta.format?.version?.shortStr ?? '2.37.3',
+      baselineMockTwineGameSeed.meta.format.version.shortStr,
     );
     document.body.appendChild(storyData);
 
     window.SugarCube = createSugarCubeWindowMock();
 
     const meta = getGameMetaFn();
+    expect(meta).toBeTruthy();
+    expect(meta).not.toHaveProperty('__type');
 
-    if (!meta || '__type' in meta) {
-      throw new Error('Expected concrete game metadata');
-    }
+    const concreteMeta = meta as Exclude<
+      ReturnType<typeof getGameMetaFn>,
+      null | { __type: 'candidate-game-iframes'; urls: string[] }
+    >;
 
-    expect(meta.name).toBe('Mock SugarCube Story');
-    expect(meta.ifId).toBe('MOCK-IFID-001');
-    expect(meta.format?.name).toBe('SugarCube');
-    expect(meta.format?.version?.shortStr).toBe('2.37.3');
-    expect(meta.compiler?.name).toBe('Tweego');
+    expect(concreteMeta.name).toBe('Mock SugarCube Story');
+    expect(concreteMeta.ifId).toBe('MOCK-IFID-001');
+    expect(concreteMeta.format?.name).toBe('SugarCube');
+    expect(concreteMeta.format?.version?.shortStr).toBe('2.37.3');
+    expect(concreteMeta.compiler?.name).toBe('Tweego');
   });
 
   it('should return metadata for detected Harlowe story', () => {
@@ -66,17 +66,20 @@ describe('getGameMetaFn', () => {
     (window as any).Harlowe = {};
 
     const meta = getGameMetaFn();
+    expect(meta).toBeTruthy();
+    expect(meta).not.toHaveProperty('__type');
 
-    if (!meta || '__type' in meta) {
-      throw new Error('Expected concrete game metadata');
-    }
+    const concreteMeta = meta as Exclude<
+      ReturnType<typeof getGameMetaFn>,
+      null | { __type: 'candidate-game-iframes'; urls: string[] }
+    >;
 
-    expect(meta.name).toBe('Harlowe Story');
-    expect(meta.ifId).toBe('HARLOWE-IFID');
-    expect(meta.format?.name).toBe('Harlowe');
-    expect(meta.format?.version?.shortStr).toBe('3.2.1');
-    expect(meta.passages).toEqual({ start: 'Start', count: 2 });
-    expect(meta.compiler).toEqual({ name: 'Twine', version: '2.10.0' });
+    expect(concreteMeta.name).toBe('Harlowe Story');
+    expect(concreteMeta.ifId).toBe('HARLOWE-IFID');
+    expect(concreteMeta.format?.name).toBe('Harlowe');
+    expect(concreteMeta.format?.version?.shortStr).toBe('3.2.1');
+    expect(concreteMeta.passages).toStrictEqual({ start: 'Start', count: 2 });
+    expect(concreteMeta.compiler).toStrictEqual({ name: 'Twine', version: '2.10.0' });
   });
 
   it('should return candidate iframe urls when no format is detected', () => {
@@ -98,7 +101,7 @@ describe('getGameMetaFn', () => {
 
     const meta = getGameMetaFn();
 
-    expect(meta).toEqual({
+    expect(meta).toStrictEqual({
       __type: 'candidate-game-iframes',
       urls: ['https://example.test/game.html'],
     });

@@ -10,7 +10,7 @@ afterEach(() => cleanup());
 
 describe('NumberInput', () => {
   it('should decrement and increment with buttons', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(value: number) => void>();
     const user = userEvent.setup();
 
     render(() => <NumberInput value={5} onChange={onChange} />);
@@ -23,7 +23,7 @@ describe('NumberInput', () => {
   });
 
   it('should emit typed number value from input', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(value: number) => void>();
     const user = userEvent.setup();
 
     render(() => <NumberInput value={1} onChange={onChange} />);
@@ -32,11 +32,11 @@ describe('NumberInput', () => {
     await user.clear(input);
     await user.type(input, '42');
 
-    expect(onChange).toHaveBeenCalled();
+    expect(onChange.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should disable button interactions when disabled', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(value: number) => void>();
     const user = userEvent.setup();
 
     render(() => <NumberInput value={1} onChange={onChange} disabled />);
@@ -44,6 +44,6 @@ describe('NumberInput', () => {
     await user.click(screen.getByRole('button', { name: '-' }));
     await user.click(screen.getByRole('button', { name: '+' }));
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onChange.mock.calls).toStrictEqual([]);
   });
 });

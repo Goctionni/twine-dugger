@@ -5,14 +5,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 const { setNavigationPageMock, setViewStateMock, getPersistedValueMock, setPersistedValueMock } =
   vi.hoisted(() => ({
-    setNavigationPageMock: vi.fn(),
-    setViewStateMock: vi.fn(),
-    getPersistedValueMock: vi.fn(),
-    setPersistedValueMock: vi.fn(),
+    setNavigationPageMock: vi.fn<(page: string) => void>(),
+    setViewStateMock: vi.fn<(view: string, key: string, value: Array<string | number>) => void>(),
+    getPersistedValueMock: vi.fn<(key: string, fallback: number) => number>(),
+    setPersistedValueMock: vi.fn<(key: string, value: number) => void>(),
   }));
 
 vi.mock('@tanstack/solid-virtual', () => ({
-  createVirtualizer: vi.fn((options: { count: number }) => ({
+  createVirtualizer: vi.fn<
+    (options: { count: number }) => {
+      getTotalSize: () => number;
+      getVirtualItems: () => Array<{ index: number; size: number; start: number }>;
+    }
+  >((options: { count: number }) => ({
     getTotalSize: () => options.count * 38,
     getVirtualItems: () =>
       Array.from({ length: options.count }, (_, index) => ({
@@ -92,11 +97,13 @@ describe('StateResults', () => {
 
     const wrapper = container.querySelector('.relative.h-full.flex-1.overflow-hidden.py-1');
     const handle = container.querySelector('.cursor-col-resize');
-    if (!(wrapper instanceof HTMLDivElement) || !(handle instanceof HTMLDivElement)) {
-      throw new Error('Expected resize wrapper and handle to be present');
-    }
+    expect(wrapper).toBeInstanceOf(HTMLDivElement);
+    expect(handle).toBeInstanceOf(HTMLDivElement);
 
-    wrapper.getBoundingClientRect = () =>
+    const root = wrapper as HTMLDivElement;
+    const divider = handle as HTMLDivElement;
+
+    root.getBoundingClientRect = () =>
       ({
         left: 10,
         top: 0,
@@ -108,7 +115,7 @@ describe('StateResults', () => {
         y: 0,
       }) as DOMRect;
 
-    fireEvent.mouseDown(handle, { clientX: 100 });
+    fireEvent.mouseDown(divider, { clientX: 100 });
     fireEvent.mouseMove(document, { clientX: 420 });
     fireEvent.mouseUp(document);
 

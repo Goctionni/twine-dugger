@@ -19,23 +19,23 @@ describe('RelativeTime', () => {
   it('should render seconds-ago text for recent timestamps', () => {
     render(() => <RelativeTime date={new Date('2026-05-26T11:59:30.000Z')} />);
 
-    const text = screen.getByText(/ago/).textContent ?? '';
+    const text = screen.getByText(/ago/).textContent as string;
     expect(text).toMatch(/sec|second/i);
   });
 
   it('should render minutes-ago text for older timestamps', () => {
     render(() => <RelativeTime date={new Date('2026-05-26T11:40:00.000Z')} />);
 
-    const text = screen.getByText(/ago/).textContent ?? '';
+    const text = screen.getByText(/ago/).textContent as string;
     expect(text).toMatch(/min|minute/i);
   });
 
   it('should update rendered text after timer tick', () => {
     render(() => <RelativeTime date={new Date('2026-05-26T11:59:59.000Z')} />);
 
-    const before = screen.getByText(/ago/).textContent ?? '';
+    const before = screen.getByText(/ago/).textContent as string;
     vi.advanceTimersByTime(1200);
-    const after = screen.getByText(/ago/).textContent ?? '';
+    const after = screen.getByText(/ago/).textContent as string;
 
     expect(before).not.toBe('');
     expect(after).not.toBe('');

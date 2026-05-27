@@ -3,6 +3,8 @@
 import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const {
   addFilteredPathMock,
   addLockPathMock,
@@ -21,22 +23,22 @@ const {
   setViewStateMock,
   showPromptDialogMock,
 } = vi.hoisted(() => ({
-  addFilteredPathMock: vi.fn(),
-  addLockPathMock: vi.fn(),
-  createContextMenuHandlerMock: vi.fn(),
-  createGetSettingMock: vi.fn(),
-  createGetViewStateMock: vi.fn(),
-  deleteFromStateMock: vi.fn(),
-  duplicateStatePropertyMock: vi.fn(),
-  getActiveStateMock: vi.fn(),
-  getLockedPathsMock: vi.fn(),
-  getObjectPathValueMock: vi.fn(),
-  isPathFilteredMock: vi.fn(),
-  removeLockPathMock: vi.fn(),
-  setStateMock: vi.fn(),
-  setStatePropertyLockMock: vi.fn(),
-  setViewStateMock: vi.fn(),
-  showPromptDialogMock: vi.fn(),
+  addFilteredPathMock: vi.fn<AnyFn>(),
+  addLockPathMock: vi.fn<AnyFn>(),
+  createContextMenuHandlerMock: vi.fn<AnyFn>(),
+  createGetSettingMock: vi.fn<AnyFn>(),
+  createGetViewStateMock: vi.fn<AnyFn>(),
+  deleteFromStateMock: vi.fn<AnyFn>(),
+  duplicateStatePropertyMock: vi.fn<AnyFn>(),
+  getActiveStateMock: vi.fn<AnyFn>(),
+  getLockedPathsMock: vi.fn<AnyFn>(),
+  getObjectPathValueMock: vi.fn<AnyFn>(),
+  isPathFilteredMock: vi.fn<AnyFn>(),
+  removeLockPathMock: vi.fn<AnyFn>(),
+  setStateMock: vi.fn<AnyFn>(),
+  setStatePropertyLockMock: vi.fn<AnyFn>(),
+  setViewStateMock: vi.fn<AnyFn>(),
+  showPromptDialogMock: vi.fn<AnyFn>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({
@@ -121,7 +123,7 @@ describe('ObjectNav', () => {
     capturedMenuItems = [];
     createContextMenuHandlerMock.mockImplementation((items) => {
       if (capturedMenuItems.length === 0) capturedMenuItems = items;
-      return vi.fn();
+      return vi.fn<AnyFn>();
     });
     getActiveStateMock.mockReturnValue({ player: { hp: 10, name: 'Avery' } });
     getLockedPathsMock.mockReturnValue([]);
@@ -165,13 +167,13 @@ describe('ObjectNav', () => {
     fireEvent.click(screen.getByText('Add new...'));
     await Promise.resolve();
 
-    expect(setStateMock).not.toHaveBeenCalled();
+    expect(setStateMock.mock.calls).toStrictEqual([]);
   });
 
   it('should duplicate object property with prompted target key', async () => {
     showPromptDialogMock.mockResolvedValueOnce('hp_copy');
     createContextMenuHandlerMock.mockImplementationOnce((items) =>
-      vi.fn((event: Event) => {
+      vi.fn<(event: Event) => void>((event: Event) => {
         event.preventDefault();
         items[2]?.onClick();
       }),
@@ -188,7 +190,7 @@ describe('ObjectNav', () => {
   it('should not duplicate object property when prompt returns empty key', async () => {
     showPromptDialogMock.mockResolvedValueOnce('');
     createContextMenuHandlerMock.mockImplementationOnce((items) =>
-      vi.fn((event: Event) => {
+      vi.fn<(event: Event) => void>((event: Event) => {
         event.preventDefault();
         items[2]?.onClick();
       }),
@@ -199,13 +201,13 @@ describe('ObjectNav', () => {
     fireEvent.contextMenu(screen.getByText('hp').closest('li') as HTMLElement);
     await Promise.resolve();
 
-    expect(duplicateStatePropertyMock).not.toHaveBeenCalled();
+    expect(duplicateStatePropertyMock.mock.calls).toStrictEqual([]);
   });
 
   it('should duplicate array item without prompting for target key', async () => {
     getObjectPathValueMock.mockReturnValue(['x', 'y']);
     createContextMenuHandlerMock.mockImplementationOnce((items) =>
-      vi.fn((event: Event) => {
+      vi.fn<(event: Event) => void>((event: Event) => {
         event.preventDefault();
         items[2]?.onClick();
       }),
@@ -216,13 +218,13 @@ describe('ObjectNav', () => {
     fireEvent.contextMenu(screen.getByText('0').closest('li') as HTMLElement);
     await Promise.resolve();
 
-    expect(showPromptDialogMock).not.toHaveBeenCalled();
+    expect(showPromptDialogMock.mock.calls).toStrictEqual([]);
     expect(duplicateStatePropertyMock).toHaveBeenCalledWith(['inventory'], 0);
   });
 
   it('should delete selected path from context menu action', async () => {
     createContextMenuHandlerMock.mockImplementationOnce((items) =>
-      vi.fn((event: Event) => {
+      vi.fn<(event: Event) => void>((event: Event) => {
         event.preventDefault();
         items[3]?.onClick();
       }),
@@ -249,7 +251,7 @@ describe('ObjectNav', () => {
 
     expect(setStatePropertyLockMock).toHaveBeenCalledWith(['player', 'hp'], true);
     expect(addLockPathMock).toHaveBeenCalledWith(['player', 'hp']);
-    expect(removeLockPathMock).not.toHaveBeenCalled();
+    expect(removeLockPathMock.mock.calls).toStrictEqual([]);
   });
 
   it('should unlock path from context menu when path is locked', () => {
@@ -331,18 +333,18 @@ describe('ObjectNav', () => {
     getObjectPathValueMock.mockReturnValue({ hp: 10 });
 
     const initialView = render(() => <ObjectNav path={['player']} selectedProperty="hp" />);
-    expect(initialView.container.textContent?.includes('🔒')).toBe(false);
+    expect(initialView.container.textContent.includes('🔒')).toBe(false);
     initialView.unmount();
 
     getLockedPathsMock.mockReturnValue([['player', 'hp']]);
     const lockedView = render(() => <ObjectNav path={['player']} selectedProperty="hp" />);
-    expect(lockedView.container.textContent?.includes('🔒')).toBe(true);
+    expect(lockedView.container.textContent.includes('🔒')).toBe(true);
     expect(lockedView.container.querySelector('.saturate-0')).toBeFalsy();
     lockedView.unmount();
 
     getLockedPathsMock.mockReturnValue([['player']]);
     const ancestorView = render(() => <ObjectNav path={['player']} selectedProperty="hp" />);
-    expect(ancestorView.container.textContent?.includes('🔒')).toBe(true);
+    expect(ancestorView.container.textContent.includes('🔒')).toBe(true);
     expect(ancestorView.container.querySelector('.saturate-0')).toBeTruthy();
   });
 });

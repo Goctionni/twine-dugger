@@ -4,8 +4,8 @@ import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const { getNavigationPageMock, setNavigationPageMock } = vi.hoisted(() => ({
-  getNavigationPageMock: vi.fn(),
-  setNavigationPageMock: vi.fn(),
+  getNavigationPageMock: vi.fn<() => string>(),
+  setNavigationPageMock: vi.fn<(page: string) => void>(),
 }));
 
 vi.mock('../store', () => ({
@@ -56,8 +56,8 @@ describe('Navigation', () => {
     window.dispatchEvent(event);
 
     expect(setNavigationPageMock).toHaveBeenCalledWith('search');
-    expect(preventDefault).toHaveBeenCalled();
-    expect(stopPropagation).toHaveBeenCalled();
+    expect(preventDefault).toHaveBeenCalledWith();
+    expect(stopPropagation).toHaveBeenCalledWith();
   });
 
   it('should attach and remove keydown listener with capture option', () => {
@@ -67,12 +67,14 @@ describe('Navigation', () => {
     const { unmount } = render(() => <Navigation />);
 
     const addKeydownCall = addSpy.mock.calls.find((call) => call[0] === 'keydown');
-    expect(addKeydownCall?.[2]).toEqual({ capture: true });
+    expect(addKeydownCall).toBeTruthy();
+    expect(addKeydownCall![2]).toStrictEqual({ capture: true });
 
     unmount();
 
     const removeKeydownCall = removeSpy.mock.calls.find((call) => call[0] === 'keydown');
-    expect(removeKeydownCall?.[2]).toEqual({ capture: true });
+    expect(removeKeydownCall).toBeTruthy();
+    expect(removeKeydownCall![2]).toStrictEqual({ capture: true });
 
     addSpy.mockRestore();
     removeSpy.mockRestore();
@@ -83,6 +85,7 @@ describe('Navigation', () => {
     const { container } = render(() => <Navigation />);
 
     const activeButton = container.querySelector('button.active');
-    expect(activeButton?.textContent?.includes('Passages')).toBe(true);
+    expect(activeButton).toBeInstanceOf(HTMLButtonElement);
+    expect((activeButton as HTMLButtonElement).textContent).toMatch(/Passages/);
   });
 });

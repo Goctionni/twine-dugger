@@ -37,7 +37,7 @@ describe('mock-twine-game helpers', () => {
 
     expect(mockWindow.Story.name).toBe('Mock SugarCube Story');
     expect(mockWindow.Config.passages.start).toBe('Start');
-    expect(mockWindow.Save.browser?.slot?.size).toBe(2);
+    expect(mockWindow.Save.browser.slot.size).toBe(2);
     expect(mockWindow.version.short()).toBe('2.37.3');
   });
 });

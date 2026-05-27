@@ -13,13 +13,13 @@ describe('sharedPropertyLocker', () => {
     const second = locker.setPathLock(['player', 'hp'], true);
     const removed = locker.setPathLock(['player', 'hp'], false);
 
-    expect(first).toEqual([['player', 'hp']]);
-    expect(second).toEqual([['player', 'hp']]);
-    expect(removed).toEqual([]);
+    expect(first).toStrictEqual([['player', 'hp']]);
+    expect(second).toStrictEqual([['player', 'hp']]);
+    expect(removed).toStrictEqual([]);
   });
 
   it('should filter locked diffs and restore lock value', () => {
-    const setStateFn = vi.fn();
+    const setStateFn = vi.fn<(path: Array<string | number>, value: unknown) => void>();
     const locker = createPropertyLocker(() => ({ player: { hp: 10, mp: 5 } }), setStateFn);
 
     locker.setPathLock(['player'], true);
@@ -33,7 +33,7 @@ describe('sharedPropertyLocker', () => {
       },
     ]);
 
-    expect(result.diffs).toEqual([]);
+    expect(result.diffs).toStrictEqual([]);
     expect(result.locksUpdate).toBeNull();
     expect(setStateFn).toHaveBeenCalledWith(['player'], { hp: 10, mp: 5 });
   });
@@ -57,11 +57,11 @@ describe('sharedPropertyLocker', () => {
     ]);
 
     expect(result.diffs).toHaveLength(1);
-    expect(result.locksUpdate).toEqual([]);
+    expect(result.locksUpdate).toStrictEqual([]);
   });
 
   it('should keep unlocked diffs unchanged', () => {
-    const setStateFn = vi.fn();
+    const setStateFn = vi.fn<(path: Array<string | number>, value: unknown) => void>();
     const locker = createPropertyLocker(() => ({ player: { hp: 10 } }), setStateFn);
 
     const diffs = [
@@ -74,9 +74,9 @@ describe('sharedPropertyLocker', () => {
     ];
     const result = locker.processDiffs(diffs);
 
-    expect(result.diffs).toEqual(diffs);
+    expect(result.diffs).toStrictEqual(diffs);
     expect(result.locksUpdate).toBeNull();
-    expect(setStateFn).not.toHaveBeenCalled();
+    expect(setStateFn.mock.calls).toStrictEqual([]);
   });
 
   it('should compute array diff full path and return remaining locks update list', () => {
@@ -99,6 +99,6 @@ describe('sharedPropertyLocker', () => {
     ]);
 
     expect(result.diffs).toHaveLength(1);
-    expect(result.locksUpdate).toEqual([['keep', 'x']]);
+    expect(result.locksUpdate).toStrictEqual([['keep', 'x']]);
   });
 });

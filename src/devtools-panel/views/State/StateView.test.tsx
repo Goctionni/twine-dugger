@@ -3,10 +3,12 @@
 import { cleanup, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const { createGetViewStateMock, getActiveStateMock, getObjectPathValueMock } = vi.hoisted(() => ({
-  createGetViewStateMock: vi.fn(),
-  getActiveStateMock: vi.fn(),
-  getObjectPathValueMock: vi.fn(),
+  createGetViewStateMock: vi.fn<AnyFn>(),
+  getActiveStateMock: vi.fn<AnyFn>(),
+  getObjectPathValueMock: vi.fn<AnyFn>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({

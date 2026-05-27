@@ -38,13 +38,13 @@ describe('findPassageMatches', () => {
     const [promise] = findPassageMatches(passages, 'pot');
     const result = await promise;
 
-    expect(result.map((p) => p.id)).toEqual([2]);
+    expect(result.map((p) => p.id)).toStrictEqual([2]);
 
     const [tagPromise] = findPassageMatches(passages, 'intro');
-    expect((await tagPromise).map((p) => p.id)).toEqual([1]);
+    expect((await tagPromise).map((p) => p.id)).toStrictEqual([1]);
 
     const [namePromise] = findPassageMatches(passages, 'sta');
-    expect((await namePromise).map((p) => p.id)).toEqual([1]);
+    expect((await namePromise).map((p) => p.id)).toStrictEqual([1]);
   });
 
   it('should match passage when any single tag matches query', async () => {
@@ -60,7 +60,7 @@ describe('findPassageMatches', () => {
     ];
 
     const [promise] = findPassageMatches(passages, 'intro');
-    expect((await promise).map((p) => p.id)).toEqual([3]);
+    expect((await promise).map((p) => p.id)).toStrictEqual([3]);
   });
 
   it('should return empty result when aborted before execution', async () => {
@@ -70,7 +70,7 @@ describe('findPassageMatches', () => {
     );
     abort('cancel');
 
-    expect(await promise).toEqual([]);
+    expect(await promise).toStrictEqual([]);
   });
 });
 
@@ -101,18 +101,18 @@ describe('findStateMatches', () => {
     const [promise] = findStateMatches(state, '10');
     const matches = await promise;
 
-    expect(matches.map((m) => m.path)).toEqual([
+    expect(matches.map((m) => m.path)).toStrictEqual([
       ['player', 'hp'],
       ['mapData', 'score'],
     ]);
 
     const [boolPromise] = findStateMatches(state, 'true');
     const boolMatches = await boolPromise;
-    expect(boolMatches.map((m) => m.path)).toContainEqual(['player', 'alive']);
+    expect(boolMatches.map((m) => m.path)).toStrictEqual([['player', 'alive']]);
 
     const [falsePromise] = findStateMatches({ feature: { enabled: false } } as any, 'false');
     const falseMatches = await falsePromise;
-    expect(falseMatches.map((m) => m.path)).toContainEqual(['feature', 'enabled']);
+    expect(falseMatches.map((m) => m.path)).toStrictEqual([['feature', 'enabled']]);
   });
 
   it('should match map keys and string values with full then partial ordering', async () => {
@@ -125,15 +125,17 @@ describe('findStateMatches', () => {
 
     const [promise] = findStateMatches(state, 'score');
     const matches = await promise;
-    expect(matches.map((m) => m.path)).toContainEqual(['mapData', 'score']);
-    expect(matches.map((m) => m.path)).toContainEqual(['mapData', 'scoreExtra']);
+    expect(matches.map((m) => m.path)).toStrictEqual([
+      ['mapData', 'score'],
+      ['mapData', 'scoreExtra'],
+    ]);
   });
 
   it('should not match numeric values when query is non-numeric', async () => {
     const [promise] = findStateMatches({ count: 123 } as any, 'abc');
     const matches = await promise;
 
-    expect(matches).toEqual([]);
+    expect(matches).toStrictEqual([]);
   });
 
   it('should dedupe duplicate key and value matches on the same path', async () => {
@@ -141,13 +143,13 @@ describe('findStateMatches', () => {
     const matches = await promise;
 
     expect(matches).toHaveLength(1);
-    expect(matches[0]?.path).toEqual(['foo']);
+    expect(matches[0]?.path).toStrictEqual(['foo']);
   });
 
   it('should return empty result when search is aborted', async () => {
     const [promise, abort] = findStateMatches({ player: { name: 'Alice' } }, 'ali');
     abort();
 
-    expect(await promise).toEqual([]);
+    expect(await promise).toStrictEqual([]);
   });
 });

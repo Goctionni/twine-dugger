@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 const {
   getGameMetaDataMock,
   setCandidateIframesMock,
   setConnectionStateMock,
   setGameMetaDataMock,
 } = vi.hoisted(() => ({
-  getGameMetaDataMock: vi.fn(),
-  setCandidateIframesMock: vi.fn(),
-  setConnectionStateMock: vi.fn(),
-  setGameMetaDataMock: vi.fn(),
+  getGameMetaDataMock: vi.fn<AnyFn>(),
+  setCandidateIframesMock: vi.fn<AnyFn>(),
+  setConnectionStateMock: vi.fn<AnyFn>(),
+  setGameMetaDataMock: vi.fn<AnyFn>(),
 }));
 
 vi.mock('../api/api', () => ({
@@ -40,8 +42,8 @@ describe('initMeta', () => {
     expect(result).toBe(false);
     expect(setConnectionStateMock).toHaveBeenNthCalledWith(1, 'loading-meta');
     expect(setConnectionStateMock).toHaveBeenNthCalledWith(2, 'no-game-detected');
-    expect(setCandidateIframesMock).not.toHaveBeenCalled();
-    expect(setGameMetaDataMock).not.toHaveBeenCalled();
+    expect(setCandidateIframesMock.mock.calls).toStrictEqual([]);
+    expect(setGameMetaDataMock.mock.calls).toStrictEqual([]);
   });
 
   it('should set candidate iframe state and return false for candidate metadata', async () => {
@@ -56,7 +58,7 @@ describe('initMeta', () => {
     expect(setConnectionStateMock).toHaveBeenNthCalledWith(1, 'loading-meta');
     expect(setConnectionStateMock).toHaveBeenNthCalledWith(2, 'candidate-iframes');
     expect(setCandidateIframesMock).toHaveBeenCalledWith(['https://example.test/game']);
-    expect(setGameMetaDataMock).not.toHaveBeenCalled();
+    expect(setGameMetaDataMock.mock.calls).toStrictEqual([]);
   });
 
   it('should persist game metadata and return true for supported game', async () => {
@@ -86,7 +88,7 @@ describe('initMeta', () => {
 
     expect(result).toBe(true);
     expect(setGameMetaDataMock).toHaveBeenCalledWith(meta);
-    expect(setCandidateIframesMock).not.toHaveBeenCalled();
+    expect(setCandidateIframesMock.mock.calls).toStrictEqual([]);
     expect(setConnectionStateMock).toHaveBeenNthCalledWith(2, 'not-enabled');
   });
 

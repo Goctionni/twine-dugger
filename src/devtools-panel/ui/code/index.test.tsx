@@ -3,13 +3,15 @@
 import { cleanup, render, waitFor } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+type AnyFn = (...args: any[]) => any;
+
 import harloweLangDef from './grammars/harlowe-grammar.json';
 import sugarcubeLangDef from './grammars/sugarcube-grammar.json';
 
 const { createRegistryMock, createHighlighterMock, toHtmlMock } = vi.hoisted(() => ({
-  createRegistryMock: vi.fn(),
-  createHighlighterMock: vi.fn(),
-  toHtmlMock: vi.fn(),
+  createRegistryMock: vi.fn<AnyFn>(),
+  createHighlighterMock: vi.fn<AnyFn>(),
+  toHtmlMock: vi.fn<AnyFn>(),
 }));
 
 vi.mock('./highlighter', () => ({
@@ -39,7 +41,12 @@ describe('Code', () => {
 
     await waitFor(() => {
       const element = container.querySelector('code.passage-code');
-      expect(element?.innerHTML).toContain('highlighted:%3C%3Cset%20%24hp%20%3D%2010%3E%3E');
+      expect(element).toBeInstanceOf(HTMLElement);
+      expect(
+        (element as HTMLElement).innerHTML.includes(
+          'highlighted:%3C%3Cset%20%24hp%20%3D%2010%3E%3E',
+        ),
+      ).toBe(true);
     });
 
     expect(createRegistryMock).toHaveBeenCalledTimes(1);
@@ -55,7 +62,10 @@ describe('Code', () => {
 
     await waitFor(() => {
       const element = container.querySelector('code.passage-code');
-      expect(element?.innerHTML).toContain('highlighted:(set%3A%24hp%20to%2010)');
+      expect(element).toBeInstanceOf(HTMLElement);
+      expect(
+        (element as HTMLElement).innerHTML.includes('highlighted:(set%3A%24hp%20to%2010)'),
+      ).toBe(true);
     });
 
     expect(createHighlighterMock).toHaveBeenCalledWith({
