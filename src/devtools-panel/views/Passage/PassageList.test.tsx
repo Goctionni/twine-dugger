@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const { createVirtualizerMock } = vi.hoisted(() => ({
-  createVirtualizerMock: vi.fn(),
+  createVirtualizerMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('@tanstack/solid-virtual', () => ({
@@ -53,7 +53,11 @@ describe('PassageList', () => {
     ] as any;
 
     render(() => (
-      <PassageList passages={passages} selectedPassage={null} onPassageClick={vi.fn()} />
+      <PassageList
+        passages={passages}
+        selectedPassage={null}
+        onPassageClick={vi.fn<(...args: any[]) => any>()}
+      />
     ));
 
     expect(screen.getByText('Passages')).toBeTruthy();
@@ -68,7 +72,7 @@ describe('PassageList', () => {
   });
 
   it('should call onPassageClick with selected item data', () => {
-    const onPassageClick = vi.fn();
+    const onPassageClick = vi.fn<(...args: any[]) => any>();
     const passages = [
       { id: 1, name: 'Intro', tags: [], content: '', size: null, position: null },
     ] as any;
@@ -88,7 +92,11 @@ describe('PassageList', () => {
     ] as any;
 
     render(() => (
-      <PassageList passages={passages} selectedPassage={passages[1]} onPassageClick={vi.fn()} />
+      <PassageList
+        passages={passages}
+        selectedPassage={passages[1]}
+        onPassageClick={vi.fn<(...args: any[]) => any>()}
+      />
     ));
 
     expect(screen.getByTestId('passage-1').getAttribute('data-active')).toBe('false');
@@ -96,7 +104,13 @@ describe('PassageList', () => {
   });
 
   it('should render no rows when passage list is empty', () => {
-    render(() => <PassageList passages={[]} selectedPassage={null} onPassageClick={vi.fn()} />);
+    render(() => (
+      <PassageList
+        passages={[]}
+        selectedPassage={null}
+        onPassageClick={vi.fn<(...args: any[]) => any>()}
+      />
+    ));
 
     expect(screen.queryByTestId('passage-1')).toBeNull();
   });
@@ -114,7 +128,11 @@ describe('PassageList', () => {
       { id: 1, name: 'Intro', tags: [], content: '', size: null, position: null },
     ] as any;
     render(() => (
-      <PassageList passages={passages} selectedPassage={null} onPassageClick={vi.fn()} />
+      <PassageList
+        passages={passages}
+        selectedPassage={null}
+        onPassageClick={vi.fn<(...args: any[]) => any>()}
+      />
     ));
 
     expect(screen.getByTestId('passage-1')).toBeTruthy();

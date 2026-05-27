@@ -4,9 +4,9 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const { createGetViewStateMock, setViewStateMock, stringInputMock } = vi.hoisted(() => ({
-  createGetViewStateMock: vi.fn(),
-  setViewStateMock: vi.fn(),
-  stringInputMock: vi.fn(),
+  createGetViewStateMock: vi.fn<(...args: any[]) => any>(),
+  setViewStateMock: vi.fn<(...args: any[]) => any>(),
+  stringInputMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('../../store', () => ({

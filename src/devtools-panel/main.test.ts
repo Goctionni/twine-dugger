@@ -2,7 +2,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-const renderMock = vi.hoisted(() => vi.fn());
+const renderMock = vi.hoisted(() => vi.fn<(...args: any[]) => any>());
 
 vi.mock('solid-js/web', () => ({
   render: renderMock,

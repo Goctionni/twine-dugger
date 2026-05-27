@@ -30,7 +30,7 @@ describe('sugarcube format helper', () => {
     };
 
     const state = sugarcube.getState(true) as any;
-    expect(state).toEqual({
+    expect(state).toStrictEqual({
       obj: { x: 1 },
       arr: [{ y: 2 }],
       map: new Map([['k', { z: 3 }]]),
@@ -55,8 +55,8 @@ describe('sugarcube format helper', () => {
     sugarcube.duplicateStateProperty(['obj'], 'a', 'a2');
     sugarcube.deleteFromState(['obj', 'a']);
 
-    expect((window as any).SugarCube.State.variables.obj).toEqual({ b: 2, a2: 1 });
-    expect((window as any).SugarCube.State.variables.arr).toEqual([1, 2]);
+    expect((window as any).SugarCube.State.variables.obj).toStrictEqual({ b: 2, a2: 1 });
+    expect((window as any).SugarCube.State.variables.arr).toStrictEqual([1, 2]);
     expect((window as any).SugarCube.State.variables.map.get('k2')).toBe(2);
     expect(sugarcube.getPassage()).toBe('Start');
   });

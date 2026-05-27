@@ -10,7 +10,7 @@ afterEach(() => cleanup());
 
 describe('LockButton', () => {
   it('should render unlock action for locked status', async () => {
-    const onToggle = vi.fn();
+    const onToggle = vi.fn<(...args: any[]) => any>();
     const user = userEvent.setup();
 
     render(() => <LockButton status="locked" onToggle={onToggle} />);
@@ -20,7 +20,7 @@ describe('LockButton', () => {
   });
 
   it('should render lock action for unlocked status', async () => {
-    const onToggle = vi.fn();
+    const onToggle = vi.fn<(...args: any[]) => any>();
     const user = userEvent.setup();
 
     render(() => <LockButton status="unlocked" onToggle={onToggle} />);
@@ -30,7 +30,7 @@ describe('LockButton', () => {
   });
 
   it('should show ancestor-lock label and no button', () => {
-    const onToggle = vi.fn();
+    const onToggle = vi.fn<(...args: any[]) => any>();
 
     render(() => <LockButton status="ancestor-lock" onToggle={onToggle} />);
 

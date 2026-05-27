@@ -34,6 +34,8 @@ export default defineConfig({
         },
       ],
       rules: {
+        'vitest/no-disabled-tests': 'off',
+        'jest/no-disabled-tests': 'off',
         'vitest/expect-expect': 'error',
         'vitest/prefer-called-with': 'error',
         'vitest/max-expects': 'off', // Remove limit to allow deep state verification

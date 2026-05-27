@@ -26,7 +26,7 @@ describe('findMissingTests', () => {
       const config = createDefaultScanConfig(workspace);
       const missingFiles = findMissingTests(config);
 
-      expect(missingFiles).toEqual(['src/a/missing.ts', 'src/b/also-missing.tsx']);
+      expect(missingFiles).toStrictEqual(['src/a/missing.ts', 'src/b/also-missing.tsx']);
     } finally {
       rmSync(workspace, { recursive: true, force: true });
     }
@@ -46,7 +46,7 @@ describe('findMissingTests', () => {
 
       const missingFiles = findMissingTests(config);
 
-      expect(missingFiles).toEqual(['packages/pkg-b/entry.tsx']);
+      expect(missingFiles).toStrictEqual(['packages/pkg-b/entry.tsx']);
     } finally {
       rmSync(workspace, { recursive: true, force: true });
     }

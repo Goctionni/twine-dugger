@@ -3,7 +3,7 @@
 import { cleanup, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-const getGameMetaDataMock = vi.hoisted(() => vi.fn());
+const getGameMetaDataMock = vi.hoisted(() => vi.fn<(...args: any[]) => any>());
 
 vi.mock('../../store', () => ({
   getGameMetaData: getGameMetaDataMock,

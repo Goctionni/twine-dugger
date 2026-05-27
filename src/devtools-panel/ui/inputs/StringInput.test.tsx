@@ -10,30 +10,30 @@ afterEach(() => cleanup());
 
 describe('StringInput', () => {
   it('should emit typed text on input', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(...args: any[]) => any>();
     const user = userEvent.setup();
 
     render(() => <StringInput value="" onChange={onChange} placeholder="Type..." />);
 
     await user.type(screen.getByPlaceholderText('Type...'), 'abc');
 
-    expect(onChange).toHaveBeenCalled();
+    expect(onChange.mock.calls.length).toBeGreaterThan(0);
     expect(onChange.mock.calls.at(-1)?.[0]).toBe('abc');
   });
 
   it('should call onKeyDown when key pressed', async () => {
-    const onChange = vi.fn();
-    const onKeyDown = vi.fn();
+    const onChange = vi.fn<(...args: any[]) => any>();
+    const onKeyDown = vi.fn<(...args: any[]) => any>();
     const user = userEvent.setup();
 
     render(() => <StringInput value="" onChange={onChange} onKeyDown={onKeyDown} />);
 
     await user.type(screen.getByRole('textbox'), '{Enter}');
-    expect(onKeyDown).toHaveBeenCalled();
+    expect(onKeyDown.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should focus input when autoFocus is true', () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(...args: any[]) => any>();
 
     render(() => <StringInput value="" onChange={onChange} autoFocus />);
 

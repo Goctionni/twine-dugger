@@ -4,10 +4,10 @@ import { createRoot } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 vi.mock('../api/api', () => ({
-  getPassageData: vi.fn(async () => []),
-  getState: vi.fn(async () => ({ state: {} })),
-  getUpdates: vi.fn(async () => null),
-  setStatePropertyLocks: vi.fn(async () => undefined),
+  getPassageData: vi.fn<(...args: any[]) => any>(async () => []),
+  getState: vi.fn<(...args: any[]) => any>(async () => ({ state: {} })),
+  getUpdates: vi.fn<(...args: any[]) => any>(async () => null),
+  setStatePropertyLocks: vi.fn<(...args: any[]) => any>(async () => undefined),
 }));
 
 describe('store/index', () => {
@@ -82,17 +82,17 @@ describe('store/index', () => {
 
     store.addFilteredPath(['a']);
     store.addFilteredPath(['a']);
-    expect(store.getFilteredPaths()).toEqual([['a']]);
+    expect(store.getFilteredPaths()).toStrictEqual([['a']]);
 
     store.removeFilteredPath(['a']);
-    expect(store.getFilteredPaths()).toEqual([]);
+    expect(store.getFilteredPaths()).toStrictEqual([]);
 
     store.addLockPath(['a', 'b']);
     store.addLockPath(['a', 'b']);
-    expect(store.getLockedPaths()).toEqual([['a', 'b']]);
+    expect(store.getLockedPaths()).toStrictEqual([['a', 'b']]);
 
     store.removeLockPath(['a', 'b']);
-    expect(store.getLockedPaths()).toEqual([]);
+    expect(store.getLockedPaths()).toStrictEqual([]);
   });
 
   it.skip('BUG_TEST: addFilteredPath/addLockPath before metadata initialization can throw', async () => {
@@ -111,9 +111,9 @@ describe('store/index', () => {
     const store = await importStoreInRoot();
     store.setGameMetaData({ ifId: 'IFID-TEST', name: 'Mock' } as any);
 
-    expect(store.getFilteredPaths()).toEqual([['player', 'hp']]);
+    expect(store.getFilteredPaths()).toStrictEqual([['player', 'hp']]);
     // locked paths intentionally reset to default in loadGameSettings
-    expect(store.getLockedPaths()).toEqual([]);
+    expect(store.getLockedPaths()).toStrictEqual([]);
   });
 
   it('should tolerate malformed game config JSON and fall back to defaults', async () => {
@@ -122,8 +122,8 @@ describe('store/index', () => {
     const store = await importStoreInRoot();
     store.setGameMetaData({ ifId: 'IFID-TEST', name: 'Mock' } as any);
 
-    expect(store.getFilteredPaths()).toEqual([]);
-    expect(store.getLockedPaths()).toEqual([]);
+    expect(store.getFilteredPaths()).toStrictEqual([]);
+    expect(store.getLockedPaths()).toStrictEqual([]);
   });
 
   it.skip('BUG_TEST: malformed global settings JSON should not throw during module init', async () => {
@@ -161,24 +161,23 @@ describe('store/index', () => {
     const stop = await store.startTrackingFrames();
 
     expect(store.getConnectionState()).toBe('live');
-    expect(store.getPassageData()[0]).toEqual(
-      expect.objectContaining({
-        id: 1,
-        name: 'Start',
-        size: [100, 200],
-        position: [10, 20],
-        tags: ['intro', 'test'],
-      }),
-    );
+    expect(store.getPassageData()[0]).toStrictEqual({
+      id: 1,
+      name: 'Start',
+      size: [100, 200],
+      position: [10, 20],
+      tags: ['intro', 'test'],
+      content: 'Hello',
+    });
 
     await vi.advanceTimersByTimeAsync(220);
 
     expect(store.getDiffFrames().length).toBe(1);
-    expect(store.getHistoryIds()).toEqual([1, 0]);
-    expect(store.getLockedPaths()).toEqual([]);
+    expect(store.getHistoryIds()).toStrictEqual([1, 0]);
+    expect(store.getLockedPaths()).toStrictEqual([]);
 
     store.clearDiffFrames();
-    expect(store.getDiffFrames()).toEqual([]);
+    expect(store.getDiffFrames()).toStrictEqual([]);
 
     stop();
   });
@@ -230,7 +229,7 @@ describe('store/index', () => {
     const stop = await store.startTrackingFrames();
     await vi.advanceTimersByTimeAsync(220);
 
-    expect(store.getLockedPaths()).toEqual([['hp']]);
+    expect(store.getLockedPaths()).toStrictEqual([['hp']]);
     stop();
   });
 
@@ -241,9 +240,10 @@ describe('store/index', () => {
 
     const raw = localStorage.getItem('twine-dugger-IFID-PERSIST');
     expect(raw).toBeTruthy();
-    expect(JSON.parse(raw!)).toEqual(
-      expect.objectContaining({ filteredPaths: [['player', 'hp']] }),
-    );
+    expect(JSON.parse(raw!)).toStrictEqual({
+      filteredPaths: [['player', 'hp']],
+      lockedPaths: [],
+    });
   });
 
   it.skip('BUG_TEST: startTrackingFrames can throw when locksUpdate arrives before gameConfig init', async () => {
@@ -258,6 +258,7 @@ describe('store/index', () => {
     const store = await importStoreInRoot();
     const stop = await store.startTrackingFrames();
     await vi.advanceTimersByTimeAsync(220);
+    expect(store.getLockedPaths()).toStrictEqual([['hp']]);
     stop();
   });
 });

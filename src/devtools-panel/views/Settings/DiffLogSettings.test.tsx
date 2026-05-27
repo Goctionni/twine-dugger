@@ -12,13 +12,13 @@ const {
   onPollingIntervalChangeMock,
   onMaxHistorySlicesChangeMock,
 } = vi.hoisted(() => ({
-  createGetSettingMock: vi.fn(),
-  setSettingMock: vi.fn(),
-  numberInputMock: vi.fn(),
-  booleanInputMock: vi.fn(),
-  onFontSizeChangeMock: vi.fn(),
-  onPollingIntervalChangeMock: vi.fn(),
-  onMaxHistorySlicesChangeMock: vi.fn(),
+  createGetSettingMock: vi.fn<(...args: any[]) => any>(),
+  setSettingMock: vi.fn<(...args: any[]) => any>(),
+  numberInputMock: vi.fn<(...args: any[]) => any>(),
+  booleanInputMock: vi.fn<(...args: any[]) => any>(),
+  onFontSizeChangeMock: vi.fn<(...args: any[]) => any>(),
+  onPollingIntervalChangeMock: vi.fn<(...args: any[]) => any>(),
+  onMaxHistorySlicesChangeMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({

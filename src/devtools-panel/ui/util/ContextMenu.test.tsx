@@ -9,7 +9,7 @@ afterEach(() => cleanup());
 
 describe('ContextMenu', () => {
   it('should open menu and run item callback when clicked', () => {
-    const onClick = vi.fn();
+    const onClick = vi.fn<(...args: any[]) => any>();
     const handler = createContextMenuHandler([
       {
         label: 'Filter path',
@@ -35,7 +35,9 @@ describe('ContextMenu', () => {
   });
 
   it('should ignore ctrl+context menu events', () => {
-    const handler = createContextMenuHandler([{ label: 'One', onClick: vi.fn() }]);
+    const handler = createContextMenuHandler([
+      { label: 'One', onClick: vi.fn<(...args: any[]) => any>() },
+    ]);
 
     render(() => (
       <>
@@ -51,7 +53,9 @@ describe('ContextMenu', () => {
   });
 
   it('should ignore input elements as context menu targets', () => {
-    const handler = createContextMenuHandler([{ label: 'Two', onClick: vi.fn() }]);
+    const handler = createContextMenuHandler([
+      { label: 'Two', onClick: vi.fn<(...args: any[]) => any>() },
+    ]);
 
     render(() => (
       <>

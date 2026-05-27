@@ -69,7 +69,7 @@ describe('AddPropertyDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[1]).toEqual({});
+    expect(onConfirm.mock.calls[0]?.[1]).toStrictEqual({});
   });
 
   it('creates empty array for array type', async () => {
@@ -82,7 +82,7 @@ describe('AddPropertyDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[1]).toEqual([]);
+    expect(onConfirm.mock.calls[0]?.[1]).toStrictEqual([]);
   });
 
   it('creates empty map for map type', async () => {

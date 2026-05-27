@@ -10,11 +10,11 @@ const {
   setStatePropertyLockMock,
   setStatePropertyLocksMock,
 } = vi.hoisted(() => ({
-  clearLockPathsMock: vi.fn(),
-  getLockedPathsMock: vi.fn(),
-  removeLockPathMock: vi.fn(),
-  setStatePropertyLockMock: vi.fn(),
-  setStatePropertyLocksMock: vi.fn(),
+  clearLockPathsMock: vi.fn<(...args: any[]) => any>(),
+  getLockedPathsMock: vi.fn<(...args: any[]) => any>(),
+  removeLockPathMock: vi.fn<(...args: any[]) => any>(),
+  setStatePropertyLockMock: vi.fn<(...args: any[]) => any>(),
+  setStatePropertyLocksMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({

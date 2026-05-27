@@ -4,9 +4,9 @@ import { cleanup, render } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const { createGetSettingMock, createSorterMock, stateContainerInputMock } = vi.hoisted(() => ({
-  createGetSettingMock: vi.fn(),
-  createSorterMock: vi.fn(),
-  stateContainerInputMock: vi.fn(),
+  createGetSettingMock: vi.fn<(...args: any[]) => any>(),
+  createSorterMock: vi.fn<(...args: any[]) => any>(),
+  stateContainerInputMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({
@@ -47,7 +47,7 @@ describe('StateMapInput', () => {
     render(() => <StateMapInput path={['map']} value={value as any} />);
 
     const props = stateContainerInputMock.mock.calls[0]?.[0];
-    expect(props.keys).toEqual(['b', 'a']);
+    expect(props.keys).toStrictEqual(['b', 'a']);
     expect(props.getKeyValue('a')).toBe(1);
   });
 });

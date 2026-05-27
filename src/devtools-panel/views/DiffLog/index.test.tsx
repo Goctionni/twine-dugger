@@ -11,12 +11,12 @@ const {
   getDiffFramesMock,
   isPathFilteredMock,
 } = vi.hoisted(() => ({
-  clearDiffFramesMock: vi.fn(),
-  clearFilteredPathsMock: vi.fn(),
-  createContextMenuHandlerMock: vi.fn(),
+  clearDiffFramesMock: vi.fn<(...args: any[]) => any>(),
+  clearFilteredPathsMock: vi.fn<(...args: any[]) => any>(),
+  createContextMenuHandlerMock: vi.fn<(...args: any[]) => any>(),
   diffFrameProps: [] as Array<{ frame: { passage: string }; first?: boolean }>,
-  getDiffFramesMock: vi.fn(),
-  isPathFilteredMock: vi.fn(),
+  getDiffFramesMock: vi.fn<(...args: any[]) => any>(),
+  isPathFilteredMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('../../store', () => ({

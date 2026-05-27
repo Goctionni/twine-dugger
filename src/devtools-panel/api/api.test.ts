@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 vi.mock('./remote-execute', () => ({
-  executeCode: vi.fn(),
-  injectContentScript: vi.fn(),
+  executeCode: vi.fn<(...args: any[]) => any>(),
+  injectContentScript: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('./remote-functions/getMetaData', () => ({
-  getGameMetaFn: vi.fn(() => ({ name: 'meta' })),
+  getGameMetaFn: vi.fn<(...args: any[]) => any>(() => ({ name: 'meta' })),
 }));
 
 import {
@@ -50,8 +50,8 @@ describe('api bridge wrappers', () => {
     const updates = await getUpdates();
 
     expect(injectContentScriptMock).toHaveBeenCalledTimes(2);
-    expect(state).toEqual({ state: { a: 1 } });
-    expect(updates).toEqual({ diffPackage: null, locksUpdate: null });
+    expect(state).toStrictEqual({ state: { a: 1 } });
+    expect(updates).toStrictEqual({ diffPackage: null, locksUpdate: null });
   });
 
   it('should return raw getState/getUpdates value when executeCode does not return string', async () => {
@@ -76,7 +76,7 @@ describe('api bridge wrappers', () => {
     injectContentScriptMock.mockResolvedValue(undefined);
     executeCodeMock.mockResolvedValue(undefined as never);
 
-    const setStateFn = vi.fn();
+    const setStateFn = vi.fn<(...args: any[]) => any>();
     (window as any).TwineDugger = {
       setState: setStateFn,
       utils: {},
@@ -106,37 +106,40 @@ describe('api bridge wrappers', () => {
     expect(executeCodeMock).toHaveBeenCalledTimes(6);
 
     const [setStateCall] = executeCodeMock.mock.calls;
-    expect(setStateCall?.[1]).toEqual({
+    expect(setStateCall?.[1]).toStrictEqual({
       args: ['setState', ['player', 'hp'], 10],
       requires: ['content-script.js'],
     });
 
     const [setLockCall] = executeCodeMock.mock.calls.slice(1);
-    expect(setLockCall?.[1]).toEqual({
+    expect(setLockCall?.[1]).toStrictEqual({
       args: ['setStatePropertyLock', ['player', 'hp'], true],
       requires: ['content-script.js'],
     });
 
     const [setLocksCall] = executeCodeMock.mock.calls.slice(2);
-    expect(setLocksCall?.[1]).toEqual({
+    expect(setLocksCall?.[1]).toStrictEqual({
       args: ['setStatePropertyLocks', [['player', 'hp']]],
       requires: ['content-script.js'],
     });
 
     const [dupCall] = executeCodeMock.mock.calls.slice(3);
-    expect(dupCall?.[1]).toEqual({
+    expect(dupCall?.[1]).toStrictEqual({
       args: ['duplicateStateProperty', ['player'], 'hp', 'hp2'],
       requires: ['content-script.js'],
     });
 
     const [deleteCall] = executeCodeMock.mock.calls.slice(4);
-    expect(deleteCall?.[1]).toEqual({
+    expect(deleteCall?.[1]).toStrictEqual({
       args: ['deleteFromState', ['player', 'hp']],
       requires: ['content-script.js'],
     });
 
     const [passageCall] = executeCodeMock.mock.calls.slice(5);
-    expect(passageCall?.[1]).toEqual({ args: ['getPassageData'], requires: ['content-script.js'] });
+    expect(passageCall?.[1]).toStrictEqual({
+      args: ['getPassageData'],
+      requires: ['content-script.js'],
+    });
   });
 
   it('should return undefined from exec callback when TwineDugger runtime is missing', async () => {

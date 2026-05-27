@@ -17,7 +17,7 @@ describe('shared-types contracts', () => {
     };
 
     expect(candidate.__type).toBe('candidate-game-iframes');
-    expect(candidate.urls).toEqual(['https://example.test/game']);
+    expect(candidate.urls).toStrictEqual(['https://example.test/game']);
   });
 
   it('should model array instruction diff and update result payload', () => {
@@ -44,8 +44,8 @@ describe('shared-types contracts', () => {
     };
 
     expect(result.diffPackage?.passage).toBe('Start');
-    expect(result.diffPackage?.diffs[0]).toEqual(instructionDiff);
-    expect(result.locksUpdate).toEqual([['inventory']]);
+    expect(result.diffPackage?.diffs[0]).toStrictEqual(instructionDiff);
+    expect(result.locksUpdate).toStrictEqual([['inventory']]);
   });
 
   it('should model combined search results with state and passage entries', () => {
@@ -63,7 +63,7 @@ describe('shared-types contracts', () => {
       ],
     };
 
-    expect(results.state[0]?.path).toEqual(['player', 'hp']);
+    expect(results.state[0]?.path).toStrictEqual(['player', 'hp']);
     expect(results.passage[0]?.name).toBe('Start');
   });
 });

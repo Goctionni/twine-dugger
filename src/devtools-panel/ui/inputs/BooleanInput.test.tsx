@@ -10,7 +10,7 @@ afterEach(() => cleanup());
 
 describe('BooleanInput', () => {
   it('should toggle true/false via labels', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(...args: any[]) => any>();
     const user = userEvent.setup();
 
     render(() => <BooleanInput id="bool-a" value={false} onChange={onChange} />);
@@ -23,7 +23,7 @@ describe('BooleanInput', () => {
   });
 
   it('should not toggle when disabled or readonly', async () => {
-    const onChange = vi.fn();
+    const onChange = vi.fn<(...args: any[]) => any>();
     const user = userEvent.setup();
 
     render(() => <BooleanInput id="bool-b" value={false} onChange={onChange} disabled />);
@@ -33,6 +33,6 @@ describe('BooleanInput', () => {
     render(() => <BooleanInput id="bool-b" value={false} onChange={onChange} readOnly />);
     await user.click(screen.getByText('False'));
 
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onChange.mock.calls).toStrictEqual([]);
   });
 });

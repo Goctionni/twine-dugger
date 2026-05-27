@@ -4,9 +4,9 @@ import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const { clearFilteredPathsMock, getFilteredPathsMock, removeFilteredPathMock } = vi.hoisted(() => ({
-  clearFilteredPathsMock: vi.fn(),
-  getFilteredPathsMock: vi.fn(),
-  removeFilteredPathMock: vi.fn(),
+  clearFilteredPathsMock: vi.fn<(...args: any[]) => any>(),
+  getFilteredPathsMock: vi.fn<(...args: any[]) => any>(),
+  removeFilteredPathMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({

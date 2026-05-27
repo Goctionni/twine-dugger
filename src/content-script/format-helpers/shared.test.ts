@@ -32,7 +32,7 @@ describe('format-helpers/shared', () => {
     const value = getStateValue(7 as any, ['bad']);
 
     expect(value).toBeNull();
-    expect(errorSpy).toHaveBeenCalled();
+    expect(errorSpy.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should duplicate properties for array, map, and object containers', () => {
@@ -47,13 +47,13 @@ describe('format-helpers/shared', () => {
     duplicateStateProperty(state, ['obj'], 'a', 'b');
 
     expect(state.arr).toHaveLength(3);
-    expect(state.arr[2]).toEqual({ x: 2 });
+    expect(state.arr[2]).toStrictEqual({ x: 2 });
     expect(state.arr[2]).not.toBe(state.arr[1]);
 
-    expect(state.map.get('b')).toEqual({ y: 3 });
+    expect(state.map.get('b')).toStrictEqual({ y: 3 });
     expect(state.map.get('b')).not.toBe(state.map.get('a'));
 
-    expect(state.obj.b).toEqual({ z: 4 });
+    expect(state.obj.b).toStrictEqual({ z: 4 });
     expect(state.obj.b).not.toBe(state.obj.a);
   });
 
@@ -93,9 +93,9 @@ describe('format-helpers/shared', () => {
     deleteFromState(state as any, ['map', 'k']);
     deleteFromState(state as any, ['obj', 'a']);
 
-    expect(state.arr).toEqual([1, 3]);
+    expect(state.arr).toStrictEqual([1, 3]);
     expect(state.map.has('k')).toBe(false);
-    expect(state.obj).toEqual({ b: 2 });
+    expect(state.obj).toStrictEqual({ b: 2 });
   });
 
   it('should log when delete target parent is not deletable object', () => {
@@ -103,7 +103,7 @@ describe('format-helpers/shared', () => {
 
     deleteFromState({ bad: 123 as any }, ['bad', 'x']);
 
-    expect(errorSpy).toHaveBeenCalled();
+    expect(errorSpy.mock.calls.length).toBeGreaterThan(0);
   });
 
   it('should extract passage data from tw-storydata DOM nodes', () => {

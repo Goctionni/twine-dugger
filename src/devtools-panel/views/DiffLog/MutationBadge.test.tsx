@@ -12,9 +12,9 @@ describe('MutationBadge', () => {
     render(() => <MutationBadge kind="add" />);
 
     const badge = screen.getByText('ADD');
-    expect(badge.className).toContain('bg-emerald-900/40');
-    expect(badge.className).toContain('text-emerald-200');
-    expect(badge.className).toContain('border-emerald-700/60');
+    expect(badge.className.includes('bg-emerald-900/40')).toBe(true);
+    expect(badge.className.includes('text-emerald-200')).toBe(true);
+    expect(badge.className.includes('border-emerald-700/60')).toBe(true);
   });
 
   it('should render expected label for each mutation kind', () => {

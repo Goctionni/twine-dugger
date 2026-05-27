@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const { setSettingMock } = vi.hoisted(() => ({
-  setSettingMock: vi.fn(),
+  setSettingMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({

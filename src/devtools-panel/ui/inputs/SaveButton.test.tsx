@@ -17,7 +17,7 @@ describe('SaveButton', () => {
   });
 
   it('calls onClick when enabled', async () => {
-    const onClick = vi.fn();
+    const onClick = vi.fn<(...args: any[]) => any>();
     const user = userEvent.setup();
 
     render(() => <SaveButton onClick={onClick} />);
@@ -28,13 +28,13 @@ describe('SaveButton', () => {
   });
 
   it('does not call onClick when disabled', async () => {
-    const onClick = vi.fn();
+    const onClick = vi.fn<(...args: any[]) => any>();
     const user = userEvent.setup();
 
     render(() => <SaveButton onClick={onClick} disabled />);
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    expect(onClick).not.toHaveBeenCalled();
+    expect(onClick.mock.calls).toStrictEqual([]);
   });
 });

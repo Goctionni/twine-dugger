@@ -10,7 +10,9 @@ describe('persistedValue', () => {
   it('should return persisted value after set', () => {
     setPersistedValue('persisted-key-1', { enabled: true });
 
-    expect(getPersistedValue('persisted-key-1', { enabled: false })).toEqual({ enabled: true });
+    expect(getPersistedValue('persisted-key-1', { enabled: false })).toStrictEqual({
+      enabled: true,
+    });
   });
 
   it('should keep keys isolated by key name', () => {

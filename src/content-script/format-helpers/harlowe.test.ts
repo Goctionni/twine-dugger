@@ -32,7 +32,7 @@ describe('harlowe format helper', () => {
       },
     };
 
-    expect(harlowe.getState()).toEqual({ keep: 1, nestedGood: { a: 1 } });
+    expect(harlowe.getState()).toStrictEqual({ keep: 1, nestedGood: { a: 1 } });
     expect(harlowe.getPassage()).toBe('Start');
   });
 
@@ -43,6 +43,6 @@ describe('harlowe format helper', () => {
       { keep: 2, TwineScript_A: 2, nestedBad: { TwineScript_B: false, a: 2 } } as any,
     );
 
-    expect(diffs).toEqual([{ type: 'number', path: ['keep'], oldValue: 1, newValue: 2 }]);
+    expect(diffs).toStrictEqual([{ type: 'number', path: ['keep'], oldValue: 1, newValue: 2 }]);
   });
 });

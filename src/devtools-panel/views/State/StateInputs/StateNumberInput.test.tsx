@@ -15,16 +15,16 @@ const {
   saveButtonMock,
   lockButtonMock,
 } = vi.hoisted(() => ({
-  createGetViewStateMock: vi.fn(),
-  getActiveStateMock: vi.fn(),
-  getLockedPathsMock: vi.fn(),
-  addLockPathMock: vi.fn(),
-  removeLockPathMock: vi.fn(),
-  setStateMock: vi.fn(async () => undefined),
-  setStatePropertyLockMock: vi.fn(),
-  numberInputMock: vi.fn(),
-  saveButtonMock: vi.fn(),
-  lockButtonMock: vi.fn(),
+  createGetViewStateMock: vi.fn<(...args: any[]) => any>(),
+  getActiveStateMock: vi.fn<(...args: any[]) => any>(),
+  getLockedPathsMock: vi.fn<(...args: any[]) => any>(),
+  addLockPathMock: vi.fn<(...args: any[]) => any>(),
+  removeLockPathMock: vi.fn<(...args: any[]) => any>(),
+  setStateMock: vi.fn<(...args: any[]) => any>(async () => undefined),
+  setStatePropertyLockMock: vi.fn<(...args: any[]) => any>(),
+  numberInputMock: vi.fn<(...args: any[]) => any>(),
+  saveButtonMock: vi.fn<(...args: any[]) => any>(),
+  lockButtonMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('@/devtools-panel/store', () => ({

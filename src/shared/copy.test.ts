@@ -13,18 +13,18 @@ describe('copy', () => {
 
     const cloned = copy(source) as typeof source;
 
-    expect(cloned).toEqual(source);
+    expect(cloned).toStrictEqual(source);
     expect(cloned).not.toBe(source);
     expect(cloned.obj).not.toBe(source.obj);
     expect(cloned.arr).not.toBe(source.arr);
     expect(cloned.map).toBeInstanceOf(Map);
-    expect(cloned.map.get('k')).toEqual({ c: 3 });
+    expect(cloned.map.get('k')).toStrictEqual({ c: 3 });
     expect(cloned.map.get('k')).not.toBe(source.map.get('k'));
     expect(cloned.set).toBeInstanceOf(Set);
 
     const clonedSetEntry = [...cloned.set][0] as { d: number };
     const sourceSetEntry = [...source.set][0] as { d: number };
-    expect(clonedSetEntry).toEqual(sourceSetEntry);
+    expect(clonedSetEntry).toStrictEqual(sourceSetEntry);
     expect(clonedSetEntry).not.toBe(sourceSetEntry);
   });
 
@@ -56,10 +56,10 @@ describe('copy', () => {
     try {
       const cloned = copy(source) as typeof source;
 
-      expect(cloned.arr).toEqual([1, { x: 2 }]);
+      expect(cloned.arr).toStrictEqual([1, { x: 2 }]);
       expect(cloned.map).toBeInstanceOf(Map);
       expect(cloned.set).toBeInstanceOf(Set);
-      expect(cloned.obj).toEqual({ nested: 'value' });
+      expect(cloned.obj).toStrictEqual({ nested: 'value' });
     } finally {
       cloneSpy.mockRestore();
     }

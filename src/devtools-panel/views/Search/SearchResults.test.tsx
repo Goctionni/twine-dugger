@@ -5,18 +5,18 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const { setViewStateMock, getResultTabMock, getSearchResultsMock } = vi.hoisted(() => ({
-  setViewStateMock: vi.fn(),
-  getResultTabMock: vi.fn(),
-  getSearchResultsMock: vi.fn(),
+  setViewStateMock: vi.fn<(...args: any[]) => any>(),
+  getResultTabMock: vi.fn<(...args: any[]) => any>(),
+  getSearchResultsMock: vi.fn<(...args: any[]) => any>(),
 }));
 
 vi.mock('../../store', () => ({
-  createGetViewState: vi.fn(() => getResultTabMock),
+  createGetViewState: vi.fn<(...args: any[]) => any>(() => getResultTabMock),
   setViewState: setViewStateMock,
 }));
 
 vi.mock('./create-searchResults', () => ({
-  createSearchResults: vi.fn(() => getSearchResultsMock),
+  createSearchResults: vi.fn<(...args: any[]) => any>(() => getSearchResultsMock),
 }));
 
 vi.mock('./StateResults', () => ({

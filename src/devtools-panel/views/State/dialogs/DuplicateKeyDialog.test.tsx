@@ -9,7 +9,7 @@ describe('DuplicateKeyDialog', () => {
   afterEach(() => cleanup());
 
   it('should submit typed key to confirmation handler', () => {
-    const onConfirm = vi.fn();
+    const onConfirm = vi.fn<(...args: any[]) => any>();
     render(() => <DuplicateKeyDialog onConfirm={onConfirm} />);
 
     const input = screen.getByRole('textbox');
@@ -22,7 +22,7 @@ describe('DuplicateKeyDialog', () => {
   });
 
   it('should submit empty key when user confirms without typing', () => {
-    const onConfirm = vi.fn();
+    const onConfirm = vi.fn<(...args: any[]) => any>();
     render(() => <DuplicateKeyDialog onConfirm={onConfirm} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));

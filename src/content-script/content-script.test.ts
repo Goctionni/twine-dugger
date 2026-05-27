@@ -39,7 +39,7 @@ describe('content-script init', () => {
     const runtime = (window as any).TwineDugger;
     expect(runtime).toBeDefined();
 
-    expect(runtime.getState()).toEqual({
+    expect(runtime.getState()).toStrictEqual({
       passage: 'Test Passage',
       state: { mode: 'sanitized' },
     });
@@ -55,7 +55,7 @@ describe('content-script init', () => {
     expect(sugarcube.duplicateStateProperty).toHaveBeenCalledWith(['obj'], 'a', 'b');
     expect(sugarcube.setStatePropertyLock).toHaveBeenCalledWith(['obj', 'a'], true);
     expect(sugarcube.setStatePropertyLocks).toHaveBeenCalledWith([['obj', 'a']]);
-    expect(runtime.getPassageData()).toEqual(passageData);
+    expect(runtime.getPassageData()).toStrictEqual(passageData);
     expect(typeof runtime.utils.jsonReplacer).toBe('function');
     expect(typeof runtime.utils.jsonReviver).toBe('function');
   });
@@ -67,8 +67,9 @@ describe('content-script init', () => {
     await importWithMocks({ sugarcube, harlowe });
 
     const runtime = (window as any).TwineDugger;
-    expect(runtime.getUpdates()).toEqual({ diffPackage: null, locksUpdate: null });
-    expect(sugarcube.processDiffs).not.toHaveBeenCalled();
+    expect(runtime.getUpdates()).toStrictEqual({ diffPackage: null, locksUpdate: null });
+    expect(sugarcube.processDiffs).toBeDefined();
+    expect((sugarcube.processDiffs as ReturnType<typeof vi.fn>).mock.calls).toStrictEqual([]);
   });
 
   it('should process and publish diffs and lock updates when changes exist', async () => {
@@ -81,7 +82,7 @@ describe('content-script init', () => {
     await importWithMocks({ sugarcube, harlowe });
 
     const runtime = (window as any).TwineDugger;
-    expect(runtime.getUpdates()).toEqual({
+    expect(runtime.getUpdates()).toStrictEqual({
       diffPackage: {
         passage: 'Test Passage',
         diffs,
@@ -98,22 +99,24 @@ function createHelper(options: {
   processResult?: { diffs: unknown[]; locksUpdate: unknown };
 }): TestHelper {
   const diffs = options.diffs ?? [];
-  const differ = vi.fn(() => diffs);
+  const differ = vi.fn<(...args: any[]) => any>(() => diffs);
 
   const helper: TestHelper = {
-    detect: vi.fn(() => options.detect),
-    getDiffer: vi.fn(() => differ),
-    getState: vi.fn((sanitized: boolean) => (sanitized ? { mode: 'sanitized' } : { mode: 'raw' })),
-    getPassage: vi.fn(() => 'Test Passage'),
-    processDiffs: vi.fn(
+    detect: vi.fn<(...args: any[]) => any>(() => options.detect),
+    getDiffer: vi.fn<(...args: any[]) => any>(() => differ),
+    getState: vi.fn<(...args: any[]) => any>((sanitized: boolean) =>
+      sanitized ? { mode: 'sanitized' } : { mode: 'raw' },
+    ),
+    getPassage: vi.fn<(...args: any[]) => any>(() => 'Test Passage'),
+    processDiffs: vi.fn<(...args: any[]) => any>(
       (incomingDiffs: unknown[]) =>
         options.processResult ?? { diffs: incomingDiffs, locksUpdate: null },
     ),
-    setState: vi.fn(),
-    deleteFromState: vi.fn(),
-    duplicateStateProperty: vi.fn(),
-    setStatePropertyLock: vi.fn(),
-    setStatePropertyLocks: vi.fn(),
+    setState: vi.fn<(...args: any[]) => any>(),
+    deleteFromState: vi.fn<(...args: any[]) => any>(),
+    duplicateStateProperty: vi.fn<(...args: any[]) => any>(),
+    setStatePropertyLock: vi.fn<(...args: any[]) => any>(),
+    setStatePropertyLocks: vi.fn<(...args: any[]) => any>(),
   };
 
   return helper;
@@ -125,7 +128,7 @@ async function importWithMocks(options: {
   passageData?: unknown;
 }) {
   vi.doMock('@/shared/copy', () => ({
-    copy: vi.fn((value: unknown) => structuredClone(value)),
+    copy: vi.fn<(...args: any[]) => any>((value: unknown) => structuredClone(value)),
   }));
 
   vi.doMock('./format-helpers/sugarcube', () => ({
@@ -137,7 +140,9 @@ async function importWithMocks(options: {
   }));
 
   vi.doMock('./format-helpers/shared', () => ({
-    getPassageData: vi.fn(() => options.passageData ?? { passage: 'default' }),
+    getPassageData: vi.fn<(...args: any[]) => any>(
+      () => options.passageData ?? { passage: 'default' },
+    ),
   }));
 
   await import('./content-script');

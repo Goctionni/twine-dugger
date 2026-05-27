@@ -18,7 +18,7 @@ describe('highlighter', () => {
 
   it('should convert tokenized lines into escaped HTML spans', async () => {
     const tokenizeLine = vi
-      .fn()
+      .fn<(...args: any[]) => any>()
       .mockReturnValueOnce({
         tokens: [
           { startIndex: 0, endIndex: 4, scopes: ['scope.tag'] },
@@ -34,15 +34,15 @@ describe('highlighter', () => {
     const highlighter = await createHighlighter({
       scope: 'source.test',
       registry: {
-        loadGrammar: vi.fn().mockResolvedValue({ tokenizeLine }),
+        loadGrammar: vi.fn<(...args: any[]) => any>().mockResolvedValue({ tokenizeLine }),
       } as never,
     });
 
     const html = highlighter.toHtml('<tag>raw\nline2&');
 
-    expect(html).toContain('<span class="scope.tag">&lt;tag</span>');
-    expect(html).toContain('&gt;raw');
-    expect(html).toContain('<span class="scope.text">line2&amp;</span>');
+    expect(html.includes('<span class="scope.tag">&lt;tag</span>')).toBe(true);
+    expect(html.includes('&gt;raw')).toBe(true);
+    expect(html.includes('<span class="scope.text">line2&amp;</span>')).toBe(true);
     expect(tokenizeLine).toHaveBeenNthCalledWith(1, '<tag>raw', null);
     expect(tokenizeLine).toHaveBeenNthCalledWith(2, 'line2&', { id: 1 });
   });
@@ -52,7 +52,7 @@ describe('highlighter', () => {
       createHighlighter({
         scope: 'source.missing',
         registry: {
-          loadGrammar: vi.fn().mockResolvedValue(undefined),
+          loadGrammar: vi.fn<(...args: any[]) => any>().mockResolvedValue(undefined),
         } as never,
       }),
     ).rejects.toThrow('Failed to load grammar');

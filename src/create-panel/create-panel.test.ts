@@ -13,8 +13,8 @@ describe('create-panel', () => {
   });
 
   it('should create devtools panel and register onShown listener', () => {
-    const addListener = vi.fn();
-    const create = vi.fn((_title, _icon, _page, callback) => {
+    const addListener = vi.fn<(...args: any[]) => any>();
+    const create = vi.fn<(...args: any[]) => any>((_title, _icon, _page, callback) => {
       callback({
         onShown: {
           addListener,

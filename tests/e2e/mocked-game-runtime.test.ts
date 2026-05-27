@@ -36,8 +36,7 @@ test('should reflect boolean state edits in mocked runtime', async ({ page }) =>
     const runtimeWindow = window as unknown as {
       TwineDugger?: { getState: () => { state: { flags?: { tutorialSeen?: boolean } } } };
     };
-    if (!runtimeWindow.TwineDugger) return null;
-    return runtimeWindow.TwineDugger.getState().state.flags?.tutorialSeen;
+    return runtimeWindow.TwineDugger!.getState().state.flags!.tutorialSeen;
   });
   expect(stateValue).toBe(false);
 });

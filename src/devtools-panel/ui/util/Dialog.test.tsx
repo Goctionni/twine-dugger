@@ -10,10 +10,10 @@ describe('Dialog', () => {
   let closeMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    showModalMock = vi.fn(function (this: HTMLDialogElement) {
+    showModalMock = vi.fn<(...args: any[]) => any>(function (this: HTMLDialogElement) {
       this.setAttribute('open', '');
     });
-    closeMock = vi.fn(function (this: HTMLDialogElement) {
+    closeMock = vi.fn<(...args: any[]) => any>(function (this: HTMLDialogElement) {
       this.removeAttribute('open');
     });
 
@@ -58,7 +58,7 @@ describe('Dialog', () => {
   });
 
   it('should call onClose handler when close event fires', () => {
-    const onClose = vi.fn();
+    const onClose = vi.fn<(...args: any[]) => any>();
     render(() => (
       <Dialog open onClose={onClose}>
         <div>Dialog body</div>
@@ -66,11 +66,9 @@ describe('Dialog', () => {
     ));
 
     const dialog = document.querySelector('dialog');
-    if (!(dialog instanceof HTMLDialogElement)) {
-      throw new Error('Expected dialog element to exist');
-    }
+    expect(dialog).toBeInstanceOf(HTMLDialogElement);
 
-    fireEvent(dialog, new Event('close'));
+    fireEvent(dialog as HTMLDialogElement, new Event('close'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

@@ -27,6 +27,6 @@ describe('PassageHeader', () => {
     ));
 
     expect(screen.getByText('Selected Passage: Start')).toBeTruthy();
-    expect(screen.getAllByTestId('tag').map((n) => n.textContent)).toEqual(['intro', 'safe']);
+    expect(screen.getAllByTestId('tag').map((n) => n.textContent)).toStrictEqual(['intro', 'safe']);
   });
 });

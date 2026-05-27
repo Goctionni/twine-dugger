@@ -19,9 +19,9 @@ describe('FormatHelpers type contract', () => {
 
     expect(helper.detect()).toBe(true);
     expect(helper.getPassage()).toBe('Start');
-    expect(helper.getState()).toEqual({ hp: 10 });
-    expect(helper.getDiffer()({}, {} as never)).toEqual([]);
-    expect(helper.processDiffs?.([])).toEqual({ diffs: [], locksUpdate: [] });
-    expect(helper.setStatePropertyLock(['player'], true)).toEqual([['player']]);
+    expect(helper.getState()).toStrictEqual({ hp: 10 });
+    expect(helper.getDiffer()({}, {} as never)).toStrictEqual([]);
+    expect(helper.processDiffs?.([])).toStrictEqual({ diffs: [], locksUpdate: [] });
+    expect(helper.setStatePropertyLock(['player'], true)).toStrictEqual([['player']]);
   });
 });

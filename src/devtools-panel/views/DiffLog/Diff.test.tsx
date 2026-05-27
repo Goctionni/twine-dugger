@@ -4,9 +4,15 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 vi.mock('../../store', () => ({
-  addFilteredPath: vi.fn(),
-  setViewState: vi.fn(),
-  getActiveState: vi.fn(() => ({ x: 1, hp: 1, obj: { k: 1 }, arr: ['x'], s: new Set(['x']) })),
+  addFilteredPath: vi.fn<(...args: any[]) => any>(),
+  setViewState: vi.fn<(...args: any[]) => any>(),
+  getActiveState: vi.fn<(...args: any[]) => any>(() => ({
+    x: 1,
+    hp: 1,
+    obj: { k: 1 },
+    arr: ['x'],
+    s: new Set(['x']),
+  })),
 }));
 
 import { DiffItem } from './Diff';
