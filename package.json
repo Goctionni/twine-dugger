@@ -13,7 +13,7 @@
     "test:coverage:minimal": "vp test run --reporter=agent --coverage --coverage.skipFull --coverage.reporter=text-summary --coverage.reporter=text",
     "test:e2e": "vp build && playwright test",
     "test:e2e:smoke": "vp build && playwright test tests/e2e/smoke.test.ts",
-    "test:mutation": "stryker run",
+    "test:mutation": "stryker run && vp exec ts-node-esm tools/mutation-survivors.ts",
     "test:mutation:smoke": "stryker run stryker.smoke.conf.json"
   },
   "dependencies": {

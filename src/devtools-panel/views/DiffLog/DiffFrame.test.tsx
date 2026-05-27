@@ -106,4 +106,21 @@ describe('DiffFrame', () => {
     expect(setNavigationPageMock).toHaveBeenCalledWith('passages');
     expect(setViewStateMock).not.toHaveBeenCalled();
   });
+
+  it('should not attempt selected passage update when passageData is undefined', () => {
+    render(() => (
+      <DiffFrame
+        frame={{
+          timestamp: new Date('2026-05-26T12:00:00.000Z'),
+          passage: 'Start',
+          changes: [{ type: 'string', path: ['x'], oldValue: '1', newValue: '2' }],
+        }}
+      />
+    ));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+
+    expect(setNavigationPageMock).toHaveBeenCalledWith('passages');
+    expect(setViewStateMock).not.toHaveBeenCalled();
+  });
 });

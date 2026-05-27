@@ -17,7 +17,14 @@ describe('findPassageMatches', () => {
 
   it('should match passages by name, tags, and content case-insensitively', async () => {
     const passages = [
-      { id: 1, name: 'Start', tags: ['Intro'], content: 'Welcome', size: null, position: null },
+      {
+        id: 1,
+        name: 'Start',
+        tags: ['Intro', 'SafeZone'],
+        content: 'Welcome',
+        size: null,
+        position: null,
+      },
       {
         id: 2,
         name: 'Forest',
@@ -38,6 +45,22 @@ describe('findPassageMatches', () => {
 
     const [namePromise] = findPassageMatches(passages, 'sta');
     expect((await namePromise).map((p) => p.id)).toEqual([1]);
+  });
+
+  it('should match passage when any single tag matches query', async () => {
+    const passages = [
+      {
+        id: 3,
+        name: 'Camp',
+        tags: ['intro', 'danger'],
+        content: 'Rest',
+        size: null,
+        position: null,
+      },
+    ];
+
+    const [promise] = findPassageMatches(passages, 'intro');
+    expect((await promise).map((p) => p.id)).toEqual([3]);
   });
 
   it('should return empty result when aborted before execution', async () => {
@@ -86,6 +109,31 @@ describe('findStateMatches', () => {
     const [boolPromise] = findStateMatches(state, 'true');
     const boolMatches = await boolPromise;
     expect(boolMatches.map((m) => m.path)).toContainEqual(['player', 'alive']);
+
+    const [falsePromise] = findStateMatches({ feature: { enabled: false } } as any, 'false');
+    const falseMatches = await falsePromise;
+    expect(falseMatches.map((m) => m.path)).toContainEqual(['feature', 'enabled']);
+  });
+
+  it('should match map keys and string values with full then partial ordering', async () => {
+    const state = {
+      mapData: new Map<string, unknown>([
+        ['score', 100],
+        ['scoreExtra', 'scored'],
+      ]),
+    } as any;
+
+    const [promise] = findStateMatches(state, 'score');
+    const matches = await promise;
+    expect(matches.map((m) => m.path)).toContainEqual(['mapData', 'score']);
+    expect(matches.map((m) => m.path)).toContainEqual(['mapData', 'scoreExtra']);
+  });
+
+  it('should not match numeric values when query is non-numeric', async () => {
+    const [promise] = findStateMatches({ count: 123 } as any, 'abc');
+    const matches = await promise;
+
+    expect(matches).toEqual([]);
   });
 
   it('should dedupe duplicate key and value matches on the same path', async () => {

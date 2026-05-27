@@ -19,7 +19,7 @@
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
   "cleanTempDir": "always",
-  "reporters": ["clear-text", "progress", "html", "json"],
+  "reporters": ["progress", "html", "json"],
   "coverageAnalysis": "perTest",
   "allowConsoleColors": true,
   "ignorePatterns": ["dist", "coverage", ".stryker-tmp", "reports"],

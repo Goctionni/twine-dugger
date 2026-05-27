@@ -106,6 +106,23 @@ describe('createSearchResults', () => {
       passage: [{ id: 1, name: 'Start' }],
     });
   });
+
+  it('should swallow search errors and keep previous results shape', async () => {
+    mockedStore.query = 'hp';
+    mockedStore.stateFrame = { state: { hp: 10 } };
+
+    findStateMatchesMock.mockReturnValue([Promise.reject(new Error('boom')), vi.fn()]);
+    findPassageMatchesMock.mockReturnValue([Promise.resolve([{ id: 1, name: 'Start' }]), vi.fn()]);
+
+    const results = await runInRoot(async () => {
+      const getResults = createSearchResults();
+      await flush();
+      await flush();
+      return getResults();
+    });
+
+    expect(results).toEqual({ state: [], passage: [] });
+  });
 });
 
 async function runInRoot<T>(fn: () => Promise<T> | T): Promise<T> {

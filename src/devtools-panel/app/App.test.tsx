@@ -84,6 +84,34 @@ describe('App', () => {
     expect(screen.getByTestId('candidates')).toBeTruthy();
   });
 
+  it('should render connection-state messages for non-live states', () => {
+    getConnectionStateMock.mockReturnValue('no-game-detected');
+    render(() => <App />);
+    expect(screen.getByText('No supported game detected')).toBeTruthy();
+
+    cleanup();
+    getConnectionStateMock.mockReturnValue('killed');
+    render(() => <App />);
+    expect(
+      screen.getByText('Extension has disconnected. Re-open devtools to reinitialize.'),
+    ).toBeTruthy();
+
+    cleanup();
+    getConnectionStateMock.mockReturnValue('loading-meta');
+    render(() => <App />);
+    expect(screen.getByText('Retrieving game metadata')).toBeTruthy();
+
+    cleanup();
+    getConnectionStateMock.mockReturnValue('loading-game');
+    render(() => <App />);
+    expect(screen.getByText('Initializing link to game')).toBeTruthy();
+
+    cleanup();
+    getConnectionStateMock.mockReturnValue('error');
+    render(() => <App />);
+    expect(screen.getByText('An error has occured')).toBeTruthy();
+  });
+
   it('should render live content for active navigation page', () => {
     getConnectionStateMock.mockReturnValue('live');
     getNavigationPageMock.mockReturnValue('search');
@@ -91,5 +119,31 @@ describe('App', () => {
     render(() => <App />);
 
     expect(screen.getByTestId('search-page')).toBeTruthy();
+  });
+
+  it('should route live content across all navigation pages', () => {
+    getConnectionStateMock.mockReturnValue('live');
+
+    getNavigationPageMock.mockReturnValue('state');
+    render(() => <App />);
+    expect(screen.getByTestId('state-page')).toBeTruthy();
+
+    cleanup();
+    getNavigationPageMock.mockReturnValue('passages');
+    render(() => <App />);
+    expect(screen.getByTestId('passages-page')).toBeTruthy();
+
+    cleanup();
+    getNavigationPageMock.mockReturnValue('settings');
+    render(() => <App />);
+    expect(screen.getByTestId('settings-page')).toBeTruthy();
+  });
+
+  it('should always render shared layout outlets', () => {
+    render(() => <App />);
+
+    expect(screen.getByTestId('layout')).toBeTruthy();
+    expect(screen.getByTestId('prompt')).toBeTruthy();
+    expect(screen.getByTestId('context-menu')).toBeTruthy();
   });
 });

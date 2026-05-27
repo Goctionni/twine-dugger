@@ -86,17 +86,20 @@ describe('ValueView', () => {
     getObjectPathValueMock.mockReturnValue(() => 1);
     render(() => <ValueView />);
 
+    expect(screen.getByText('function')).toBeTruthy();
     expect(screen.getByText('Values of this type cannot be edited')).toBeTruthy();
   });
 
   it('should render non-editable message for null and undefined values', () => {
     getObjectPathValueMock.mockReturnValue(null);
     render(() => <ValueView />);
+    expect(screen.getByText('null')).toBeTruthy();
     expect(screen.getByText('Values of this type cannot be edited')).toBeTruthy();
 
     cleanup();
     getObjectPathValueMock.mockReturnValue(undefined);
     render(() => <ValueView />);
+    expect(screen.getByText('undefined')).toBeTruthy();
     expect(screen.getByText('Values of this type cannot be edited')).toBeTruthy();
   });
 

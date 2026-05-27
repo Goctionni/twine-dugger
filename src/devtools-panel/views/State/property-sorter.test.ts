@@ -51,6 +51,27 @@ describe('createSorter', () => {
     ]);
   });
 
+  it('should prioritize numeric keys before string keys in type order', () => {
+    const object = {
+      2: 'two',
+      5: 'five',
+      alpha: 'a',
+    };
+
+    const sorter = createSorter(object, 'type');
+    expect(sorter(['alpha', 5, 2])).toEqual([2, 5, 'alpha']);
+  });
+
+  it('should fallback to lexical key order when value types are equal', () => {
+    const object = {
+      bKey: 'first',
+      aKey: 'second',
+    };
+
+    const sorter = createSorter(object, 'type');
+    expect(sorter(['bKey', 'aKey'])).toEqual(['aKey', 'bKey']);
+  });
+
   it('should return keys unchanged for none order', () => {
     const keys: Array<string | number> = ['b', 'a', 2, 1];
     const sorter = createSorter({}, 'none');

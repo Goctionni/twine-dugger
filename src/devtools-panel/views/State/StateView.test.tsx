@@ -49,6 +49,18 @@ describe('StateView', () => {
     render(() => <StateView />);
 
     expect(screen.getAllByTestId('object-nav').length).toBe(3);
+    expect(screen.getByText('|player')).toBeTruthy();
+    expect(screen.getByText('player|stats')).toBeTruthy();
+    expect(screen.getByText('player.stats|')).toBeTruthy();
     expect(screen.getByTestId('value-view')).toBeTruthy();
+  });
+
+  it('should render only path layers when leaf value is primitive', () => {
+    getObjectPathValueMock.mockReturnValue(10);
+    render(() => <StateView />);
+
+    expect(screen.getAllByTestId('object-nav').length).toBe(2);
+    expect(screen.getByText('|player')).toBeTruthy();
+    expect(screen.getByText('player|stats')).toBeTruthy();
   });
 });

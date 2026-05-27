@@ -58,6 +58,44 @@ describe('applyDiffsToState', () => {
     expect(Array.from(next.s as Set<number>).sort((a, b) => a - b)).toEqual([2, 3]);
   });
 
+  it('should ignore array diffs when subtype is not instructions', () => {
+    const oldState = { arr: ['a', 'b'] };
+    const diffs: Diff[] = [
+      {
+        type: 'array',
+        subtype: 'add' as any,
+        path: ['arr'],
+        instructions: [{ type: 'add', index: 1, value: 'x' }],
+      },
+    ];
+
+    const next = applyDiffsToState(oldState as any, diffs);
+    expect(next.arr).toEqual(['a', 'b']);
+  });
+
+  it('should ignore unknown array instruction types', () => {
+    const oldState = { arr: ['a', 'b'] };
+    const diffs: Diff[] = [
+      {
+        type: 'array',
+        subtype: 'instructions',
+        path: ['arr'],
+        instructions: [{ type: 'noop' as any, index: 0 }],
+      },
+    ];
+
+    const next = applyDiffsToState(oldState as any, diffs);
+    expect(next.arr).toEqual(['a', 'b']);
+  });
+
+  it('should not perform remove behavior for set add subtype', () => {
+    const oldState = { s: new Set([1]) };
+    const diffs: Diff[] = [{ type: 'set', subtype: 'add', path: ['s'], newValue: 2 }];
+
+    const next = applyDiffsToState(oldState as any, diffs);
+    expect(Array.from(next.s as Set<number>).sort((a, b) => a - b)).toEqual([1, 2]);
+  });
+
   it('should apply primitive updates into object, map, and array parents', () => {
     const oldState = {
       obj: { k: 1 },
