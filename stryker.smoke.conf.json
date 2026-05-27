@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
+  "vitest": {
+    "configFile": "vitest.stryker.smoke.config.ts",
+    "related": false
+  },
+  "mutate": ["tests/mutation/smoke.target.tsx"],
+  "reporters": ["clear-text", "progress"],
+  "concurrency": 1,
+  "incremental": false,
+  "cleanTempDir": true,
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  "typescriptChecker": {
+    "prioritizePerformanceOverAccuracy": true
+  }
+}

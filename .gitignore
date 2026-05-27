@@ -3,3 +3,8 @@ extension/tsup
 extension/vite
 dist
 *.zip
+playwright-report
+test-results
+coverage
+.stryker-tmp
+reports/

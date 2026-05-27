@@ -5,7 +5,16 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "prepare": "vp config"
+    "prepare": "vp config",
+    "test:missing": "ts-node-esm tools/find-missing-tests.ts",
+    "test:unit": "vp test",
+    "test:unit:watch": "vp test watch",
+    "test:coverage": "vp test run --coverage",
+    "test:coverage:minimal": "vp test run --reporter=agent --coverage --coverage.skipFull --coverage.reporter=text-summary --coverage.reporter=text",
+    "test:e2e": "vp build && playwright test",
+    "test:e2e:smoke": "vp build && playwright test tests/e2e/smoke.test.ts",
+    "test:mutation": "stryker run && vp exec ts-node-esm tools/mutation-survivors.ts",
+    "test:mutation:smoke": "stryker run stryker.smoke.conf.json"
   },
   "dependencies": {
     "@solid-primitives/scheduled": "1.5.3",
@@ -20,15 +29,26 @@
   "devDependencies": {
     "@changesets/cli": "2.31.0",
     "@microsoft/api-extractor": "7.58.7",
+    "@playwright/test": "1.60.0",
+    "@solidjs/testing-library": "0.8.10",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/typescript-checker": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@tailwindcss/postcss": "4.3.0",
     "@tailwindcss/vite": "^4.3.0",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/user-event": "14.6.1",
     "@tsdown/css": "0.22.0",
     "@types/archiver": "7.0.0",
     "@types/chrome": "0.1.42",
     "@types/node": "25.9.1",
+    "@vitest/coverage-v8": "4.1.7",
     "archiver": "8.0.0",
     "eslint-plugin-solid": "0.14.5",
+    "eslint-plugin-testing-library": "^7.16.2",
     "globals": "17.6.0",
+    "http-server": "^14.1.1",
+    "jsdom": "^29.1.1",
     "oxfmt": "^0.51.0",
     "oxlint": "^1.66.0",
     "postcss": "8.5.15",
@@ -36,7 +56,8 @@
     "ts-node": "10.9.2",
     "typescript": "6.0.3",
     "vite-plugin-solid": "2.11.12",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "packageManager": "pnpm@11.2.2"
 }

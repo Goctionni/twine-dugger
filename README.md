@@ -23,6 +23,8 @@ See: https://viteplus.dev/guide/
 `vp check --fix` - lint & format, autofix
 `vp build` - build extension
 `vp build --watch` - build extension and watch for file changes
+`pnpm exec playwright install chromium` - install Playwright browser (one-time)
+`pnpm run test:e2e:smoke` - run Playwright smoke test for devtools panel
 
 ## Status
 

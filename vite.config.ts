@@ -10,11 +10,18 @@ import { htmlInsertFontPlugin } from './build/html-insert-font.ts';
 import { logResults } from './build/log-results.ts';
 import packageJson from './package.json' with { type: 'json' };
 
+const isVitestRun = process.env.VITEST === 'true';
+
 export default defineConfig({
   staged: { '*': 'vp check --fix' },
+  test: {
+    coverage: { provider: 'v8' },
+    include: ['src/**/*.test.{ts,tsx}', 'tools/**/*.test.ts'],
+    exclude: ['tests/e2e/**'],
+  },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
   build: { minify: false, sourcemap: true },
-  plugins: [solidPlugin(), tailwindcss(), htmlInsertFontPlugin],
+  plugins: [solidPlugin({ hot: !isVitestRun }), tailwindcss(), htmlInsertFontPlugin],
   lint: (await import('./oxlint.config.ts')).default,
   fmt: (await import('./oxfmt.config.ts')).default,
   environments: {},
