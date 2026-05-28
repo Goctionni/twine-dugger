@@ -87,3 +87,12 @@ function execDuggerFunction<T extends DuggerFunctionNames>(
     },
   );
 }
+
+export async function gotoUrl(url: string) {
+  return executeCode(
+    (url) => {
+      location.href = url as string;
+    },
+    { args: [url] },
+  );
+}

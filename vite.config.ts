@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 
 import tailwindcss from '@tailwindcss/vite';
+import solidJsDevtools from 'solid-devtools/vite';
 import solidPlugin from 'vite-plugin-solid';
 import { defineConfig } from 'vite-plus';
 
@@ -8,13 +9,20 @@ import { buildLib } from './build/build-lib.ts';
 import { copyTransform } from './build/copy-transform.ts';
 import { htmlInsertFontPlugin } from './build/html-insert-font.ts';
 import { logResults } from './build/log-results.ts';
+import { mockApiPlugin } from './build/plugin-mock-api.ts';
 import packageJson from './package.json' with { type: 'json' };
 
 export default defineConfig({
   staged: { '*': 'vp check --fix' },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
   build: { minify: false, sourcemap: true },
-  plugins: [solidPlugin(), tailwindcss(), htmlInsertFontPlugin],
+  plugins: [
+    solidJsDevtools({ autoname: true }),
+    solidPlugin(),
+    tailwindcss(),
+    htmlInsertFontPlugin,
+    mockApiPlugin(),
+  ],
   lint: (await import('./oxlint.config.ts')).default,
   fmt: (await import('./oxfmt.config.ts')).default,
   environments: {},
