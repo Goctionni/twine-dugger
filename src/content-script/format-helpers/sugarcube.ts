@@ -58,8 +58,6 @@ export default {
 } satisfies FormatHelpers;
 
 function createOrUpdatePassage({ name, source, tags }: FormatPassage) {
-  console.log('createOrUpdatePassage', { name, source, tags });
-  // Resolve SugarCube namespace if called from an external console scope
   const storyAPI = window.SugarCube.Story;
   if (storyAPI.has(name)) {
     const passage = storyAPI.get(name);
