@@ -1,6 +1,7 @@
 import { createVirtualizer } from '@tanstack/solid-virtual';
-import { For, Match, Show, Switch } from 'solid-js';
+import { createSignal, For, Match, Show, Switch } from 'solid-js';
 
+import { setPassage } from '@/devtools-panel/api/api';
 import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
 import { ParsedPassageData } from '@/shared/shared-types';
@@ -30,6 +31,14 @@ export function PassageResults(props: Props) {
 
   const format = () => getGameMetaData()!.format;
   const getSelectedPassage = createGetViewState('passage', 'selected');
+
+  const [editable, setEditable] = createSignal(false);
+
+  const onSave = (code: string) => {
+    const name = getSelectedPassage()?.name;
+    if (name) setPassage({ name, source: code });
+    setEditable(false);
+  };
 
   return (
     <MovableSplit
@@ -69,9 +78,18 @@ export function PassageResults(props: Props) {
           <Switch>
             <Match when={getSelectedPassage()}>
               <div class="-mt-3 -mb-1 px-3">
-                <PassageHeader passage={getSelectedPassage()!} />
+                <PassageHeader
+                  passage={getSelectedPassage()!}
+                  editable={editable()}
+                  setEditable={setEditable}
+                />
               </div>
-              <Code code={getSelectedPassage()!.content ?? ''} format={format()!.name} />
+              <Code
+                code={getSelectedPassage()!.content ?? ''}
+                format={format()!.name}
+                editable={editable()}
+                onSave={onSave}
+              />
             </Match>
           </Switch>
         </div>

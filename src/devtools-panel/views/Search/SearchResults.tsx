@@ -42,7 +42,7 @@ export function SearchResults() {
 
   return (
     <Show when={resultTabs().length}>
-      <div class="flex flex-col overflow-hidden">
+      <div class="flex flex-1 flex-col overflow-hidden">
         <div class="px-4">
           <div class="mb-2 flex gap-2">
             <h2 class="text-xl font-bold">Search results</h2>
