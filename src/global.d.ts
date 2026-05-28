@@ -1,6 +1,13 @@
 import { JSX } from 'solid-js/types/jsx.d.ts';
 
-import { Diff, ObjectValue, PassageData, Path, UpdateResult } from '@/shared/shared-types';
+import {
+  Diff,
+  FormatPassage,
+  ObjectValue,
+  PassageData,
+  Path,
+  UpdateResult,
+} from '@/shared/shared-types';
 
 declare module 'solid-js/types/jsx.d.ts' {
   namespace JSX {
@@ -30,6 +37,16 @@ declare global {
         STATE: {
           variables: ObjectValue;
           passage: string;
+        };
+        ENGINE: {
+          goToPassage(name: string): void;
+        };
+        PASSAGES: {
+          create(el: HTMLElement): Map<string, unknown>;
+          set(name: string, passage: Map<string, unknown>): void;
+          clearTreeCache(): void;
+          clearStoryletCache(): void;
+          clearTagCache?: () => void;
         };
       };
     };
@@ -65,6 +82,9 @@ declare global {
         name: string;
         title: string;
         get ifId(): string;
+        has(name: string): boolean;
+        get(name: string): SugarCubePassage;
+        add(passage: SugarCubePassage): boolean;
       };
       storage: {
         name: string;
@@ -77,6 +97,9 @@ declare global {
         long(): string;
         short(): string;
         toString(): string;
+      };
+      Engine: {
+        play(passageName: string): void;
       };
     };
     TwineDugger: {
@@ -92,6 +115,8 @@ declare global {
       ) => void;
       setStatePropertyLock: (path: Path, lock: boolean) => Path[];
       setStatePropertyLocks: (paths: Path[]) => void;
+      goToPassage: (passageName: string) => void;
+      setPassage: (passage: FormatPassage) => void;
       utils: {
         jsonReplacer(key: string, value: any): any;
         jsonReviver(key: string, value: any): any;
@@ -101,4 +126,11 @@ declare global {
   interface ErrorConstructor {
     isError(value: unknown): value is Error;
   }
+}
+
+interface SugarCubePassage {
+  name: string;
+  tags: string[];
+  text: string;
+  element?: HTMLElement;
 }

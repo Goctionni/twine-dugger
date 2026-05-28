@@ -1,6 +1,8 @@
 import { For } from 'solid-js';
 
+import { goToPassage } from '@/devtools-panel/api/api';
 import { Tag } from '@/devtools-panel/ui/display/Tag';
+import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { ParsedPassageData } from '@/shared/shared-types';
 
 interface PassageHeaderProps {
@@ -13,6 +15,15 @@ export function PassageHeader(props: PassageHeaderProps) {
       <h3 class="text-lg">Selected Passage: {props.passage!.name}</h3>
       <div class="flex gap-1">
         <For each={props.passage!.tags}>{(tag) => <Tag tag={tag} />}</For>
+      </div>
+      <div>
+        <button
+          type="button"
+          onClick={() => goToPassage(props.passage!.name)}
+          class={btnClass('contained', 'min-w-16')}
+        >
+          Go to passage
+        </button>
       </div>
     </div>
   );
