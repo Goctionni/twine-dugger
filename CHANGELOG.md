@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.4.0
+
+### Minor Changes
+
+- cb630fb: Add navigation to and ability to add passages
+
 ## 1.3.0
 
 ### Minor Changes
