@@ -1,0 +1,82 @@
+/* Container */
+.passage-code {
+  color: #d4d4d4;
+  border-radius: 8px;
+  overflow: auto;
+  white-space: pre;
+}
+
+/* Comments */
+.passage-code [class~='comment.block'] {
+  color: #6a9955;
+  font-style: italic;
+}
+
+/* Keywords & operators */
+.passage-code [class~='keyword.operator'] {
+  color: #c586c0;
+}
+
+/* HTML tags inside passages */
+.passage-code [class~='entity.name.tag.html'],
+.passage-code [class~='entity.name.tag.other.html'] {
+  color: #569cd6;
+}
+
+/* HTML attributes + = */
+.passage-code [class~='entity.other.attribute-name.html'],
+.passage-code [class~='entity.other.attribute-name.id.html'] {
+  color: #9cdcfe;
+}
+.passage-code [class~='punctuation.separator.key-value.html'] {
+  color: #d4d4d4;
+}
+
+/* Strings */
+.passage-code [class~='string.quoted.double.html'],
+.passage-code [class~='string.quoted.single.html'] {
+  color: #ce9178;
+}
+
+/* Entities (&nbsp;, &#xA0;, etc.) and bad ampersands */
+.passage-code [class~='constant.character.entity.html'] {
+  color: #b5cea8;
+}
+.passage-code [class~='invalid.illegal.bad-ampersand.html'] {
+  color: #f44747;
+  text-decoration: underline;
+}
+
+/* Optional: subtle punctuation tone-down */
+.passage-code [class~='punctuation.definition.entity.html'],
+.passage-code [class~='punctuation.definition.string.begin.html'],
+.passage-code [class~='punctuation.definition.string.end.html'] {
+  opacity: 0.9;
+}
+
+/* Variables/templates ($foo, _bar, ?Template) */
+.passage-code [class~='source.harlowe-3.twee3'][class~='entity.name.tag'],
+.passage-code [class~='source.sugarcube-2'][class~='entity.name.tag'] {
+  color: #4ec9b0;
+}
+
+/* Link markup [[...]] blocks */
+.passage-code [class~='meta.markup.underline.link'],
+.passage-code [class~='meta.markup.underline.link.twee3'] {
+  color: #d7ba7d;
+  text-decoration: underline;
+}
+.passage-code [class~='entity.name.function'],
+.passage-code [class~='entity.name.function.twee3'] {
+  color: #dcdcaa;
+}
+
+/* Embedded script and style regions */
+.passage-code [class~='source.js.twee3'],
+.passage-code [class~='source.js.embedded.sugarcube-2'] {
+  background: rgba(255, 255, 255, 0.03);
+}
+.passage-code [class~='source.css.twee3'],
+.passage-code [class~='source.css.embedded.sugarcube-2'] {
+  background: rgba(86, 156, 214, 0.07);
+}
