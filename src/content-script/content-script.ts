@@ -57,6 +57,8 @@ function init() {
     setStatePropertyLock: formatHelper.setStatePropertyLock,
     setStatePropertyLocks: formatHelper.setStatePropertyLocks,
     getPassageData,
+    goToPassage: formatHelper.goToPassage,
+    setPassage: formatHelper.setPassage,
   };
 }
 

@@ -1,3 +1,4 @@
+import { cp } from 'fs/promises';
 import { resolve } from 'path';
 
 import tailwindcss from '@tailwindcss/vite';
@@ -42,6 +43,7 @@ export default defineConfig({
 });
 
 async function buildExtra() {
+  await cp('icons', 'dist/icons', { recursive: true });
   await logResults([
     // Manifest with version number
     copyTransform({

@@ -191,3 +191,11 @@ export interface SearchResultsCombined {
   state: SearchResultState[];
   passage: ParsedPassageData[];
 }
+
+export interface FormatPassage {
+  name: string;
+  source: string;
+  tags?: string[];
+  position?: [number, number];
+  size?: [number, number];
+}

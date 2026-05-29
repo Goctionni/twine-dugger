@@ -1,7 +1,12 @@
 import clsx from 'clsx';
 import { For } from 'solid-js';
 
-import { createGetSetting, setNavigationPage, setViewState } from '@/devtools-panel/store';
+import {
+  createGetSetting,
+  getPassageData,
+  setNavigationPage,
+  setViewState,
+} from '@/devtools-panel/store';
 import type { DiffFrame as TDiffFrame, ParsedPassageData } from '@/shared/shared-types';
 
 import { DiffItem } from './Diff';
@@ -10,7 +15,6 @@ import { RelativeTime } from './RelativeTime';
 interface Props {
   first?: boolean;
   frame: TDiffFrame;
-  passageData?: ParsedPassageData[];
 }
 
 export function DiffFrame(props: Props) {
@@ -28,9 +32,9 @@ export function DiffFrame(props: Props) {
         <button
           class="cursor-pointer font-bold text-gray-300"
           onClick={() => {
-            setNavigationPage('passages');
-            const passage = props.passageData?.find((p) => p.name === props.frame.passage);
+            const passage = getPassageData().find((p) => p.name === props.frame.passage);
             if (passage) setSelectedPassage(passage);
+            setNavigationPage('passages');
           }}
         >
           {props.frame.passage}

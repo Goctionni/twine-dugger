@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ObjectValue, Path, Value } from '@/shared/shared-types';
+import { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
 import { matchesSChema } from '../util/type-helpers';
@@ -53,4 +53,24 @@ export default {
   setStatePropertyLock: setPathLock,
   setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
   processDiffs,
+  goToPassage: (passageName) => window.SugarCube.Engine.play(passageName),
+  setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;
+
+function createOrUpdatePassage({ name, source, tags }: FormatPassage) {
+  const storyAPI = window.SugarCube.Story;
+  if (storyAPI.has(name)) {
+    const passage = storyAPI.get(name);
+    passage.element!.textContent = source;
+    if (tags) {
+      passage.tags = tags;
+      passage.element!.setAttribute('tags', tags.join(' '));
+    }
+  } else {
+    storyAPI.add({
+      name: name,
+      text: source,
+      tags: tags ?? [],
+    });
+  }
+}

@@ -51,7 +51,9 @@ function forEachClass(classStr: string, callback: (c: string) => void) {
   return classStr.split(/\s+/).filter(Boolean).forEach(callback);
 }
 
-export function btnClass(variantOrClass?: ClassValue, ...rest: ClassValue[]): string {
+type VariantOrClassValue = Variant | Exclude<ClassValue, string> | (string & {});
+
+export function btnClass(variantOrClass?: VariantOrClassValue, ...rest: ClassValue[]): string {
   const { variant, classes: classValues } = parseInput(variantOrClass, ...rest);
 
   // Base classes

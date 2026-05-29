@@ -1,5 +1,5 @@
 import { jsonReviver } from '@/shared/json-helper';
-import { Path } from '@/shared/shared-types';
+import { FormatPassage, Path } from '@/shared/shared-types';
 
 import { executeCode, injectContentScript } from './remote-execute';
 import { getGameMetaFn } from './remote-functions/getMetaData';
@@ -33,6 +33,16 @@ export async function getUpdates() {
 export async function setState(path: Array<string | number>, value: unknown) {
   await injectContentScript();
   return execDuggerFunction('setState', [[...path], value]);
+}
+
+export async function goToPassage(passageName: string) {
+  await injectContentScript();
+  return execDuggerFunction('goToPassage', [passageName]);
+}
+
+export async function setPassage(passage: FormatPassage) {
+  await injectContentScript();
+  return execDuggerFunction('setPassage', [passage]);
 }
 
 export async function setStatePropertyLock(path: Path, lock: boolean) {

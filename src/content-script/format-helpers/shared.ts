@@ -104,7 +104,7 @@ export function deleteFromState(stateRoot: ContainerValue, path: Array<string | 
 export function getPassageData() {
   const passageElements = document.querySelectorAll<HTMLElement>('tw-storydata tw-passagedata');
   return Array.from(passageElements).map((el) => {
-    const elData: Partial<PassageData> = { content: el.innerText };
+    const elData: Partial<PassageData> = { content: el.textContent };
     el.getAttributeNames().forEach((attr) => {
       elData[attr] = el.getAttribute(attr) ?? '';
     });

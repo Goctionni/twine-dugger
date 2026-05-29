@@ -11,7 +11,7 @@ export function Tag(props: TagProps) {
 
   return (
     <span
-      class="inline-flex items-center rounded-sm px-2.5 py-0.5 text-xs font-medium text-white shadow-sm"
+      class="inline-flex items-center self-center rounded-sm px-2.5 py-1 text-xs font-medium text-white shadow-sm"
       style={{ 'background-color': bg() }}
     >
       {props.tag}

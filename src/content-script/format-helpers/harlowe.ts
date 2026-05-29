@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ObjectValue, Path, Value } from '@/shared/shared-types';
+import { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
 import { isObj, matchesSChema } from '../util/type-helpers';
@@ -56,4 +56,38 @@ export default {
   setStatePropertyLock: setPathLock,
   setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
   processDiffs,
+  goToPassage: (passageName) => window.Harlowe.API_ACCESS.ENGINE.goToPassage(passageName),
+  setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;
+
+function getPassageEl(passage: FormatPassage) {
+  return document.querySelector<HTMLElement>(`tw-storydata tw-passagedata[name="${passage.name}"]`);
+}
+
+function createPassageEl(passage: FormatPassage) {
+  const el = document.createElement('tw-passagedata');
+  el.setAttribute('name', passage.name);
+  document.querySelector('tw-storydata')?.appendChild(el);
+  return el;
+}
+
+function createOrUpdatePassage(passage: FormatPassage) {
+  const el = getPassageEl(passage) ?? createPassageEl(passage);
+  el.textContent = passage.source;
+  if (passage.tags) el.setAttribute('tags', passage.tags.join(' '));
+  if (passage.position) el.setAttribute('position', passage.position.join(','));
+  if (passage.size) el.setAttribute('size', passage.size.join(','));
+
+  const passageEl = Object.assign(el, {
+    attr: (attrName: string) => el.getAttribute(attrName),
+    html: () => el.innerHTML,
+  });
+
+  const Passages = window.Harlowe.API_ACCESS.PASSAGES;
+  Passages.clearTreeCache();
+  Passages.clearStoryletCache();
+  Passages.clearTagCache?.();
+
+  const Passage = Passages.create(passageEl);
+  Passages.set(passage.name, Passage);
+}

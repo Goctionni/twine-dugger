@@ -142,7 +142,7 @@ export async function createHighlighter({ registry, scope }: CreateHighlighterOp
   };
 }
 
-function escapeHtml(s: string) {
+export function escapeHtml(s: string) {
   return s.replace(
     /[&<>"']/g,
     (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]!,
