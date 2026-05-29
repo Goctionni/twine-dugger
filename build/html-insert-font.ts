@@ -14,6 +14,7 @@ export const htmlInsertFontPlugin: Plugin = {
         'content_copy',
         'close',
         'open_in_browser',
+        'warning',
       ]),
     );
   },

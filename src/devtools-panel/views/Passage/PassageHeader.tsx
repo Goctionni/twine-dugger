@@ -14,7 +14,7 @@ export function PassageHeader(props: PassageHeaderProps) {
     <div class="-mx-4 -mt-2 bg-gray-950 px-4 pt-1">
       <div class="flex gap-4 py-2">
         <h3 class="text-lg text-nowrap">Selected Passage: {props.passage!.name}</h3>
-        <div class="flex justify-between gap-2">
+        <div class="flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => goToPassage(props.passage!.name)}
@@ -28,6 +28,12 @@ export function PassageHeader(props: PassageHeaderProps) {
             <span class="material-symbols-outlined mt-0.5 text-sm">open_in_browser</span>
             Go to passage
           </button>
+          <span
+            class="material-symbols-outlined cursor-default rounded px-2 pt-1 text-sm text-amber-400 hover:bg-gray-600"
+            title="Warning! This will cause errors to occur if the game is not ready for it."
+          >
+            warning
+          </span>
         </div>
       </div>
       <Show when={props.passage?.tags?.length}>
