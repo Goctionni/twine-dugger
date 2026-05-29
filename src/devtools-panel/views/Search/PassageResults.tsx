@@ -1,12 +1,12 @@
 import { createVirtualizer } from '@tanstack/solid-virtual';
-import { createSignal, For, Match, Show, Switch } from 'solid-js';
+import { For, Match, Show, Switch } from 'solid-js';
 
 import { setPassage } from '@/devtools-panel/api/api';
 import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
 import { ParsedPassageData } from '@/shared/shared-types';
 
-import { createGetViewState, getGameMetaData, setViewState } from '../../store';
+import { createGetViewState, getGameMetaData, setPassageData, setViewState } from '../../store';
 import { PassageHeader } from '../Passage/PassageHeader';
 import { PassageListItem } from '../Passage/PassageListItem';
 
@@ -32,12 +32,19 @@ export function PassageResults(props: Props) {
   const format = () => getGameMetaData()!.format;
   const getSelectedPassage = createGetViewState('passage', 'selected');
 
-  const [editable, setEditable] = createSignal(false);
-
   const onSave = (code: string) => {
-    const name = getSelectedPassage()?.name;
-    if (name) setPassage({ name, source: code });
-    setEditable(false);
+    const passage = getSelectedPassage();
+    if (!passage) return;
+    setPassage({ name: passage.name, source: code });
+
+    const newPassage: ParsedPassageData = { ...passage, content: code };
+    setViewState('passage', 'selected', newPassage);
+    setPassageData((current) => {
+      return current.map((oldpassage) => {
+        if (oldpassage.id !== passage.id) return oldpassage;
+        return newPassage;
+      });
+    });
   };
 
   return (
@@ -78,16 +85,11 @@ export function PassageResults(props: Props) {
           <Switch>
             <Match when={getSelectedPassage()}>
               <div class="-mt-3 -mb-1 px-3">
-                <PassageHeader
-                  passage={getSelectedPassage()!}
-                  editable={editable()}
-                  setEditable={setEditable}
-                />
+                <PassageHeader passage={getSelectedPassage()!} />
               </div>
               <Code
                 code={getSelectedPassage()!.content ?? ''}
                 format={format()!.name}
-                editable={editable()}
                 onSave={onSave}
               />
             </Match>

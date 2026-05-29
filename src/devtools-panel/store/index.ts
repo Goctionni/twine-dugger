@@ -90,7 +90,7 @@ const [getStateFrames, setStateFrames] = createSignal<StateFrame[]>([]);
 const [getDiffFrames, setDiffFrames] = createSignal<DiffFrame[]>([]);
 const [getPassageData, setPassageData] = createSignal<ParsedPassageData[]>([]);
 
-export { getDiffFrames, getPassageData };
+export { getDiffFrames, getPassageData, setPassageData };
 
 export const getConnectionState = createMemo(() => store.connection);
 export const getFilteredPaths = createMemo(() => store.gameConfig?.filteredPaths ?? []);

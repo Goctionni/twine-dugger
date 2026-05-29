@@ -7,7 +7,14 @@ export const htmlInsertFontPlugin: Plugin = {
   async transformIndexHtml(html) {
     return html.replace(
       '<!--head-->',
-      await getFontHtml(['search', 'data_object', 'settings', 'content_copy', 'close']),
+      await getFontHtml([
+        'search',
+        'data_object',
+        'settings',
+        'content_copy',
+        'close',
+        'open_in_browser',
+      ]),
     );
   },
 };

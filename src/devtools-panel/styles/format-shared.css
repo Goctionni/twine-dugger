@@ -2,7 +2,6 @@
 .passage-code {
   color: #d4d4d4;
   border-radius: 8px;
-  overflow: auto;
   white-space: pre;
 }
 
