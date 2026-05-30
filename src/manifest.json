@@ -15,8 +15,17 @@
   "content_scripts": [],
   "web_accessible_resources": [
     {
-      "resources": ["./content-script.js"],
+      "resources": ["content-script.js", "content-script.js.map"],
       "matches": ["<all_urls>", "file:///*"]
     }
-  ]
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "twinedugger@goctionni.addon",
+      "strict_min_version": "150.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
 }
