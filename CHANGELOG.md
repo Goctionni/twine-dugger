@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.4.1
+
+### Patch Changes
+
+- 636aa95: Add firefox compatibility
+
 ## 1.4.0
 
 ### Minor Changes
