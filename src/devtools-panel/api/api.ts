@@ -81,10 +81,11 @@ export async function getPassageData() {
 }
 
 type DuggerFunctionNames = Exclude<keyof Window['TwineDugger'], 'utils'>;
-function execDuggerFunction<T extends DuggerFunctionNames>(
+async function execDuggerFunction<T extends DuggerFunctionNames>(
   fn: T,
   args: Parameters<Window['TwineDugger'][T]>,
 ): Promise<ReturnType<Window['TwineDugger'][T]>> {
+  await injectContentScript();
   return executeCode(
     (functionName, ...rest) => {
       if (!('TwineDugger' in window)) return;
@@ -92,7 +93,6 @@ function execDuggerFunction<T extends DuggerFunctionNames>(
       return fn(...rest);
     },
     {
-      requires: ['content-script.js'],
       args: [fn, ...args],
     },
   );
@@ -101,7 +101,7 @@ function execDuggerFunction<T extends DuggerFunctionNames>(
 export async function gotoUrl(url: string) {
   return executeCode(
     (url) => {
-      location.href = url as string;
+      location.href = url;
     },
     { args: [url] },
   );
