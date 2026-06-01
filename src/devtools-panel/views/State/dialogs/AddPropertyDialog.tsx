@@ -88,9 +88,13 @@ export function AddPropertyDialog(props: {
   });
 
   const setSafePrimitiveValue = (e: InputEvent & { currentTarget: HTMLInputElement }) => {
-    if (isNaN(e.currentTarget.valueAsNumber)) return;
-    if (type() === 'number') setPrimitiveValue(e.currentTarget.valueAsNumber);
-    else setPrimitiveValue(e.currentTarget.value);
+    if (type() === 'number') {
+      if (Number.isNaN(e.currentTarget.valueAsNumber)) return;
+      setPrimitiveValue(e.currentTarget.valueAsNumber);
+      return;
+    }
+
+    setPrimitiveValue(e.currentTarget.value);
   };
 
   return (

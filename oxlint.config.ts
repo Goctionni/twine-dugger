@@ -24,6 +24,11 @@ export default defineConfig({
       env: { browser: true },
       rules: solid.configs['flat/typescript'].rules,
     },
+    {
+      files: ['src/**/*.test.{ts,tsx}'],
+      plugins: ['vitest', 'jest', 'typescript'],
+      jsPlugins: ['eslint-plugin-testing-library'],
+    },
   ],
   options: {
     typeAware: true,
