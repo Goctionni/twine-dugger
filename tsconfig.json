@@ -12,5 +12,8 @@
     // "esModuleInterop": true, // Example common option
     // "forceConsistentCasingInFileNames": true,
     // "strict": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": ["vite/client", "@testing-library/jest-dom"]
   }
 }
