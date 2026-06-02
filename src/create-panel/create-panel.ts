@@ -1,6 +1,3 @@
-chrome.devtools.panels.create('Twine Dugger', '', './index.html', (panel) => {
-  console.log('DevTools panel created.');
-  panel.onShown.addListener((window) => {
-    console.log('Panel shown. Window:', window);
-  });
-});
+import browser from 'webextension-polyfill';
+
+browser.devtools.panels.create('Twine Dugger', './icons/16.png', './index.html');

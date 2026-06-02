@@ -58,7 +58,10 @@ async function buildExtra() {
       transform: async (content) => content.replace('./create-panel.ts', './create-panel.js'),
     }),
     // create-panel.js
-    buildLib({ entry: { 'create-panel': 'src/create-panel/create-panel.ts' } }),
+    buildLib({
+      entry: { 'create-panel': 'src/create-panel/create-panel.ts' },
+      deps: { onlyBundle: false, alwaysBundle: 'webextension-polyfill' },
+    }),
     // content-script.js
     buildLib({
       entry: { 'content-script': 'src/content-script/content-script.ts' },
