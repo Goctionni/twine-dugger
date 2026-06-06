@@ -2,13 +2,15 @@ import solid from 'eslint-plugin-solid';
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
-  plugins: ['oxc', 'typescript', 'unicorn'],
-  categories: {
-    correctness: 'warn',
+  plugins: ['eslint', 'oxc', 'typescript', 'unicorn', 'import', 'vitest'],
+  jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
+  options: {
+    typeAware: true,
+    typeCheck: true,
+    reportUnusedDisableDirectives: 'warn',
+    denyWarnings: true,
   },
-  env: {
-    builtin: true,
-  },
+  env: { builtin: true },
   ignorePatterns: ['dist'],
   rules: {
     'typescript/no-floating-promises': 'off',
@@ -19,22 +21,16 @@ export default defineConfig({
   },
   overrides: [
     {
-      files: ['src/**/*.{ts,tsx}'],
+      files: ['src/devtools-panel/**/*.{ts,tsx}'],
       jsPlugins: ['eslint-plugin-solid'],
       env: { browser: true },
       rules: solid.configs['flat/typescript'].rules,
     },
-  ],
-  options: {
-    typeAware: true,
-    typeCheck: true,
-    reportUnusedDisableDirectives: 'warn',
-    denyWarnings: true,
-  },
-  jsPlugins: [
     {
-      name: 'vite-plus',
-      specifier: 'vite-plus/oxlint-plugin',
+      files: ['src/**/*.test.{ts,tsx}'],
+      plugins: ['vitest', 'jest', 'typescript'],
+      env: { vitest: true },
+      jsPlugins: ['eslint-plugin-testing-library'],
     },
   ],
 });

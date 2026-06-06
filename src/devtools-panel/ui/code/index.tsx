@@ -5,8 +5,8 @@ import { IRawGrammar } from 'vscode-textmate';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 
 import { Toggle } from '../util/Toggle';
-import harloweLangDef from './grammars/harlowe-grammar.json';
-import sugarcubeLangDef from './grammars/sugarcube-grammar.json';
+import harloweLangDef from './grammars/harlowe-grammar.json' with { type: 'json' };
+import sugarcubeLangDef from './grammars/sugarcube-grammar.json' with { type: 'json' };
 import { createHighlighter, createRegistry, escapeHtml } from './highlighter';
 
 type TEvent<TE extends Event, TEl extends HTMLElement> = TE & { currentTarget: TEl };

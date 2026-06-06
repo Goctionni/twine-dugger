@@ -19,6 +19,9 @@ const baseInputClasses =
 export function NumberInput(props: NumberInputProps) {
   const isDisabled = () => props.disabled || props.readOnly;
   const onKeyDown = (e: KeyboardEvent) => props.onKeyDown?.(e);
+  const safeOnChange = (newValue: number) => {
+    if (!isNaN(newValue)) props.onChange(newValue);
+  };
 
   return (
     <div class={clsx('flex', props.className)}>
@@ -39,7 +42,7 @@ export function NumberInput(props: NumberInputProps) {
       <input
         type="number"
         value={props.value}
-        onInput={(e) => props.onChange(e.target.valueAsNumber)}
+        onInput={(e) => safeOnChange(e.target.valueAsNumber)}
         onKeyDown={onKeyDown}
         disabled={props.disabled}
         readOnly={props.readOnly}

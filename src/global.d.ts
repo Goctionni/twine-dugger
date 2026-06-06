@@ -1,21 +1,4 @@
-import { JSX } from 'solid-js/types/jsx.d.ts';
-
-import {
-  Diff,
-  FormatPassage,
-  ObjectValue,
-  PassageData,
-  Path,
-  UpdateResult,
-} from '@/shared/shared-types';
-
-declare module 'solid-js/types/jsx.d.ts' {
-  namespace JSX {
-    interface DialogHtmlAttributes<T> extends JSX.HTMLAttributes<T> {
-      closedby: 'any' | 'closerequest' | 'none';
-    }
-  }
-}
+import { FormatPassage, ObjectValue, PassageData, Path, UpdateResult } from '@/shared/shared-types';
 
 type SchedulerTask<T> = () => T | Promise<T>;
 type TaskOptions = {
@@ -29,8 +12,6 @@ interface Scheduler {
 }
 
 declare global {
-  declare const scheduler: Scheduler;
-
   interface Window {
     Harlowe: {
       API_ACCESS: {
