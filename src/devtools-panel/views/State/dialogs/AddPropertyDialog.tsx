@@ -87,13 +87,14 @@ export function AddPropertyDialog(props: {
     return cType === 'object' || cType === 'map';
   });
 
-  const setSafePrimitiveValue = (e: InputEvent & { currentTarget: HTMLInputElement }) => {
-    if (type() === 'number') {
-      if (Number.isNaN(e.currentTarget.valueAsNumber)) return;
+  const setNumberValue = (e: InputEvent & { currentTarget: HTMLInputElement }) => {
+    if (!isNaN(e.currentTarget.valueAsNumber)) {
       setPrimitiveValue(e.currentTarget.valueAsNumber);
-      return;
     }
+  };
 
+  const setSafePrimitiveValue = (e: InputEvent & { currentTarget: HTMLInputElement }) => {
+    if (type() === 'number') return setNumberValue(e);
     setPrimitiveValue(e.currentTarget.value);
   };
 
