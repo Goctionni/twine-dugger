@@ -1,4 +1,5 @@
-import { JSX, Match, Switch } from 'solid-js';
+import type { JSX } from 'solid-js';
+import { Match, Switch } from 'solid-js';
 
 interface SettingControlProps {
   label: string;

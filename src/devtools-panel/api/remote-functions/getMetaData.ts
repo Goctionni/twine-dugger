@@ -1,4 +1,4 @@
-import { CandidateGameIframes, GameMetaData } from '@/shared/shared-types';
+import type { CandidateGameIframes, GameMetaData } from '@/shared/shared-types';
 
 export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   if ('SugarCube' in window) return getSugarCubeMeta();

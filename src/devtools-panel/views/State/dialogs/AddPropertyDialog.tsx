@@ -3,7 +3,7 @@ import { createMemo, createSignal, Show } from 'solid-js';
 
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { Path } from '@/shared/shared-types';
+import type { Path } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import { getActiveState } from '../../../store';

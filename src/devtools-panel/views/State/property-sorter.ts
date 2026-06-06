@@ -1,5 +1,5 @@
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { ContainerValue, PropertyOrder } from '@/shared/shared-types';
+import type { ContainerValue, PropertyOrder } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 type ContainerKey = string | number;

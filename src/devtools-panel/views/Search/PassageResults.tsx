@@ -4,7 +4,7 @@ import { For, Match, Show, Switch } from 'solid-js';
 import { setPassage } from '@/devtools-panel/api/api';
 import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
-import { ParsedPassageData } from '@/shared/shared-types';
+import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { createGetViewState, getGameMetaData, setPassageData, setViewState } from '../../store';
 import { PassageHeader } from '../Passage/PassageHeader';

@@ -1,9 +1,10 @@
-import { createMemo, JSX, Show } from 'solid-js';
+import type { JSX } from 'solid-js';
+import { createMemo, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 
 import { getActiveState } from '@/devtools-panel/store';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { Path } from '@/shared/shared-types';
+import type { Path } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 const colorClasses = {

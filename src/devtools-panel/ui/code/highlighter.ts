@@ -1,11 +1,6 @@
 import { toRegExp } from 'oniguruma-to-es';
-import {
-  type IOnigLib,
-  IRawGrammar,
-  type OnigScanner,
-  type OnigString,
-  Registry,
-} from 'vscode-textmate';
+import type { IRawGrammar } from 'vscode-textmate';
+import { type IOnigLib, type OnigScanner, type OnigString, Registry } from 'vscode-textmate';
 
 class JSOnigString implements OnigString {
   public readonly content: string;

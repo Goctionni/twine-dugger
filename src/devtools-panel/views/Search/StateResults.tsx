@@ -2,7 +2,7 @@ import { createVirtualizer } from '@tanstack/solid-virtual';
 import { createSignal, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js';
 
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
-import { Path, SearchResultState } from '@/shared/shared-types';
+import type { Path, SearchResultState } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import { setNavigationPage, setViewState } from '../../store';

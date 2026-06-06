@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { createEffect, createSignal, onCleanup, untrack } from 'solid-js';
-import { IRawGrammar } from 'vscode-textmate';
+import type { IRawGrammar } from 'vscode-textmate';
 
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 

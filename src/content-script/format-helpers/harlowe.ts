@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-import { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
+import type { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
 import { isObj, matchesSChema } from '../util/type-helpers';
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
 import { createPropertyLocker } from './sharedPropertyLocker';
-import { FormatHelpers } from './type';
+import type { FormatHelpers } from './type';
 
 const HarloweSchema = z.object({
   API_ACCESS: z.object({

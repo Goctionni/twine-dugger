@@ -2,7 +2,7 @@ import { createVirtualizer } from '@tanstack/solid-virtual';
 import { createEffect, For, onCleanup, Show, untrack } from 'solid-js';
 
 import { virtualizerScrollToFn } from '@/devtools-panel/utils/virtualizer-scrollto';
-import { ParsedPassageData } from '@/shared/shared-types';
+import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { PassageListItem } from './PassageListItem';
 

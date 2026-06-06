@@ -1,6 +1,6 @@
 import { isPathFiltered } from '@/devtools-panel/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
-import { Path } from '@/shared/shared-types';
+import type { Path } from '@/shared/shared-types';
 
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 

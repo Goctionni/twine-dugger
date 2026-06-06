@@ -1,4 +1,10 @@
-import { FormatPassage, ObjectValue, PassageData, Path, UpdateResult } from '@/shared/shared-types';
+import type {
+  FormatPassage,
+  ObjectValue,
+  PassageData,
+  Path,
+  UpdateResult,
+} from '@/shared/shared-types';
 
 type SchedulerTask<T> = () => T | Promise<T>;
 type TaskOptions = {

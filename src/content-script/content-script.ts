@@ -1,11 +1,11 @@
 import { copy } from '@/shared/copy';
 import { jsonReplacer, jsonReviver } from '@/shared/json-helper';
-import { UpdateResult } from '@/shared/shared-types';
+import type { UpdateResult } from '@/shared/shared-types';
 
 import harloweHelpers from './format-helpers/harlowe';
 import { getPassageData } from './format-helpers/shared';
 import sugarcubeHelpers from './format-helpers/sugarcube';
-import { FormatHelpers } from './format-helpers/type';
+import type { FormatHelpers } from './format-helpers/type';
 
 const formatHelpers: FormatHelpers[] = [sugarcubeHelpers, harloweHelpers];
 

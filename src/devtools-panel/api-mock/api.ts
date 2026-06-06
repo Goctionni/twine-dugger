@@ -1,4 +1,4 @@
-import { Path } from '@/shared/shared-types';
+import type { Path } from '@/shared/shared-types';
 
 import type * as T from '../api/api';
 

@@ -12,7 +12,7 @@ import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
 import { StringInput } from '@/devtools-panel/ui/inputs/StringInput';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { Path } from '@/shared/shared-types';
+import type { Path } from '@/shared/shared-types';
 
 import { getLockStatus } from '../lock-helper';
 

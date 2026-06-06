@@ -1,4 +1,4 @@
-import { GameMetaData } from '@/shared/shared-types';
+import type { GameMetaData } from '@/shared/shared-types';
 
 import { getGameMetaData } from '../api/api';
 import { setCandidateIframes, setConnectionState, setGameMetaData } from '../store';

@@ -1,4 +1,4 @@
-import { ContainerValue, Value } from './shared-types';
+import type { ContainerValue, Value } from './shared-types';
 
 export function getObjectPathValue(stateRoot: ContainerValue, path: Array<string | number>): Value {
   let stateObj: Value = stateRoot;

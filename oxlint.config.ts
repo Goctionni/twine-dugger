@@ -18,6 +18,7 @@ export default defineConfig({
     'vite-plus/prefer-vite-plus-imports': 'error',
     'typescript/unbound-method': 'off',
     'eslint/no-unassigned-vars': 'off',
+    'typescript/consistent-type-imports': 'error',
   },
   overrides: [
     {

@@ -1,4 +1,4 @@
-import { ParsedPassageData } from '@/shared/shared-types';
+import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { createGetViewState, getGameMetaData, getPassageData, setViewState } from '../store';
 import { MovableSplit } from '../ui/util/MovableSplit';

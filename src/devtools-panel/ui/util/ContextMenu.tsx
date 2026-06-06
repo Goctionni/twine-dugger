@@ -1,4 +1,5 @@
-import { For, JSX, Show } from 'solid-js';
+import type { JSX } from 'solid-js';
+import { For, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { Portal } from 'solid-js/web';
 

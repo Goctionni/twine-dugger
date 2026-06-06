@@ -1,5 +1,5 @@
 import { jsonReviver } from '@/shared/json-helper';
-import { FormatPassage, Path } from '@/shared/shared-types';
+import type { FormatPassage, Path } from '@/shared/shared-types';
 
 import { executeCode, injectContentScript } from './remote-execute';
 import { getGameMetaFn } from './remote-functions/getMetaData';

@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { JSX } from 'solid-js';
+import type { JSX } from 'solid-js';
 
 import { btnClass } from '../util/btnClass';
 

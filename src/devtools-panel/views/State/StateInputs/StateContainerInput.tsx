@@ -1,6 +1,6 @@
 import { Index, Match, Show, Switch } from 'solid-js';
 
-import { Path, Value } from '@/shared/shared-types';
+import type { Path, Value } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import { TypeIcon } from '../../../ui/display/TypeIcon';

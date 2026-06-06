@@ -1,4 +1,5 @@
-import { JSXElement, Show } from 'solid-js';
+import type { JSXElement } from 'solid-js';
+import { Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 
 import { Dialog } from './Dialog';

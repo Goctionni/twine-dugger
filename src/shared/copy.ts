@@ -1,4 +1,4 @@
-import { ObjectValue, Value } from './shared-types';
+import type { ObjectValue, Value } from './shared-types';
 
 export function copy<T extends Value>(value: T): Value {
   try {

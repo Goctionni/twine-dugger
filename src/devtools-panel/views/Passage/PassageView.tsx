@@ -3,7 +3,7 @@ import { Match, Switch, untrack } from 'solid-js';
 import { setPassage } from '@/devtools-panel/api/api';
 import { setPassageData, setViewState } from '@/devtools-panel/store';
 import { Code } from '@/devtools-panel/ui/code';
-import { ParsedPassageData } from '@/shared/shared-types';
+import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { PassageHeader } from './PassageHeader';
 

@@ -1,8 +1,9 @@
-import { Accessor, batch, createEffect, createMemo, createSignal } from 'solid-js';
+import type { Accessor } from 'solid-js';
+import { batch, createEffect, createMemo, createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
 
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
-import {
+import type {
   ConnectionState,
   DiffFrame,
   GameMetaData,

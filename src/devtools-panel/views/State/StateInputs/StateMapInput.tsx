@@ -1,7 +1,7 @@
 import { createMemo } from 'solid-js';
 
 import { createGetSetting } from '@/devtools-panel/store';
-import { MapValue, Path } from '@/shared/shared-types';
+import type { MapValue, Path } from '@/shared/shared-types';
 
 import { createSorter } from '../property-sorter';
 import { StateContainerInput } from './StateContainerInput';

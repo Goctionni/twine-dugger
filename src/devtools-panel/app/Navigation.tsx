@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { For, onCleanup } from 'solid-js';
 
-import { Page } from '@/shared/shared-types';
+import type { Page } from '@/shared/shared-types';
 
 import { getNavigationPage, setNavigationPage } from '../store';
 
