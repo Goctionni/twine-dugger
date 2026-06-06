@@ -29,7 +29,7 @@ interface Scheduler {
 }
 
 declare global {
-  declare const scheduler: Scheduler;
+  const scheduler: Scheduler;
 
   interface Window {
     Harlowe: {
