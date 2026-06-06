@@ -29,7 +29,7 @@ export const mockApiPlugin = (): Plugin => {
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
       if (!resolved) return null;
 
-      const [filepath, ...rest] = resolved.id.split('?');
+      const [filepath = '', ...rest] = resolved.id.split('?');
       if (!isInsidePath(filepath, apiPath)) return null;
 
       const mockPath = getMockPath(filepath);

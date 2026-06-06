@@ -8,7 +8,10 @@ import {
 } from 'vscode-textmate';
 
 class JSOnigString implements OnigString {
-  constructor(public readonly content: string) {}
+  public readonly content: string;
+  constructor(content: string) {
+    this.content = content;
+  }
   dispose() {}
 }
 

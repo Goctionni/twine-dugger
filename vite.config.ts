@@ -29,6 +29,7 @@ export default defineConfig({
   environments: {},
   builder: {
     buildApp: async (builder) => {
+      if (!('client' in builder.environments)) throw new Error('environments.client not found');
       const buildResult = await builder.build(builder.environments.client);
 
       if (Array.isArray(buildResult) || !('on' in buildResult)) {

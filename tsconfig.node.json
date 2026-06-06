@@ -1,17 +1,11 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["node"] // Include Node.js types and Vite types
+    "types": ["node"]
   },
   "include": ["vite.config.ts", "oxfmt.config.ts", "oxlint.config.ts", "build"],
   "exclude": ["node_modules", "dist"]
