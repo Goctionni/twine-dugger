@@ -1,6 +1,8 @@
 import { createVirtualizer } from '@tanstack/solid-virtual';
 import { createEffect, For, onCleanup, Show, untrack } from 'solid-js';
 
+import { reloadPassagesData } from '@/devtools-panel/store';
+import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { virtualizerScrollToFn } from '@/devtools-panel/utils/virtualizer-scrollto';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
@@ -50,7 +52,20 @@ export function PassageList(props: Props) {
 
   return (
     <div class="flex h-full flex-col overflow-auto px-4 py-2">
-      <h1 class="mb-2 text-xl font-bold">Passages</h1>
+      <div class="mb-2 flex">
+        <h1 class="flex-1 text-xl font-bold">Passages</h1>
+        <button
+          type="button"
+          onClick={() => reloadPassagesData()}
+          class={btnClass(
+            'outline',
+            '[REMOVE]: px-4 py-1',
+            'text-md flex items-center justify-center gap-2 rounded-full px-2 py-0.5 text-white',
+          )}
+        >
+          <span class="material-symbols-outlined mt-0.5 text-sm">refresh</span>
+        </button>
+      </div>
       <div class="flex-1 overflow-auto" ref={scrollElRef}>
         <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
           <For each={virtualizer.getVirtualItems()}>
