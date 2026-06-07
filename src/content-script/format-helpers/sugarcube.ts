@@ -1,20 +1,36 @@
-import { z } from 'zod';
+import { type } from 'arktype';
 
-import type { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
+import type {
+  FormatPassage,
+  ObjectValue,
+  Path,
+  SugarCubeGlobals,
+  Value,
+} from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
-import { matchesSChema } from '../util/type-helpers';
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
 import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
-const SugarCubeSchema = z.object({
-  State: z.object({
-    variables: z.object(),
-  }),
+const sugarCubeSchema = type({
+  SugarCube: {
+    State: {
+      variables: 'object',
+      passage: 'string',
+    },
+    Engine: {
+      play: 'Function',
+    },
+    Story: {
+      ifId: 'string',
+    },
+  } as type.cast<SugarCubeGlobals['SugarCube']>,
 });
 
-const getBaseState = () => window.SugarCube.State.variables;
+const sugarcube = () => sugarCubeSchema.assert(window).SugarCube;
+
+const getBaseState = () => sugarcube().State.variables;
 const setState = (path: Path, value: unknown) => setStateBase(getBaseState(), path, value);
 
 const { processDiffs, setPathLock } = createPropertyLocker(getBaseState, setState);
@@ -43,9 +59,9 @@ function getState(sanitized?: boolean) {
 
 export default {
   getDiffer: () => getDifferBase(),
-  detect: () => matchesSChema(window.SugarCube, SugarCubeSchema),
+  detect: () => sugarCubeSchema.allows(window),
   getState,
-  getPassage: () => window.SugarCube.State.passage,
+  getPassage: () => sugarcube().State.passage,
   setState,
   duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
     duplicateStateProperty(getBaseState(), parentPath, sourceKey, targetKey),
@@ -53,12 +69,12 @@ export default {
   setStatePropertyLock: setPathLock,
   setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
   processDiffs,
-  goToPassage: (passageName) => window.SugarCube.Engine.play(passageName),
+  goToPassage: (passageName) => sugarcube().Engine.play(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;
 
 function createOrUpdatePassage({ name, source, tags }: FormatPassage) {
-  const storyAPI = window.SugarCube.Story;
+  const storyAPI = sugarcube().Story;
   if (storyAPI.has(name)) {
     const passage = storyAPI.get(name);
     passage.element!.textContent = source;

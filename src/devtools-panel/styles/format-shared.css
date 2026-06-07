@@ -62,9 +62,19 @@
 /* Link markup [[...]] blocks */
 .passage-code [class~='meta.markup.underline.link'],
 .passage-code [class~='meta.markup.underline.link.twee3'] {
-  color: #d7ba7d;
+  color: #d7bb7e;
   text-decoration: underline;
 }
+.passage-code [class~='meta.link.twee3'] {
+  color: #d7bb7e;
+  text-decoration: none;
+}
+
+.passage-code [class~='keyword.other.arrow.twee3'] {
+  color: #ede0c4;
+  text-decoration: none;
+}
+
 .passage-code [class~='entity.name.function'],
 .passage-code [class~='entity.name.function.twee3'] {
   color: #dcdcaa;
@@ -78,4 +88,73 @@
 .passage-code [class~='source.css.twee3'],
 .passage-code [class~='source.css.embedded.sugarcube-2'] {
   background: rgba(86, 156, 214, 0.07);
+}
+
+.passage-code [class~='punctuation.section.embedded.begin.js.snowman-2'],
+.passage-code [class~='punctuation.section.embedded.end.js.snowman-2'],
+.passage-code [class~='punctuation.section.embedded.begin.js.chapbook-2'],
+.passage-code [class~='punctuation.section.embedded.end.js.chapbook-2'] {
+  color: #c586c0; /* Purple */
+  font-weight: bold;
+}
+.passage-code [class~='string.quoted.double.js'],
+.passage-code [class~='string.quoted.single.js'],
+.passage-code [class~='punctuation.definition.string.begin.js'],
+.passage-code [class~='punctuation.definition.string.end.js'] {
+  color: #ce9178; /* Soft Orange/Brown */
+}
+
+.passage-code [class~='meta.function-call.js'] [class~='entity.name.function.js'],
+.passage-code [class~='entity.name.function.js'],
+.passage-code [class~='support.function.js'] {
+  color: #dcdcaa; /* Warm Yellow/Sand */
+}
+
+.passage-code [class~='keyword.control.js'],
+.passage-code [class~='keyword.control.flow.js'],
+.passage-code [class~='keyword.operator.new.js'],
+.passage-code [class~='storage.type.js'] {
+  color: #c586c0; /* Purple */
+}
+
+.passage-code [class~='variable.other.readwrite.js'],
+.passage-code [class~='variable.other.object.js'],
+.passage-code [class~='variable.other.property.js'] {
+  color: #9cdcfe; /* Light Blue */
+}
+
+.passage-code [class~='meta.brace.round.js'],
+.passage-code [class~='meta.brace.square.js'],
+.passage-code [class~='meta.brace.curly.js'],
+.passage-code [class~='punctuation.definition.parameters.begin.js'],
+.passage-code [class~='punctuation.definition.parameters.end.js'] {
+  color: #d4d4d4; /* Light Gray */
+}
+
+.passage-code [class~='keyword.operator.assignment.js'],
+.passage-code [class~='keyword.operator.comparison.js'],
+.passage-code [class~='keyword.operator.logical.js'] {
+  color: #d4d4d4; /* Light Gray */
+}
+
+.passage-code [class~='punctuation.accessor.js'],
+.passage-code [class~='punctuation.terminator.statement.js'] {
+  color: #d4d4d4; /* Light Gray */
+  opacity: 0.8;
+}
+.passage-code [class~='constant.language.boolean.true.js'],
+.passage-code [class~='constant.language.boolean.false.js'],
+.passage-code [class~='constant.language.null.js'] {
+  color: #569cd6; /* Blue */
+}
+
+.passage-code [class~='constant.numeric.js'] {
+  color: #b5cea8; /* Soft Green */
+}
+
+.passage-code [class~='comment.line.double-slash.js'],
+.passage-code [class~='comment.block.js'],
+.passage-code [class~='punctuation.definition.comment.js'] {
+  color: #6a9955; /* Green */
+  font-style: italic;
 }

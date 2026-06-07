@@ -1,20 +1,32 @@
-import { z } from 'zod';
+import { type } from 'arktype';
 
-import type { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
+import type {
+  FormatPassage,
+  HarloweGlobals,
+  ObjectValue,
+  Path,
+  Value,
+} from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
-import { isObj, matchesSChema } from '../util/type-helpers';
+import { isObj } from '../util/type-helpers';
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
 import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
-const HarloweSchema = z.object({
-  API_ACCESS: z.object({
-    STATE: z.object({
-      variables: z.object(),
-    }),
-  }),
-});
+const harloweSchema = type({
+  Harlowe: {
+    API_ACCESS: {
+      STATE: {
+        variables: 'object',
+      },
+      ENGINE: 'object',
+      PASSAGES: 'object',
+    },
+  },
+} as type.cast<HarloweGlobals>);
+
+const harlowe = () => harloweSchema.assert(window).Harlowe;
 
 function sanitize(obj: ObjectValue) {
   const result: ObjectValue = {};
@@ -39,8 +51,8 @@ function ignoreCheck(key: unknown, value: Value) {
   return false;
 }
 
-const detect = () => matchesSChema(window.Harlowe, HarloweSchema);
-const getBaseState = () => window.Harlowe.API_ACCESS.STATE.variables;
+const detect = () => harloweSchema.allows(window);
+const getBaseState = () => harlowe().API_ACCESS.STATE.variables;
 const setState = (path: Path, value: unknown) => setStateBase(getBaseState(), path, value);
 const { processDiffs, setPathLock } = createPropertyLocker(getBaseState, setState);
 
@@ -52,11 +64,11 @@ export default {
   duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
     duplicateStateProperty(getBaseState(), parentPath, sourceKey, targetKey),
   deleteFromState: (path) => deleteFromState(getBaseState(), path),
-  getPassage: () => window.Harlowe.API_ACCESS.STATE.passage,
+  getPassage: () => harlowe().API_ACCESS.STATE.passage,
   setStatePropertyLock: setPathLock,
   setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
   processDiffs,
-  goToPassage: (passageName) => window.Harlowe.API_ACCESS.ENGINE.goToPassage(passageName),
+  goToPassage: (passageName) => harlowe().API_ACCESS.ENGINE.goToPassage(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;
 
@@ -83,7 +95,7 @@ function createOrUpdatePassage(passage: FormatPassage) {
     html: () => el.innerHTML,
   });
 
-  const Passages = window.Harlowe.API_ACCESS.PASSAGES;
+  const Passages = harlowe().API_ACCESS.PASSAGES;
   Passages.clearTreeCache();
   Passages.clearStoryletCache();
   Passages.clearTagCache?.();
