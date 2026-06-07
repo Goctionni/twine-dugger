@@ -281,8 +281,9 @@ export interface ChapbookGlobals {
   engine: {
     state: {
       set: (path: string, value: unknown) => unknown;
-      get: (path: string) => unknown;
+      get: (path: string) => Value;
       saveToObject: () => ObjectValue;
+      restoreFromObject: (obj: ObjectValue) => void;
     };
     story: {
       ifid: () => string;

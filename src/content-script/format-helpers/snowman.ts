@@ -1,6 +1,6 @@
 import { type } from 'arktype';
 
-import type { FormatPassage, ObjectValue, Path } from '@/shared/shared-types';
+import type { FormatPassage, Path, SnowmanGlobals } from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
@@ -21,12 +21,12 @@ const snowmanSchema = type({
     creator: 'string',
     creatorVersion: 'string',
     history: 'number[]',
-    state: 'object' as type.cast<ObjectValue>,
+    state: 'object',
     passages: passageSchema.or('undefined').array(),
-    show: 'Function' as type.cast<(name: string) => void>,
+    show: 'Function',
   },
   passage: passageSchema,
-});
+} as type.cast<SnowmanGlobals>);
 
 const snowman = () => snowmanSchema.assert(window);
 

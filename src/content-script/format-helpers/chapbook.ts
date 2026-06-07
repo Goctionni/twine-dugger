@@ -1,40 +1,29 @@
 import { type } from 'arktype';
 
-import type { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
+import type { ChapbookGlobals, FormatPassage, Path, Value } from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
 import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
-type Fn<T> = type.cast<T>;
-type Get<T> = Fn<() => T>;
-type Set<T> = Fn<(obj: T) => void>;
-
-const passageSchema = type({
-  id: 'number',
-  name: 'string',
-  source: 'string',
-  tags: 'string[]',
-});
-
 const chapbookSchema = type({
   engine: {
     state: {
-      get: 'Function' as Fn<(path: string) => Value>,
-      set: 'Function' as Fn<(path: string, value: unknown) => void>,
-      saveToObject: 'Function' as Get<ObjectValue>,
-      restoreFromObject: 'Function' as Set<ObjectValue>,
+      get: 'Function',
+      set: 'Function',
+      saveToObject: 'Function',
+      restoreFromObject: 'Function',
     },
     story: {
-      ifid: 'Function' as Get<string>,
-      name: 'Function' as Get<string>,
-      passages: 'Function' as Get<(typeof passageSchema.infer)[]>,
-      startPassage: 'Function' as Get<typeof passageSchema.infer>,
+      ifid: 'Function',
+      name: 'Function',
+      passages: 'Function',
+      startPassage: 'Function',
     },
   },
-  go: 'Function' as Fn<(name: string) => void>,
+  go: 'Function',
   restart: 'Function',
-});
+} as type.cast<ChapbookGlobals>);
 
 const chapbook = () => chapbookSchema.assert(window);
 
