@@ -209,6 +209,11 @@ export const setSetting = <T extends keyof Store['settings']>(
   setStore('settings', setting, value);
 };
 
+export const reloadPassagesData = async () => {
+  const passageData = await apiGetPassageData();
+  setPassageData(passageData.map(parsePassage));
+};
+
 const getMaxHistorySlices = () => store.settings['diffLog.maxHistorySlices'];
 
 export async function startTrackingFrames() {

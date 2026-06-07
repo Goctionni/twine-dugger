@@ -15,6 +15,7 @@ export const htmlInsertFontPlugin: Plugin = {
         'close',
         'open_in_browser',
         'warning',
+        'refresh',
       ]),
     );
   },
