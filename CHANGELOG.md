@@ -1,5 +1,15 @@
 # twine-dugger
 
+## 1.5.0
+
+### Minor Changes
+
+- 5e07230: Added support for storyformats Chapbook and Snowman
+
+### Patch Changes
+
+- a0eafe2: Refactor to avoid global type declarations
+
 ## 1.4.1
 
 ### Patch Changes
