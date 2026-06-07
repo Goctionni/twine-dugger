@@ -76,8 +76,6 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
         passage: 'string',
       },
       Story: {
-        name: 'string',
-        title: 'string',
         ifId: 'string',
         has: 'function',
         get: 'function',

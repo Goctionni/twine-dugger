@@ -231,8 +231,8 @@ export interface SugarCubeGlobals {
       passage: string;
     };
     Story: {
-      name: string;
-      title: string;
+      name?: string;
+      title?: string;
       get ifId(): string;
       has(name: string): boolean;
       get(name: string): SugarCubePassage;

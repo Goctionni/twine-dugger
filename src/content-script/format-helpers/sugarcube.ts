@@ -23,8 +23,6 @@ const sugarCubeSchema = type({
       play: 'Function',
     },
     Story: {
-      name: 'string',
-      title: 'string',
       ifId: 'string',
     },
   } as type.cast<SugarCubeGlobals['SugarCube']>,
