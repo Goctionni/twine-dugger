@@ -1,7 +1,7 @@
 # twine-dugger – Developer Onboarding
 
 Welcome! This document set orients new contributors to **twine-dugger** (0.0.0). The project is a Chrome DevTools extension that
-inspects and diffs the runtime state of **Twine** games (SugarCube & Harlowe), and provides tools to view and mutate that state.
+inspects and diffs the runtime state of **Twine** games (SugarCube, Harlowe, Chapbook and Snowman), and provides tools to view and mutate that state and view and update passages.
 
 ## Quick links
 

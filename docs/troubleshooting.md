@@ -8,7 +8,7 @@
 
 **No state data / detection fails**
 
-- The content script only works on **SugarCube** or **Harlowe**. Confirm the game's format.
+- Confirm the game's format. The content script works for storyformats SugarCube, Chapbook and Snowman, and Harlowe games using Chapel's custom macro framework.
 - Reload the tab and DevTools, then try again.
 
 **Edits not applying**

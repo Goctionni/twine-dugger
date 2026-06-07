@@ -13,7 +13,7 @@ window.TwineDugger = {
 }
 ```
 
-- **Detection**: `format-helpers/sugarcube.ts` and `format-helpers/harlowe.ts` use `arktype` schemas to confirm the engine.
+- **Detection**: `format-helpers/[format].ts` uses `arktype` schemas to confirm the engine.
 - **Sanitization**: Harlowe variables are sanitized (filters out transient/unsafe keys).
 - **Paths**: A `Path` is an array of segments (`string | number`) referring to nested values.
 - **Safety**: Mutations operate on the live Twine state objects provided by the engine.
