@@ -1,17 +1,16 @@
-import { z } from 'zod';
+import { type } from 'arktype';
 
 import type { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
-import { matchesSChema } from '../util/type-helpers';
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
 import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
-const SugarCubeSchema = z.object({
-  State: z.object({
-    variables: z.object(),
-  }),
+const SugarCubeSchema = type({
+  State: {
+    variables: 'object',
+  },
 });
 
 const getBaseState = () => window.SugarCube.State.variables;
@@ -43,7 +42,7 @@ function getState(sanitized?: boolean) {
 
 export default {
   getDiffer: () => getDifferBase(),
-  detect: () => matchesSChema(window.SugarCube, SugarCubeSchema),
+  detect: () => SugarCubeSchema.allows(window.SugarCube),
   getState,
   getPassage: () => window.SugarCube.State.passage,
   setState,

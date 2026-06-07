@@ -1,19 +1,19 @@
-import { z } from 'zod';
+import { type } from 'arktype';
 
 import type { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
-import { isObj, matchesSChema } from '../util/type-helpers';
+import { isObj } from '../util/type-helpers';
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
 import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
-const HarloweSchema = z.object({
-  API_ACCESS: z.object({
-    STATE: z.object({
-      variables: z.object(),
-    }),
-  }),
+const HarloweSchema = type({
+  API_ACCESS: {
+    STATE: {
+      variables: 'object',
+    },
+  },
 });
 
 function sanitize(obj: ObjectValue) {
@@ -39,7 +39,7 @@ function ignoreCheck(key: unknown, value: Value) {
   return false;
 }
 
-const detect = () => matchesSChema(window.Harlowe, HarloweSchema);
+const detect = () => HarloweSchema.allows(window.Harlowe);
 const getBaseState = () => window.Harlowe.API_ACCESS.STATE.variables;
 const setState = (path: Path, value: unknown) => setStateBase(getBaseState(), path, value);
 const { processDiffs, setPathLock } = createPropertyLocker(getBaseState, setState);

@@ -14,7 +14,7 @@ The extension has three main parts:
 
 3. **Format Helpers** (`src/content-script/format-helpers`)
    - **SugarCube** and **Harlowe** specific adapters that normalize how to **get state**, **get current passage**, and **mutate** state.
-   - Share common operations (set/delete/duplicate keys) in `shared.ts` and use **zod** schemas to validate detection.
+   - Share common operations (set/delete/duplicate keys) in `shared.ts` and use **arktype** schemas to validate detection.
 
 ### High-Level Data Flow
 

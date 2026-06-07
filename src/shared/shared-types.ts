@@ -164,7 +164,7 @@ export interface GameMetaData {
     count?: number;
   };
   format?: {
-    name: 'SugarCube' | 'Harlowe';
+    name: 'SugarCube' | 'Harlowe' | 'Chapbook' | 'Snowman';
     version?: {
       major: number | undefined;
       minor: number | undefined;

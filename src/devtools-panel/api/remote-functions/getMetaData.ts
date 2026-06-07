@@ -3,6 +3,8 @@ import type { CandidateGameIframes, GameMetaData } from '@/shared/shared-types';
 export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   if ('SugarCube' in window) return getSugarCubeMeta();
   if ('Harlowe' in window) return getHarloweMeta();
+  if (isChapbook()) return getChapbookMeta();
+  if (isSnowman()) return getSnowmanMeta();
   // If neither is detected, look for a large-ish iframes
   const iframes = Array.from(document.querySelectorAll('iframe[src]'));
   const candidateGameIframes = iframes.filter((iframe) => {
@@ -20,6 +22,21 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   }
 
   return null;
+
+  function isChapbook() {
+    return (
+      'engine' in window &&
+      'go' in window &&
+      'restart' in window &&
+      window['engine'] &&
+      typeof window['engine'] === 'object' &&
+      'story' in window['engine']
+    );
+  }
+
+  function isSnowman() {
+    return document.querySelector('tw-storydata[format="Snowman"][format-version^="2."');
+  }
 
   function getSugarCubeMeta(): GameMetaData | null {
     const storyData = document.querySelector('tw-storydata');
@@ -174,6 +191,106 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       },
       passages: getPassages(),
     };
+  }
+
+  function getChapbookMeta(): GameMetaData | null {
+    const storyData = document.querySelector('tw-storydata');
+    const getName = () => {
+      const story = window.engine.story;
+      return story.name() || storyData?.getAttribute('name') || 'Untitled';
+    };
+    const getIfid = () => {
+      return window.engine.story.ifid() || storyData?.getAttribute('ifid') || '';
+    };
+    const getCompiler = () => {
+      const creator = storyData?.getAttribute('creator') ?? 'unknown';
+      const version = storyData?.getAttribute('creator-version') ?? window.engine.version;
+      return { name: creator, version };
+    };
+    const getVersion = () => {
+      const version = window.engine.version;
+      const [major, minor, patch] = version.split('.').map(Number.parseInt);
+      return {
+        major,
+        minor,
+        patch,
+        fullStr: `Chapbook ${version}`,
+        shortStr: version,
+      };
+    };
+    const getStartingPassage = () => {
+      return window.engine.story.startPassage().name;
+    };
+    const getPassages = () => {
+      return {
+        start: getStartingPassage(),
+        count: window.engine.story.passages().length,
+      };
+    };
+
+    return {
+      name: getName(),
+      ifId: getIfid(),
+      compiler: getCompiler(),
+      format: {
+        name: 'Chapbook',
+        version: getVersion(),
+      },
+      passages: getPassages(),
+    } satisfies GameMetaData;
+  }
+
+  function getSnowmanMeta(): GameMetaData | null {
+    const storyData = document.querySelector('tw-storydata');
+    const getName = () => {
+      return window.story.name || storyData?.getAttribute('name') || 'Untitled';
+    };
+    const getIfid = () => {
+      return storyData?.getAttribute('ifid') || '';
+    };
+    const getCompiler = () => {
+      const creator = (window.story.creator || storyData?.getAttribute('creator')) ?? 'unknown';
+      const version =
+        (window.story.creatorVersion || storyData?.getAttribute('creator-version')) ??
+        window.engine.version;
+      return { name: creator, version };
+    };
+    const getVersion = () => {
+      const version = storyData?.getAttribute('format-version');
+      if (!version) return undefined;
+
+      const [major, minor, patch] = version.split('.').map(Number.parseInt);
+      return {
+        major,
+        minor,
+        patch,
+        fullStr: `Snowman ${version}`,
+        shortStr: version,
+      };
+    };
+    const getStartingPassage = () => {
+      return window.story.passage(window.story.startPassage)?.name;
+    };
+    const getPassages = () => {
+      const start = getStartingPassage();
+      if (!start) return undefined;
+
+      return {
+        start: start,
+        count: window.story.passages.length,
+      };
+    };
+
+    return {
+      name: getName(),
+      ifId: getIfid(),
+      compiler: getCompiler(),
+      format: {
+        name: 'Snowman',
+        version: getVersion(),
+      },
+      passages: getPassages(),
+    } satisfies GameMetaData;
   }
 
   function getLocalStorageUsed() {

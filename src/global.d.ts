@@ -89,6 +89,34 @@ declare global {
         play(passageName: string): void;
       };
     };
+    engine: {
+      state: {
+        set: (path: string, value: unknown) => unknown;
+        get: (path: string) => unknown;
+        saveToObject: () => ObjectValue;
+      };
+      story: {
+        ifid: () => string;
+        name: () => string;
+        startPassage: () => GenericPassage;
+        passages: () => GenericPassage[];
+        passageNamed: (name: string) => GenericPassage | undefined;
+      };
+      version: string;
+    };
+    go: (passageName: string) => void;
+    story: {
+      name: string;
+      startPassage: number;
+      creator: string;
+      creatorVersion: string;
+      history: number[];
+      state: ObjectValue;
+      passages: GenericPassage[];
+      passage: (nameOrId: string | number) => GenericPassage | undefined;
+      show: (name: string) => unknown;
+    };
+    passage: GenericPassage;
     TwineDugger: {
       getPassageData: () => PassageData[];
       getUpdates: () => UpdateResult;
@@ -120,4 +148,11 @@ interface SugarCubePassage {
   tags: string[];
   text: string;
   element?: HTMLElement;
+}
+
+interface GenericPassage {
+  id: number;
+  name: string;
+  source: string;
+  tags: string[];
 }
