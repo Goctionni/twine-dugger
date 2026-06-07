@@ -1,10 +1,170 @@
-import type { CandidateGameIframes, GameMetaData } from '@/shared/shared-types';
+import type {
+  CandidateGameIframes,
+  ChapbookGlobals,
+  GameMetaData,
+  HarloweGlobals,
+  SnowmanGlobals,
+  SugarCubeGlobals,
+} from '@/shared/shared-types';
+
+type SchemaFn = (value: unknown) => boolean;
+type LeafSpec =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'object'
+  | 'array'
+  | 'function'
+  | 'truthy'
+  | 'falsy'
+  | 'nullish'
+  | 'not-nullish'
+  | SchemaFn;
+
+type NanoSchema = LeafSpec | LeafSpec[] | SchemaObject;
+interface SchemaObject {
+  [key: string]: NanoSchema;
+}
 
 export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
-  if ('SugarCube' in window) return getSugarCubeMeta();
-  if ('Harlowe' in window) return getHarloweMeta();
-  if (isChapbook()) return getChapbookMeta();
-  if (isSnowman()) return getSnowmanMeta();
+  // Since remote-execute can only run fully self-contained functions...
+  // `isType` is basically a budget replica of arktype.
+  const isType = <T>(value: unknown, schema: NanoSchema): value is T => {
+    if (schema === 'string') return typeof value === 'string';
+    if (schema === 'number') return typeof value === 'number';
+    if (schema === 'boolean') return typeof value === 'boolean';
+    if (schema === 'object') return !!value && !Array.isArray(value) && typeof value === 'object';
+    if (schema === 'function') return typeof value === 'function';
+    if (schema === 'array') return Array.isArray(value);
+    if (schema === 'truthy') return !!value;
+    if (schema === 'falsy') return !value;
+    if (schema === 'nullish') return value === null || value === undefined;
+    if (schema === 'not-nullish') return value !== null && value !== undefined;
+    if (typeof schema === 'function') return schema(value);
+    if (Array.isArray(schema)) return schema.some((schemaItem) => isType(value, schemaItem));
+    if (schema && typeof schema === 'object') {
+      if (!value || typeof value !== 'object') return false;
+      return Object.entries(schema).every(([property, propertyValue]) => {
+        return isType((value as Record<string, unknown>)[property], propertyValue);
+      });
+    }
+    return false;
+  };
+
+  const isArray = (value: unknown) => isType<unknown[]>(value, 'array');
+  const isArrayOf = <T>(value: unknown, schema: NanoSchema): value is T[] =>
+    isArray(value) && value.every((item) => isType(item, schema));
+
+  const genericPassageSchema: NanoSchema = {
+    id: 'number',
+    name: 'string',
+    source: 'string',
+    tags: (tags) => isArrayOf<string>(tags, 'string'),
+  };
+
+  const sugarCubeSchema: NanoSchema = {
+    SugarCube: {
+      Config: {
+        passages: 'object',
+        history: 'object',
+      },
+      Save: {
+        slots: 'object',
+      },
+      State: {
+        variables: 'object',
+        passage: 'string',
+      },
+      Story: {
+        name: 'string',
+        title: 'string',
+        ifId: 'string',
+        has: 'function',
+        get: 'function',
+        add: 'function',
+      },
+      storage: 'object',
+    },
+  };
+
+  const harloweSchema: NanoSchema = {
+    Harlowe: {
+      API_ACCESS: {
+        STATE: 'object',
+        ENGINE: 'object',
+        PASSAGES: 'object',
+      },
+    },
+  };
+
+  const chapbookSchema: NanoSchema = {
+    engine: {
+      state: {
+        get: 'function',
+        set: 'function',
+        saveToObject: 'function',
+        restoreFromObject: 'function',
+      },
+      story: {
+        ifid: 'function',
+        name: 'function',
+        passages: 'function',
+        startPassage: 'function',
+      },
+    },
+    go: 'function',
+    restart: 'function',
+  };
+
+  const snowmanSchema: NanoSchema = {
+    story: {
+      name: 'string',
+      startPassage: 'number',
+      creator: 'string',
+      creatorVersion: 'string',
+      history: (history) => isArrayOf(history, 'number'),
+      state: 'object',
+      passages: (passages) => isArrayOf(passages, genericPassageSchema),
+      show: 'function',
+    },
+    passage: genericPassageSchema,
+  };
+
+  const isSugarCube = (value: unknown): value is SugarCubeGlobals =>
+    isType<SugarCubeGlobals>(value, sugarCubeSchema);
+
+  const isHarlowe = (value: unknown): value is HarloweGlobals =>
+    isType<HarloweGlobals>(value, harloweSchema);
+
+  const isChapbook = (value: unknown): value is ChapbookGlobals =>
+    isType<ChapbookGlobals>(value, chapbookSchema);
+
+  const isSnowman = (value: unknown): value is SnowmanGlobals =>
+    isType<SnowmanGlobals>(value, snowmanSchema);
+
+  const sugarcube = () => {
+    const value: unknown = window;
+    if (!isSugarCube(value)) throw new Error('Cannot access sugarcube when sugarcube isnt loaded');
+    return value.SugarCube;
+  };
+
+  const chapbook = () => {
+    const value: unknown = window;
+    if (!isChapbook(value)) throw new Error('Cannot access chapbook when chapbook isnt loaded');
+    return value;
+  };
+
+  const snowman = () => {
+    const value: unknown = window;
+    if (!isSnowman(value)) throw new Error('Cannot access snowman when snowman isnt loaded');
+    return value;
+  };
+
+  if (isSugarCube(window)) return getSugarCubeMeta();
+  if (isHarlowe(window)) return getHarloweMeta();
+  if (isChapbook(window)) return getChapbookMeta();
+  if (isSnowman(window)) return getSnowmanMeta();
+
   // If neither is detected, look for a large-ish iframes
   const iframes = Array.from(document.querySelectorAll('iframe[src]'));
   const candidateGameIframes = iframes.filter((iframe) => {
@@ -23,29 +183,14 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
 
   return null;
 
-  function isChapbook() {
-    return (
-      'engine' in window &&
-      'go' in window &&
-      'restart' in window &&
-      window['engine'] &&
-      typeof window['engine'] === 'object' &&
-      'story' in window['engine']
-    );
-  }
-
-  function isSnowman() {
-    return document.querySelector('tw-storydata[format="Snowman"][format-version^="2."');
-  }
-
   function getSugarCubeMeta(): GameMetaData | null {
     const storyData = document.querySelector('tw-storydata');
     const getName = () => {
-      const story = window.SugarCube.Story;
+      const story = sugarcube().Story;
       return story.name || story.title || storyData?.getAttribute('name') || 'Untitled';
     };
     const getIfid = () => {
-      return window.SugarCube.Story.ifId || storyData?.getAttribute('ifid') || '';
+      return sugarcube().Story.ifId || storyData?.getAttribute('ifid') || '';
     };
     const getCompiler = () => {
       const creator = storyData?.getAttribute('creator');
@@ -54,7 +199,7 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       return { name: creator, version };
     };
     const getVersion = () => {
-      const version = window.SugarCube.version;
+      const version = sugarcube().version;
       const { major, minor, patch, build } = version;
       return {
         major,
@@ -66,7 +211,7 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       };
     };
     const getStartingPassage = () => {
-      if (window.SugarCube.Config.passages.start) return window.SugarCube.Config.passages.start;
+      if (sugarcube().Config.passages.start) return sugarcube().Config.passages.start;
       const startnode = storyData?.getAttribute('startnode');
       if (startnode)
         return (
@@ -81,16 +226,15 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       };
     };
     const getSave = () => {
-      const isNewAPI = 'browser' in window.SugarCube.Save;
+      const isNewAPI = 'browser' in sugarcube().Save;
 
       const numSlots = isNewAPI
-        ? (window.SugarCube.Config?.saves?.maxSlotSaves ?? 0)
-        : window.SugarCube.Save.slots.length;
+        ? (sugarcube().Config?.saves?.maxSlotSaves ?? 0)
+        : sugarcube().Save.slots.length;
 
-      const slotsUsed =
-        window.SugarCube.Save.browser?.slot?.size ?? window.SugarCube.Save.slots.count();
+      const slotsUsed = sugarcube().Save.browser?.slot?.size ?? sugarcube().Save.slots.count();
 
-      const storage = window.SugarCube.storage.name;
+      const storage = sugarcube().storage.name;
       if (!storage) {
         return {
           numSlots,
@@ -122,8 +266,8 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
 
     const getSettings = () => {
       return {
-        historyControls: window.SugarCube.Config.history.controls,
-        historyMax: window.SugarCube.Config.history.maxStates,
+        historyControls: sugarcube().Config.history.controls,
+        historyMax: sugarcube().Config.history.maxStates,
       };
     };
 
@@ -196,19 +340,19 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   function getChapbookMeta(): GameMetaData | null {
     const storyData = document.querySelector('tw-storydata');
     const getName = () => {
-      const story = window.engine.story;
+      const story = chapbook().engine.story;
       return story.name() || storyData?.getAttribute('name') || 'Untitled';
     };
     const getIfid = () => {
-      return window.engine.story.ifid() || storyData?.getAttribute('ifid') || '';
+      return chapbook().engine.story.ifid() || storyData?.getAttribute('ifid') || '';
     };
     const getCompiler = () => {
       const creator = storyData?.getAttribute('creator') ?? 'unknown';
-      const version = storyData?.getAttribute('creator-version') ?? window.engine.version;
+      const version = storyData?.getAttribute('creator-version') ?? chapbook().engine.version;
       return { name: creator, version };
     };
     const getVersion = () => {
-      const version = window.engine.version;
+      const version = chapbook().engine.version;
       const [major, minor, patch] = version.split('.').map(Number.parseInt);
       return {
         major,
@@ -219,12 +363,12 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       };
     };
     const getStartingPassage = () => {
-      return window.engine.story.startPassage().name;
+      return chapbook().engine.story.startPassage().name;
     };
     const getPassages = () => {
       return {
         start: getStartingPassage(),
-        count: window.engine.story.passages().length,
+        count: chapbook().engine.story.passages().length,
       };
     };
 
@@ -243,16 +387,15 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   function getSnowmanMeta(): GameMetaData | null {
     const storyData = document.querySelector('tw-storydata');
     const getName = () => {
-      return window.story.name || storyData?.getAttribute('name') || 'Untitled';
+      return snowman().story.name || storyData?.getAttribute('name') || 'Untitled';
     };
     const getIfid = () => {
       return storyData?.getAttribute('ifid') || '';
     };
     const getCompiler = () => {
-      const creator = (window.story.creator || storyData?.getAttribute('creator')) ?? 'unknown';
+      const creator = (snowman().story.creator || storyData?.getAttribute('creator')) ?? 'unknown';
       const version =
-        (window.story.creatorVersion || storyData?.getAttribute('creator-version')) ??
-        window.engine.version;
+        (snowman().story.creatorVersion || storyData?.getAttribute('creator-version')) ?? '';
       return { name: creator, version };
     };
     const getVersion = () => {
@@ -269,7 +412,7 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       };
     };
     const getStartingPassage = () => {
-      return window.story.passage(window.story.startPassage)?.name;
+      return snowman().story.passage(snowman().story.startPassage)?.name;
     };
     const getPassages = () => {
       const start = getStartingPassage();
@@ -277,7 +420,7 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
 
       return {
         start: start,
-        count: window.story.passages.length,
+        count: snowman().story.passages.length,
       };
     };
 

@@ -199,3 +199,128 @@ export interface FormatPassage {
   position?: [number, number];
   size?: [number, number];
 }
+
+// Maybe at a later point convert all of the `[storyformat]Globals` interfaces to arktype schemas
+export interface SugarCubeGlobals {
+  SugarCube: {
+    Config: {
+      passages: {
+        start: string;
+      };
+      history: {
+        controls: boolean;
+        maxStates: number;
+      };
+      saves?: {
+        maxSlotSaves?: number;
+      };
+    };
+    Save: {
+      browser?: {
+        slot?: {
+          size?: number;
+        };
+      };
+      slots: {
+        length: number;
+        count(): number;
+      };
+    };
+    State: {
+      variables: ObjectValue;
+      passage: string;
+    };
+    Story: {
+      name: string;
+      title: string;
+      get ifId(): string;
+      has(name: string): boolean;
+      get(name: string): SugarCubePassage;
+      add(passage: SugarCubePassage): boolean;
+    };
+    storage: {
+      name: string;
+    };
+    version: {
+      major: number;
+      minor: number;
+      patch: number;
+      build: number;
+      long(): string;
+      short(): string;
+      toString(): string;
+    };
+    Engine: {
+      play(passageName: string): void;
+    };
+  };
+}
+
+export interface HarloweGlobals {
+  Harlowe: {
+    API_ACCESS: {
+      STATE: {
+        variables: ObjectValue;
+        passage: string;
+      };
+      ENGINE: {
+        goToPassage(name: string): void;
+      };
+      PASSAGES: {
+        create(el: HTMLElement): Map<string, unknown>;
+        set(name: string, passage: Map<string, unknown>): void;
+        clearTreeCache(): void;
+        clearStoryletCache(): void;
+        clearTagCache?: () => void;
+      };
+    };
+  };
+}
+
+export interface ChapbookGlobals {
+  engine: {
+    state: {
+      set: (path: string, value: unknown) => unknown;
+      get: (path: string) => unknown;
+      saveToObject: () => ObjectValue;
+    };
+    story: {
+      ifid: () => string;
+      name: () => string;
+      startPassage: () => GenericPassage;
+      passages: () => GenericPassage[];
+      passageNamed: (name: string) => GenericPassage | undefined;
+    };
+    version: string;
+  };
+  go: (passageName: string) => void;
+}
+
+export interface SnowmanGlobals {
+  story: {
+    name: string;
+    startPassage: number;
+    creator: string;
+    creatorVersion: string;
+    history: number[];
+    state: ObjectValue;
+    passages: GenericPassage[];
+    passage: (nameOrId: string | number) => GenericPassage | undefined;
+    show: (name: string) => unknown;
+  };
+  passage: GenericPassage;
+}
+
+export interface GenericPassage {
+  id: number;
+  name: string;
+  source: string;
+  tags: string[];
+}
+
+interface SugarCubePassage {
+  name: string;
+  tags: string[];
+  text: string;
+  element?: HTMLElement;
+}
