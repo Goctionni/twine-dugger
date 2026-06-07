@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.5.1
+
+### Patch Changes
+
+- ab4d210: Add reload passages button
+
 ## 1.5.0
 
 ### Minor Changes
