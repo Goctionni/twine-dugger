@@ -2,7 +2,6 @@ import type {
   CandidateGameIframes,
   ChapbookGlobals,
   GameMetaData,
-  HarloweGlobals,
   SnowmanGlobals,
   SugarCubeGlobals,
 } from '@/shared/shared-types';
@@ -90,7 +89,6 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       API_ACCESS: {
         STATE: 'object',
         ENGINE: 'object',
-        PASSAGES: 'object',
       },
     },
   };
@@ -131,8 +129,11 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   const isSugarCube = (value: unknown): value is SugarCubeGlobals =>
     isType<SugarCubeGlobals>(value, sugarCubeSchema);
 
-  const isHarlowe = (value: unknown): value is HarloweGlobals =>
-    isType<HarloweGlobals>(value, harloweSchema);
+  const isHarlowe = () => {
+    return (
+      !!document.querySelector('tw-storydata[format="Harlowe"]') || isType(window, harloweSchema)
+    );
+  };
 
   const isChapbook = (value: unknown): value is ChapbookGlobals =>
     isType<ChapbookGlobals>(value, chapbookSchema);
@@ -159,7 +160,7 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   };
 
   if (isSugarCube(window)) return getSugarCubeMeta();
-  if (isHarlowe(window)) return getHarloweMeta();
+  if (isHarlowe()) return getHarloweMeta();
   if (isChapbook(window)) return getChapbookMeta();
   if (isSnowman(window)) return getSnowmanMeta();
 
@@ -292,7 +293,7 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       return storyData?.getAttribute('ifid') || '';
     };
     const getCompiler = () => {
-      const creator = storyData?.getAttribute('creator');
+      const creator = storyData?.getAttribute('creator') ?? 'unknown';
       if (!creator) return;
       const version = storyData?.getAttribute('creator-version') ?? undefined;
       return { name: creator, version };
@@ -323,6 +324,22 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       };
     };
 
+    const getIsIncompatible = () => {
+      if ('REPL' in window) return undefined;
+
+      const isFirefox =
+        ('InternalError' in window && typeof window['InternalError'] === 'function') ||
+        !!(window.CSS && CSS.supports && CSS.supports('-moz-appearance', 'none')) ||
+        navigator.userAgent.includes('Firefox');
+
+      if (isFirefox && !('Harlowe' in window)) {
+        return [
+          `Twine Dugger is unable to unlock API Access on Firefox.`,
+          `To debug Harlowe games, the game must either run in Debug Mode, use Chapel's custom macro framework, or be played in Google Chrome.`,
+        ];
+      }
+    };
+
     return {
       name: getName(),
       ifId: getIfid(),
@@ -332,6 +349,7 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
         version: getVersion() ?? undefined,
       },
       passages: getPassages(),
+      incompatible: getIsIncompatible(),
     };
   }
 

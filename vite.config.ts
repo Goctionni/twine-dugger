@@ -69,4 +69,11 @@ async function buildExtra() {
       deps: { onlyBundle: false, alwaysBundle: ['arktype'] },
     }),
   ]);
+
+  await cp('dist', 'dist-ff', { recursive: true });
+  await copyTransform({
+    from: 'src/manifest.firefox.json',
+    to: 'dist-ff/manifest.json',
+    transform: (content) => content.replace(/\$version/g, packageJson.version),
+  });
 }
