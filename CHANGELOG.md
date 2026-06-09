@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.6.0
+
+### Minor Changes
+
+- e6b7c92: Wider support for Harlowe
+
 ## 1.5.1
 
 ### Patch Changes
