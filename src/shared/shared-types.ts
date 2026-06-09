@@ -266,7 +266,7 @@ export interface HarloweGlobals {
       ENGINE: {
         goToPassage(name: string): void;
       };
-      PASSAGES: {
+      PASSAGES?: {
         create(el: HTMLElement): Map<string, unknown>;
         set(name: string, passage: Map<string, unknown>): void;
         clearTreeCache(): void;

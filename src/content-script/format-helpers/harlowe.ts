@@ -21,7 +21,6 @@ const harloweSchema = type({
         variables: 'object',
       },
       ENGINE: 'object',
-      PASSAGES: 'object',
     },
   },
 } as type.cast<HarloweGlobals>);
@@ -84,6 +83,12 @@ function createPassageEl(passage: FormatPassage) {
 }
 
 function createOrUpdatePassage(passage: FormatPassage) {
+  const Passages = harlowe().API_ACCESS.PASSAGES;
+  if (!Passages) {
+    alert('API_ACCESS.PASSAGES is not available in this version');
+    return;
+  }
+
   const el = getPassageEl(passage) ?? createPassageEl(passage);
   el.textContent = passage.source;
   if (passage.tags) el.setAttribute('tags', passage.tags.join(' '));
@@ -95,7 +100,6 @@ function createOrUpdatePassage(passage: FormatPassage) {
     html: () => el.innerHTML,
   });
 
-  const Passages = harlowe().API_ACCESS.PASSAGES;
   Passages.clearTreeCache();
   Passages.clearStoryletCache();
   Passages.clearTagCache?.();

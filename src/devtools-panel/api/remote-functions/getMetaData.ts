@@ -90,7 +90,6 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
       API_ACCESS: {
         STATE: 'object',
         ENGINE: 'object',
-        PASSAGES: 'object',
       },
     },
   };
