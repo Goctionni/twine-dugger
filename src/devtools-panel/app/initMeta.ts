@@ -15,8 +15,13 @@ export function initMeta() {
         setCandidateIframes(meta.urls);
         return false;
       } else {
-        setGameMetaData(meta as GameMetaData);
-        setConnectionState('not-enabled');
+        const metadata = meta as GameMetaData;
+        setGameMetaData(metadata);
+        if (metadata.incompatible) {
+          setConnectionState('incompatible');
+        } else {
+          setConnectionState('not-enabled');
+        }
         return true;
       }
     })

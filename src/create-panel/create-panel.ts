@@ -1,3 +1,3 @@
-import browser from 'webextension-polyfill';
+import { devtools } from 'webextension-polyfill';
 
-browser.devtools.panels.create('Twine Dugger', './icons/16.png', './index.html');
+devtools.panels.create('Twine Dugger', './icons/16.png', './index.html');

@@ -11,7 +11,7 @@ export default defineConfig({
     denyWarnings: true,
   },
   env: { builtin: true },
-  ignorePatterns: ['dist'],
+  ignorePatterns: ['dist', 'dist-ff'],
   rules: {
     'typescript/no-floating-promises': 'off',
     'unicorn/no-new-array': 'off',

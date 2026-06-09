@@ -141,7 +141,8 @@ export type ConnectionState =
   | 'loading-game'
   | 'error'
   | 'live'
-  | 'not-enabled';
+  | 'not-enabled'
+  | 'incompatible';
 
 export interface CandidateGameIframes {
   __type: 'candidate-game-iframes';
@@ -180,6 +181,7 @@ export interface GameMetaData {
     historyControls: boolean;
     historyMax: number;
   };
+  incompatible?: string;
 }
 
 export interface SearchResultState {
@@ -257,6 +259,25 @@ export interface SugarCubeGlobals {
 }
 
 export interface HarloweGlobals {
+  __HarloweInternals: {
+    state: {
+      variables: ObjectValue;
+      passage: string;
+    };
+    engine: {
+      goToPassage(name: string): void;
+    };
+    passages?: {
+      create(el: HTMLElement): Map<string, unknown>;
+      set(name: string, passage: Map<string, unknown>): void;
+      clearTreeCache(): void;
+      clearStoryletCache(): void;
+      clearTagCache?: () => void;
+    };
+  };
+}
+
+export interface HarloweGlobalsMacroFramework {
   Harlowe: {
     API_ACCESS: {
       STATE: {

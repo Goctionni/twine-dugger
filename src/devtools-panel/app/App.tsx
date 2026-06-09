@@ -1,10 +1,16 @@
 import { Match, Switch } from 'solid-js';
 
+import { exposeHarloweInternals } from '../api/expose-harlowe-internals';
 import { PassagesPage } from '../pages/PassagesPage';
 import { SearchPage } from '../pages/SearchPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { StatePage } from '../pages/StatePage';
-import { getConnectionState, getNavigationPage, startTrackingFrames } from '../store';
+import {
+  getConnectionState,
+  getGameMetaData,
+  getNavigationPage,
+  startTrackingFrames,
+} from '../store';
 import { ContextMenuUI } from '../ui/util/ContextMenu';
 import { PromptDialogOutlet } from '../ui/util/Prompt';
 import { Candidates } from './CandidateFrames';
@@ -15,6 +21,13 @@ initMeta();
 
 export function App() {
   const state = () => getConnectionState();
+
+  const start = async () => {
+    const metadata = getGameMetaData();
+    if (metadata?.format?.name === 'Harlowe') await exposeHarloweInternals();
+    startTrackingFrames();
+  };
+
   return (
     <Layout>
       <PromptDialogOutlet />
@@ -41,13 +54,16 @@ export function App() {
         <Match when={state() === 'live'}>
           <LiveContent />
         </Match>
+        <Match when={state() === 'incompatible'}>
+          <span class="m-auto">{getGameMetaData()?.incompatible}</span>
+        </Match>
         <Match when={state() === 'not-enabled'}>
           <div class="flex grow flex-col items-center justify-center gap-4">
             Start watching game-state?
             <button
               class="cursor-pointer rounded-full bg-sky-500 px-3 py-2 hover:bg-sky-700 focus:ring-2 focus:ring-sky-500 focus:outline-none"
               type="button"
-              onClick={() => startTrackingFrames()}
+              onClick={start}
             >
               Start tracking
             </button>
