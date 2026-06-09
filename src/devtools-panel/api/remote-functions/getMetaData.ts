@@ -325,13 +325,18 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
     };
 
     const getIsIncompatible = () => {
+      if ('REPL' in window) return undefined;
+
       const isFirefox =
         ('InternalError' in window && typeof window['InternalError'] === 'function') ||
         !!(window.CSS && CSS.supports && CSS.supports('-moz-appearance', 'none')) ||
         navigator.userAgent.includes('Firefox');
 
       if (isFirefox && !('Harlowe' in window)) {
-        return 'Twine Dugger is unable to unlock API Access for this game on Firefox';
+        return [
+          `Twine Dugger is unable to unlock API Access on Firefox.`,
+          `To debug Harlowe games, the game must either run in Debug Mode, use Chapel's custom macro framework, or be played in Google Chrome.`,
+        ];
       }
     };
 

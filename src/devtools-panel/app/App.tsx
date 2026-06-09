@@ -1,4 +1,4 @@
-import { Match, Switch } from 'solid-js';
+import { Index, Match, Switch } from 'solid-js';
 
 import { exposeHarloweInternals } from '../api/expose-harlowe-internals';
 import { PassagesPage } from '../pages/PassagesPage';
@@ -55,7 +55,18 @@ export function App() {
           <LiveContent />
         </Match>
         <Match when={state() === 'incompatible'}>
-          <span class="m-auto">{getGameMetaData()?.incompatible}</span>
+          <div class="m-auto max-w-2xl">
+            <Index each={getGameMetaData()?.incompatible ?? []}>
+              {(msg, index) =>
+                index === 0 ? (
+                  <h3 class="mb-1 text-lg font-bold text-gray-100">{msg()}</h3>
+                ) : (
+                  <p>{msg()}</p>
+                )
+              }
+            </Index>
+          </div>
+          <span class="m-auto">{}</span>
         </Match>
         <Match when={state() === 'not-enabled'}>
           <div class="flex grow flex-col items-center justify-center gap-4">

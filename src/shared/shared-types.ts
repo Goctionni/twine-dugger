@@ -181,7 +181,7 @@ export interface GameMetaData {
     historyControls: boolean;
     historyMax: number;
   };
-  incompatible?: string;
+  incompatible?: string[];
 }
 
 export interface SearchResultState {
