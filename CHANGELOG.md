@@ -1,5 +1,27 @@
 # twine-dugger
 
+## 1.6.0
+
+### Minor Changes
+
+- e6b7c92: Wider support for Harlowe
+
+## 1.5.1
+
+### Patch Changes
+
+- ab4d210: Add reload passages button
+
+## 1.5.0
+
+### Minor Changes
+
+- 5e07230: Added support for storyformats Chapbook and Snowman
+
+### Patch Changes
+
+- a0eafe2: Refactor to avoid global type declarations
+
 ## 1.4.1
 
 ### Patch Changes

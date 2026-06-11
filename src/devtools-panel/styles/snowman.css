@@ -1,0 +1,13 @@
+/* Style the <% %> brackets themselves */
+.passage-code [class~='punctuation.section.embedded.begin.js.snowman-2'],
+.passage-code [class~='punctuation.section.embedded.end.js.snowman-2'] {
+  color: #c586c0; /* Purple, matches your operators/control-flow color */
+  font-weight: bold;
+}
+
+/* Optional: give the background of the JS block a subtle tint */
+.passage-code [class~='meta.template.eval.snowman-2'],
+.passage-code [class~='meta.template.interpolate.snowman-2'],
+.passage-code [class~='meta.template.escape.snowman-2'] {
+  background: rgba(197, 134, 192, 0.04);
+}

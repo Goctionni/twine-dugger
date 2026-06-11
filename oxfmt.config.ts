@@ -10,7 +10,7 @@ export default defineConfig({
   jsxSingleQuote: false,
   semi: true,
   arrowParens: 'always',
-  ignorePatterns: ['node_modules', 'extension', 'dist', 'pnpm-lock.yaml'],
+  ignorePatterns: ['node_modules', 'extension', 'dist', 'dist-ff', 'pnpm-lock.yaml'],
   sortImports: true,
   sortPackageJson: true,
   sortTailwindcss: {

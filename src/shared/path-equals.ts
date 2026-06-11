@@ -1,4 +1,4 @@
-import { Path } from './shared-types';
+import type { Path } from './shared-types';
 
 export function pathEquals(path1: Path, path2: Path) {
   if (path1.length !== path2.length) return false;

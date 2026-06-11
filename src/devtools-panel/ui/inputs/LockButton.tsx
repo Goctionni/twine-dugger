@@ -1,6 +1,6 @@
 import { Match, Switch } from 'solid-js';
 
-import { LockStatus } from '@/shared/shared-types';
+import type { LockStatus } from '@/shared/shared-types';
 
 import { btnClass } from '../util/btnClass';
 

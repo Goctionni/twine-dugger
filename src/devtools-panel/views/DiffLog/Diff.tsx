@@ -1,6 +1,6 @@
 import { Match, Switch } from 'solid-js';
 
-import {
+import type {
   Diff,
   DiffArrayChange,
   DiffArrayChangeInfo,

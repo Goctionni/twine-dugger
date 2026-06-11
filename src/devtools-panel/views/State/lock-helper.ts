@@ -1,4 +1,4 @@
-import { LockStatus, Path } from '@/shared/shared-types';
+import type { LockStatus, Path } from '@/shared/shared-types';
 
 export function getLockStatus(getPath: () => Path, getLockedPaths: () => Path[]): LockStatus {
   const path = getPath();

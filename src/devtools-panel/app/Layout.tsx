@@ -1,4 +1,4 @@
-import { JSX } from 'solid-js';
+import type { JSX } from 'solid-js';
 
 import { createContextMenuHandler } from '../ui/util/ContextMenu';
 import { Header } from './Header';

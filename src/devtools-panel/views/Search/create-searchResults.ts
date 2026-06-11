@@ -7,7 +7,7 @@ import {
   getNavigationPage,
   getPassageData,
 } from '@/devtools-panel/store';
-import { SearchResultsCombined } from '@/shared/shared-types';
+import type { SearchResultsCombined } from '@/shared/shared-types';
 
 import { findPassageMatches, findStateMatches } from './search-utils';
 

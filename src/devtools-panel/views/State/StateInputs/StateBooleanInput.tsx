@@ -12,7 +12,7 @@ import {
 import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { Path } from '@/shared/shared-types';
+import type { Path } from '@/shared/shared-types';
 
 import { getLockStatus } from '../lock-helper';
 

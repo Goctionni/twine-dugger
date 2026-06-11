@@ -1,4 +1,4 @@
-import { Value } from './shared-types';
+import type { Value } from './shared-types';
 
 export const isFunction = (value: unknown): value is Function => typeof value === 'function';
 export const isArray = (value: unknown): value is Array<unknown> => Array.isArray(value);

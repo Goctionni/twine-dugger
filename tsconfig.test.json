@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "types": ["chrome", "solid-js", "@testing-library/jest-dom"]
+  },
+  "exclude": ["node_modules", "dist", "dist-ff"]
+}

@@ -1,13 +1,20 @@
 import { copy } from '@/shared/copy';
 import { jsonReplacer, jsonReviver } from '@/shared/json-helper';
-import { UpdateResult } from '@/shared/shared-types';
+import type { UpdateResult } from '@/shared/shared-types';
 
+import chapbookHelpers from './format-helpers/chapbook';
 import harloweHelpers from './format-helpers/harlowe';
 import { getPassageData } from './format-helpers/shared';
+import snowmanHelpers from './format-helpers/snowman';
 import sugarcubeHelpers from './format-helpers/sugarcube';
-import { FormatHelpers } from './format-helpers/type';
+import type { FormatHelpers } from './format-helpers/type';
 
-const formatHelpers: FormatHelpers[] = [sugarcubeHelpers, harloweHelpers];
+const formatHelpers: FormatHelpers[] = [
+  sugarcubeHelpers,
+  harloweHelpers,
+  chapbookHelpers,
+  snowmanHelpers,
+];
 
 function init() {
   const formatHelper = formatHelpers.find((helper) => helper.detect());

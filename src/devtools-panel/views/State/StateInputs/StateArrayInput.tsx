@@ -1,4 +1,4 @@
-import { ArrayValue, Path } from '@/shared/shared-types';
+import type { ArrayValue, Path } from '@/shared/shared-types';
 
 import { StateContainerInput } from './StateContainerInput';
 

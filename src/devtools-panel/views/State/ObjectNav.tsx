@@ -16,7 +16,7 @@ import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { getLockStatus } from '@/devtools-panel/views/State/lock-helper';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { ContainerValue, LockStatus, Path, Value, ValueType } from '@/shared/shared-types';
+import type { ContainerValue, LockStatus, Path, Value, ValueType } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import {

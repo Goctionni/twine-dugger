@@ -29,6 +29,7 @@ export default defineConfig({
   environments: {},
   builder: {
     buildApp: async (builder) => {
+      if (!('client' in builder.environments)) throw new Error('environments.client not found');
       const buildResult = await builder.build(builder.environments.client);
 
       if (Array.isArray(buildResult) || !('on' in buildResult)) {
@@ -65,7 +66,14 @@ async function buildExtra() {
     // content-script.js
     buildLib({
       entry: { 'content-script': 'src/content-script/content-script.ts' },
-      deps: { onlyBundle: false, alwaysBundle: ['zod'] },
+      deps: { onlyBundle: false, alwaysBundle: ['arktype'] },
     }),
   ]);
+
+  await cp('dist', 'dist-ff', { recursive: true });
+  await copyTransform({
+    from: 'src/manifest.firefox.json',
+    to: 'dist-ff/manifest.json',
+    transform: (content) => content.replace(/\$version/g, packageJson.version),
+  });
 }

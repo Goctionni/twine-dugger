@@ -16,7 +16,7 @@ Artifacts land in `dist/`:
 
 ## Local Dev Tips
 
-- Use a Twine game tab (SugarCube or Harlowe).
+- Use a Twine game tab (SugarCube, Harlowe, Chapbook or Snowman).
 - Open DevTools → **Twine Dugger** panel.
 - If the panel disconnects (page refresh, etc.), re-open DevTools to reinitialize.
 

@@ -1,8 +1,9 @@
 import clsx from 'clsx';
-import { For, JSX } from 'solid-js';
+import type { JSX } from 'solid-js';
+import { For } from 'solid-js';
 
 import { Tag } from '@/devtools-panel/ui/display/Tag';
-import { ParsedPassageData } from '@/shared/shared-types';
+import type { ParsedPassageData } from '@/shared/shared-types';
 
 interface ListItemProps {
   passageData: ParsedPassageData;

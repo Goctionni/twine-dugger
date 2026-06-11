@@ -1,6 +1,6 @@
 import { copy } from '@/shared/copy';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import {
+import type {
   ArrayValue,
   ContainerValue,
   Diff,

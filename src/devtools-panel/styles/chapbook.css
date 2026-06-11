@@ -1,0 +1,32 @@
+/* 1. Vars Section Structure */
+/* Styles the `--` dividers, uncaptured colons `:`, and white-space as a subtle gray */
+.passage-code [class~='meta.varsSection.twee3.chapbook-2'] {
+  color: #808080;
+}
+
+/* 2. Chapbook Variables */
+/* Styles variables in the Vars Section (e.g., 'foo:') and {variable} inserts as teal */
+.passage-code [class~='source.chapbook-2.twee3'] [class~='variable.other'] {
+  color: #4ec9b0;
+}
+
+/* 3. Modifiers & Inserts Container (Brackets) */
+/* Styles the `[` `]` and `{` `}` brackets as a subtle gray */
+.passage-code [class~='source.modifier.twee3'],
+.passage-code [class~='meta.insert.twee3.chapbook-2'],
+.passage-code [class~='meta.variableInsert.twee3.chapbook-2'] {
+  color: #808080;
+}
+
+/* 4. Modifier & Insert Names */
+/* Styles the main command (e.g., 'align', 'embed', 'JavaScript') as yellow/sand */
+.passage-code [class~='entity.name.function.twee3.chapbook-2'] {
+  color: #dcdcaa;
+}
+
+/* 5. Parameters and Properties */
+/* Styles parameters (e.g., 'center') and named properties (e.g., 'passage:') as light blue */
+.passage-code [class~='variable.parameter.twee3.chapbook-2'],
+.passage-code [class~='source.chapbook-2.twee3'] [class~='variable.other.property.twee3'] {
+  color: #9cdcfe;
+}

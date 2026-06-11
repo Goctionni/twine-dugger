@@ -1,20 +1,42 @@
-import { z } from 'zod';
+import { type } from 'arktype';
 
-import { FormatPassage, ObjectValue, Path, Value } from '@/shared/shared-types';
+import type {
+  FormatPassage,
+  HarloweGlobals,
+  HarloweGlobalsMacroFramework,
+  ObjectValue,
+  Path,
+  Value,
+} from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
-import { isObj, matchesSChema } from '../util/type-helpers';
+import { isObj } from '../util/type-helpers';
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
 import { createPropertyLocker } from './sharedPropertyLocker';
-import { FormatHelpers } from './type';
+import type { FormatHelpers } from './type';
 
-const HarloweSchema = z.object({
-  API_ACCESS: z.object({
-    STATE: z.object({
-      variables: z.object(),
-    }),
-  }),
-});
+const harloweSchema = type({
+  __HarloweInternals: {
+    state: { variables: 'object' },
+    engine: 'object',
+  },
+} as type.cast<HarloweGlobals>).or({
+  Harlowe: {
+    API_ACCESS: 'object',
+  },
+} as type.cast<HarloweGlobalsMacroFramework>);
+
+const harlowe = (): HarloweGlobals['__HarloweInternals'] => {
+  const scope = harloweSchema.assert(window);
+  if ('__HarloweInternals' in scope) {
+    return scope.__HarloweInternals;
+  }
+  return {
+    state: scope.Harlowe.API_ACCESS.STATE,
+    engine: scope.Harlowe.API_ACCESS.ENGINE,
+    passages: scope.Harlowe.API_ACCESS.PASSAGES,
+  };
+};
 
 function sanitize(obj: ObjectValue) {
   const result: ObjectValue = {};
@@ -39,8 +61,8 @@ function ignoreCheck(key: unknown, value: Value) {
   return false;
 }
 
-const detect = () => matchesSChema(window.Harlowe, HarloweSchema);
-const getBaseState = () => window.Harlowe.API_ACCESS.STATE.variables;
+const detect = () => harloweSchema.allows(window);
+const getBaseState = () => harlowe().state.variables;
 const setState = (path: Path, value: unknown) => setStateBase(getBaseState(), path, value);
 const { processDiffs, setPathLock } = createPropertyLocker(getBaseState, setState);
 
@@ -52,11 +74,11 @@ export default {
   duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
     duplicateStateProperty(getBaseState(), parentPath, sourceKey, targetKey),
   deleteFromState: (path) => deleteFromState(getBaseState(), path),
-  getPassage: () => window.Harlowe.API_ACCESS.STATE.passage,
+  getPassage: () => harlowe().state.passage,
   setStatePropertyLock: setPathLock,
   setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
   processDiffs,
-  goToPassage: (passageName) => window.Harlowe.API_ACCESS.ENGINE.goToPassage(passageName),
+  goToPassage: (passageName) => harlowe().engine.goToPassage(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;
 
@@ -72,6 +94,12 @@ function createPassageEl(passage: FormatPassage) {
 }
 
 function createOrUpdatePassage(passage: FormatPassage) {
+  const Passages = harlowe().passages;
+  if (!Passages) {
+    alert('API_ACCESS.PASSAGES is not available in this version');
+    return;
+  }
+
   const el = getPassageEl(passage) ?? createPassageEl(passage);
   el.textContent = passage.source;
   if (passage.tags) el.setAttribute('tags', passage.tags.join(' '));
@@ -83,7 +111,6 @@ function createOrUpdatePassage(passage: FormatPassage) {
     html: () => el.innerHTML,
   });
 
-  const Passages = window.Harlowe.API_ACCESS.PASSAGES;
   Passages.clearTreeCache();
   Passages.clearStoryletCache();
   Passages.clearTagCache?.();

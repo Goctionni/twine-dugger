@@ -1,7 +1,11 @@
 # Twine Dugger
 
-Twine Dugger is a chrome extension that's intended to help either debug Twine games (using either
-SugarCube or Harlowe), or to cheat in those games.
+Twine Dugger is a browser-extension that's intended to help either debug or cheat in Twine games. The supported story formats are
+
+- SugarCube 2
+- Harlowe 3 _(Only games using Chapel's custom-macro framework)_
+- Chapbook 2
+- Snowman 2
 
 ## Dependencies / Technologies
 

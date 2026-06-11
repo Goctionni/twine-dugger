@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
 
 import { Tooltip } from '@/devtools-panel/ui/display/Tooltip';
-import { ObjectValue, Value } from '@/shared/shared-types';
+import type { ObjectValue, Value } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import { DiffPreview } from './DiffPreview';

@@ -1,4 +1,4 @@
-import { GameMetaData } from '@/shared/shared-types';
+import type { GameMetaData } from '@/shared/shared-types';
 
 import { getGameMetaData } from '../api/api';
 import { setCandidateIframes, setConnectionState, setGameMetaData } from '../store';
@@ -15,8 +15,13 @@ export function initMeta() {
         setCandidateIframes(meta.urls);
         return false;
       } else {
-        setGameMetaData(meta as GameMetaData);
-        setConnectionState('not-enabled');
+        const metadata = meta as GameMetaData;
+        setGameMetaData(metadata);
+        if (metadata.incompatible) {
+          setConnectionState('incompatible');
+        } else {
+          setConnectionState('not-enabled');
+        }
         return true;
       }
     })

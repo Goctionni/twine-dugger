@@ -9,7 +9,7 @@
     "128": "icons/128.png"
   },
   "description": "For developers and cheaters in Twine games: See the game state, edit variables, track changes, and debug issues.",
-  "permissions": ["scripting", "activeTab"],
+  "permissions": ["debugger", "scripting", "activeTab"],
   "host_permissions": ["<all_urls>", "file:///*"],
   "devtools_page": "./create-panel.html",
   "content_scripts": [],
@@ -18,14 +18,5 @@
       "resources": ["content-script.js", "content-script.js.map"],
       "matches": ["<all_urls>", "file:///*"]
     }
-  ],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "twinedugger@goctionni.addon",
-      "strict_min_version": "150.0",
-      "data_collection_permissions": {
-        "required": ["none"]
-      }
-    }
-  }
+  ]
 }

@@ -1,8 +1,9 @@
-import { Accessor, batch, createEffect, createMemo, createSignal } from 'solid-js';
+import type { Accessor } from 'solid-js';
+import { batch, createEffect, createMemo, createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
 
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
-import {
+import type {
   ConnectionState,
   DiffFrame,
   GameMetaData,
@@ -206,6 +207,11 @@ export const setSetting = <T extends keyof Store['settings']>(
   value: Store['settings'][T],
 ) => {
   setStore('settings', setting, value);
+};
+
+export const reloadPassagesData = async () => {
+  const passageData = await apiGetPassageData();
+  setPassageData(passageData.map(parsePassage));
 };
 
 const getMaxHistorySlices = () => store.settings['diffLog.maxHistorySlices'];

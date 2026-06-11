@@ -9,12 +9,18 @@ The extension has three main parts:
 
 2. **Content Script** (`src/content-script`)
    - Injected **on demand** into the inspected tab (not auto-run).
-   - Detects the **Twine format** (SugarCube or Harlowe) via `format-helpers/*` and exposes a stable API on `window.TwineDugger`.
+   - Detects the **Twine format** (SugarCube, Harlowe, Chapbook or Snowman) via `format-helpers/*` and exposes a stable API on `window.TwineDugger`.
    - Produces sanitized snapshots and **diff frames** between consecutive states.
 
 3. **Format Helpers** (`src/content-script/format-helpers`)
-   - **SugarCube** and **Harlowe** specific adapters that normalize how to **get state**, **get current passage**, and **mutate** state.
-   - Share common operations (set/delete/duplicate keys) in `shared.ts` and use **zod** schemas to validate detection.
+   - Story-format specific adapters that normalize how to
+     - get state
+     - set state
+     - get current passage
+     - get passage list
+     - navigate to passage
+     - update a passage's code
+   - Share common operations (set/delete/duplicate keys) in `shared.ts` and use **arktype** schemas to validate detection.
 
 ### High-Level Data Flow
 

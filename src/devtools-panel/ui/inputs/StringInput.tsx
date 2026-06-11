@@ -1,5 +1,6 @@
 import clsx from 'clsx';
-import { createEffect, createSignal, JSX } from 'solid-js';
+import type { JSX } from 'solid-js';
+import { createEffect, createSignal } from 'solid-js';
 
 interface StringInputProps {
   value: string;

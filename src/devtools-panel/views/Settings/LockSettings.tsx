@@ -4,7 +4,7 @@ import { setStatePropertyLock, setStatePropertyLocks } from '@/devtools-panel/ap
 import { clearLockPaths, getLockedPaths, removeLockPath } from '@/devtools-panel/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { sortPaths } from '@/shared/path-sorter';
-import { Path } from '@/shared/shared-types';
+import type { Path } from '@/shared/shared-types';
 
 import { btnClass } from '../../ui/util/btnClass';
 

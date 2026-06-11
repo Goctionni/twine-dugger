@@ -1,15 +1,25 @@
+import javascriptLangDef from '@shikijs/langs/javascript';
 import clsx from 'clsx';
 import { createEffect, createSignal, onCleanup, untrack } from 'solid-js';
-import { IRawGrammar } from 'vscode-textmate';
+import type { IRawGrammar } from 'vscode-textmate';
 
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 
 import { Toggle } from '../util/Toggle';
-import harloweLangDef from './grammars/harlowe-grammar.json';
-import sugarcubeLangDef from './grammars/sugarcube-grammar.json';
+import chapbookLangDef from './grammars/chapbook-grammar.json' with { type: 'json' };
+import harloweLangDef from './grammars/harlowe-grammar.json' with { type: 'json' };
+import snowmanLangDef from './grammars/snowman-grammar.json' with { type: 'json' };
+import sugarcubeLangDef from './grammars/sugarcube-grammar.json' with { type: 'json' };
 import { createHighlighter, createRegistry, escapeHtml } from './highlighter';
 
 type TEvent<TE extends Event, TEl extends HTMLElement> = TE & { currentTarget: TEl };
+
+const formatDict: Record<string, string> = {
+  sugarcube: sugarcubeLangDef.scopeName,
+  harlowe: harloweLangDef.scopeName,
+  chapbook: chapbookLangDef.scopeName,
+  snowman: snowmanLangDef.scopeName,
+};
 
 interface PassageCodeProps {
   code: string;
@@ -33,13 +43,16 @@ export function Code(props: PassageCodeProps) {
 
   // Initialize the highlighter
   createEffect(() => {
-    const format = props.format;
+    const format = props.format ?? 'sugarcube';
     createHighlighter({
       registry: createRegistry([
         harloweLangDef as unknown as IRawGrammar,
         sugarcubeLangDef as unknown as IRawGrammar,
+        chapbookLangDef as unknown as IRawGrammar,
+        snowmanLangDef as unknown as IRawGrammar,
+        ...(javascriptLangDef as unknown as IRawGrammar[]),
       ]),
-      scope: format === 'SugarCube' ? sugarcubeLangDef.scopeName : harloweLangDef.scopeName,
+      scope: formatDict[format.toLowerCase()] ?? sugarcubeLangDef.scopeName,
     }).then(setHighlighter);
   });
 

@@ -3,7 +3,7 @@ import { For, Show } from 'solid-js';
 import { goToPassage } from '@/devtools-panel/api/api';
 import { Tag } from '@/devtools-panel/ui/display/Tag';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
-import { ParsedPassageData } from '@/shared/shared-types';
+import type { ParsedPassageData } from '@/shared/shared-types';
 
 interface PassageHeaderProps {
   passage: ParsedPassageData;

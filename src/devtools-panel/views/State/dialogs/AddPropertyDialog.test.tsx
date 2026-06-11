@@ -2,20 +2,13 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-let mockActiveState: unknown;
-vi.mock('../../../store', () => ({
-  getActiveState: () => mockActiveState,
-}));
-
+import { getActiveState } from '../../../store';
 import { AddPropertyDialog } from './AddPropertyDialog';
 
-afterEach(() => {
-  cleanup();
-});
+vi.mock('../../../store', () => ({ getActiveState: vi.fn<() => unknown>() }));
 
-beforeEach(() => {
-  mockActiveState = undefined;
-});
+beforeEach(() => vi.resetAllMocks());
+afterEach(() => cleanup());
 
 describe('AddPropertyDialog', () => {
   it('keeps entered value for string type', async () => {
@@ -27,8 +20,7 @@ describe('AddPropertyDialog', () => {
     await user.type(screen.getByPlaceholderText('Value'), 'alpha');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[1]).toBe('alpha');
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', 'alpha');
   });
 
   it('keeps entered value for number type', async () => {
@@ -41,8 +33,7 @@ describe('AddPropertyDialog', () => {
     await user.type(screen.getByPlaceholderText('Value'), '42');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[1]).toBe(42);
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', 42);
   });
 
   it('keeps entered value for boolean type', async () => {
@@ -55,8 +46,7 @@ describe('AddPropertyDialog', () => {
     await user.selectOptions(screen.getAllByRole('combobox')[1]!, 'false');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[1]).toBe(false);
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', false);
   });
 
   it('creates empty object for object type', async () => {
@@ -68,8 +58,7 @@ describe('AddPropertyDialog', () => {
     await user.selectOptions(screen.getByRole('combobox'), 'object');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[1]).toEqual({});
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', {});
   });
 
   it('creates empty array for array type', async () => {
@@ -81,8 +70,7 @@ describe('AddPropertyDialog', () => {
     await user.selectOptions(screen.getByRole('combobox'), 'array');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[1]).toEqual([]);
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', []);
   });
 
   it('creates empty map for map type', async () => {
@@ -94,10 +82,7 @@ describe('AddPropertyDialog', () => {
     await user.selectOptions(screen.getByRole('combobox'), 'map');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    const createdMap = onConfirm.mock.calls[0]![1] as Map<unknown, unknown>;
-    expect(createdMap).toBeInstanceOf(Map);
-    expect(createdMap.size).toBe(0);
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', new Map());
   });
 
   it('creates empty set for set type', async () => {
@@ -109,14 +94,12 @@ describe('AddPropertyDialog', () => {
     await user.selectOptions(screen.getByRole('combobox'), 'set');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    const createdSet = onConfirm.mock.calls[0]![1] as Set<unknown>;
-    expect(createdSet).toBeInstanceOf(Set);
-    expect(createdSet.size).toBe(0);
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', new Set());
   });
 
   it('uses property name when container is object', async () => {
-    mockActiveState = { root: {} };
+    vi.mocked(getActiveState).mockReturnValue({ root: {} });
+
     const onConfirm = vi.fn<(name: string, value: unknown) => void>();
     const user = userEvent.setup();
 
@@ -126,13 +109,11 @@ describe('AddPropertyDialog', () => {
     await user.type(screen.getByPlaceholderText('Value'), '10');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[0]).toBe('score');
-    expect(onConfirm.mock.calls[0]?.[1]).toBe('10');
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('score', '10');
   });
 
   it('uses property name when container is map', async () => {
-    mockActiveState = { root: new Map([['a', 1]]) };
+    vi.mocked(getActiveState).mockReturnValue({ root: new Map([['a', 1]]) });
     const onConfirm = vi.fn<(name: string, value: unknown) => void>();
     const user = userEvent.setup();
 
@@ -142,13 +123,11 @@ describe('AddPropertyDialog', () => {
     await user.type(screen.getByPlaceholderText('Value'), 'hello');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[0]).toBe('b');
-    expect(onConfirm.mock.calls[0]?.[1]).toBe('hello');
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('b', 'hello');
   });
 
   it('uses next array index and Add Item label when container is array', async () => {
-    mockActiveState = { root: ['x', 'y'] };
+    vi.mocked(getActiveState).mockReturnValue({ root: ['x', 'y'] });
     const onConfirm = vi.fn<(name: string, value: unknown) => void>();
     const user = userEvent.setup();
 
@@ -158,9 +137,7 @@ describe('AddPropertyDialog', () => {
     await user.type(screen.getByPlaceholderText('Value'), 'z');
     await user.click(screen.getByRole('button', { name: 'Add Item' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[0]).toBe('2');
-    expect(onConfirm.mock.calls[0]?.[1]).toBe('z');
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('2', 'z');
   });
 
   it('ignores invalid number input and keeps default numeric value', async () => {
@@ -173,7 +150,6 @@ describe('AddPropertyDialog', () => {
     await user.type(screen.getByPlaceholderText('Value'), 'e');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[1]).toBe(0);
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', 0);
   });
 });

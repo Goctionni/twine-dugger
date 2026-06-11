@@ -2,7 +2,7 @@ import { createMemo, Match, Show, Switch } from 'solid-js';
 
 import { createGetViewState, getActiveState } from '@/devtools-panel/store';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import { ArrayValue, MapValue, ObjectValue, ValueType } from '@/shared/shared-types';
+import type { ArrayValue, MapValue, ObjectValue, ValueType } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 import { PrettyPath } from '../../ui/display/PrettyPath';

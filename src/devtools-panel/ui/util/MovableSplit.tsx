@@ -1,4 +1,5 @@
-import { createSignal, JSX, onCleanup, onMount } from 'solid-js';
+import type { JSX } from 'solid-js';
+import { createSignal, onCleanup, onMount } from 'solid-js';
 
 import { getPersistedValue, setPersistedValue } from './persistedValue';
 
