@@ -1,5 +1,7 @@
 import type { Path } from './shared-types';
 
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
 /**
  * Sorts an array of paths in a deterministic, depth-first alphabetical/numeric order.
  *
@@ -8,30 +10,15 @@ import type { Path } from './shared-types';
  * Output: [['state', 'a', 'inventory'], ['state', 'a', 'name'], ['state', 'b'], ['state', 'z', 'score']]
  */
 export function sortPaths(paths: Path[]): Path[] {
-  return [...paths].sort((path1, path2) => {
-    const minLen = Math.min(path1.length, path2.length);
+  return [...paths].sort((pathA, pathB) => {
+    const minLength = Math.min(pathA.length, pathB.length);
 
-    for (let i = 0; i < minLen; i++) {
-      const item1 = path1[i];
-      const item2 = path2[i];
-
-      if (item1 === item2) continue;
-
-      if (typeof item1 === 'number' && typeof item2 === 'number') {
-        return item1 - item2;
+    for (let i = 0; i < minLength; i++) {
+      if (pathA[i] !== pathB[i]) {
+        return collator.compare(String(pathA[i]), String(pathB[i]));
       }
-
-      if (typeof item1 === 'number') return -1;
-      if (typeof item2 === 'number') return 1;
-
-      if (typeof item1 === 'string' && typeof item2 === 'string') {
-        return item1.localeCompare(item2);
-      }
-
-      return String(item1).localeCompare(String(item2));
     }
 
-    // If all common elements are equal, the shorter path comes first
-    return path1.length - path2.length;
+    return pathA.length - pathB.length;
   });
 }

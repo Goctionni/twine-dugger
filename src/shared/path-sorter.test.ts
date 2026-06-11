@@ -42,4 +42,22 @@ describe('path-sorter', () => {
 
     expect(sortPaths(input)).toEqual(expected);
   });
+
+  it('should sort string segments with embedded numbers naturally', () => {
+    const input: string[][] = [
+      ['state', 'item10'],
+      ['state', 'item1'],
+      ['state', 'item2'],
+      ['state', 'item11'],
+    ];
+
+    const expected: string[][] = [
+      ['state', 'item1'],
+      ['state', 'item2'],
+      ['state', 'item10'],
+      ['state', 'item11'],
+    ];
+
+    expect(sortPaths(input)).toEqual(expected);
+  });
 });
