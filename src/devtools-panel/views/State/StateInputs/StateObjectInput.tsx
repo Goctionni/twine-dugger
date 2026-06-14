@@ -15,7 +15,7 @@ export function StateObjectInput(props: StateObjectInputProps) {
   const getPropertyOrder = createGetSetting('state.propertyOrder');
 
   const getKeys = createMemo(() => {
-    const sorter = createSorter(props.value, getPropertyOrder());
+    const sorter = createSorter(props.value, getPropertyOrder(), false, props.path);
     const keys = Object.keys(props.value);
     return sorter(keys);
   });

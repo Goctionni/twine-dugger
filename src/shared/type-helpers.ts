@@ -1,4 +1,4 @@
-import type { Value } from './shared-types';
+import type { ArrayValue, MapValue, ObjectValue, Primitive, SetValue, Value } from './shared-types';
 
 export const isFunction = (value: unknown): value is Function => typeof value === 'function';
 export const isArray = (value: unknown): value is Array<unknown> => Array.isArray(value);
@@ -32,6 +32,31 @@ export function getSpecificType(value: Value) {
   return 'other';
 }
 
+export type SpecificType = ReturnType<typeof getSpecificType>;
+
+interface SpecificTypeMap {
+  function: Function;
+  array: ArrayValue;
+  set: SetValue;
+  map: MapValue;
+  string: string;
+  number: number;
+  null: null;
+  boolean: boolean;
+  undefined: undefined;
+  object: ObjectValue;
+  other: Value;
+}
+
+type SpecificTypeTupleMap = { [K in keyof SpecificTypeMap]: [K, SpecificTypeMap[K]] };
+
+type SpecificTypeTuple = SpecificTypeTupleMap[keyof SpecificTypeTupleMap];
+
+export function getSpecificTypeValue(value: Value): SpecificTypeTuple {
+  const type = getSpecificType(value);
+  return [type, value] as SpecificTypeTuple;
+}
+
 export function isNullish(value: unknown) {
   return value === null || typeof value === 'undefined';
 }
@@ -41,4 +66,11 @@ export function isPrimitive(value: unknown) {
   if (type === 'object') return false;
   if (type === 'function') return false;
   return true;
+}
+
+const primitiveTypes: SpecificType[] = ['string', 'number', 'boolean', 'null', 'undefined'];
+
+export function isValuePrimitive(value: Value): value is Primitive {
+  const type = getSpecificType(value);
+  return primitiveTypes.includes(type);
 }

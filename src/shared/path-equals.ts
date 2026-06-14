@@ -9,9 +9,5 @@ export function pathEquals(path1: Path, path2: Path) {
 }
 
 export function pathStartsWith(path: Path, prefix: Path) {
-  if (prefix.length > path.length) return false;
-  for (let i = 0; i < prefix.length; i++) {
-    if (path[i] !== prefix[i]) return false;
-  }
-  return true;
+  return prefix.every((value, index) => value === path[index]);
 }

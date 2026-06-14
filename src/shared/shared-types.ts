@@ -1,3 +1,7 @@
+import type { JSX } from 'solid-js';
+
+import type { SpecificType } from './type-helpers';
+
 export type Primitive = string | number | boolean | null | undefined;
 
 export type Value =
@@ -19,6 +23,8 @@ export type SetValue = Set<Value>;
 export type ContainerValue = ObjectValue | ArrayValue | MapValue;
 
 export type Path = Array<string | number>;
+
+export type PropertyFilterKey = SpecificType | 'filtered';
 
 type DiffGeneric<T extends string> = { type: T; path: Path } & (
   | { subtype: 'add'; newValue: Value }
@@ -131,7 +137,11 @@ export interface ParsedPassageData {
   content: string;
   tags: string[];
 }
-export type PropertyOrder = 'alphabetic' | 'type' | 'none';
+export type PropertyOrder = 'alphabetic' | 'type' | 'most-recent' | 'none';
+export interface OrderConfig {
+  orderBy: PropertyOrder;
+  descending: boolean;
+}
 export type Page = 'state' | 'search' | 'passages' | 'settings';
 export type ConnectionState =
   | 'candidate-iframes'
@@ -193,6 +203,26 @@ export interface SearchResultsCombined {
   state: SearchResultState[];
   passage: ParsedPassageData[];
 }
+
+export type Placement =
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top left'
+  | 'top right'
+  | 'bottom left'
+  | 'bottom right';
+
+export type PlacementFlip = 'flip-block' | 'flip-inline' | 'flip-both';
+export type PlacementOrFallback = Placement | PlacementFlip;
+export interface TooltipConfig {
+  anchor?: 'cursor' | 'element';
+  placement?: Placement | [Placement, ...PlacementOrFallback[]];
+  offset?: number;
+}
+export type TooltipContent = string | JSX.Element;
+export type TooltipValue = TooltipContent | [TooltipContent, TooltipConfig];
 
 export interface FormatPassage {
   name: string;

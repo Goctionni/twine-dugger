@@ -2,6 +2,8 @@ import clsx from 'clsx';
 import type { JSX } from 'solid-js';
 import { createEffect, createSignal } from 'solid-js';
 
+import { baseInputClasses } from '../util/common-classes';
+
 interface StringInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -13,9 +15,6 @@ interface StringInputProps {
   autoFocus?: boolean;
   inputProps?: JSX.InputHTMLAttributes<HTMLInputElement>;
 }
-
-const baseInputClasses =
-  'block px-2 py-1 bg-gray-700 border border-gray-600 text-sm shadow-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500';
 
 export function StringInput(props: StringInputProps) {
   const onKeyDown = (e: KeyboardEvent) => props.onKeyDown?.(e);

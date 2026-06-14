@@ -4,3 +4,4 @@ extension/vite
 dist
 dist-ff
 *.zip
+_local

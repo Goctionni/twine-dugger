@@ -8,3 +8,13 @@
 @import './styles/chapbook.css';
 @import './styles/snowman.css';
 @import './styles/scrollbar.css';
+
+input[type='search'] {
+  @apply pr-0;
+
+  &::-webkit-search-cancel-button {
+    @apply mr-1 h-5 w-5 cursor-pointer appearance-none bg-current mask-size-[12px] mask-center mask-no-repeat;
+
+    mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M4 4 L20 20 M20 4 L4 20' stroke='black' stroke-width='3' stroke-linecap='square'/></svg>");
+  }
+}

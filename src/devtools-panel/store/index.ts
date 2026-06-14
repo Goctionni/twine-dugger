@@ -38,6 +38,7 @@ interface Settings {
   'diffLog.maxHistorySlices': number;
   'diffLog.headingStyle': 'default' | 'distinct';
   'state.propertyOrder': PropertyOrder;
+  'state.propertyOrderDesc': boolean;
 }
 
 interface Store {
@@ -332,6 +333,7 @@ function loadGlobalSettings() {
     ['diffLog.maxHistorySlices']: 50,
     ['diffLog.headingStyle']: 'default',
     ['state.propertyOrder']: 'type',
+    ['state.propertyOrderDesc']: false,
   };
   const lsData = localStorage.getItem(getGlobalSettingsKey());
   if (!lsData) return defaultSettings;

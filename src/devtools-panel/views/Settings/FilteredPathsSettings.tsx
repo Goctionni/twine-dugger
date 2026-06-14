@@ -15,7 +15,7 @@ export function FilteredPathsSettings() {
         </p>
         <button
           type="button"
-          class={btnClass('clr-gray hover:clr-sky px-2 py-0.5 text-xs')}
+          class={btnClass('outline', 'clr-gray hover:clr-sky px-2 py-0.5 text-xs')}
           onClick={() => clearFilteredPaths()}
           disabled={!getFilteredPaths().length}
         >
@@ -38,7 +38,7 @@ export function FilteredPathsSettings() {
                 />
                 <button
                   type="button"
-                  class={btnClass('clr-gray hover:clr-sky px-2 py-0.5 text-xs')}
+                  class={btnClass('outline', 'clr-gray hover:clr-sky px-2 py-0.5 text-xs')}
                   onClick={() => removeFilteredPath(path)}
                 >
                   Remove

@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import type { JSX } from 'solid-js';
 
 import { btnClass } from '../util/btnClass';
+import { baseInputClasses } from '../util/common-classes';
 
 interface NumberInputProps {
   value: number;
@@ -12,9 +13,6 @@ interface NumberInputProps {
   className?: string;
   inputProps?: JSX.InputHTMLAttributes<HTMLInputElement>;
 }
-
-const baseInputClasses =
-  'block px-2 py-1 bg-gray-700 border border-gray-600 text-sm shadow-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500';
 
 export function NumberInput(props: NumberInputProps) {
   const isDisabled = () => props.disabled || props.readOnly;

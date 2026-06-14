@@ -19,6 +19,7 @@ export default defineConfig({
     'typescript/unbound-method': 'off',
     'eslint/no-unassigned-vars': 'off',
     'typescript/consistent-type-imports': 'error',
+    'no-unused-vars': ['error', { varsIgnorePattern: 'tooltip', argsIgnorePattern: '^_' }],
   },
   overrides: [
     {
