@@ -1,11 +1,12 @@
 import clsx from 'clsx';
-import { createMemo, createSignal, For, Show } from 'solid-js';
+import { createMemo, createSignal, For, Show, untrack } from 'solid-js';
 
 import {
   addFilteredPath,
   addLockPath,
   createGetSetting,
   createGetViewState,
+  createSetSetting,
   getActiveState,
   getLockedPaths,
   isPathFiltered,
@@ -43,6 +44,13 @@ import { FilterPropertiesDialog } from './dialogs/FilterPropertiesDialog';
 import { SortPropertiesDialog } from './dialogs/SortPropertiesDialog';
 import { createSorter } from './property-sorter';
 
+const getGlobalFilters = createGetSetting('state.filters');
+const getGlobalPropertyOrder = createGetSetting('state.propertyOrder');
+const getGlobalPropertyOrderDesc = createGetSetting('state.propertyOrderDesc');
+const setGlobalFilters = createSetSetting('state.filters');
+const setGlobalPropertyOrder = createSetSetting('state.propertyOrder');
+const setGlobalPropertyOrderDesc = createSetSetting('state.propertyOrderDesc');
+
 const getNameForProperty = () =>
   showPromptDialog<string>('Name for property', (resolve) => (
     <DuplicateKeyDialog onConfirm={resolve} />
@@ -54,17 +62,22 @@ interface Props {
 }
 
 export function ObjectNav(props: Props) {
+  const isRoot = () => props.path.length === 0;
   const [search, setSearch] = createSignal('');
-  const [filters, setFilers] = createSignal<PropertyFilterKey[]>([]);
+  const [filters, setFilers] = createSignal<PropertyFilterKey[]>(
+    untrack(() => (isRoot() ? getGlobalFilters() : [])),
+  );
   const getName = () => props.path.at(-1);
   const getObject = createMemo(
     () => getObjectPathValue(getActiveState()!, props.path) as ContainerValue,
   );
 
-  const getGlobalPropertyOrder = createGetSetting('state.propertyOrder');
-  const getGlobalPropertyOrderDesc = createGetSetting('state.propertyOrderDesc');
-  const [getPropertyOrder, setPropertyOrder] = createSignal<PropertyOrder | null>(null);
-  const [getPropertyOrderDesc, setPropertyOrderDesc] = createSignal<boolean | null>(null);
+  const [getPropertyOrder, setPropertyOrder] = createSignal<PropertyOrder | null>(
+    untrack(() => (isRoot() ? getGlobalPropertyOrder() : null)),
+  );
+  const [getPropertyOrderDesc, setPropertyOrderDesc] = createSignal<boolean | null>(
+    untrack(() => (isRoot() ? getGlobalPropertyOrderDesc() : null)),
+  );
 
   const getChildren = createMemo(() => {
     const object = getObject();
@@ -156,6 +169,10 @@ export function ObjectNav(props: Props) {
     if (result) {
       setPropertyOrder(result.orderBy);
       setPropertyOrderDesc(result.descending);
+      if (!props.path.length) {
+        setGlobalPropertyOrder(result.orderBy);
+        setGlobalPropertyOrderDesc(result.descending);
+      }
     }
   };
 
@@ -164,7 +181,10 @@ export function ObjectNav(props: Props) {
       <FilterPropertiesDialog filters={filters()} onConfirm={resolve} />
     )).catch(() => {});
 
-    if (result) setFilers(result);
+    if (result) {
+      setFilers(result);
+      if (isRoot()) setGlobalFilters(result);
+    }
   };
 
   return (
@@ -173,7 +193,7 @@ export function ObjectNav(props: Props) {
         <p class="w-full overflow-hidden text-lg text-ellipsis">{getName()}</p>
       </Show>
       <div class="mb-3 flex justify-items-start gap-1">
-        <Show when={props.path.length === 0}>
+        <Show when={isRoot()}>
           <input
             type="search"
             onInput={(e) => setSearch(e.target.value)}

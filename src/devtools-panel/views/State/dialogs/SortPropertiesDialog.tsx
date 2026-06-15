@@ -65,7 +65,8 @@ export function SortPropertiesDialog(props: Props) {
 
   return (
     <form onSubmit={handleSubmit} class="flex flex-col">
-      <div class="my-3 flex flex-col gap-2">
+      <fieldset class="my-3 flex flex-col gap-2">
+        <legend class="sr-only">Sort by</legend>
         <For each={primarySortOptions}>
           {(option) => (
             <label
@@ -94,11 +95,12 @@ export function SortPropertiesDialog(props: Props) {
             </label>
           )}
         </For>
-      </div>
+      </fieldset>
 
-      <div class="my-2 border-t border-slate-400" />
+      <div class="mt-1 mb-4 border-t-2 border-slate-600/50" />
 
-      <div class="mb-5 grid grid-cols-2 gap-2">
+      <fieldset class="mb-5 grid grid-cols-2 gap-2">
+        <legend class="sr-only">Direction</legend>
         <label
           use:tooltip="Sort in ascending order"
           class={clsx(
@@ -150,7 +152,7 @@ export function SortPropertiesDialog(props: Props) {
           </div>
           <span class="text-sm font-semibold tracking-wide">Descending</span>
         </label>
-      </div>
+      </fieldset>
 
       <button type="submit" class={btnClass('contained')}>
         Save sorting
@@ -158,8 +160,3 @@ export function SortPropertiesDialog(props: Props) {
     </form>
   );
 }
-
-/* TODO:
-- Use fieldsets for the radio groups
-- Figure if we can/should move the radio/checkboxes into deparate components
-*/

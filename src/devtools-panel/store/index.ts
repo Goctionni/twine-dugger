@@ -11,6 +11,7 @@ import type {
   ParsedPassageData,
   PassageData,
   Path,
+  PropertyFilterKey,
   PropertyOrder,
   StateFrame,
 } from '@/shared/shared-types';
@@ -39,6 +40,7 @@ interface Settings {
   'diffLog.headingStyle': 'default' | 'distinct';
   'state.propertyOrder': PropertyOrder;
   'state.propertyOrderDesc': boolean;
+  'state.filters': PropertyFilterKey[];
 }
 
 interface Store {
@@ -131,6 +133,10 @@ export const createGetViewState = <
 export const createGetSetting = <T extends keyof Store['settings']>(setting: T) => {
   const accessor = createMemo(() => store.settings[setting]);
   return accessor;
+};
+
+export const createSetSetting = <T extends keyof Store['settings']>(setting: T) => {
+  return (newValue: (typeof store.settings)[T]) => setSetting(setting, newValue);
 };
 
 export const setViewState = <
@@ -334,6 +340,7 @@ function loadGlobalSettings() {
     ['diffLog.headingStyle']: 'default',
     ['state.propertyOrder']: 'type',
     ['state.propertyOrderDesc']: false,
+    ['state.filters']: [],
   };
   const lsData = localStorage.getItem(getGlobalSettingsKey());
   if (!lsData) return defaultSettings;

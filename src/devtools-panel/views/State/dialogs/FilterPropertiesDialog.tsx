@@ -97,7 +97,8 @@ export function FilterPropertiesDialog(props: {
 
   return (
     <form onSubmit={handleSubmit} class="flex flex-col">
-      <div class="my-5 grid grid-cols-3 gap-2">
+      <fieldset class="my-5 grid grid-cols-3 gap-2">
+        <legend class="sr-only">What properties to show</legend>
         <For each={filters}>
           {(filter) => (
             <label
@@ -151,7 +152,7 @@ export function FilterPropertiesDialog(props: {
             </label>
           )}
         </For>
-      </div>
+      </fieldset>
 
       <button type="submit" class={btnClass('contained')}>
         Save filters
