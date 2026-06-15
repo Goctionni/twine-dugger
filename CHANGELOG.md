@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.7.0
+
+### Minor Changes
+
+- 572eb62: Added filters, sorting and search to object nav
+
 ## 1.6.0
 
 ### Minor Changes
