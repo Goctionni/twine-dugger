@@ -2,6 +2,10 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+import { clearFilteredPaths, removeFilteredPath } from '@/devtools-panel/store';
+
+import { FilteredPathsSettings } from './FilteredPathsSettings';
+
 vi.mock('@/devtools-panel/store', () => ({
   getFilteredPaths: vi.fn(() => [
     ['state', 'z', 'score'],
@@ -13,10 +17,6 @@ vi.mock('@/devtools-panel/store', () => ({
     state: { a: { name: 'test', inventory: [] }, z: { score: 10 } },
   })),
 }));
-
-import { clearFilteredPaths, removeFilteredPath } from '@/devtools-panel/store';
-
-import { FilteredPathsSettings } from './FilteredPathsSettings';
 
 describe('FilteredPathsSettings', () => {
   beforeEach(() => vi.resetAllMocks());

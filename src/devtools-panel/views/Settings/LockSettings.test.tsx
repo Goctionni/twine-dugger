@@ -1,71 +1,63 @@
 import { cleanup, render, screen } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
-import { createSignal } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import type { Path } from '@/shared/shared-types';
-
-const pathEquals = (a: Path, b: Path) => a.length === b.length && a.every((v, i) => v === b[i]);
-
-let mockGetLockedPaths: () => Path[];
-let mockRemoveLockPath: (path: Path) => void;
-let mockClearLockPaths: () => void;
-
-vi.mock('@/devtools-panel/store', () => ({
-  getLockedPaths: () => mockGetLockedPaths(),
-  removeLockPath: (path: Path) => mockRemoveLockPath(path),
-  clearLockPaths: () => mockClearLockPaths(),
-  getActiveState: () => ({ state: { a: { name: 'test', inventory: [] }, z: { score: 10 } } }),
-}));
-
-vi.mock('@/devtools-panel/api/api', () => ({
-  setStatePropertyLock: () => {},
-  setStatePropertyLocks: () => {},
-}));
+import { setStatePropertyLock, setStatePropertyLocks } from '@/devtools-panel/api/api';
+import { clearLockPaths, getLockedPaths, removeLockPath } from '@/devtools-panel/store';
 
 import { LockSettings } from './LockSettings';
 
-describe('LockSettings', () => {
-  const initialPaths: Path[] = [
+vi.mock('@/devtools-panel/store', () => ({
+  getLockedPaths: vi.fn(() => [
     ['state', 'z', 'score'],
     ['state', 'a', 'name'],
-  ];
+  ]),
+  removeLockPath: vi.fn(),
+  clearLockPaths: vi.fn(),
+  getActiveState: vi.fn(() => ({
+    state: { a: { name: 'test', inventory: [] }, z: { score: 10 } },
+  })),
+}));
 
-  beforeEach(() => {
-    const [get, set] = createSignal<Path[]>(initialPaths.map((p) => [...p]));
-    mockGetLockedPaths = get;
-    mockRemoveLockPath = (path) => set((prev) => prev.filter((p) => !pathEquals(p, path)));
-    mockClearLockPaths = () => set([]);
-  });
+vi.mock('@/devtools-panel/api/api', () => ({
+  setStatePropertyLock: vi.fn(),
+  setStatePropertyLocks: vi.fn(),
+}));
 
-  afterEach(() => {
-    cleanup();
-  });
+describe('LockSettings', () => {
+  beforeEach(() => vi.resetAllMocks());
+  afterEach(() => cleanup());
 
   it('renders initial paths sorted', () => {
     render(() => <LockSettings />);
-    expect(screen.getByText(/locked paths/i).textContent).toContain('2');
+    expect(screen.getByText('Locked paths:').textContent).toContain('2');
   });
 
-  it('reactively removes individual path when Unlock is clicked', async () => {
+  it('Calls methods to unlock a path when Unlock is clicked', async () => {
     const user = userEvent.setup();
     render(() => <LockSettings />);
 
-    expect(screen.getByText(/locked paths/i).textContent).toContain('2');
+    const [button] = screen.getAllByRole('button', { name: 'Unlock' });
+    await user.click(button!);
 
-    await user.click(screen.getAllByRole('button', { name: /unlock/i })[0]!);
-
-    expect(screen.getByText(/locked paths/i).textContent).toContain('1');
+    expect(setStatePropertyLock).toHaveBeenCalledWith(['state', 'a', 'name'], false);
+    expect(removeLockPath).toHaveBeenCalledWith(['state', 'a', 'name']);
   });
 
-  it('reactively clears all paths when Clear all is clicked', async () => {
+  it('Calls methods to clear locks when Clear all is clicked', async () => {
     const user = userEvent.setup();
     render(() => <LockSettings />);
 
-    expect(screen.getByText(/locked paths/i).textContent).toContain('2');
+    await user.click(screen.getByRole('button', { name: 'Clear all' }));
 
-    await user.click(screen.getByRole('button', { name: /clear all/i }));
+    expect(setStatePropertyLocks).toHaveBeenCalledWith([]);
+    expect(clearLockPaths).toHaveBeenCalled();
+  });
 
-    expect(screen.getByText(/no locked variables yet/i)).toBeTruthy();
+  it('If no locks exist, clear button is disabled', async () => {
+    vi.mocked(getLockedPaths).mockReturnValue([]);
+    render(() => <LockSettings />);
+
+    expect(screen.getByRole('button', { name: 'Clear all' })).toBeDisabled();
   });
 });
