@@ -15,7 +15,7 @@ export function StateMapInput(props: StateMapInputProps) {
   const getPropertyOrder = createGetSetting('state.propertyOrder');
 
   const getKeys = createMemo(() => {
-    const sorter = createSorter(props.value, getPropertyOrder());
+    const sorter = createSorter(props.value, getPropertyOrder(), false, props.path);
     const keys = [...props.value.keys()];
     return sorter(keys);
   });

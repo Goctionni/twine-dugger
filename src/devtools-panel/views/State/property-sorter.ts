@@ -1,10 +1,43 @@
+import { getDiffFrames } from '@/devtools-panel/store';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
-import type { ContainerValue, PropertyOrder } from '@/shared/shared-types';
+import { pathStartsWith } from '@/shared/path-equals';
+import type { ContainerValue, Path, PropertyOrder } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
 type ContainerKey = string | number;
 
-export function createSorter(object: ContainerValue, order: PropertyOrder) {
+type Sorter = (keys: ContainerKey[]) => ContainerKey[];
+
+export function createSorter(
+  object: ContainerValue,
+  order: PropertyOrder,
+  desc: boolean,
+  path: Path,
+): Sorter {
+  if (desc) {
+    const sorter = createSorter(object, order, false, path);
+    return (keys: ContainerKey[]) => sorter(keys).toReversed();
+  }
+  if (order === 'most-recent') {
+    const diffFrames = getDiffFrames();
+    return (keys: ContainerKey[]) => {
+      return keys
+        .map((key) => {
+          try {
+            const keyPath = [...path, key];
+            const lastChange = diffFrames.findIndex((diffFrame) => {
+              return diffFrame.changes.some((change) => pathStartsWith(change.path, keyPath));
+            });
+            return { key, changedAt: lastChange === -1 ? diffFrames.length : lastChange };
+          } catch (ex) {
+            console.log('ERROR in sorter', ex);
+            return { key, changedAt: 1 };
+          }
+        })
+        .toSorted((a, b) => a.changedAt - b.changedAt)
+        .map(({ key }) => key);
+    };
+  }
   if (order === 'alphabetic') {
     return (keys: ContainerKey[]) =>
       keys.toSorted((key1, key2) => {

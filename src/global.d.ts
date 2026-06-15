@@ -3,6 +3,7 @@ import type {
   ObjectValue,
   PassageData,
   Path,
+  TooltipValue,
   UpdateResult,
 } from '@/shared/shared-types';
 
@@ -42,5 +43,13 @@ declare global {
   }
   interface ErrorConstructor {
     isError(value: unknown): value is Error;
+  }
+}
+
+declare module 'solid-js' {
+  namespace JSX {
+    interface Directives {
+      tooltip: TooltipValue;
+    }
   }
 }

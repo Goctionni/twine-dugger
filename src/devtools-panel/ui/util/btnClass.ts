@@ -22,45 +22,55 @@ const BASE = [
 
 const variants = {
   contained: `
+    ${BASE.join(' ')}
     border border-transparent
     bg-clr-700 hover:bg-clr-500
     ring-clr-500
   `,
   outline: `
+    ${BASE.join(' ')}
     border border-transparent
     outline-2 -outline-offset-2 outline-clr-700 ring-clr-500
     hover:outline-transparent hover:bg-clr-500
   `,
+  icon: `
+    p-0.5
+    cursor-pointer
+    shadow-sm
+    text-sm
+    font-medium
+    rounded-md
+    focus:outline-none
+    focus:ring-2
+    focus:ring-offset-2
+    focus:ring-offset-gray-800
+    disabled:bg-gray-500
+    disabled:text-gray-300
+    disabled:pointer-events-none
+    disabled:hover:bg-gray-500
+    text-white
+
+    border border-transparent
+    outline-2 -outline-offset-2 outline-clr-700 ring-clr-500
+    hover:outline-transparent hover:bg-clr-500
+
+    flex items-center justify-center
+    material-symbols-outlined text-center
+    aspect-square
+  `,
 } as const;
 
 type Variant = keyof typeof variants;
-const variantKeys = Object.keys(variants) as Variant[];
-
-type ParsedInput = {
-  variant: Variant;
-  classes: ClassValue[];
-};
-function parseInput(variantOrClass?: ClassValue, ...rest: ClassValue[]): ParsedInput {
-  if (typeof variantOrClass === 'string' && variantKeys.includes(variantOrClass as Variant)) {
-    return { variant: variantOrClass as Variant, classes: rest };
-  }
-  return { variant: 'outline', classes: [variantOrClass, ...rest] };
-}
 
 function forEachClass(classStr: string, callback: (c: string) => void) {
   return classStr.split(/\s+/).filter(Boolean).forEach(callback);
 }
 
-type VariantOrClassValue = Variant | Exclude<ClassValue, string> | (string & {});
-
-export function btnClass(variantOrClass?: VariantOrClassValue, ...rest: ClassValue[]): string {
-  const { variant, classes: classValues } = parseInput(variantOrClass, ...rest);
-
-  // Base classes
-  const classes = new Set<string>(BASE);
+export function btnClass(variant: Variant | null, ...classValues: ClassValue[]): string {
+  const classes = new Set<string>();
 
   // Add variant classes
-  forEachClass(variants[variant], (c) => classes.add(c));
+  forEachClass(variant ? variants[variant] : '', (c) => classes.add(c));
 
   // Parse class values
   for (const classValue of classValues) {

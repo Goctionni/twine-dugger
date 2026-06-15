@@ -16,7 +16,7 @@ export function LockButton(props: LockButtonProps) {
         <button
           type="button"
           onClick={() => props.onToggle()}
-          class={btnClass('clr-gray hover:clr-sky min-w-16')}
+          class={btnClass('outline', 'clr-gray hover:clr-sky min-w-16')}
         >
           Unlock
         </button>
@@ -25,7 +25,7 @@ export function LockButton(props: LockButtonProps) {
         <button
           type="button"
           onClick={() => props.onToggle()}
-          class={btnClass('clr-gray hover:clr-sky min-w-16')}
+          class={btnClass('outline', 'clr-gray hover:clr-sky min-w-16')}
         >
           Lock
         </button>
