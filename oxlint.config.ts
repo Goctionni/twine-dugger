@@ -32,6 +32,9 @@ export default defineConfig({
       plugins: ['vitest', 'jest', 'typescript'],
       env: { vitest: true },
       jsPlugins: ['eslint-plugin-testing-library'],
+      rules: {
+        'vitest/require-mock-type-parameters': 'off',
+      },
     },
   ],
 });
