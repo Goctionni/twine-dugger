@@ -5,12 +5,39 @@ interface ExecuteCodeOptions<TArgs extends unknown[]> {
   codeDescription?: string;
 }
 
+type EvalResult = Awaited<ReturnType<typeof browser.devtools.inspectedWindow.eval>>;
+type EvalBehavior = 'array' | 'immediate';
+let _evalBehavior: EvalBehavior | undefined = undefined;
+
+async function getEvalBehavior(): Promise<EvalBehavior> {
+  if (_evalBehavior) return _evalBehavior;
+
+  const testResult = await browser.devtools.inspectedWindow.eval('123');
+  if (Array.isArray(testResult)) _evalBehavior = 'array';
+  else if (testResult === 123) _evalBehavior = 'immediate';
+  else throw new Error('Something broke the compat-layer for the compat layer.');
+  return _evalBehavior;
+}
+
+async function evalWrapper(code: string): Promise<EvalResult> {
+  const evalBehavior = await getEvalBehavior();
+  if (evalBehavior === 'immediate') {
+    try {
+      return [await browser.devtools.inspectedWindow.eval(code)] as unknown as EvalResult;
+    } catch (ex) {
+      return [undefined, ex] as EvalResult;
+    }
+  }
+
+  return await browser.devtools.inspectedWindow.eval(code);
+}
+
 export async function executeCode<T, TArgs extends unknown[] = unknown[]>(
   callback: (...args: TArgs) => T,
   { args, codeDescription }: ExecuteCodeOptions<TArgs> = {},
 ) {
   const evalCode = `(${callback.toString()}).apply(null, ${JSON.stringify(args ?? [])})`;
-  const [result, ex] = await browser.devtools.inspectedWindow.eval(evalCode);
+  const [result, ex] = await evalWrapper(evalCode);
   const { isError, code, description, isException, details, value } = ex || {};
 
   if (isError) {
