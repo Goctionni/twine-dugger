@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 1.7.1
+
+### Patch Changes
+
+- 87d4fb9: Fix chrome API change
+
 ## 1.7.0
 
 ### Minor Changes
