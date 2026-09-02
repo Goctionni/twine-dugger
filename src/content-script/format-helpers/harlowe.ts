@@ -5,13 +5,19 @@ import type {
   HarloweGlobals,
   HarloweGlobalsMacroFramework,
   ObjectValue,
+  PassageData,
   Path,
   Value,
 } from '@/shared/shared-types';
 
 import { getDiffer as getDifferBase } from '../util/differ';
 import { isObj } from '../util/type-helpers';
-import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
+import {
+  deleteFromState,
+  duplicateStateProperty,
+  setState as setStateBase,
+  getPassageData as getPassageDataBase,
+} from './shared';
 import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
@@ -80,7 +86,25 @@ export default {
   processDiffs,
   goToPassage: (passageName) => harlowe().engine.goToPassage(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
+  getPassageData,
 } satisfies FormatHelpers;
+
+function getPassageData(): PassageData[] {
+  const passages = getPassageDataBase();
+  if (passages.length) return passages;
+
+  const passageValues = harlowe().passages?.values?.();
+  if (!passageValues) return passages;
+
+  return [...passageValues].map((map, index): PassageData => ({
+    pid: `${index}`,
+    content: map.get('source')!,
+    name: map.get('name')!,
+    tags: (map.get('tags') as unknown as string[]).join(', '),
+    position: '',
+    size: '',
+  }));
+}
 
 function getPassageEl(passage: FormatPassage) {
   return document.querySelector<HTMLElement>(`tw-storydata tw-passagedata[name="${passage.name}"]`);

@@ -80,12 +80,14 @@ export function ObjectNav(props: Props) {
   );
 
   const getChildren = createMemo(() => {
+    // oxlint-disable-next-line solid/reactivity
     const object = getObject();
     if (!object) return [];
 
     const propertyOrder = getPropertyOrder() ?? getGlobalPropertyOrder();
     const desc = getPropertyOrderDesc() ?? getGlobalPropertyOrderDesc();
     const sorter = createSorter(object, propertyOrder, desc, props.path);
+    // oxlint-disable-next-line solid/reactivity
     const activeFilters = filters();
 
     const rawKeys =
@@ -110,6 +112,7 @@ export function ObjectNav(props: Props) {
         return true;
       })
       .filter(({ text, value }) => {
+        // oxlint-disable-next-line solid/reactivity
         const query = search();
         if (!query) return true;
         if (`${text}`.toLowerCase().includes(query.toLowerCase())) return true;

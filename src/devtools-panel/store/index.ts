@@ -254,6 +254,7 @@ export async function startTrackingFrames() {
             passage: diffPackage.passage,
             changes: diffPackage.diffs,
           };
+          // oxlint-disable-next-line solid/reactivity -- snapshot debounced in createEffect
           const maxFrames = getMaxHistorySlices();
 
           setDiffFrames((cur) => [newFrame, ...cur].slice(0, maxFrames));

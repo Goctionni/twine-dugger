@@ -11,7 +11,6 @@ import {
 import { executeCode } from './remote-execute';
 
 export async function exposeHarloweInternals(): Promise<void> {
-  // First attempt to expose internals by intercepting eval
   if (await executeCode(exposeViaEvalIntercept)) return;
 
   if ('chrome' in globalThis && 'debugger' in globalThis.chrome) {
@@ -67,17 +66,21 @@ declare const Harlowe: any;
 
 function exposeViaEvalIntercept() {
   const exposeCode = `
+    const tryRequire = (mod) => {
+      try {
+        return require(mod);
+      } catch {}
+    };
     window.__HarloweInternals = {
       require,
-      engine: require('engine'),
-      state: require('state'),
-      passages: require('passages'),
-      macros: require('macros'),
-      renderer: require('renderer'),
-      section: require('section'),
-      utils: require('utils'),
+      engine: tryRequire('engine'),
+      state: tryRequire('state'),
+      passages: tryRequire('passages'),
+      macros: tryRequire('macros'),
+      section: tryRequire('section'),
+      utils: tryRequire('utils'),
     };
-  `.replaceAll(/[\r\n\s]/g, '');
+  `.replaceAll(/[\r\n\s]+/g, ' ');
 
   if (typeof Harlowe === 'object' && Harlowe && 'API_ACCESS' in Harlowe) {
     Harlowe.API_ACCESS.SECTION.create().eval({ type: 'string', text: exposeCode });
@@ -99,6 +102,7 @@ function exposeViaEvalIntercept() {
   if ('REPL' in window && typeof window.REPL !== 'function') return false;
 
   const mockCode = 'DUGGERMOCKCODE';
+  // oxlint-disable-next-line no-eval
   let baseEval: undefined | typeof eval = undefined;
   Object.defineProperty(Object.prototype, 'eval', {
     configurable: true,

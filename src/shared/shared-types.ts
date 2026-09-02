@@ -303,6 +303,7 @@ export interface HarloweGlobals {
       clearTreeCache(): void;
       clearStoryletCache(): void;
       clearTagCache?: () => void;
+      values?: () => MapIterator<Map<'source' | 'tags' | 'name', string>>;
     };
   };
 }

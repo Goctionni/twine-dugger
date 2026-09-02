@@ -1,4 +1,6 @@
-import { styleText, type InspectColor } from 'util';
+import { styleText } from 'node:util';
+
+type StyleTextColor = Parameters<typeof styleText>[0] & string;
 
 import { type TsdownBundle } from 'vite-plus/pack';
 
@@ -25,7 +27,7 @@ export function formatSize(bytes: number) {
   return `${(bytes / 1024).toFixed(2)} kB`;
 }
 
-function getFileColor(filename: string): InspectColor {
+function getFileColor(filename: string): StyleTextColor {
   const ext = filename.split('.').at(-1);
   switch (ext) {
     case 'json':

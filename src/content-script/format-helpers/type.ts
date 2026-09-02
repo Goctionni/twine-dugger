@@ -2,6 +2,7 @@ import type {
   Diff,
   FormatPassage,
   ObjectValue,
+  PassageData,
   Path,
   ProcessDiffResult,
   Value,
@@ -24,4 +25,5 @@ export interface FormatHelpers {
   setStatePropertyLocks: (paths: Path[]) => void;
   goToPassage: (passageName: string) => void;
   setPassage: (passage: FormatPassage) => void;
+  getPassageData?: () => PassageData[];
 }

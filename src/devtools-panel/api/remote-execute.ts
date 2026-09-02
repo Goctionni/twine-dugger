@@ -1,35 +1,42 @@
-import browser from 'webextension-polyfill';
+const devtools: typeof chrome.devtools | typeof browser.devtools = globalThis.chrome
+  ? globalThis.chrome.devtools
+  : browser.devtools;
 
 interface ExecuteCodeOptions<TArgs extends unknown[]> {
   args?: TArgs;
   codeDescription?: string;
 }
 
-type EvalResult = Awaited<ReturnType<typeof browser.devtools.inspectedWindow.eval>>;
-type EvalBehavior = 'array' | 'immediate';
+type EvaluationExceptionInfo = Partial<chrome.devtools.inspectedWindow.EvaluationExceptionInfo>;
+type EvalResult = { result: unknown; exceptionInfo?: EvaluationExceptionInfo };
+type EvalBehavior = 'immediate' | 'array';
+
 let _evalBehavior: EvalBehavior | undefined = undefined;
 
-async function getEvalBehavior(): Promise<EvalBehavior> {
-  if (_evalBehavior) return _evalBehavior;
-
-  const testResult = await browser.devtools.inspectedWindow.eval('123');
-  if (Array.isArray(testResult)) _evalBehavior = 'array';
-  else if (testResult === 123) _evalBehavior = 'immediate';
-  else throw new Error('Something broke the compat-layer for the compat layer.');
+async function setEvalBehavior() {
+  if (!_evalBehavior) {
+    const result = await devtools.inspectedWindow.eval('123');
+    _evalBehavior = Array.isArray(result) ? 'array' : 'immediate';
+  }
   return _evalBehavior;
 }
 
 async function evalWrapper(code: string): Promise<EvalResult> {
-  const evalBehavior = await getEvalBehavior();
+  const evalBehavior = await setEvalBehavior();
   if (evalBehavior === 'immediate') {
     try {
-      return [await browser.devtools.inspectedWindow.eval(code)] as unknown as EvalResult;
+      const result = await chrome.devtools.inspectedWindow.eval(code);
+      return { result };
     } catch (ex) {
-      return [undefined, ex] as EvalResult;
+      return { result: undefined, exceptionInfo: ex as EvaluationExceptionInfo };
     }
   }
 
-  return await browser.devtools.inspectedWindow.eval(code);
+  const [result, exceptionInfo] = (await browser.devtools.inspectedWindow.eval(code)) as [
+    unknown,
+    EvaluationExceptionInfo | undefined,
+  ];
+  return { result, exceptionInfo };
 }
 
 export async function executeCode<T, TArgs extends unknown[] = unknown[]>(
@@ -37,25 +44,23 @@ export async function executeCode<T, TArgs extends unknown[] = unknown[]>(
   { args, codeDescription }: ExecuteCodeOptions<TArgs> = {},
 ) {
   const evalCode = `(${callback.toString()}).apply(null, ${JSON.stringify(args ?? [])})`;
-  const [result, ex] = await evalWrapper(evalCode);
-  const { isError, code, description, isException, details, value } = ex || {};
+  const { result, exceptionInfo } = await evalWrapper(evalCode);
 
-  if (isError) {
+  if (exceptionInfo?.isError) {
     console.error('[executeCode]: Error occured before code could execute', {
+      ...exceptionInfo,
       codeDescription,
-      code,
-      description,
     });
     return null;
   }
-  if (isException) {
+  if (exceptionInfo?.isException) {
     console.error('[executeCode]: Error occured executing code', {
+      ...exceptionInfo,
       codeDescription,
-      details,
-      value,
     });
     return null;
   }
+
   return result as T;
 }
 
@@ -78,7 +83,7 @@ export async function injectContentScript() {
     { args: [scriptUrl], codeDescription: 'Inject content-script.js' },
   );
 
-  for (const timeout = Date.now() + injectTestTimeout; ; ) {
+  for (const timeout = Date.now() + injectTestTimeout; ;) {
     if (await isInjected()) return;
     if (Date.now() >= timeout) {
       return console.error(

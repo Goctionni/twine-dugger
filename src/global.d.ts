@@ -1,3 +1,5 @@
+import '@types/firefox-webext-browser';
+import '@types/chrome';
 import type {
   FormatPassage,
   ObjectValue,

@@ -63,7 +63,7 @@ function init() {
     duplicateStateProperty: formatHelper.duplicateStateProperty,
     setStatePropertyLock: formatHelper.setStatePropertyLock,
     setStatePropertyLocks: formatHelper.setStatePropertyLocks,
-    getPassageData,
+    getPassageData: formatHelper.getPassageData ?? getPassageData,
     goToPassage: formatHelper.goToPassage,
     setPassage: formatHelper.setPassage,
   };

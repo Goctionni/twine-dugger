@@ -106,6 +106,7 @@ export function Code(props: PassageCodeProps) {
     const onSave = props.onSave;
     if (!autoSave() || !onSave) return;
 
+    // oxlint-disable-next-line solid/reactivity -- snapshot debounced in createEffect
     const code = localCode();
     const savedCode = untrack(() => props.code);
     if (code === savedCode) return;

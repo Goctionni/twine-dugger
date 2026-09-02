@@ -61,7 +61,7 @@ async function buildExtra() {
     // create-panel.js
     buildLib({
       entry: { 'create-panel': 'src/create-panel/create-panel.ts' },
-      deps: { onlyBundle: false, alwaysBundle: 'webextension-polyfill' },
+      deps: { onlyBundle: false },
     }),
     // content-script.js
     buildLib({

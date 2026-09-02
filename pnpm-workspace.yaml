@@ -1,17 +1,11 @@
 allowBuilds:
-  esbuild: false
+  esbuild: true
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-  vite-plus: latest
+  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
+  vite-plus: 0.2.9
 minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@types/chrome@0.2.8'
+  - '@testing-library/user-event@14.6.7'
 overrides:
   vite: 'catalog:'
-  vitest: 'catalog:'
-peerDependencyRules:
-  allowAny:
-    - vite
-    - vitest
-  allowedVersions:
-    vite: '*'
-    vitest: '*'
