@@ -8,35 +8,22 @@ interface ExecuteCodeOptions<TArgs extends unknown[]> {
 }
 
 type EvaluationExceptionInfo = Partial<chrome.devtools.inspectedWindow.EvaluationExceptionInfo>;
-type EvalResult = { result: unknown; exceptionInfo?: EvaluationExceptionInfo };
 type EvalBehavior = 'immediate' | 'array';
 
-let _evalBehavior: EvalBehavior | undefined = undefined;
+let evalBehavior: EvalBehavior | undefined = undefined;
+const getEvalBehavior = () =>
+  devtools.inspectedWindow.eval('123').then((res) => (Array.isArray(res) ? 'array' : 'immediate'));
 
-async function setEvalBehavior() {
-  if (!_evalBehavior) {
-    const result = await devtools.inspectedWindow.eval('123');
-    _evalBehavior = Array.isArray(result) ? 'array' : 'immediate';
-  }
-  return _evalBehavior;
-}
+async function evalWrapper<T>(code: string): Promise<T> {
+  evalBehavior ??= await getEvalBehavior();
+  if (evalBehavior === 'immediate') return chrome.devtools.inspectedWindow.eval<T>(code);
 
-async function evalWrapper(code: string): Promise<EvalResult> {
-  const evalBehavior = await setEvalBehavior();
-  if (evalBehavior === 'immediate') {
-    try {
-      const result = await chrome.devtools.inspectedWindow.eval(code);
-      return { result };
-    } catch (ex) {
-      return { result: undefined, exceptionInfo: ex as EvaluationExceptionInfo };
-    }
-  }
+  const [result, exceptionInfo] = (await browser.devtools.inspectedWindow.eval(code)) as
+    | [T, undefined]
+    | [undefined, EvaluationExceptionInfo];
 
-  const [result, exceptionInfo] = (await browser.devtools.inspectedWindow.eval(code)) as [
-    unknown,
-    EvaluationExceptionInfo | undefined,
-  ];
-  return { result, exceptionInfo };
+  if (result) return result;
+  throw exceptionInfo;
 }
 
 export async function executeCode<T, TArgs extends unknown[] = unknown[]>(
@@ -44,24 +31,14 @@ export async function executeCode<T, TArgs extends unknown[] = unknown[]>(
   { args, codeDescription }: ExecuteCodeOptions<TArgs> = {},
 ) {
   const evalCode = `(${callback.toString()}).apply(null, ${JSON.stringify(args ?? [])})`;
-  const { result, exceptionInfo } = await evalWrapper(evalCode);
-
-  if (exceptionInfo?.isError) {
-    console.error('[executeCode]: Error occured before code could execute', {
-      ...exceptionInfo,
-      codeDescription,
-    });
+  try {
+    return evalWrapper<T>(evalCode);
+  } catch (ex) {
+    const exceptionInfo = ex as EvaluationExceptionInfo;
+    const msg = `[executeCode]: ${exceptionInfo?.isError ? 'Error occured before code could execute' : 'Error occured executing code'}`;
+    console.error(msg, { ...exceptionInfo, codeDescription });
     return null;
   }
-  if (exceptionInfo?.isException) {
-    console.error('[executeCode]: Error occured executing code', {
-      ...exceptionInfo,
-      codeDescription,
-    });
-    return null;
-  }
-
-  return result as T;
 }
 
 const injectTestInterval = 50; // 50ms
