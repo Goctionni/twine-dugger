@@ -1,6 +1,7 @@
 import type { Accessor } from 'solid-js';
 import { batch, createEffect, createMemo, createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
+import { create as createDiffer } from 'jsondiffpatch';
 
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
 import type {
@@ -27,6 +28,8 @@ import { applyDiffsToState } from './apply-diffs';
 const LS_PREFIX = 'twine-dugger-';
 const getGameSettingsKey = (ifId: string) => `${LS_PREFIX}${ifId}`;
 const getGlobalSettingsKey = () => `${LS_PREFIX}settings`;
+
+const differ = createDiffer();
 
 interface GameConfig {
   lockedPaths: Path[];
@@ -246,14 +249,7 @@ export async function startTrackingFrames() {
       const timestamp = new Date();
       const updates = await getUpdates();
       if (updates) {
-        const { diffPackage, locksUpdate } = updates;
-        if (locksUpdate) setStore('gameConfig', 'lockedPaths', locksUpdate);
-        if (diffPackage?.diffs.length) {
-          const newFrame: DiffFrame = {
-            timestamp,
-            passage: diffPackage.passage,
-            changes: diffPackage.diffs,
-          };
+        
           // oxlint-disable-next-line solid/reactivity -- snapshot debounced in createEffect
           const maxFrames = getMaxHistorySlices();
 

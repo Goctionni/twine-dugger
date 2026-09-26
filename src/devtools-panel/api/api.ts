@@ -1,4 +1,3 @@
-import { jsonReviver } from '@/shared/json-helper';
 import type { FormatPassage, Path } from '@/shared/shared-types';
 
 import { executeCode, injectContentScript } from './remote-execute';
@@ -12,10 +11,7 @@ export async function getState() {
   await injectContentScript();
   return executeCode(() => {
     if (!('TwineDugger' in window)) return null;
-    return JSON.stringify(window.TwineDugger.getState(), window.TwineDugger.utils.jsonReplacer);
-  }).then((jsonStr) => {
-    if (typeof jsonStr !== 'string') return jsonStr;
-    return JSON.parse(jsonStr, jsonReviver) as ReturnType<Window['TwineDugger']['getState']>;
+    return window.TwineDugger.getState();
   });
 }
 
@@ -23,10 +19,7 @@ export async function getUpdates() {
   await injectContentScript();
   return executeCode(() => {
     if (!('TwineDugger' in window)) return null;
-    return JSON.stringify(window.TwineDugger.getUpdates(), window.TwineDugger.utils.jsonReplacer);
-  }).then((jsonStr) => {
-    if (typeof jsonStr !== 'string') return jsonStr;
-    return JSON.parse(jsonStr, jsonReviver) as ReturnType<Window['TwineDugger']['getUpdates']>;
+    return window.TwineDugger.getUpdates();
   });
 }
 

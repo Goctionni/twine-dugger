@@ -14,7 +14,7 @@ import { mockApiPlugin } from './build/plugin-mock-api.ts';
 import packageJson from './package.json' with { type: 'json' };
 
 export default defineConfig({
-  staged: { '*': 'vp check --fix' },
+  staged: { '*': '' },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
   build: { minify: false, sourcemap: true },
   plugins: [

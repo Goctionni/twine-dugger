@@ -1,7 +1,11 @@
 import '@types/firefox-webext-browser';
 import '@types/chrome';
+import type { Delta } from 'jsondiffpatch';
+
 import type {
   FormatPassage,
+  JSONSafeObject,
+  JSONSafeValue,
   ObjectValue,
   PassageData,
   Path,
@@ -24,8 +28,8 @@ declare global {
   interface Window {
     TwineDugger: {
       getPassageData: () => PassageData[];
-      getUpdates: () => UpdateResult;
-      getState: () => { passage: string; state: ObjectValue };
+      getUpdates: () => Delta;
+      getState: () => { passage: string; state: JSONSafeObject };
       setState: (path: Path, value: unknown) => void;
       deleteFromState: (path: Path) => void;
       duplicateStateProperty: (
@@ -37,10 +41,6 @@ declare global {
       setStatePropertyLocks: (paths: Path[]) => void;
       goToPassage: (passageName: string) => void;
       setPassage: (passage: FormatPassage) => void;
-      utils: {
-        jsonReplacer(key: string, value: any): any;
-        jsonReviver(key: string, value: any): any;
-      };
     };
   }
   interface ErrorConstructor {

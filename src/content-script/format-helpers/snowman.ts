@@ -2,7 +2,6 @@ import { type } from 'arktype';
 
 import type { FormatPassage, Path, SnowmanGlobals } from '@/shared/shared-types';
 
-import { getDiffer as getDifferBase } from '../util/differ';
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
 import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
@@ -36,7 +35,6 @@ const setState = (path: Path, value: unknown) => setStateBase(getState(), path, 
 const { processDiffs, setPathLock } = createPropertyLocker(getState, setState);
 
 export default {
-  getDiffer: () => getDifferBase(),
   detect: () =>
     snowmanSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata'),
   getState,

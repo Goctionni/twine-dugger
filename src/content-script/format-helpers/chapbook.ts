@@ -2,7 +2,6 @@ import { type } from 'arktype';
 
 import type { ChapbookGlobals, FormatPassage, Path, Value } from '@/shared/shared-types';
 
-import { getDiffer as getDifferBase } from '../util/differ';
 import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
@@ -33,7 +32,6 @@ const setState = (path: Path, value: unknown) => chapbook().engine.state.set(pat
 const { processDiffs, setPathLock } = createPropertyLocker(getState, setState);
 
 export default {
-  getDiffer: () => getDifferBase(),
   detect: () =>
     chapbookSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata'),
   getState,

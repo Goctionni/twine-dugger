@@ -1,6 +1,7 @@
-import { copy } from '@/shared/copy';
-import { jsonReplacer, jsonReviver } from '@/shared/json-helper';
-import type { UpdateResult } from '@/shared/shared-types';
+import type { Delta } from 'jsondiffpatch';
+import { create as createDiffer } from 'jsondiffpatch';
+
+import { getObjectId, setupIdentityHasher } from '@/shared/id-helper';
 
 import chapbookHelpers from './format-helpers/chapbook';
 import harloweHelpers from './format-helpers/harlowe';
@@ -8,6 +9,7 @@ import { getPassageData } from './format-helpers/shared';
 import snowmanHelpers from './format-helpers/snowman';
 import sugarcubeHelpers from './format-helpers/sugarcube';
 import type { FormatHelpers } from './format-helpers/type';
+import { pretransformState } from './util/pre-transform';
 
 const formatHelpers: FormatHelpers[] = [
   sugarcubeHelpers,
@@ -20,43 +22,33 @@ function init() {
   const formatHelper = formatHelpers.find((helper) => helper.detect());
   if (!formatHelper) return;
 
-  const differ = formatHelper.getDiffer();
-  let lastState = copy(formatHelper.getState(false));
+  const { getObjectHash, setIdentitySources } = setupIdentityHasher();
+
+  const differ = createDiffer({
+    objectHash: (item, index) => getObjectHash(item) ?? getObjectId(item) ?? `$$index:${index}`,
+    arrays: { detectMove: true, includeValueOnMove: false },
+  });
+
+  let [oldState, , oldIdentityLookup] = pretransformState(formatHelper.getState());
+
   window.TwineDugger = {
-    utils: {
-      jsonReplacer,
-      jsonReviver,
-    },
     getState: () => ({
       passage: formatHelper.getPassage(),
-      state: formatHelper.getState(true),
+      state: oldState,
     }),
-    getUpdates: (): UpdateResult => {
-      let updates: UpdateResult = { diffPackage: null, locksUpdate: null };
-      const newState = formatHelper.getState(false);
-      let diffs = differ(lastState, newState);
+    getUpdates: (): Delta => {
+      const [newState, newIdentityCache, newIdentityLookup] = pretransformState(
+        formatHelper.getState(),
+      );
+      setIdentitySources({ oldIdentityLookup: oldIdentityLookup, newIdentityCache });
 
-      // If there are no diffs, return an empty response
-      if (!diffs.length) return updates;
+      const delta = differ.diff(oldState, newState);
+      oldState = newState;
+      oldIdentityLookup = newIdentityLookup;
 
-      // Process diffs or fallback to noop function
-      const processDiffs = formatHelper.processDiffs ?? (() => ({ diffs, locksUpdate: null }));
-      const result = processDiffs(diffs);
+      // TODO: Add locks back in
 
-      // Create a copy of the state
-      lastState = copy(newState);
-
-      if (result.diffs.length) {
-        updates.diffPackage = {
-          passage: formatHelper.getPassage(),
-          diffs: result.diffs,
-        };
-      }
-      if (result.locksUpdate) {
-        updates.locksUpdate = result.locksUpdate;
-      }
-
-      return updates;
+      return delta;
     },
     setState: formatHelper.setState,
     deleteFromState: formatHelper.deleteFromState,

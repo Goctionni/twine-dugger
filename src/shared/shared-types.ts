@@ -12,6 +12,10 @@ export type Value =
   | Map<string | number, Value>
   | Function;
 
+export type JSONSafeValue = Primitive | JSONSafeValue[] | { [key: string]: JSONSafeValue };
+export type JSONSafeArray = JSONSafeValue[];
+export type JSONSafeObject = { [key: string]: JSONSafeValue };
+
 export type ObjectValue = { [key: string]: Value };
 
 export type ArrayValue = Value[];
@@ -74,16 +78,6 @@ export type ProcessDiffResult = {
   locksUpdate: Path[] | null;
 };
 
-type DiffPackage = {
-  passage: string;
-  diffs: Diff[];
-};
-
-export type UpdateResult = {
-  diffPackage: DiffPackage | null;
-  locksUpdate: Path[] | null;
-};
-
 export type ValueType =
   | 'other'
   | 'null'
@@ -120,7 +114,7 @@ export interface DiffFrame {
 export interface StateFrame {
   id: number;
   diffingFrame?: DiffFrame;
-  state: ObjectValue;
+  state: JSONSafeObject;
 }
 
 export type LockStatus = 'locked' | 'ancestor-lock' | 'unlocked';
