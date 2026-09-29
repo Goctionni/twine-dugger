@@ -1,4 +1,4 @@
-import { Index, Match, Show, Switch } from 'solid-js';
+import { Index, Match, Show, Switch, For } from 'solid-js';
 
 import type { Path, Value } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
@@ -19,7 +19,7 @@ export function StateContainerInput<TKey extends string | number>(
 ) {
   return (
     <div class="grid auto-rows-fr grid-cols-[20px_auto_1fr] items-center gap-2 px-3 py-2">
-      <Index each={props.keys}>
+      <For each={props.keys} keyed={false}>
         {(key) => {
           const value = () => props.getKeyValue(key());
           const type = () => getSpecificType(value());
@@ -45,7 +45,7 @@ export function StateContainerInput<TKey extends string | number>(
             </Show>
           );
         }}
-      </Index>
+      </For>
     </div>
   );
 }

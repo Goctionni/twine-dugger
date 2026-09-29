@@ -2,7 +2,7 @@ import { createMemo, For, Match, Show, Switch } from 'solid-js';
 
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 
-import { createGetViewState, setViewState } from '../../store';
+import { createGetViewState, setViewState } from '../../store/store';
 import { createSearchResults } from './create-searchResults';
 import { PassageResults } from './PassageResults';
 import { StateResults } from './StateResults';

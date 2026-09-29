@@ -1,4 +1,4 @@
-import { createGetSetting, setSetting } from '@/devtools-panel/store';
+import { createGetSetting, setSetting } from '@/devtools-panel/store/store';
 import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
 import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
 

@@ -6,7 +6,7 @@ import {
   getPassageData,
   setNavigationPage,
   setViewState,
-} from '@/devtools-panel/store';
+} from '@/devtools-panel/store/store';
 import type { DiffFrame as TDiffFrame, ParsedPassageData } from '@/shared/shared-types';
 
 import { DiffItem } from './Diff';

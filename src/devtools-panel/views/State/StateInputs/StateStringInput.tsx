@@ -7,7 +7,7 @@ import {
   getActiveState,
   getLockedPaths,
   removeLockPath,
-} from '@/devtools-panel/store';
+} from '@/devtools-panel/store/store';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
 import { StringInput } from '@/devtools-panel/ui/inputs/StringInput';

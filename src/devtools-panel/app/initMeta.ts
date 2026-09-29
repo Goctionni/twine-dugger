@@ -1,7 +1,7 @@
 import type { GameMetaData } from '@/shared/shared-types';
 
 import { getGameMetaData } from '../api/api';
-import { setCandidateIframes, setConnectionState, setGameMetaData } from '../store';
+import { setCandidateIframes, setConnectionState, setGameMetaData } from '../store/store';
 
 export function initMeta() {
   setConnectionState('loading-meta');

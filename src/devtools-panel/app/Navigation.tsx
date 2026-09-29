@@ -3,7 +3,7 @@ import { For, onCleanup } from 'solid-js';
 
 import type { Page } from '@/shared/shared-types';
 
-import { getNavigationPage, setNavigationPage } from '../store';
+import { getNavigationPage, setNavigationPage } from '../store/store';
 
 interface NavItem {
   id: Page;

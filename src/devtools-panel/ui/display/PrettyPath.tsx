@@ -2,7 +2,7 @@ import type { JSX } from 'solid-js';
 import { createMemo, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 
-import { getActiveState } from '@/devtools-panel/store';
+import { getActiveState } from '@/devtools-panel/store/store';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
 import type { Path } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';

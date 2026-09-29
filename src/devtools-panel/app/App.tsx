@@ -1,4 +1,4 @@
-import { Index, Match, Switch } from 'solid-js';
+import { For, Match, Switch } from 'solid-js';
 
 import { exposeHarloweInternals } from '../api/expose-harlowe-internals';
 import { PassagesPage } from '../pages/PassagesPage';
@@ -10,7 +10,7 @@ import {
   getGameMetaData,
   getNavigationPage,
   startTrackingFrames,
-} from '../store';
+} from '../store/store';
 import { TooltipOutlet } from '../ui/display/TooltipOutlet';
 import { ContextMenuUI } from '../ui/util/ContextMenu';
 import { PromptDialogOutlet } from '../ui/util/Prompt';
@@ -60,7 +60,7 @@ export function App() {
           </Match>
           <Match when={state() === 'incompatible'}>
             <div class="m-auto max-w-2xl">
-              <Index each={getGameMetaData()?.incompatible ?? []}>
+              <For each={getGameMetaData()?.incompatible ?? []} keyed={false}>
                 {(msg, index) =>
                   index === 0 ? (
                     <h3 class="mb-1 text-lg font-bold text-gray-100">{msg()}</h3>
@@ -68,7 +68,7 @@ export function App() {
                     <p>{msg()}</p>
                   )
                 }
-              </Index>
+              </For>
             </div>
             <span class="m-auto">{}</span>
           </Match>

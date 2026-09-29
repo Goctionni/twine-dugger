@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { setStatePropertyLock, setStatePropertyLocks } from '@/devtools-panel/api/api';
-import { clearLockPaths, getLockedPaths, removeLockPath } from '@/devtools-panel/store';
+import { clearLockPaths, getLockedPaths, removeLockPath } from '@/devtools-panel/store/store';
 
 import { LockSettings } from './LockSettings';
 

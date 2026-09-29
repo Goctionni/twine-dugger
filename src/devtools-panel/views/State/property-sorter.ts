@@ -1,4 +1,4 @@
-import { getDiffFrames } from '@/devtools-panel/store';
+import { getDiffFrames } from '@/devtools-panel/store/store';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
 import { pathStartsWith } from '@/shared/path-equals';
 import type { ContainerValue, Path, PropertyOrder } from '@/shared/shared-types';

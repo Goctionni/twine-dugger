@@ -1,6 +1,11 @@
 import { createMemo, For } from 'solid-js';
 
-import { clearDiffFrames, clearFilteredPaths, getDiffFrames, isPathFiltered } from '../../store';
+import {
+  clearDiffFrames,
+  clearFilteredPaths,
+  getDiffFrames,
+  isPathFiltered,
+} from '../../store/store';
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 import { DiffFrame } from './DiffFrame';
 

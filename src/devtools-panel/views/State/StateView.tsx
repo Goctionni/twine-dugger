@@ -1,6 +1,6 @@
-import { createMemo, Index } from 'solid-js';
+import { createMemo, For } from 'solid-js';
 
-import { createGetViewState, getActiveState } from '@/devtools-panel/store';
+import { createGetViewState, getActiveState } from '@/devtools-panel/store/store';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
 
 import { ObjectNav } from './ObjectNav';
@@ -25,9 +25,9 @@ export function StateView() {
 
   return (
     <div class="flex h-[calc(100%-3rem)] py-1">
-      <Index each={getNavLayers()}>
+      <For each={getNavLayers()} keyed={false}>
         {(layer) => <ObjectNav path={layer().path} selectedProperty={layer().selectedProperty} />}
-      </Index>
+      </For>
       <ValueView />
     </div>
   );

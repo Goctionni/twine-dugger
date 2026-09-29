@@ -5,7 +5,7 @@ import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import type { Path, SearchResultState } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
-import { setNavigationPage, setViewState } from '../../store';
+import { setNavigationPage, setViewState } from '../../store/store';
 import { PrettyPath } from '../../ui/display/PrettyPath';
 import { getPersistedValue, setPersistedValue } from '../../ui/util/persistedValue';
 import { StateBooleanInput } from '../State/StateInputs/StateBooleanInput';

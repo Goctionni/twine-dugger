@@ -6,7 +6,7 @@ import {
   getLatestStateFrame,
   getNavigationPage,
   getPassageData,
-} from '@/devtools-panel/store';
+} from '@/devtools-panel/store/store';
 import type { SearchResultsCombined } from '@/shared/shared-types';
 
 import { findPassageMatches, findStateMatches } from './search-utils';

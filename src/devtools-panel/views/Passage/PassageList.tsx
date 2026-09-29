@@ -1,7 +1,7 @@
 import { createVirtualizer } from '@tanstack/solid-virtual';
 import { createEffect, For, onCleanup, Show, untrack } from 'solid-js';
 
-import { reloadPassagesData } from '@/devtools-panel/store';
+import { reloadPassagesData } from '@/devtools-panel/store/store';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { virtualizerScrollToFn } from '@/devtools-panel/utils/virtualizer-scrollto';
 import type { ParsedPassageData } from '@/shared/shared-types';

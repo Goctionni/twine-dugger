@@ -12,7 +12,7 @@ import type {
   Value,
 } from '@/shared/shared-types';
 
-import { addFilteredPath, setViewState } from '../../store';
+import { addFilteredPath, setViewState } from '../../store/store';
 import { DiffPath } from './DiffPath';
 import { MutationBadge } from './MutationBadge';
 import { RenderValue } from './RenderValue';

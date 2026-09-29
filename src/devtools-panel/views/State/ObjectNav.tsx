@@ -12,7 +12,7 @@ import {
   isPathFiltered,
   removeLockPath,
   setViewState,
-} from '@/devtools-panel/store';
+} from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { tooltip } from '@/devtools-panel/ui/display/TooltipDirective';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';

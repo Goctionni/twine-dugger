@@ -1,4 +1,4 @@
-import { createGetViewState, setViewState } from '../../store';
+import { createGetViewState, setViewState } from '../../store/store';
 import { StringInput } from '../../ui/inputs/StringInput';
 
 export function SearchInput() {

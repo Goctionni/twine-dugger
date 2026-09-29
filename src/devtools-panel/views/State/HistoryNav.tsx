@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { createMemo, For } from 'solid-js';
 
-import { createGetViewState, getHistoryIds, setViewState } from '../../store';
+import { createGetViewState, getHistoryIds, setViewState } from '../../store/store';
 
 interface HistoryNode {
   text: string;

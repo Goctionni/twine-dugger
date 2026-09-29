@@ -3,12 +3,18 @@
   "compilerOptions": {
     "composite": true,
     "jsx": "preserve",
-    "jsxImportSource": "solid-js",
+    "jsxImportSource": "@solidjs/web",
     "lib": ["ESNext", "DOM"],
     "types": ["chrome", "solid-js"],
     "paths": { "@/*": ["./src/*"] }
   },
   "files": ["src/global.d.ts"],
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "dist", "dist-ff", "src/**/*.test.ts", "src/**/*.test.tsx"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-ff",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx"
+  ]
 }

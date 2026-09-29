@@ -6,7 +6,7 @@ import { getObjectPathValue } from '@/shared/get-object-path-value';
 import type { Path } from '@/shared/shared-types';
 import { getSpecificType } from '@/shared/type-helpers';
 
-import { getActiveState } from '../../../store';
+import { getActiveState } from '../../../store/store';
 
 const inputClasses =
   'block px-2 py-1 bg-gray-700 border border-gray-600 text-sm shadow-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500';

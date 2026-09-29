@@ -1,6 +1,10 @@
 import { createMemo, For, Show } from 'solid-js';
 
-import { clearFilteredPaths, getFilteredPaths, removeFilteredPath } from '@/devtools-panel/store';
+import {
+  clearFilteredPaths,
+  getFilteredPaths,
+  removeFilteredPath,
+} from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { sortPaths } from '@/shared/path-sorter';
 

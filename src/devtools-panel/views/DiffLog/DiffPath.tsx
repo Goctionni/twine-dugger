@@ -1,4 +1,4 @@
-import { isPathFiltered } from '@/devtools-panel/store';
+import { isPathFiltered } from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import type { Path } from '@/shared/shared-types';
 

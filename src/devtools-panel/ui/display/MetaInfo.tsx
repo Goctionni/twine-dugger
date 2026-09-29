@@ -1,4 +1,4 @@
-import { getGameMetaData } from '../../store';
+import { getGameMetaData } from '../../store/store';
 
 export function MetaInfo() {
   return (

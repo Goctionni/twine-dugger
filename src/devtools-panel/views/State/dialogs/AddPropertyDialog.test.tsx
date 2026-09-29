@@ -2,7 +2,7 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { getActiveState } from '../../../store';
+import { getActiveState } from '../../../store/store';
 import { AddPropertyDialog } from './AddPropertyDialog';
 
 vi.mock('../../../store', () => ({ getActiveState: vi.fn<() => unknown>() }));

@@ -6,7 +6,12 @@ import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { createGetViewState, getGameMetaData, setPassageData, setViewState } from '../../store';
+import {
+  createGetViewState,
+  getGameMetaData,
+  setPassageData,
+  setViewState,
+} from '../../store/store';
 import { PassageHeader } from '../Passage/PassageHeader';
 import { PassageListItem } from '../Passage/PassageListItem';
 

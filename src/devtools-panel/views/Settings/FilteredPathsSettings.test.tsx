@@ -2,7 +2,7 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { clearFilteredPaths, removeFilteredPath } from '@/devtools-panel/store';
+import { clearFilteredPaths, removeFilteredPath } from '@/devtools-panel/store/store';
 
 import { FilteredPathsSettings } from './FilteredPathsSettings';
 
