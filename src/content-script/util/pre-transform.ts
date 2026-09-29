@@ -1,4 +1,5 @@
 import type { IdentityCache, IdentityLookup } from '@/shared/id-helper';
+import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
 import type {
   ArrayValue,
   ContainerValue,
@@ -12,9 +13,19 @@ import type {
   Value,
 } from '@/shared/shared-types';
 
-export const TYPE_KEY = '__twinedugger-type' as const;
+// Harlowe keeps its own bookkeeping in properties prefixed with "TwineScript_", on the state itself
+// and on the objects it stores in it. Those are not part of the game's state, so they are left out
+// (for every format: a property with that name in another format is collateral).
+const INTERNAL_PREFIX = 'TwineScript_';
 
-// TODO: dont copy properties prefixed with "TwineScript_"
+function isInternal(key: string, value: Value) {
+  if (key.startsWith(INTERNAL_PREFIX)) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  for (const valueKey in value) {
+    if (valueKey.startsWith(INTERNAL_PREFIX)) return true;
+  }
+  return false;
+}
 
 export function pretransformState(
   state: ObjectValue,
@@ -98,6 +109,7 @@ function pretransformMap(
 ): JSONSafeObject {
   const copy: JSONSafeObject = { [TYPE_KEY]: 'Map' };
   for (const [k, v] of map) {
+    if (isInternal(String(k), v)) continue;
     copy[String(k)] = pretransformValue(v, identityCache, identityRegistry);
   }
   return copy;
@@ -109,7 +121,7 @@ function pretransformSet(
   identityRegistry: IdentityLookup,
 ): JSONSafeArray {
   const copy: JSONSafeArray = new Array(set.size + 1);
-  copy[0] = `${TYPE_KEY}: Set`;
+  copy[0] = SET_MARKER;
   let i = 1;
   for (const value of set) {
     copy[i++] = pretransformValue(value, identityCache, identityRegistry);
@@ -127,6 +139,7 @@ function pretransformObject(
   const len = keys.length;
   for (let i = 0; i < len; i++) {
     const key = keys[i]!;
+    if (isInternal(key, object[key])) continue;
     copy[key] = pretransformValue(object[key], identityCache, identityRegistry);
   }
   return copy;

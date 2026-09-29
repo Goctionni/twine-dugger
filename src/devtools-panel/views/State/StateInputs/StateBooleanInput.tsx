@@ -14,6 +14,7 @@ import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
 import type { Path } from '@/shared/shared-types';
 
+import { isPathEditable } from '../editable';
 import { getLockStatus } from '../lock-helper';
 
 interface StateBooleanInputProps {
@@ -21,7 +22,7 @@ interface StateBooleanInputProps {
 }
 
 export function StateBooleanInput(props: StateBooleanInputProps) {
-  const getHistoryId = createGetViewState('state', 'historyId');
+  const getHistoryRef = createGetViewState('state', 'historyRef');
 
   const currentValue = () => {
     const activeState = getActiveState();
@@ -31,9 +32,10 @@ export function StateBooleanInput(props: StateBooleanInputProps) {
   };
 
   const getPath = () => props.path;
-  const isReadOnly = () => getHistoryId() !== -1; // Not on latest
+  const isReadOnly = () => getHistoryRef() !== 'latest';
   const lockStatus = () => getLockStatus(getPath, getLockedPaths);
-  const isDisabled = () => lockStatus() !== 'unlocked' || isReadOnly();
+  const isDisabled = () =>
+    lockStatus() !== 'unlocked' || isReadOnly() || !isPathEditable(props.path);
   const getId = () =>
     getPath()
       .join('_')

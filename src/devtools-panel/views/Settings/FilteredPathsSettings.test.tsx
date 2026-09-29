@@ -6,7 +6,7 @@ import { clearFilteredPaths, removeFilteredPath } from '@/devtools-panel/store/s
 
 import { FilteredPathsSettings } from './FilteredPathsSettings';
 
-vi.mock('@/devtools-panel/store', () => ({
+vi.mock('@/devtools-panel/store/store', () => ({
   getFilteredPaths: vi.fn(() => [
     ['state', 'z', 'score'],
     ['state', 'a', 'name'],

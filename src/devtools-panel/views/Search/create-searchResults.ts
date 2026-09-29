@@ -1,14 +1,15 @@
-import { createScheduled, scheduleIdle } from '@solid-primitives/scheduled';
-import { createEffect, createSignal } from 'solid-js';
+import { createEffect, createSignal, snapshot } from 'solid-js';
 
 import {
   createGetViewState,
-  getLatestStateFrame,
+  getLatestId,
+  getLatestState,
   getNavigationPage,
   getPassageData,
 } from '@/devtools-panel/store/store';
 import type { SearchResultsCombined } from '@/shared/shared-types';
 
+import { createScheduled, scheduleIdle } from '../../utils/scheduled';
 import { findPassageMatches, findStateMatches } from './search-utils';
 
 type AbortFn = () => void;
@@ -20,40 +21,45 @@ export function createSearchResults() {
 
   const [getSearchResults, setSearchResults] = createSignal<SearchResultsCombined>(EMPTY);
 
-  createEffect((abortPrev: null | AbortFn) => {
-    if (abortPrev) abortPrev();
+  createEffect(
+    () => ({
+      page: getNavigationPage(),
+      query: getQuery(),
+      shouldRunSearch: scheduleSearch(),
+      passages: getPassageData(),
+      // The state itself is read when searching; a new diff is what makes the search stale
+      stateId: getLatestId(),
+    }),
+    ({ page, query, shouldRunSearch, passages }): AbortFn | undefined => {
+      // If we're not looking at the search results tab, dont both updating
+      if (page !== 'search') return;
 
-    // If we're not looking at the search results tab, dont both updating
-    if (getNavigationPage() !== 'search') return null;
+      if (!query) {
+        setSearchResults(EMPTY);
+        return;
+      }
+      if (!shouldRunSearch) return;
 
-    const query = getQuery();
-    const shouldRunSearch = scheduleSearch();
-    const gameState = getLatestStateFrame();
-    if (!query || !gameState) {
-      setSearchResults(EMPTY);
-      return null;
-    }
-    if (!shouldRunSearch) return null;
+      const [statePromise, stateAbort] = findStateMatches(snapshot(getLatestState()), query);
+      const [passagePromise, passageAbort] = findPassageMatches(passages, query);
 
-    const [statePromise, stateAbort] = findStateMatches(gameState.state, query);
-    const [passagePromise, passageAbort] = findPassageMatches(getPassageData(), query);
+      let alive = true;
+      const abortCurr = () => {
+        alive = false;
+        stateAbort();
+        passageAbort('Updated search');
+      };
 
-    let alive = true;
-    const abortCurr = () => {
-      alive = false;
-      stateAbort();
-      passageAbort('Updated search');
-    };
+      Promise.all([statePromise, passagePromise])
+        .then(([state, passage]) => {
+          if (!alive) return;
+          setSearchResults({ state, passage });
+        })
+        .catch(() => {});
 
-    Promise.all([statePromise, passagePromise])
-      .then(([state, passage]) => {
-        if (!alive) return;
-        setSearchResults({ state, passage });
-      })
-      .catch(() => {});
-
-    return abortCurr;
-  }, null);
+      return abortCurr;
+    },
+  );
 
   return getSearchResults;
 }

@@ -7,7 +7,7 @@ import { clearLockPaths, getLockedPaths, removeLockPath } from '@/devtools-panel
 
 import { LockSettings } from './LockSettings';
 
-vi.mock('@/devtools-panel/store', () => ({
+vi.mock('@/devtools-panel/store/store', () => ({
   getLockedPaths: vi.fn(() => [
     ['state', 'z', 'score'],
     ['state', 'a', 'name'],
@@ -58,6 +58,8 @@ describe('LockSettings', () => {
     vi.mocked(getLockedPaths).mockReturnValue([]);
     render(() => <LockSettings />);
 
-    expect(screen.getByRole('button', { name: 'Clear all' })).toBeDisabled();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Clear all' }).disabled).toBe(
+      true,
+    );
   });
 });

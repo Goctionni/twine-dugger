@@ -1,9 +1,8 @@
-import { createVirtualizer } from '@tanstack/solid-virtual';
-import { createSignal, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js';
+import { createSignal, For, Match, onSettled, Switch } from 'solid-js';
 
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
+import { getJsonType } from '@/shared/json-safe';
 import type { Path, SearchResultState } from '@/shared/shared-types';
-import { getSpecificType } from '@/shared/type-helpers';
 
 import { setNavigationPage, setViewState } from '../../store/store';
 import { PrettyPath } from '../../ui/display/PrettyPath';
@@ -24,16 +23,6 @@ export function StateResults(props: Props) {
     setNavigationPage('state');
     setViewState('state', 'path', [...path]);
   };
-
-  let scrollElRef: HTMLDivElement | undefined;
-  const virtualizer = createVirtualizer({
-    getScrollElement: () => scrollElRef ?? null,
-    estimateSize: () => 38,
-    get count() {
-      return props.results.length;
-    },
-    overscan: 5,
-  });
 
   const [isDragging, setIsDragging] = createSignal(false);
   let containerRef: HTMLDivElement | undefined;
@@ -58,36 +47,28 @@ export function StateResults(props: Props) {
     setIsDragging(false);
   };
 
-  onMount(() => {
+  onSettled(() => {
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  });
-
-  onCleanup(() => {
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
   });
 
   return (
     <div class="relative h-full flex-1 overflow-hidden py-1" ref={containerRef}>
-      <div class="h-full overflow-auto" ref={scrollElRef}>
-        <ul class="relative" style={{ height: `${virtualizer.getTotalSize()}px` }}>
-          <For each={virtualizer.getVirtualItems()}>
-            {(virtualItem) => {
-              const result = () => props.results[virtualItem.index]!;
-              const type = () => getSpecificType(result().value);
+      <div class="h-full overflow-auto">
+        <ul>
+          <For each={props.results}>
+            {(result) => {
+              const type = () => getJsonType(result.value);
 
               return (
-                <Show when={result()}>
+                <>
                   <li
                     class="grid items-center gap-x-2 px-2"
                     style={{
-                      'position': 'absolute',
-                      'top': 0,
-                      'left': 0,
-                      'width': '100%',
-                      'height': `${virtualItem.size}px`,
-                      'transform': `translateY(${virtualItem.start}px)`,
                       'grid-template-columns': `auto minmax(auto,${getWidth()}px) 8px 1fr`,
                     }}
                   >
@@ -101,9 +82,9 @@ export function StateResults(props: Props) {
                       <button
                         type="button"
                         class="max-w-full cursor-pointer overflow-hidden py-2 text-left font-mono text-nowrap text-ellipsis hover:underline"
-                        onClick={() => onPathClick(result().path)}
+                        onClick={() => onPathClick(result.path)}
                       >
-                        <PrettyPath path={result().path} />
+                        <PrettyPath path={result.path} />
                       </button>
                     </span>
                     <div class="col-start-3" />
@@ -112,18 +93,18 @@ export function StateResults(props: Props) {
                     <div class="col-start-4 w-full justify-self-start">
                       <Switch>
                         <Match when={type() === 'string'}>
-                          <StateStringInput path={result().path} />
+                          <StateStringInput path={result.path} />
                         </Match>
                         <Match when={type() === 'number'}>
-                          <StateNumberInput path={result().path} />
+                          <StateNumberInput path={result.path} />
                         </Match>
                         <Match when={type() === 'boolean'}>
-                          <StateBooleanInput path={result().path} />
+                          <StateBooleanInput path={result.path} />
                         </Match>
                       </Switch>
                     </div>
                   </li>
-                </Show>
+                </>
               );
             }}
           </For>

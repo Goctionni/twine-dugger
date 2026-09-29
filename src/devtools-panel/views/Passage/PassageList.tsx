@@ -1,9 +1,7 @@
-import { createVirtualizer } from '@tanstack/solid-virtual';
-import { createEffect, For, onCleanup, Show, untrack } from 'solid-js';
+import { For, onCleanup, onSettled, untrack } from 'solid-js';
 
 import { reloadPassagesData } from '@/devtools-panel/store/store';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
-import { virtualizerScrollToFn } from '@/devtools-panel/utils/virtualizer-scrollto';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { PassageListItem } from './PassageListItem';
@@ -18,34 +16,24 @@ interface Props {
 
 export function PassageList(props: Props) {
   let scrollElRef: HTMLDivElement | undefined;
-  const virtualizer = createVirtualizer({
-    initialOffset: beforeCleanup?.offset ?? 0,
-    getScrollElement: () => scrollElRef ?? null,
-    estimateSize: () => 35,
-    get count() {
-      return props.passages.length;
-    },
-    overscan: 5,
-    scrollToFn: virtualizerScrollToFn,
-  });
 
-  // Only run this once, after the initial render
-  createEffect(() => {
-    untrack(() => {
-      if (!props.selectedPassage) return;
+  // Restore where the list was scrolled to, and scroll to the selected passage if it changed
+  onSettled(() => {
+    if (!scrollElRef) return;
+    scrollElRef.scrollTop = beforeCleanup?.offset ?? 0;
 
-      const selectedPassageId = props.selectedPassage.id;
-      if (selectedPassageId === beforeCleanup?.passageId) return;
+    const selectedPassageId = props.selectedPassage?.id;
+    if (selectedPassageId === undefined || selectedPassageId === beforeCleanup?.passageId) return;
 
-      // If its a different passage, smooth scroll to that passage
-      const index = props.passages.findIndex((passage) => passage.id === selectedPassageId);
-      if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center', behavior: 'smooth' });
-    });
+    // If its a different passage, smooth scroll to that passage
+    scrollElRef
+      .querySelector(`[data-id="${selectedPassageId}"]`)
+      ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   });
 
   onCleanup(() => {
     beforeCleanup = {
-      offset: virtualizer.scrollOffset,
+      offset: beforeCleanup?.offset ?? 0,
       passageId: untrack(() => props.selectedPassage?.id),
     };
   });
@@ -66,29 +54,22 @@ export function PassageList(props: Props) {
           <span class="material-symbols-outlined mt-0.5 text-sm">refresh</span>
         </button>
       </div>
-      <div class="flex-1 overflow-auto" ref={scrollElRef}>
-        <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
-          <For each={virtualizer.getVirtualItems()}>
-            {(virtualItem) => {
-              const passage = () => props.passages[virtualItem.index]!;
-              return (
-                <Show when={passage()}>
-                  <PassageListItem
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${virtualItem.size}px`,
-                      transform: `translateY(${virtualItem.start}px)`,
-                    }}
-                    passageData={passage()}
-                    onClick={() => props.onPassageClick(passage())}
-                    active={props.selectedPassage?.id === passage().id}
-                  />
-                </Show>
-              );
-            }}
+      <div
+        class="flex-1 overflow-auto"
+        ref={scrollElRef}
+        onScroll={(e) => {
+          beforeCleanup = { ...beforeCleanup, offset: e.currentTarget.scrollTop };
+        }}
+      >
+        <ul class="w-full">
+          <For each={props.passages}>
+            {(passage) => (
+              <PassageListItem
+                passageData={passage}
+                onClick={() => props.onPassageClick(passage)}
+                active={props.selectedPassage?.id === passage.id}
+              />
+            )}
           </For>
         </ul>
       </div>

@@ -1,4 +1,4 @@
-import { createEffect, createSignal, Show } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 
 import { setState, setStatePropertyLock } from '@/devtools-panel/api/api';
 import {
@@ -14,6 +14,7 @@ import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
 import { getObjectPathValue } from '@/shared/get-object-path-value';
 import type { Path } from '@/shared/shared-types';
 
+import { isPathEditable } from '../editable';
 import { getLockStatus } from '../lock-helper';
 
 interface StateNumberInputProps {
@@ -21,7 +22,7 @@ interface StateNumberInputProps {
 }
 
 export function StateNumberInput(props: StateNumberInputProps) {
-  const getHistoryId = createGetViewState('state', 'historyId');
+  const getHistoryRef = createGetViewState('state', 'historyRef');
 
   const currentValue = () => {
     const activeState = getActiveState();
@@ -31,14 +32,13 @@ export function StateNumberInput(props: StateNumberInputProps) {
   };
 
   const getPath = () => props.path;
-  const isReadOnly = () => getHistoryId() !== -1; // Not on latest
+  const isReadOnly = () => getHistoryRef() !== 'latest';
   const lockStatus = () => getLockStatus(getPath, getLockedPaths);
-  const isDisabled = () => lockStatus() !== 'unlocked' || isReadOnly();
+  const isDisabled = () =>
+    lockStatus() !== 'unlocked' || isReadOnly() || !isPathEditable(props.path);
 
-  const [localValue, setLocalValue] = createSignal(currentValue());
-
-  // Sync local value when current value changes
-  createEffect(() => setLocalValue(currentValue()));
+  // Follows the current value until edited, then again when the current value changes
+  const [localValue, setLocalValue] = createSignal(currentValue);
 
   const handleSave = async () => {
     try {

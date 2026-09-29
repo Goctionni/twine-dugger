@@ -24,7 +24,7 @@ export function BooleanInput(props: BooleanInputProps) {
           type="checkbox"
           class="peer hidden"
           checked={props.value}
-          readOnly={props.readOnly}
+          readonly={props.readOnly}
           disabled={props.disabled}
           onChange={(e) => props.onChange(e.target.checked)}
           id={props.id}

@@ -1,5 +1,5 @@
+import type { JSX } from '@solidjs/web';
 import clsx from 'clsx';
-import type { JSX } from 'solid-js';
 import { createEffect, createSignal } from 'solid-js';
 
 import { baseInputClasses } from '../util/common-classes';
@@ -20,9 +20,12 @@ export function StringInput(props: StringInputProps) {
   const onKeyDown = (e: KeyboardEvent) => props.onKeyDown?.(e);
   const [ref, setRef] = createSignal<HTMLElement | null>(null);
 
-  createEffect(() => {
-    if (props.autoFocus && ref()) ref()!.focus();
-  });
+  createEffect(
+    () => ({ autoFocus: props.autoFocus, el: ref() }),
+    ({ autoFocus, el }) => {
+      if (autoFocus) el?.focus();
+    },
+  );
 
   return (
     <input
@@ -33,7 +36,7 @@ export function StringInput(props: StringInputProps) {
       onKeyDown={onKeyDown}
       placeholder={props.placeholder}
       disabled={props.disabled}
-      readOnly={props.readOnly}
+      readonly={props.readOnly}
       class={clsx(baseInputClasses, 'rounded-md', props.class)}
       autofocus={props.autoFocus}
       {...props.inputProps}

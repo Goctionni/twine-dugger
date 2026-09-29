@@ -1,4 +1,5 @@
-import type { JSX } from 'solid-js';
+import type { JSX } from '@solidjs/web';
+import type { Delta } from 'jsondiffpatch';
 
 import type { SpecificType } from './type-helpers';
 
@@ -78,6 +79,11 @@ export type ProcessDiffResult = {
   locksUpdate: Path[] | null;
 };
 
+export type UpdateResult = {
+  passage: string;
+  delta: Delta | undefined;
+};
+
 export type ValueType =
   | 'other'
   | 'null'
@@ -87,6 +93,7 @@ export type ValueType =
   | 'map'
   | 'set'
   | 'function'
+  | 'date'
   | 'string'
   | 'number'
   | 'boolean';

@@ -23,41 +23,40 @@ export function getObjectId(obj: unknown) {
 export type IdentityCache = Map<object, JSONSafeArray | JSONSafeObject>;
 export type IdentityLookup = Map<JSONSafeArray | JSONSafeObject, object>;
 
-interface DiffSources {
-  left: IdentityLookup;
-  right: IdentityCache;
-  hashes: Map<unknown, string>;
-}
-
+/**
+ * Gives an object the same hash on both sides of a diff when its live counterpart exists in both
+ * the old and the new state. That is what lets jsondiffpatch match array items by reference.
+ */
 export function setupIdentityHasher() {
   let hashIndex = 0;
-  const diffSources: DiffSources = {
-    left: new Map(),
-    right: new Map(),
-    hashes: new Map(),
-  };
+  let oldLookup: IdentityLookup = new Map();
+  let newLookup: IdentityLookup = new Map();
+  let oldLive = new Set<object>();
+  let newLive = new Set<object>();
+  const hashes = new Map<object, string>();
 
   return {
     getObjectHash(transformedObject: object) {
-      const item = diffSources.left.get(transformedObject as JSONSafeArray | JSONSafeObject);
-      if (!item || !diffSources.right.has(item)) return undefined;
+      const key = transformedObject as JSONSafeArray | JSONSafeObject;
+      const live = oldLookup.get(key) ?? newLookup.get(key);
+      if (!live || !oldLive.has(live) || !newLive.has(live)) return undefined;
 
-      if (!diffSources.hashes.has(item)) {
-        const hash = `$$ref:${(hashIndex++).toString(36)}`;
-        diffSources.hashes.set(item, hash);
+      let hash = hashes.get(live);
+      if (!hash) {
+        hash = `$$ref:${(hashIndex++).toString(36)}`;
+        hashes.set(live, hash);
       }
-      return diffSources.hashes.get(item)!;
+      return hash;
     },
-    setIdentitySources({
-      oldIdentityLookup,
-      newIdentityCache,
-    }: {
+    setIdentitySources(sources: {
       oldIdentityLookup: IdentityLookup;
-      newIdentityCache: IdentityCache;
+      newIdentityLookup: IdentityLookup;
     }) {
-      diffSources.left = oldIdentityLookup;
-      diffSources.right = newIdentityCache;
-      diffSources.hashes.clear();
+      oldLookup = sources.oldIdentityLookup;
+      newLookup = sources.newIdentityLookup;
+      oldLive = new Set(oldLookup.values());
+      newLive = new Set(newLookup.values());
+      hashes.clear();
     },
   };
 }

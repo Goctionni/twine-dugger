@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import type { JSX } from 'solid-js';
 import { For } from 'solid-js';
 
 import { Tag } from '@/devtools-panel/ui/display/Tag';
@@ -9,12 +8,11 @@ interface ListItemProps {
   passageData: ParsedPassageData;
   onClick: () => void;
   active?: boolean;
-  style?: JSX.CSSProperties | undefined;
 }
 
 export function PassageListItem(props: ListItemProps) {
   return (
-    <li class="flex border-t border-slate-400 last:border-b" style={props.style}>
+    <li class="flex border-t border-slate-400 last:border-b">
       <button
         data-id={props.passageData.id}
         data-name={props.passageData.name}

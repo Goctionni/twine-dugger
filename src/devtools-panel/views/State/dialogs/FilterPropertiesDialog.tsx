@@ -102,7 +102,7 @@ export function FilterPropertiesDialog(props: {
         <For each={filters}>
           {(filter) => (
             <label
-              use:tooltip={filter.tooltip}
+              ref={tooltip(() => filter.tooltip)}
               class={clsx(
                 `group cursor-pointer select-none`,
                 `flex items-center gap-2`,

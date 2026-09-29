@@ -1,9 +1,10 @@
+import { getJsonType, SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
 import type {
-  ObjectValue,
+  JSONSafeObject,
+  JSONSafeValue,
   ParsedPassageData,
   Path,
   SearchResultState,
-  Value,
 } from '@/shared/shared-types';
 import { isPrimitive } from '@/shared/type-helpers';
 
@@ -40,7 +41,7 @@ export function findPassageMatches(
 }
 
 export function findStateMatches(
-  data: ObjectValue,
+  data: JSONSafeObject,
   rawQuery: string,
 ): FindResult<SearchResultState> {
   const fullMatches: SearchResultState[] = [];
@@ -58,42 +59,35 @@ export function findStateMatches(
 
     const seen = new WeakSet<object>();
 
-    async function visit(val: Value, path: Path) {
+    async function visit(val: JSONSafeValue, path: Path) {
       if (!val || typeof val !== 'object' || signal.aborted) return;
-      if (seen.has(val as object)) return;
-      seen.add(val as object);
+      if (seen.has(val)) return;
+      seen.add(val);
+
+      const type = getJsonType(val);
+      // The source of a function or the parts of a date aren't worth searching
+      if (type === 'function' || type === 'date') return;
 
       if (Array.isArray(val)) {
-        for (let i = 0; i < val.length; i++) {
-          checkValue(val[i], i, path);
-          await visit(val[i], [...path, i]);
-        }
-      } else if (val instanceof Map) {
-        for (const [k, v] of val.entries()) {
-          checkKey(`${k}`, path, v);
-          checkValue(v, k, path);
-          visit(v, [...path, k]);
-        }
-      } else if (val instanceof Set) {
-        let i = 0;
-        for (const v of val) {
-          checkValue(v, i, path);
-          visit(v, [...path, i]);
-          i++;
+        // The first item of a Set's array is its marker, not one of its items
+        for (let i = val[0] === SET_MARKER ? 1 : 0; i < val.length; i++) {
+          checkValue(val[i]!, i, path);
+          await visit(val[i]!, [...path, i]);
         }
       } else {
-        const obj = val as { [k: string]: Value };
+        const obj = val as JSONSafeObject;
         for (const k of Object.keys(obj)) {
-          checkKey(k, path, obj[k]);
-          checkValue(obj[k], k, path);
-          visit(obj[k], [...path, k]);
+          if (k === TYPE_KEY) continue;
+          checkKey(k, path, obj[k]!);
+          checkValue(obj[k]!, k, path);
+          visit(obj[k]!, [...path, k]);
         }
       }
       if (signal.aborted) return;
       await scheduler.yield();
     }
 
-    function checkKey(key: string, path: Path, value: Value) {
+    function checkKey(key: string, path: Path, value: JSONSafeValue) {
       const lowerKey = key.toLowerCase();
       if (lowerKey === query) {
         fullMatches.push({ path: [...path, key], value });
@@ -102,7 +96,7 @@ export function findStateMatches(
       }
     }
 
-    function checkValue(v: Value, key: string | number, path: Path) {
+    function checkValue(v: JSONSafeValue, key: string | number, path: Path) {
       if (!isPrimitive(v)) return;
 
       if (typeof v === 'string') {

@@ -1,7 +1,7 @@
-import type { Delta } from 'jsondiffpatch';
 import { create as createDiffer } from 'jsondiffpatch';
 
 import { getObjectId, setupIdentityHasher } from '@/shared/id-helper';
+import type { UpdateResult } from '@/shared/shared-types';
 
 import chapbookHelpers from './format-helpers/chapbook';
 import harloweHelpers from './format-helpers/harlowe';
@@ -19,6 +19,7 @@ const formatHelpers: FormatHelpers[] = [
 ];
 
 function init() {
+  if (window.TwineDugger) return;
   const formatHelper = formatHelpers.find((helper) => helper.detect());
   if (!formatHelper) return;
 
@@ -36,11 +37,9 @@ function init() {
       passage: formatHelper.getPassage(),
       state: oldState,
     }),
-    getUpdates: (): Delta => {
-      const [newState, newIdentityCache, newIdentityLookup] = pretransformState(
-        formatHelper.getState(),
-      );
-      setIdentitySources({ oldIdentityLookup: oldIdentityLookup, newIdentityCache });
+    getUpdates: (): UpdateResult => {
+      const [newState, , newIdentityLookup] = pretransformState(formatHelper.getState());
+      setIdentitySources({ oldIdentityLookup, newIdentityLookup });
 
       const delta = differ.diff(oldState, newState);
       oldState = newState;
@@ -48,7 +47,7 @@ function init() {
 
       // TODO: Add locks back in
 
-      return delta;
+      return { passage: formatHelper.getPassage(), delta };
     },
     setState: formatHelper.setState,
     deleteFromState: formatHelper.deleteFromState,

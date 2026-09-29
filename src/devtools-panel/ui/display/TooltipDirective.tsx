@@ -1,5 +1,6 @@
-import type { Accessor, JSX } from 'solid-js';
-import { createMemo, createSignal, onCleanup } from 'solid-js';
+import type { JSX } from '@solidjs/web';
+import type { Accessor } from 'solid-js';
+import { createMemo, createSignal, onSettled } from 'solid-js';
 
 import type {
   Placement,
@@ -23,8 +24,14 @@ const defaultConfig: FullConfig = {
   offset: 4,
 };
 
-export function tooltip(el: HTMLElement, accessor: Accessor<TooltipValue>) {
+/**
+ * Directive factory, used as `ref={tooltip(() => 'text')}`.
+ * Everything reactive is created here, in the component's owner; the returned callback only
+ * receives the element.
+ */
+export function tooltip(accessor: Accessor<TooltipValue>) {
   const setTooltip = useSetTooltip();
+  let el: HTMLElement | undefined;
 
   const [anchorX, setAnchorX] = createSignal(0);
   const [anchorY, setAnchorY] = createSignal(0);
@@ -38,14 +45,10 @@ export function tooltip(el: HTMLElement, accessor: Accessor<TooltipValue>) {
 
   const content = () => contentAndConfig()[0];
 
-  const config = createMemo<FullConfig>(
-    () => ({ ...defaultConfig, ...contentAndConfig()[1] }),
-    defaultConfig,
-    {
-      equals: (prev, next) =>
-        Object.entries(prev).every(([key, value]) => value === next[key as keyof FullConfig]),
-    },
-  );
+  const config = createMemo<FullConfig>(() => ({ ...defaultConfig, ...contentAndConfig()[1] }), {
+    equals: (prev, next) =>
+      Object.entries(prev).every(([key, value]) => value === next[key as keyof FullConfig]),
+  });
 
   const translate = createMemo((): string => {
     const _config = config();
@@ -78,7 +81,6 @@ export function tooltip(el: HTMLElement, accessor: Accessor<TooltipValue>) {
 
   const setTooltipSize = (el: HTMLDivElement) => {
     requestAnimationFrame(() => setTooltipWH({ w: el.clientWidth, h: el.clientHeight }));
-    requestAnimationFrame(() => console.log('el', el, el.parentElement));
   };
 
   const onMouseEnter = (e: MouseEvent) => {
@@ -88,7 +90,7 @@ export function tooltip(el: HTMLElement, accessor: Accessor<TooltipValue>) {
       setAnchorY(e.clientY);
       setAnchorWH({ w: 30, h: 30 });
     }
-    if (anchor === 'element') {
+    if (anchor === 'element' && el) {
       const rect = el.getBoundingClientRect();
       setAnchorX(rect.left);
       setAnchorY(rect.top);
@@ -97,7 +99,7 @@ export function tooltip(el: HTMLElement, accessor: Accessor<TooltipValue>) {
 
     setTooltipWH(null);
 
-    setTooltip?.(
+    setTooltip(
       <div
         ref={setTooltipSize}
         class="fixed z-50 rounded bg-gray-900/95 px-2 py-1 text-sm text-white outline -outline-offset-1 outline-gray-100/50"
@@ -108,7 +110,7 @@ export function tooltip(el: HTMLElement, accessor: Accessor<TooltipValue>) {
     );
   };
 
-  const onMouseLeave = () => setTooltip?.(null);
+  const onMouseLeave = () => setTooltip(null);
 
   const onMouseMove = (e: MouseEvent) => {
     const anchor = config().anchor;
@@ -119,16 +121,23 @@ export function tooltip(el: HTMLElement, accessor: Accessor<TooltipValue>) {
   };
 
   // Bind baseline listener events
-  el.addEventListener('mouseenter', onMouseEnter);
-  el.addEventListener('mouseleave', onMouseLeave);
-  el.addEventListener('mousemove', onMouseMove);
-
-  onCleanup(() => {
-    el.removeEventListener('mouseenter', onMouseEnter);
-    el.removeEventListener('mouseleave', onMouseLeave);
-    el.removeEventListener('mousemove', onMouseMove);
-    setTooltip?.(null);
+  onSettled(() => {
+    const target = el;
+    if (!target) return;
+    target.addEventListener('mouseenter', onMouseEnter);
+    target.addEventListener('mouseleave', onMouseLeave);
+    target.addEventListener('mousemove', onMouseMove);
+    return () => {
+      target.removeEventListener('mouseenter', onMouseEnter);
+      target.removeEventListener('mouseleave', onMouseLeave);
+      target.removeEventListener('mousemove', onMouseMove);
+      setTooltip(null);
+    };
   });
+
+  return (element: HTMLElement) => {
+    el = element;
+  };
 }
 
 const getPlacementArray = (placement: FullConfig['placement']) => {

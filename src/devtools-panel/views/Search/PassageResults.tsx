@@ -1,5 +1,4 @@
-import { createVirtualizer } from '@tanstack/solid-virtual';
-import { For, Match, Show, Switch } from 'solid-js';
+import { For, Match, Switch } from 'solid-js';
 
 import { setPassage } from '@/devtools-panel/api/api';
 import { Code } from '@/devtools-panel/ui/code';
@@ -7,8 +6,8 @@ import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import {
-  createGetViewState,
   getGameMetaData,
+  getSelectedPassage,
   setPassageData,
   setViewState,
 } from '../../store/store';
@@ -20,22 +19,11 @@ interface Props {
 }
 
 export function PassageResults(props: Props) {
-  let scrollElRef: HTMLDivElement | undefined;
-  const virtualizer = createVirtualizer({
-    getScrollElement: () => scrollElRef ?? null,
-    estimateSize: () => 35,
-    get count() {
-      return props.results.length;
-    },
-    overscan: 5,
-  });
-
   const onPassageClick = (passage: ParsedPassageData) => {
-    setViewState('passage', 'selected', { ...passage });
+    setViewState('passage', 'selected', passage.name);
   };
 
   const format = () => getGameMetaData()!.format;
-  const getSelectedPassage = createGetViewState('passage', 'selected');
 
   const onSave = (code: string) => {
     const passage = getSelectedPassage();
@@ -43,7 +31,6 @@ export function PassageResults(props: Props) {
     setPassage({ name: passage.name, source: code });
 
     const newPassage: ParsedPassageData = { ...passage, content: code };
-    setViewState('passage', 'selected', newPassage);
     setPassageData((current) => {
       return current.map((oldpassage) => {
         if (oldpassage.id !== passage.id) return oldpassage;
@@ -58,29 +45,16 @@ export function PassageResults(props: Props) {
       class="flex h-full w-full grow overflow-hidden"
       initialLeftWidthPercent={50}
       leftContent={
-        <div class="h-full overflow-auto" ref={scrollElRef}>
-          <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
-            <For each={virtualizer.getVirtualItems()}>
-              {(virtualItem) => {
-                const result = () => props.results[virtualItem.index]!;
-                return (
-                  <Show when={result()}>
-                    <PassageListItem
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: `${virtualItem.size}px`,
-                        transform: `translateY(${virtualItem.start}px)`,
-                      }}
-                      passageData={result()}
-                      onClick={() => onPassageClick(result())}
-                      active={getSelectedPassage()?.id === result().id}
-                    />
-                  </Show>
-                );
-              }}
+        <div class="h-full overflow-auto">
+          <ul class="w-full">
+            <For each={props.results}>
+              {(result) => (
+                <PassageListItem
+                  passageData={result}
+                  onClick={() => onPassageClick(result)}
+                  active={getSelectedPassage()?.id === result.id}
+                />
+              )}
             </For>
           </ul>
         </div>

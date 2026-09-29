@@ -1,25 +1,25 @@
 import { isPathFiltered } from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
+import type { ContainerType } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 
 export function DiffPath(props: {
   path: Path;
+  kinds: ContainerType[];
   onClick: () => void;
   onAddFilter: (path: Path) => void;
   action?: 'added' | 'removed';
-  leafKey?: Path[number];
 }) {
-  const fullPath = () =>
-    props.leafKey === undefined ? props.path : [...props.path, props.leafKey];
-
+  // A change never changes, so the menu is built once
   const onContextMenu = createContextMenuHandler(
-    getParentPaths(fullPath()).map((path) => ({
+    // oxlint-disable-next-line solid/reactivity
+    getParentPaths(props.path).map((path) => ({
       label: () => (
         <>
           Filter out changes to "
-          <PrettyPath path={path} class="font-mono" globSuffix />"
+          <PrettyPath path={path} kinds={props.kinds} class="font-mono" globSuffix />"
         </>
       ),
       onClick: () => props.onAddFilter(path),
@@ -33,7 +33,7 @@ export function DiffPath(props: {
       onClick={() => props.onClick()}
       class="cursor-pointer hover:underline"
     >
-      <PrettyPath path={fullPath()} action={props.action} />
+      <PrettyPath path={props.path} kinds={props.kinds} action={props.action} />
     </code>
   );
 }

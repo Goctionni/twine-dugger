@@ -79,18 +79,20 @@ export function logLines(lines: LogLine[], elapsed: number) {
 }
 
 export async function logResults(
-  promises: Array<Promise<CopyTransformResult> | Promise<TsdownBundle[]>>,
+  promises: Array<
+    Promise<CopyTransformResult> | Promise<TsdownBundle[] | { bundles: TsdownBundle[] }>
+  >,
 ) {
   const before = Date.now();
   const results = await Promise.all(promises);
   const lines = results.flatMap((result) => {
-    if (Array.isArray(result)) {
-      return result
-        .flatMap((item) => item.chunks.map((chunk) => parseRolldownChunk(chunk)))
-        .filter((value): value is LogLine => !!value);
-    } else {
-      return parseCopyResultLogLine(result);
-    }
+    // vite-plus/pack returns `{ bundles }` (older versions returned the array itself)
+    if (!Array.isArray(result) && !('bundles' in result)) return parseCopyResultLogLine(result);
+
+    const bundles = Array.isArray(result) ? result : result.bundles;
+    return bundles
+      .flatMap((item) => item.chunks.map((chunk) => parseRolldownChunk(chunk)))
+      .filter((value): value is LogLine => !!value);
   });
   const elapsed = Date.now() - before;
 

@@ -1,7 +1,5 @@
 import '@types/firefox-webext-browser';
 import '@types/chrome';
-import type { Delta } from 'jsondiffpatch';
-
 import type {
   FormatPassage,
   JSONSafeObject,
@@ -9,7 +7,6 @@ import type {
   ObjectValue,
   PassageData,
   Path,
-  TooltipValue,
   UpdateResult,
 } from '@/shared/shared-types';
 
@@ -28,7 +25,7 @@ declare global {
   interface Window {
     TwineDugger: {
       getPassageData: () => PassageData[];
-      getUpdates: () => Delta;
+      getUpdates: () => UpdateResult;
       getState: () => { passage: string; state: JSONSafeObject };
       setState: (path: Path, value: unknown) => void;
       deleteFromState: (path: Path) => void;
@@ -45,13 +42,5 @@ declare global {
   }
   interface ErrorConstructor {
     isError(value: unknown): value is Error;
-  }
-}
-
-declare module 'solid-js' {
-  namespace JSX {
-    interface Directives {
-      tooltip: TooltipValue;
-    }
   }
 }

@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { getActiveState } from '../../../store/store';
 import { AddPropertyDialog } from './AddPropertyDialog';
 
-vi.mock('../../../store', () => ({ getActiveState: vi.fn<() => unknown>() }));
+vi.mock('../../../store/store', () => ({ getActiveState: vi.fn<() => unknown>() }));
 
 beforeEach(() => vi.resetAllMocks());
 afterEach(() => cleanup());
@@ -113,7 +113,7 @@ describe('AddPropertyDialog', () => {
   });
 
   it('uses property name when container is map', async () => {
-    vi.mocked(getActiveState).mockReturnValue({ root: new Map([['a', 1]]) });
+    vi.mocked(getActiveState).mockReturnValue({ root: { '__twinedugger-type': 'Map', 'a': 1 } });
     const onConfirm = vi.fn<(name: string, value: unknown) => void>();
     const user = userEvent.setup();
 

@@ -9,21 +9,25 @@ import {
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 import { DiffFrame } from './DiffFrame';
 
+const MAX_FRAMES = 30;
+
+const sameFrames = <T,>(a: T[], b: T[]) => a.length === b.length && a.every((v, i) => v === b[i]);
+
 export function DiffLog() {
   const onContextMenu = createContextMenuHandler([
     { label: 'Clear Diff Log', onClick: () => clearDiffFrames() },
     { label: 'Clear All Filters', onClick: () => clearFilteredPaths() },
   ]);
 
-  const frames = createMemo(() => {
-    return getDiffFrames()
-      .map((frame) => ({
-        ...frame,
-        changes: frame.changes.filter((frameChanges) => !isPathFiltered(frameChanges.path)),
-      }))
-      .filter((frame) => frame.changes.length > 0)
-      .slice(0, 30);
-  });
+  // Frames are immutable and keep their identity, so a new frame adds one row and changing the
+  // filters only touches the rows that appear or disappear.
+  const frames = createMemo(
+    () =>
+      getDiffFrames()
+        .filter((frame) => frame.changes.some((change) => !isPathFiltered(change.path)))
+        .slice(0, MAX_FRAMES),
+    { equals: sameFrames },
+  );
 
   return (
     <div onContextMenu={onContextMenu} class="flex h-full flex-col p-4">

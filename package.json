@@ -9,21 +9,19 @@
   },
   "dependencies": {
     "@shikijs/langs": "4.4.3",
-    "@solid-primitives/scheduled": "1.5.3",
-    "@tanstack/solid-virtual": "3.13.40",
+    "@solidjs/web": "2.0.0-rc.11",
     "arktype": "2.2.5",
     "clsx": "2.1.1",
     "jsondiffpatch": "0.7.6",
     "oniguruma-to-es": "4.3.6",
     "solid-js": "2.0.0-rc.11",
-    "@solidjs/web": "2.0.0-rc.11",
     "tailwindcss": "4.3.3",
     "vscode-textmate": "9.3.2"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.1",
     "@microsoft/api-extractor": "7.59.0",
-    "@solidjs/testing-library": "0.8.10",
+    "@solidjs/testing-library": "1.0.0-beta.3",
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/user-event": "14.6.7",
@@ -38,7 +36,7 @@
     "oxlint": "1.85.0",
     "solid-devtools": "0.34.5",
     "typescript": "7.0.2",
-    "vite-plugin-solid": "2.11.14",
+    "vite-plugin-solid": "3.0.0-next.27",
     "vite-plus": "catalog:"
   },
   "packageManager": "pnpm@11.2.2"

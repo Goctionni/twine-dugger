@@ -54,8 +54,8 @@ export async function getState(): Return<'getState'> {
 
 export async function getUpdates(): Return<'getUpdates'> {
   return Promise.resolve({
-    diffPackage: null,
-    locksUpdate: null,
+    passage: '',
+    delta: undefined,
   });
 }
 

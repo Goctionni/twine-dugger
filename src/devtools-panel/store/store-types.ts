@@ -1,24 +1,29 @@
 import type { Delta } from 'jsondiffpatch';
 
+import type { ContainerType } from '@/shared/json-safe';
 import type {
   ConnectionState,
   GameMetaData,
-  JSONSafeObject,
+  Page,
+  Path,
   PropertyFilterKey,
   PropertyOrder,
 } from '@/shared/shared-types';
+
+import type { DiffChange } from './delta';
+
+export type { Page, Path };
 
 export interface StoreData {
   connectionState: ConnectionState;
   gameMeta: GameMetaData | null;
   candidateIframes: string[];
-  gameState: JSONSafeObject;
-  stateDiffs: StateDiff[];
   gameConfig: GameConfig;
   settings: Settings;
   viewState: {
     activeTab: Page;
     state: {
+      /** Id of the state slice being inspected, or 'latest' to follow the live state */
       historyRef: number | 'latest';
       path: Path;
     };
@@ -32,14 +37,14 @@ export interface StoreData {
   };
 }
 
-export type Page = 'state' | 'search' | 'passages' | 'settings';
-
-export type Path = Array<string | number>;
-
+/** One poll's worth of changes. Immutable once created. */
 export interface StateDiff {
-  id: number; // timestamp
+  /** Sequential; the initial state is id 0, the first diff is id 1 */
+  id: number;
+  timestamp: number;
   passage: string;
   delta: Delta;
+  changes: DiffChange[];
 }
 
 export interface GameConfig {
@@ -56,3 +61,5 @@ export interface Settings {
   'state.propertyOrderDesc': boolean;
   'state.filters': PropertyFilterKey[];
 }
+
+export type { ContainerType };

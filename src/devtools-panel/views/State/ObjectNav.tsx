@@ -1,6 +1,12 @@
 import clsx from 'clsx';
-import { createMemo, createSignal, For, Show, untrack } from 'solid-js';
+import { createMemo, createProjection, createSignal, For, Show, untrack } from 'solid-js';
 
+import {
+  deleteFromState,
+  duplicateStateProperty,
+  setState,
+  setStatePropertyLock,
+} from '@/devtools-panel/api/api';
 import {
   addFilteredPath,
   addLockPath,
@@ -18,30 +24,24 @@ import { tooltip } from '@/devtools-panel/ui/display/TooltipDirective';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { baseInputClasses } from '@/devtools-panel/ui/util/common-classes';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
-import { getLockStatus } from '@/devtools-panel/views/State/lock-helper';
-import { getObjectPathValue } from '@/shared/get-object-path-value';
-import type { OrderConfig, PropertyFilterKey, PropertyOrder } from '@/shared/shared-types';
-import {
-  type ContainerValue,
-  type LockStatus,
-  type Path,
-  type Value,
-  type ValueType,
+import { getContainerKeys, getJsonType, isContainerType } from '@/shared/json-safe';
+import type {
+  LockStatus,
+  OrderConfig,
+  Path,
+  PropertyFilterKey,
+  PropertyOrder,
+  ValueType,
 } from '@/shared/shared-types';
-import { getSpecificType, isValuePrimitive } from '@/shared/type-helpers';
 
-import {
-  deleteFromState,
-  duplicateStateProperty,
-  setState,
-  setStatePropertyLock,
-} from '../../api/api';
 import { TypeIcon } from '../../ui/display/TypeIcon';
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 import { AddPropertyDialog } from './dialogs/AddPropertyDialog';
 import { DuplicateKeyDialog } from './dialogs/DuplicateKeyDialog';
 import { FilterPropertiesDialog } from './dialogs/FilterPropertiesDialog';
 import { SortPropertiesDialog } from './dialogs/SortPropertiesDialog';
+import { isPathEditable } from './editable';
+import { getLockStatus } from './lock-helper';
 import { createSorter } from './property-sorter';
 
 const getGlobalFilters = createGetSetting('state.filters');
@@ -51,27 +51,33 @@ const setGlobalFilters = createSetSetting('state.filters');
 const setGlobalPropertyOrder = createSetSetting('state.propertyOrder');
 const setGlobalPropertyOrderDesc = createSetSetting('state.propertyOrderDesc');
 
+const getPath = createGetViewState('state', 'path');
+
 const getNameForProperty = () =>
   showPromptDialog<string>('Name for property', (resolve) => (
     <DuplicateKeyDialog onConfirm={resolve} />
   ));
 
+interface Entry {
+  key: string | number;
+  /** What is shown for the key; Set items are numbered from 0 while their key is the array index */
+  label: string | number;
+  type: ValueType;
+}
+
+const primitiveTypes: ValueType[] = ['string', 'number', 'boolean', 'null', 'undefined'];
+
 interface Props {
-  path: Path;
-  selectedProperty?: string | number;
+  /** How many segments of the selected path lead to the container this column lists */
+  depth: number;
 }
 
 export function ObjectNav(props: Props) {
-  const isRoot = () => props.path.length === 0;
+  const isRoot = () => props.depth === 0;
   const [search, setSearch] = createSignal('');
-  const [filters, setFilers] = createSignal<PropertyFilterKey[]>(
+  const [filters, setFilters] = createSignal<PropertyFilterKey[]>(
     untrack(() => (isRoot() ? getGlobalFilters() : [])),
   );
-  const getName = () => props.path.at(-1);
-  const getObject = createMemo(
-    () => getObjectPathValue(getActiveState()!, props.path) as ContainerValue,
-  );
-
   const [getPropertyOrder, setPropertyOrder] = createSignal<PropertyOrder | null>(
     untrack(() => (isRoot() ? getGlobalPropertyOrder() : null)),
   );
@@ -79,55 +85,77 @@ export function ObjectNav(props: Props) {
     untrack(() => (isRoot() ? getGlobalPropertyOrderDesc() : null)),
   );
 
-  const getChildren = createMemo(() => {
-    // oxlint-disable-next-line solid/reactivity
-    const object = getObject();
-    if (!object) return [];
+  const parentPath = () => getPath().slice(0, props.depth);
+  const name = () => getPath()[props.depth - 1];
 
-    const propertyOrder = getPropertyOrder() ?? getGlobalPropertyOrder();
-    const desc = getPropertyOrderDesc() ?? getGlobalPropertyOrderDesc();
-    const sorter = createSorter(object, propertyOrder, desc, props.path);
-    // oxlint-disable-next-line solid/reactivity
-    const activeFilters = filters();
-
-    const rawKeys =
-      object instanceof Map
-        ? sorter(Array.from(object.keys()))
-        : object instanceof Array
-          ? Array.from(Array(object.length).keys())
-          : sorter(Object.keys(object));
-
-    // Convert to child key format
-    return rawKeys
-      .map((key): ContainerChild & { value: Value } => {
-        const value = getObjectPathValue(object, [key]);
-        const type = getSpecificType(value);
-        return { text: key, value, type };
-      })
-      .filter(({ text, type }) => {
-        if (activeFilters.includes(type)) return false;
-        if (activeFilters.includes('filtered') && isPathFiltered([...props.path, text])) {
-          return false;
-        }
-        return true;
-      })
-      .filter(({ text, value }) => {
-        // oxlint-disable-next-line solid/reactivity
-        const query = search();
-        if (!query) return true;
-        if (`${text}`.toLowerCase().includes(query.toLowerCase())) return true;
-        return isValuePrimitive(value) && `${value}`.toLowerCase().includes(query.toLowerCase());
-      });
+  // Walks the path one segment at a time, so it only reacts to the properties along the path
+  const container = createMemo(() => {
+    const path = getPath();
+    let value: unknown = getActiveState();
+    for (let i = 0; i < props.depth; i++) {
+      if (value === null || typeof value !== 'object') return undefined;
+      value = (value as Record<string | number, unknown>)[path[i]!];
+    }
+    return value;
   });
 
+  const containerType = createMemo(() => getJsonType(container()));
+  const canEdit = () => isPathEditable([...parentPath(), '']);
+
+  // A projection reconciles by key: the rows survive re-sorting and only the properties that
+  // actually differ (a `type`, say) notify, so a changing value never rebuilds the list.
+  const entries = createProjection<Entry[]>(
+    () => {
+      const object = container();
+      const type = getJsonType(object);
+      if (!isContainerType(type)) return [];
+
+      const sorter = createSorter(
+        object,
+        getPropertyOrder() ?? getGlobalPropertyOrder(),
+        getPropertyOrderDesc() ?? getGlobalPropertyOrderDesc(),
+        parentPath(),
+      );
+      const activeFilters = filters();
+      const query = search().toLowerCase();
+      const children = object as Record<string | number, unknown>;
+
+      return sorter(getContainerKeys(object, type))
+        .map((key): Entry => {
+          const label = type === 'set' ? (key as number) - 1 : key;
+          return { key, label, type: getJsonType(children[key]) };
+        })
+        .filter(({ key, type }) => {
+          if (activeFilters.includes(type as PropertyFilterKey)) return false;
+          return !(activeFilters.includes('filtered') && isPathFiltered([...parentPath(), key]));
+        })
+        .filter(({ key, label, type }) => {
+          if (!query) return true;
+          if (`${label}`.toLowerCase().includes(query)) return true;
+          return (
+            primitiveTypes.includes(type) && String(children[key]).toLowerCase().includes(query)
+          );
+        });
+    },
+    [],
+    { key: 'key' },
+  );
+
+  const handlePropertyClick = (property: string | number) => {
+    const prefix = parentPath();
+    const newPath = [...prefix, property];
+    const current = getPath();
+    const isEqual = current.length === newPath.length && current.every((v, i) => v === newPath[i]);
+    setViewState('state', 'path', isEqual ? prefix : newPath);
+  };
+
   const onDuplicate = async (property: string | number) => {
-    const object = getObject();
     // For arrays, the duplicated value is added to the end of the array
-    if (Array.isArray(object)) return duplicateStateProperty(props.path, property);
+    if (containerType() === 'array') return duplicateStateProperty(parentPath(), property);
 
     // For Objects/Maps, we need a name for the duplicated property
     const newPropertyKey = await getNameForProperty();
-    if (newPropertyKey) return duplicateStateProperty(props.path, property, newPropertyKey);
+    if (newPropertyKey) return duplicateStateProperty(parentPath(), property, newPropertyKey);
   };
 
   const onAdd = async () => {
@@ -135,29 +163,13 @@ export function ObjectNav(props: Props) {
       'Add new',
       (resolve) => (
         <AddPropertyDialog
-          path={props.path}
+          path={parentPath()}
           onConfirm={(name, value) => resolve({ name, value })}
         />
       ),
     );
 
-    if (result && result.name) {
-      const fullPath = [...props.path, result.name];
-      await setState(fullPath, result.value);
-    }
-  };
-
-  const handlePropertyClick = (property: string | number) => {
-    const currentPath = createGetViewState('state', 'path')();
-    const newPath = [...props.path, property];
-    const isEqual =
-      currentPath.length === newPath.length &&
-      currentPath.every((val, idx) => val === newPath[idx]);
-    setViewState('state', 'path', [...(isEqual ? props.path : newPath)]);
-  };
-
-  const handleDelete = async (path: Path) => {
-    await deleteFromState(path);
+    if (result?.name) await setState([...parentPath(), result.name], result.value);
   };
 
   const onSort = async () => {
@@ -172,7 +184,7 @@ export function ObjectNav(props: Props) {
     if (result) {
       setPropertyOrder(result.orderBy);
       setPropertyOrderDesc(result.descending);
-      if (!props.path.length) {
+      if (isRoot()) {
         setGlobalPropertyOrder(result.orderBy);
         setGlobalPropertyOrderDesc(result.descending);
       }
@@ -185,15 +197,15 @@ export function ObjectNav(props: Props) {
     )).catch(() => {});
 
     if (result) {
-      setFilers(result);
+      setFilters(result);
       if (isRoot()) setGlobalFilters(result);
     }
   };
 
   return (
     <div class="flex h-full w-max max-w-3xs min-w-25 flex-col border-r border-r-gray-700 px-2">
-      <Show when={props.path.length > 0}>
-        <p class="w-full overflow-hidden text-lg text-ellipsis">{getName()}</p>
+      <Show when={!isRoot()}>
+        <p class="w-full overflow-hidden text-lg text-ellipsis">{name()}</p>
       </Show>
       <div class="mb-3 flex justify-items-start gap-1">
         <Show when={isRoot()}>
@@ -204,102 +216,96 @@ export function ObjectNav(props: Props) {
             placeholder="Search"
           />
         </Show>
-        <a use:tooltip="Add new property" onClick={onAdd} class={btnClass('icon')}>
-          add
-        </a>
-        <a use:tooltip="Sort" onClick={onSort} class={btnClass('icon')}>
+        <Show when={canEdit()}>
+          <a ref={tooltip(() => 'Add new property')} onClick={onAdd} class={btnClass('icon')}>
+            add
+          </a>
+        </Show>
+        <a ref={tooltip(() => 'Sort')} onClick={onSort} class={btnClass('icon')}>
           sort
         </a>
-        <a use:tooltip="Filter by type" onClick={onFilter} class={btnClass('icon')}>
+        <a ref={tooltip(() => 'Filter by type')} onClick={onFilter} class={btnClass('icon')}>
           filter_alt
         </a>
       </div>
       <ul class="flex flex-1 flex-col overflow-auto">
-        <For each={getChildren()}>
-          {(child) => {
-            const childPath = () => [...props.path, child.text];
-            const lockStatus = () => getLockStatus(childPath, getLockedPaths);
-            return (
-              <NavItem
-                child={child}
-                lockStatus={lockStatus()}
-                setLockState={(lock) => {
-                  setStatePropertyLock(childPath(), lock);
-                  if (lock) addLockPath(childPath());
-                  else removeLockPath(childPath());
-                }}
-                active={child.text === props.selectedProperty}
-                onClick={() => handlePropertyClick(child.text)}
-                onDelete={() => handleDelete(childPath())}
-                onDuplicate={() => onDuplicate(child.text)}
-                path={childPath()}
-              />
-            );
-          }}
+        <For each={entries}>
+          {(entry) => (
+            <NavItem
+              entry={entry}
+              depth={props.depth}
+              editable={canEdit()}
+              onClick={() => handlePropertyClick(entry.key)}
+              onDuplicate={() => onDuplicate(entry.key)}
+            />
+          )}
         </For>
       </ul>
     </div>
   );
 }
 
-interface ContainerChild {
-  text: string | number;
-  type: ValueType;
-}
-
 interface NavItemProps {
-  path: Path;
-  child: ContainerChild;
-  active: boolean;
+  entry: Entry;
+  depth: number;
+  editable: boolean;
   onClick: () => void;
-  onDelete: () => void;
   onDuplicate: () => void;
-  lockStatus: LockStatus;
-  setLockState: (lock: boolean) => void;
 }
 
 function NavItem(props: NavItemProps) {
+  const path = (): Path => [...getPath().slice(0, props.depth), props.entry.key];
+  const active = () => getPath()[props.depth] === props.entry.key;
+  const lockStatus = (): LockStatus => getLockStatus(path, getLockedPaths);
+
+  const toggleLock = () => {
+    const lock = lockStatus() === 'unlocked';
+    setStatePropertyLock(path(), lock);
+    if (lock) addLockPath(path());
+    else removeLockPath(path());
+  };
+
   const onContextMenu = createContextMenuHandler([
     {
-      disabled: () => props.lockStatus === 'ancestor-lock',
+      disabled: () => !props.editable || lockStatus() === 'ancestor-lock',
       label: () => (
         <>
-          <Show when={props.lockStatus !== 'locked'}>
-            Lock "<PrettyPath path={props.path} class="font-mono" />"
+          <Show when={lockStatus() !== 'locked'}>
+            Lock "<PrettyPath path={path()} class="font-mono" />"
           </Show>
-          <Show when={props.lockStatus === 'locked'}>
-            Unlock "<PrettyPath path={props.path} class="font-mono" />"
+          <Show when={lockStatus() === 'locked'}>
+            Unlock "<PrettyPath path={path()} class="font-mono" />"
           </Show>
         </>
       ),
-      onClick: () => props.setLockState(props.lockStatus === 'unlocked'),
+      onClick: toggleLock,
     },
     {
       label: () => (
         <>
-          Filter "<PrettyPath path={props.path} class="font-mono" />" from DiffLog
+          Filter "<PrettyPath path={path()} class="font-mono" />" from DiffLog
         </>
       ),
-      onClick: () => addFilteredPath(props.path),
-      disabled: () => isPathFiltered(props.path),
+      onClick: () => addFilteredPath(path()),
+      disabled: () => isPathFiltered(path()),
     },
     {
       label: () => (
         <>
-          Duplicate "<PrettyPath path={props.path} class="font-mono" />"
+          Duplicate "<PrettyPath path={path()} class="font-mono" />"
         </>
       ),
       onClick: () => props.onDuplicate(),
-      disabled: () => props.lockStatus === 'ancestor-lock',
+      disabled: () => !props.editable || lockStatus() === 'ancestor-lock',
     },
     {
       label: () => (
         <>
-          Delete "<PrettyPath path={props.path} class="font-mono" />"
+          Delete "<PrettyPath path={path()} class="font-mono" />"
         </>
       ),
-      onClick: () => props.onDelete(),
-      disabled: () => props.lockStatus !== 'unlocked',
+      onClick: () => deleteFromState(path()),
+      disabled: () => !props.editable || lockStatus() !== 'unlocked',
     },
   ]);
 
@@ -309,16 +315,16 @@ function NavItem(props: NavItemProps) {
         onClick={() => props.onClick()}
         class={clsx(
           'flex cursor-pointer items-center gap-1 rounded-md p-1',
-          props.active
+          active()
             ? 'outline-2 -outline-offset-2 outline-gray-300'
             : 'outline-transparent hover:bg-gray-700',
         )}
       >
-        <TypeIcon type={props.child.type} />
+        <TypeIcon type={props.entry.type} />
         <span class="flex-1 overflow-hidden text-ellipsis">
-          {props.child.text}
-          {props.lockStatus === 'locked' && '🔒'}
-          {props.lockStatus === 'ancestor-lock' && <span class="saturate-0">🔒</span>}
+          {props.entry.label}
+          {lockStatus() === 'locked' && '🔒'}
+          {lockStatus() === 'ancestor-lock' && <span class="saturate-0">🔒</span>}
         </span>
       </a>
     </li>

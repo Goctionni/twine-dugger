@@ -1,55 +1,54 @@
 import clsx from 'clsx';
-import { For } from 'solid-js';
+import { createMemo, For } from 'solid-js';
 
 import {
   createGetSetting,
-  getPassageData,
+  isPathFiltered,
   setNavigationPage,
   setViewState,
 } from '@/devtools-panel/store/store';
-import type { DiffFrame as TDiffFrame, ParsedPassageData } from '@/shared/shared-types';
+import type { StateDiff } from '@/devtools-panel/store/store-types';
 
 import { DiffItem } from './Diff';
 import { RelativeTime } from './RelativeTime';
 
 interface Props {
   first?: boolean;
-  frame: TDiffFrame;
+  frame: StateDiff;
 }
 
+const getFontSize = createGetSetting('diffLog.fontSize');
+
 export function DiffFrame(props: Props) {
-  const showSeparator = () => !props.first;
-  const getFontSize = createGetSetting('diffLog.fontSize');
+  // A frame never changes, so only the filters can change what is shown of it
+  const changes = createMemo(() =>
+    props.frame.changes.filter((change) => !isPathFiltered(change.path)),
+  );
+  const date = () => new Date(props.frame.timestamp);
 
   return (
     <div class="group" style={{ 'font-size': `${getFontSize()}px` }}>
       <div
         class={clsx(
           'flex items-center gap-2',
-          showSeparator() && 'mt-3 border-t border-gray-700/50 pt-3',
+          !props.first && 'mt-3 border-t border-gray-700/50 pt-3',
         )}
       >
         <button
           class="cursor-pointer font-bold text-gray-300"
           onClick={() => {
-            const passage = getPassageData().find((p) => p.name === props.frame.passage);
-            if (passage) setSelectedPassage(passage);
+            setViewState('passage', 'selected', props.frame.passage);
             setNavigationPage('passages');
           }}
         >
           {props.frame.passage}
         </button>
-        <RelativeTime date={props.frame.timestamp} />
+        <RelativeTime date={date()} />
       </div>
 
-      {/* lines */}
       <div class="mt-1 space-y-0.5 text-gray-400">
-        <For each={props.frame.changes}>{(diff) => <DiffItem diff={diff} />}</For>
+        <For each={changes()}>{(change) => <DiffItem change={change} />}</For>
       </div>
     </div>
   );
-}
-
-function setSelectedPassage(passage: ParsedPassageData) {
-  setViewState('passage', 'selected', { ...passage });
 }

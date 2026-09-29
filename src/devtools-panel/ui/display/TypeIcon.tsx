@@ -37,6 +37,11 @@ export function TypeIcon(props: Props) {
           {'{}'}
         </span>
       </Match>
+      <Match when={props.type === 'date'}>
+        <span title={props.type} class={`${baseIconClasses} bg-orange-500 text-white`}>
+          D
+        </span>
+      </Match>
       <Match when={props.type === 'string'}>
         <span title={props.type} class={`${baseIconClasses} bg-yellow-400 text-yellow-900`}>
           az

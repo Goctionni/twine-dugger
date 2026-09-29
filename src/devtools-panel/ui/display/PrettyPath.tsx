@@ -1,11 +1,11 @@
-import type { JSX } from 'solid-js';
-import { createMemo, Show } from 'solid-js';
-import { Dynamic } from 'solid-js/web';
+import type { JSX } from '@solidjs/web';
+import { Dynamic } from '@solidjs/web';
+import { createMemo, For, Show } from 'solid-js';
 
 import { getActiveState } from '@/devtools-panel/store/store';
-import { getObjectPathValue } from '@/shared/get-object-path-value';
+import type { ContainerType } from '@/shared/json-safe';
+import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
-import { getSpecificType } from '@/shared/type-helpers';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',
@@ -30,6 +30,11 @@ function needsBracketNotation(propertyName: string | number): boolean {
 
 interface Props {
   path: Path;
+  /**
+   * Container type of each ancestor (`kinds[i]` holds `path[i]`). Without it the types are looked
+   * up in the active state, which only works for paths that exist in it.
+   */
+  kinds?: ContainerType[];
   statePrefix?: boolean;
   globSuffix?: boolean;
   action?: 'added' | 'removed';
@@ -37,68 +42,63 @@ interface Props {
 }
 
 export function PrettyPath(props: Props) {
-  const chunks = createMemo(() => {
-    const state = getActiveState()!;
+  const atoms = createMemo(() => {
     const lastIndex = props.path.length - 1;
 
-    return props.path
-      .flatMap((slug, index): Array<false | AtomProps> => {
-        const partialPath = props.path.slice(0, index + 1);
-        const parentValue = getObjectPathValue(state, partialPath.slice(0, -1));
-        const parentType = getSpecificType(parentValue);
-        const leafClass = (index === lastIndex && props.action) || null;
+    return props.path.flatMap((slug, index): AtomProps[] => {
+      const parentType =
+        props.kinds?.[index] ??
+        getJsonType(getPathValue(getActiveState(), props.path.slice(0, index)));
+      const leafClass = (index === lastIndex && props.action) || null;
 
-        if (parentType === 'object') {
-          if (props.statePrefix || index > 0) {
-            if (needsBracketNotation(slug)) {
-              // Use bracket notation for invalid identifiers
-              return [
-                { color: 'pathBrackets', text: '[' },
-                { color: leafClass ?? 'typeString', text: `"${slug}"` },
-                { color: 'pathBrackets', text: ']' },
-              ];
-            } else {
-              // Use dot notation for valid identifiers
-              return [
-                { color: 'pathDot', text: '.' },
-                { color: leafClass ?? 'pathChunk', text: slug },
-              ];
-            }
+      if (parentType === 'object') {
+        if (props.statePrefix || index > 0) {
+          if (needsBracketNotation(slug)) {
+            // Use bracket notation for invalid identifiers
+            return [
+              { color: 'pathBrackets', text: '[' },
+              { color: leafClass ?? 'typeString', text: `"${slug}"` },
+              { color: 'pathBrackets', text: ']' },
+            ];
+          } else {
+            // Use dot notation for valid identifiers
+            return [
+              { color: 'pathDot', text: '.' },
+              { color: leafClass ?? 'pathChunk', text: slug },
+            ];
           }
-          return [{ color: leafClass ?? 'pathRoot', text: slug }];
         }
-        if (parentType === 'array') {
-          return [
-            { color: 'pathBrackets', text: '[' },
-            { color: leafClass ?? 'typeNumber', text: slug },
-            { color: 'pathBrackets', text: ']' },
-          ];
-        }
-        if (parentType === 'map') {
-          const keyNode: AtomProps =
-            typeof slug === 'string'
-              ? { color: leafClass ?? 'typeString', text: `"${slug}"` }
-              : { color: leafClass ?? 'typeNumber', text: slug };
+        return [{ color: leafClass ?? 'pathRoot', text: slug }];
+      }
+      if (parentType === 'array' || parentType === 'set') {
+        // The first item of a Set's array is its marker
+        const text = parentType === 'set' && typeof slug === 'number' ? slug - 1 : slug;
+        return [
+          { color: 'pathBrackets', text: '[' },
+          { color: leafClass ?? 'typeNumber', text },
+          { color: 'pathBrackets', text: ']' },
+        ];
+      }
+      if (parentType === 'map') {
+        const keyNode: AtomProps =
+          typeof slug === 'string'
+            ? { color: leafClass ?? 'typeString', text: `"${slug}"` }
+            : { color: leafClass ?? 'typeNumber', text: slug };
 
-          return [
-            { color: 'pathDot', text: '.' },
-            { color: 'typeString', text: 'get' },
-            { color: 'pathBrackets', text: '(' },
-            keyNode,
-            { color: 'pathBrackets', text: ')' },
-          ];
-        }
-        return [];
-      })
-      .filter((v): v is AtomProps => !!v)
-      .map((atomProps) => <PathAtom {...atomProps} />);
+        return [
+          { color: 'pathDot', text: '.' },
+          { color: 'typeString', text: 'get' },
+          { color: 'pathBrackets', text: '(' },
+          keyNode,
+          { color: 'pathBrackets', text: ')' },
+        ];
+      }
+      return [];
+    });
   });
 
-  const isObjectValue = () => {
-    const state = getActiveState()!;
-    const value = getObjectPathValue(state, props.path);
-    return !!value && typeof value === 'object';
-  };
+  const isContainer = () =>
+    isContainerType(getJsonType(getPathValue(getActiveState(), props.path)));
 
   return (
     <Dynamic
@@ -108,8 +108,10 @@ export function PrettyPath(props: Props) {
       <Show when={props.statePrefix}>
         <span class={colorClasses.pathRoot}>State</span>
       </Show>
-      {chunks()}
-      <Show when={props.globSuffix && isObjectValue()}>
+      <For each={atoms()} keyed={false}>
+        {(atom) => <PathAtom {...atom()} />}
+      </For>
+      <Show when={props.globSuffix && isContainer()}>
         <span class={colorClasses.pathDot}>.</span>
         <span class={colorClasses.glob}>*</span>
       </Show>

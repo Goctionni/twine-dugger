@@ -66,7 +66,7 @@ async function buildExtra() {
     // content-script.js
     buildLib({
       entry: { 'content-script': 'src/content-script/content-script.ts' },
-      deps: { onlyBundle: false, alwaysBundle: ['arktype'] },
+      deps: { onlyBundle: false, alwaysBundle: ['arktype', 'jsondiffpatch'] },
     }),
   ]);
 
