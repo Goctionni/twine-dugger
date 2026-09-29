@@ -2,7 +2,6 @@ import { type } from 'arktype';
 
 import type { ChapbookGlobals, FormatPassage, Path, Value } from '@/shared/shared-types';
 
-import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
 const chapbookSchema = type({
@@ -28,8 +27,6 @@ const chapbook = () => chapbookSchema.assert(window);
 
 const getState = () => chapbook().engine.state.saveToObject();
 const setState = (path: Path, value: unknown) => chapbook().engine.state.set(path.join('.'), value);
-
-const { processDiffs, setPathLock } = createPropertyLocker(getState, setState);
 
 export default {
   detect: () =>
@@ -98,9 +95,6 @@ export default {
       chapbook().engine.state.set(parentPath.join('.'), newObj);
     }
   },
-  setStatePropertyLock: setPathLock,
-  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
-  processDiffs,
   goToPassage: (passageName) => chapbook().go(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;

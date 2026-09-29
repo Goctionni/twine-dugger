@@ -1,8 +1,9 @@
-import { For, Match, Switch } from 'solid-js';
+import { For, Match, Show, Switch } from 'solid-js';
 
 import { setPassage } from '@/devtools-panel/api/api';
 import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
+import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import {
@@ -19,6 +20,16 @@ interface Props {
 }
 
 export function PassageResults(props: Props) {
+  let scrollElRef: HTMLDivElement | undefined;
+  const virtualizer = createVirtualizer({
+    getScrollElement: () => scrollElRef ?? null,
+    estimateSize: () => 35,
+    get count() {
+      return props.results.length;
+    },
+    overscan: 5,
+  });
+
   const onPassageClick = (passage: ParsedPassageData) => {
     setViewState('passage', 'selected', passage.name);
   };
@@ -45,16 +56,29 @@ export function PassageResults(props: Props) {
       class="flex h-full w-full grow overflow-hidden"
       initialLeftWidthPercent={50}
       leftContent={
-        <div class="h-full overflow-auto">
-          <ul class="w-full">
-            <For each={props.results}>
-              {(result) => (
-                <PassageListItem
-                  passageData={result}
-                  onClick={() => onPassageClick(result)}
-                  active={getSelectedPassage()?.id === result.id}
-                />
-              )}
+        <div class="h-full overflow-auto" ref={scrollElRef}>
+          <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
+            <For each={virtualizer.getVirtualItems()}>
+              {(virtualItem) => {
+                const result = () => props.results[virtualItem.index]!;
+                return (
+                  <Show when={result()}>
+                    <PassageListItem
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualItem.size}px`,
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                      passageData={result()}
+                      onClick={() => onPassageClick(result())}
+                      active={getSelectedPassage()?.id === result().id}
+                    />
+                  </Show>
+                );
+              }}
             </For>
           </ul>
         </div>

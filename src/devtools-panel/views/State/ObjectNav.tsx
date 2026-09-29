@@ -1,22 +1,18 @@
+import type { JSX } from '@solidjs/web';
 import clsx from 'clsx';
 import { createMemo, createProjection, createSignal, For, Show, untrack } from 'solid-js';
 
-import {
-  deleteFromState,
-  duplicateStateProperty,
-  setState,
-  setStatePropertyLock,
-} from '@/devtools-panel/api/api';
+import { deleteFromState, duplicateStateProperty, setState } from '@/devtools-panel/api/api';
 import {
   addFilteredPath,
-  addLockPath,
   createGetSetting,
   createGetViewState,
   createSetSetting,
   getActiveState,
   getLockedPaths,
   isPathFiltered,
-  removeLockPath,
+  isPathLockable,
+  setPathLock,
   setViewState,
 } from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
@@ -24,6 +20,7 @@ import { tooltip } from '@/devtools-panel/ui/display/TooltipDirective';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { baseInputClasses } from '@/devtools-panel/ui/util/common-classes';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
+import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
 import { getContainerKeys, getJsonType, isContainerType } from '@/shared/json-safe';
 import type {
   LockStatus,
@@ -141,6 +138,17 @@ export function ObjectNav(props: Props) {
     { key: 'key' },
   );
 
+  let scrollElRef: HTMLDivElement | undefined;
+  // Only the rows in view are rendered; every row is the same height
+  const virtualizer = createVirtualizer({
+    getScrollElement: () => scrollElRef ?? null,
+    estimateSize: () => 26,
+    get count() {
+      return entries.length;
+    },
+    overscan: 10,
+  });
+
   const handlePropertyClick = (property: string | number) => {
     const prefix = parentPath();
     const newPath = [...prefix, property];
@@ -228,19 +236,34 @@ export function ObjectNav(props: Props) {
           filter_alt
         </a>
       </div>
-      <ul class="flex flex-1 flex-col overflow-auto">
-        <For each={entries}>
-          {(entry) => (
-            <NavItem
-              entry={entry}
-              depth={props.depth}
-              editable={canEdit()}
-              onClick={() => handlePropertyClick(entry.key)}
-              onDuplicate={() => onDuplicate(entry.key)}
-            />
-          )}
-        </For>
-      </ul>
+      <div class="flex-1 overflow-auto" ref={scrollElRef}>
+        <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
+          <For each={virtualizer.getVirtualItems()}>
+            {(virtualItem) => {
+              const entry = () => entries[virtualItem.index];
+              return (
+                <Show when={entry()}>
+                  <NavItem
+                    entry={entry()!}
+                    depth={props.depth}
+                    editable={canEdit()}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${virtualItem.size}px`,
+                      transform: `translateY(${virtualItem.start}px)`,
+                    }}
+                    onClick={() => handlePropertyClick(entry()!.key)}
+                    onDuplicate={() => onDuplicate(entry()!.key)}
+                  />
+                </Show>
+              );
+            }}
+          </For>
+        </ul>
+      </div>
     </div>
   );
 }
@@ -249,6 +272,7 @@ interface NavItemProps {
   entry: Entry;
   depth: number;
   editable: boolean;
+  style: JSX.CSSProperties;
   onClick: () => void;
   onDuplicate: () => void;
 }
@@ -258,20 +282,17 @@ function NavItem(props: NavItemProps) {
   const active = () => getPath()[props.depth] === props.entry.key;
   const lockStatus = (): LockStatus => getLockStatus(path, getLockedPaths);
 
-  const toggleLock = () => {
-    const lock = lockStatus() === 'unlocked';
-    setStatePropertyLock(path(), lock);
-    if (lock) addLockPath(path());
-    else removeLockPath(path());
-  };
+  const toggleLock = () => setPathLock(path(), lockStatus() === 'unlocked');
+  const cannotLock = () => lockStatus() === 'unlocked' && !isPathLockable(path());
 
   const onContextMenu = createContextMenuHandler([
     {
-      disabled: () => !props.editable || lockStatus() === 'ancestor-lock',
+      disabled: () => !props.editable || lockStatus() === 'ancestor-lock' || cannotLock(),
       label: () => (
         <>
           <Show when={lockStatus() !== 'locked'}>
             Lock "<PrettyPath path={path()} class="font-mono" />"
+            {cannotLock() && " (functions can't be locked)"}
           </Show>
           <Show when={lockStatus() === 'locked'}>
             Unlock "<PrettyPath path={path()} class="font-mono" />"
@@ -310,7 +331,7 @@ function NavItem(props: NavItemProps) {
   ]);
 
   return (
-    <li onContextMenu={onContextMenu}>
+    <li style={props.style} onContextMenu={onContextMenu}>
       <a
         onClick={() => props.onClick()}
         class={clsx(

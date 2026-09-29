@@ -1,11 +1,4 @@
-import type {
-  Diff,
-  FormatPassage,
-  ObjectValue,
-  PassageData,
-  Path,
-  ProcessDiffResult,
-} from '@/shared/shared-types';
+import type { FormatPassage, ObjectValue, PassageData, Path } from '@/shared/shared-types';
 
 export interface FormatHelpers {
   detect: () => boolean;
@@ -18,9 +11,6 @@ export interface FormatHelpers {
     targetKey?: string | null,
   ) => void;
   deleteFromState: (path: Path) => void;
-  processDiffs?: (diffs: Diff[]) => ProcessDiffResult;
-  setStatePropertyLock: (path: Path, lock: boolean) => Path[];
-  setStatePropertyLocks: (paths: Path[]) => void;
   goToPassage: (passageName: string) => void;
   setPassage: (passage: FormatPassage) => void;
   getPassageData?: () => PassageData[];

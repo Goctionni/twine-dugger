@@ -15,7 +15,24 @@ export type DiffChange =
   | (ChangeBase & { kind: 'add'; value: JSONSafeValue })
   | (ChangeBase & { kind: 'del'; value: JSONSafeValue })
   | (ChangeBase & { kind: 'chg' | 'typ'; oldValue: JSONSafeValue; newValue: JSONSafeValue })
-  | (ChangeBase & { kind: 'mov' });
+  | (ChangeBase & { kind: 'mov' })
+  /** The game changed a locked path and the change was undone */
+  | (ChangeBase & { kind: 'lock'; attempted: JSONSafeValue; locked: JSONSafeValue })
+  /** The game was reloaded, so the state and history start over */
+  | (ChangeBase & { kind: 'reload' });
+
+/** The container type of each ancestor of `path`, as far as the path exists in `state` */
+export function getPathKinds(state: unknown, path: Path): ContainerType[] {
+  const kinds: ContainerType[] = [];
+  let value = state;
+  for (const key of path) {
+    const type = getJsonType(value);
+    if (!isContainerType(type)) break;
+    kinds.push(type);
+    value = (value as Record<string | number, unknown>)[key];
+  }
+  return kinds;
+}
 
 type DeltaNode = Record<string, unknown>;
 

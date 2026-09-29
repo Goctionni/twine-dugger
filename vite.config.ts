@@ -2,7 +2,6 @@ import { cp } from 'fs/promises';
 import { resolve } from 'path';
 
 import tailwindcss from '@tailwindcss/vite';
-import solidJsDevtools from 'solid-devtools/vite';
 import solidPlugin from 'vite-plugin-solid';
 import { defineConfig } from 'vite-plus';
 
@@ -17,13 +16,7 @@ export default defineConfig({
   staged: { '*': '' },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
   build: { minify: false, sourcemap: true },
-  plugins: [
-    solidJsDevtools({ autoname: true }),
-    solidPlugin(),
-    tailwindcss(),
-    htmlInsertFontPlugin,
-    mockApiPlugin(),
-  ],
+  plugins: [solidPlugin(), tailwindcss(), htmlInsertFontPlugin, mockApiPlugin()],
   lint: (await import('./oxlint.config.ts')).default,
   fmt: (await import('./oxfmt.config.ts')).default,
   environments: {},

@@ -3,7 +3,6 @@ import { type } from 'arktype';
 import type { FormatPassage, Path, SnowmanGlobals } from '@/shared/shared-types';
 
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
-import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
 const passageSchema = type({
@@ -32,8 +31,6 @@ const snowman = () => snowmanSchema.assert(window);
 const getState = () => snowman().story.state;
 const setState = (path: Path, value: unknown) => setStateBase(getState(), path, value);
 
-const { processDiffs, setPathLock } = createPropertyLocker(getState, setState);
-
 export default {
   detect: () =>
     snowmanSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata'),
@@ -43,9 +40,6 @@ export default {
   duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
     duplicateStateProperty(getState(), parentPath, sourceKey, targetKey),
   deleteFromState: (path) => deleteFromState(getState(), path),
-  setStatePropertyLock: setPathLock,
-  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
-  processDiffs,
   goToPassage: (passageName) => snowman().story.show(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;

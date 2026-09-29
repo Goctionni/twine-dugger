@@ -6,23 +6,28 @@ import {
   createSignal,
   createStore,
   deep,
+  flush,
   snapshot,
   untrack,
 } from 'solid-js';
 
+import { containsFunction, getPathValue } from '@/shared/json-safe';
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
 import type {
   GameMetaData,
   JSONSafeObject,
+  JSONSafeValue,
+  Lock,
+  LockRevert,
   ParsedPassageData,
   PassageData,
   Path,
   UpdateResult,
 } from '@/shared/shared-types';
 
-import { getPassageData as apiGetPassageData } from '../api/api';
+import { getPassageData as apiGetPassageData, setStatePropertyLocks } from '../api/api';
 import type { DiffChange } from './delta';
-import { flattenDelta } from './delta';
+import { flattenDelta, getPathKinds } from './delta';
 import type { GameConfig, Settings, StateDiff, StoreData } from './store-types';
 
 const LS_PREFIX = 'twine-dugger-';
@@ -48,13 +53,15 @@ function loadGlobalSettings(): Settings {
 }
 
 function loadGameConfig(ifId: string | undefined): GameConfig {
-  const config: GameConfig = { filteredPaths: [], lockedPaths: [] };
+  const config: GameConfig = { filteredPaths: [], locks: [] };
   if (!ifId) return config;
   try {
     const lsData = localStorage.getItem(getGameSettingsKey(ifId));
-    // Locks are not restored: they only exist for as long as the content script remembers them
-    if (lsData)
-      config.filteredPaths = (JSON.parse(lsData) as Partial<GameConfig>).filteredPaths ?? [];
+    if (lsData) {
+      const saved = JSON.parse(lsData) as Partial<GameConfig>;
+      config.filteredPaths = saved.filteredPaths ?? [];
+      config.locks = saved.locks ?? [];
+    }
   } catch {}
   return config;
 }
@@ -72,7 +79,7 @@ const [store, setStore] = createStore<StoreData>({
   connectionState: 'loading-meta',
   candidateIframes: [],
   gameMeta: null,
-  gameConfig: { filteredPaths: [], lockedPaths: [] },
+  gameConfig: { filteredPaths: [], locks: [] },
   settings: loadGlobalSettings(),
   viewState: {
     activeTab: 'state',
@@ -101,29 +108,79 @@ const pathKey = (path: Path) => path.join('\u0000');
 
 // --- Applying updates ----------------------------------------------------------------------------
 
-export function resetGameState(initialState: JSONSafeObject) {
+/**
+ * `reloaded`: the game restarted underneath us. The log is kept, with a marker where it happened.
+ * There's no delta from the old state to the new one, so what came before the marker can still be
+ * read in the log (it's "tainted") but can no longer be travelled to.
+ */
+export function resetGameState(initialState: JSONSafeObject, reloaded = false) {
   setGameState(() => initialState);
-  setFrames([]);
-  setLatestId(0);
-  setLogStartId(0);
   setLastChanged(() => ({}));
   setViewState('state', 'historyRef', 'latest');
-}
 
-export function applyUpdate({ passage, delta }: UpdateResult, timestamp = Date.now()) {
-  if (!delta) return;
+  if (!reloaded) {
+    setFrames([]);
+    setLatestId(0);
+    setLogStartId(0);
+    return;
+  }
 
   const id = untrack(latestId) + 1;
+  const changes: DiffChange[] = [{ kind: 'reload', path: [], kinds: [] }];
+  const marker: StateDiff = { id, timestamp: Date.now(), passage: '', changes };
+  const max = untrack(() => store.settings['diffLog.maxHistorySlices']);
+  setFrames((current) => [marker, ...current].slice(0, max));
+  setLatestId(id);
+}
+
+function createLockChange(revert: LockRevert, state: unknown): DiffChange[] {
+  const lock = untrack(() => store.gameConfig.locks.find((l) => pathEquals(l.path, revert.path)));
+  if (!lock) return [];
+
+  const { path, attempted } = revert;
+  return [
+    {
+      kind: 'lock',
+      path,
+      kinds: getPathKinds(state, path),
+      attempted,
+      locked: snapshot(lock.value),
+    },
+  ];
+}
+
+export function applyUpdate({ passage, delta, reverts }: UpdateResult, timestamp = Date.now()) {
   let changes: DiffChange[] = [];
   // The patch inserts values from the delta into the store; the frame keeps the pristine delta
-  const patch = structuredClone(delta);
+  const patch = delta && structuredClone(delta);
   setGameState((draft) => {
-    differ.patch(draft, patch);
-    changes = flattenDelta(delta, draft);
+    if (delta) {
+      differ.patch(draft, patch!);
+      changes = flattenDelta(delta, draft);
+    }
+    changes.push(...reverts.flatMap((revert) => createLockChange(revert, draft)));
   });
+  if (!changes.length && !delta) return;
 
+  // A game that keeps fighting a lock repeats the same revert every poll: count those instead
+  const previous = untrack(frames)[0];
+  if (
+    !delta &&
+    previous &&
+    !previous.delta &&
+    JSON.stringify(previous.changes) === JSON.stringify(changes)
+  ) {
+    setFrames((current) => [
+      { ...previous, passage, timestamp, repeats: (previous.repeats ?? 1) + 1 },
+      ...current.slice(1),
+    ]);
+    return;
+  }
+
+  const id = untrack(latestId) + 1;
   setLastChanged((draft) => {
-    for (const { path } of changes) {
+    for (const { kind, path } of changes) {
+      if (kind === 'lock') continue;
       for (let i = 1; i <= path.length; i++) draft[pathKey(path.slice(0, i))] = id;
     }
   });
@@ -149,7 +206,7 @@ const derived = createRoot(() => {
       const state = structuredClone(snapshot(gameState));
       for (const frame of frames()) {
         if (frame.id <= ref) break;
-        differ.unpatch(state, structuredClone(frame.delta));
+        if (frame.delta) differ.unpatch(state, structuredClone(frame.delta));
       }
       return state;
     });
@@ -157,14 +214,27 @@ const derived = createRoot(() => {
 
   const getActiveState = (): JSONSafeObject => historicalState() ?? gameState;
 
+  /** Id of the frame that marks the last time the game was reloaded, if it is still in the log */
+  const getReloadId = createMemo(
+    () => frames().find((frame) => frame.changes.some((change) => change.kind === 'reload'))?.id,
+  );
+
+  /** The oldest state that can be inspected: after the last reload, or before the oldest frame */
+  const getHistoryFloor = createMemo(() =>
+    Math.max(getReloadId() ?? -Infinity, latestId() - frames().length),
+  );
+
   /** Ids of every state that can be inspected, latest first */
   const getHistoryIds = createMemo(
     () => {
       const latest = latestId();
-      return Array.from({ length: frames().length + 1 }, (_, i) => latest - i);
+      return Array.from({ length: latest - getHistoryFloor() + 1 }, (_, i) => latest - i);
     },
     { equals: shallowEqual },
   );
+
+  /** Frames from before the last reload are in the log, but their states can't be reached anymore */
+  const isFrameTainted = (frame: StateDiff) => frame.id < (getReloadId() ?? -Infinity);
 
   const getDiffFrames = createMemo(() => frames().filter((frame) => frame.id > logStartId()), {
     equals: shallowEqual,
@@ -172,9 +242,9 @@ const derived = createRoot(() => {
 
   // The oldest slice can go away when frames are trimmed
   createEffect(
-    () => ({ oldest: latestId() - frames().length, ref: store.viewState.state.historyRef }),
-    ({ oldest, ref }) => {
-      if (ref !== 'latest' && ref < oldest) setViewState('state', 'historyRef', 'latest');
+    () => ({ floor: getHistoryFloor(), ref: store.viewState.state.historyRef }),
+    ({ floor, ref }) => {
+      if (ref !== 'latest' && ref < floor) setViewState('state', 'historyRef', 'latest');
     },
   );
 
@@ -199,10 +269,10 @@ const derived = createRoot(() => {
     },
   );
 
-  return { getActiveState, getHistoryIds, getDiffFrames };
+  return { getActiveState, getHistoryIds, getDiffFrames, isFrameTainted };
 });
 
-export const { getActiveState, getHistoryIds, getDiffFrames } = derived;
+export const { getActiveState, getHistoryIds, getDiffFrames, isFrameTainted } = derived;
 export const getLatestId = latestId;
 /** The live state, regardless of which history slice is being inspected */
 export const getLatestState = () => gameState;
@@ -282,7 +352,7 @@ export const createSetSetting =
 // --- Filtered paths & locks ----------------------------------------------------------------------
 
 export const getFilteredPaths = () => store.gameConfig.filteredPaths;
-export const getLockedPaths = () => store.gameConfig.lockedPaths;
+export const getLockedPaths = () => store.gameConfig.locks.map((lock) => lock.path);
 
 export const isPathFiltered = (path: Path) =>
   store.gameConfig.filteredPaths.some((filterPath) => pathStartsWith(path, filterPath));
@@ -305,23 +375,43 @@ export const clearFilteredPaths = () =>
     draft.gameConfig.filteredPaths = [];
   });
 
-export const addLockPath = (path: Path) =>
-  setStore((draft) => {
-    const { lockedPaths } = draft.gameConfig;
-    if (!lockedPaths.some((current) => pathEquals(current, path))) lockedPaths.push([...path]);
-  });
+// A lock is a path and the value the path is kept at. The panel decides the value, so restoring a
+// lock after the game reloaded is the same call as setting one.
 
-export const removeLockPath = (path: Path) =>
-  setStore((draft) => {
-    draft.gameConfig.lockedPaths = draft.gameConfig.lockedPaths.filter(
-      (current) => !pathEquals(current, path),
-    );
-  });
+const getLatestValue = (path: Path) => untrack(() => snapshot(getPathValue(gameState, path)));
+const currentLocks = (): Lock[] => untrack(() => snapshot(store.gameConfig.locks));
 
-export const clearLockPaths = () =>
+/** Whether the value at the path (as it is now) can be locked: functions can't be sent back */
+export function isPathLockable(path: Path) {
+  const value = getLatestValue(path);
+  return value !== undefined && !containsFunction(value);
+}
+
+function setLocks(locks: Lock[]) {
   setStore((draft) => {
-    draft.gameConfig.lockedPaths = [];
+    draft.gameConfig.locks = locks;
   });
+  // Applied right away, so the next change to the locks starts from this list
+  flush();
+  return setStatePropertyLocks(locks);
+}
+
+/** Sends the locks to the content script, for instance after it was reinitialized */
+export const syncLocks = () => setStatePropertyLocks(currentLocks());
+
+export function setPathLock(path: Path, lock: boolean) {
+  const locks = currentLocks().filter((current) => !pathEquals(current.path, path));
+  if (lock) {
+    const value = getLatestValue(path);
+    if (value === undefined) throw new Error('Cannot lock a path that has no value');
+    if (containsFunction(value))
+      throw new Error('Cannot lock a value that is or contains a function');
+    locks.push({ path: [...path], value: structuredClone(value) as JSONSafeValue });
+  }
+  return setLocks(locks);
+}
+
+export const clearLocks = () => setLocks([]);
 
 // --- Passages ------------------------------------------------------------------------------------
 

@@ -2,6 +2,7 @@ import '@types/firefox-webext-browser';
 import '@types/chrome';
 import type {
   FormatPassage,
+  Lock,
   JSONSafeObject,
   JSONSafeValue,
   ObjectValue,
@@ -34,8 +35,7 @@ declare global {
         sourceKey: string | number,
         targetKey?: string | null,
       ) => void;
-      setStatePropertyLock: (path: Path, lock: boolean) => Path[];
-      setStatePropertyLocks: (paths: Path[]) => void;
+      setStatePropertyLocks: (locks: Lock[]) => void;
       goToPassage: (passageName: string) => void;
       setPassage: (passage: FormatPassage) => void;
     };

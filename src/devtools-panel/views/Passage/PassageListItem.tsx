@@ -1,3 +1,4 @@
+import type { JSX } from '@solidjs/web';
 import clsx from 'clsx';
 import { For } from 'solid-js';
 
@@ -8,11 +9,12 @@ interface ListItemProps {
   passageData: ParsedPassageData;
   onClick: () => void;
   active?: boolean;
+  style?: JSX.CSSProperties;
 }
 
 export function PassageListItem(props: ListItemProps) {
   return (
-    <li class="flex border-t border-slate-400 last:border-b">
+    <li class="flex border-t border-slate-400 last:border-b" style={props.style}>
       <button
         data-id={props.passageData.id}
         data-name={props.passageData.name}

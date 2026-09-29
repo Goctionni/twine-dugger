@@ -1,12 +1,11 @@
 import { createSignal, Show } from 'solid-js';
 
-import { setState, setStatePropertyLock } from '@/devtools-panel/api/api';
+import { setState } from '@/devtools-panel/api/api';
 import {
-  addLockPath,
   createGetViewState,
   getActiveState,
   getLockedPaths,
-  removeLockPath,
+  setPathLock,
 } from '@/devtools-panel/store/store';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
@@ -60,13 +59,8 @@ export function StateNumberInput(props: StateNumberInputProps) {
   };
 
   const handleToggleLock = () => {
-    if (lockStatus() === 'locked') {
-      removeLockPath(props.path);
-      setStatePropertyLock(props.path, false);
-    } else if (lockStatus() === 'unlocked') {
-      addLockPath(props.path);
-      setStatePropertyLock(props.path, true);
-    }
+    if (lockStatus() === 'locked') setPathLock(props.path, false);
+    else if (lockStatus() === 'unlocked') setPathLock(props.path, true);
   };
 
   const hasChanges = () => localValue() !== currentValue();

@@ -1,13 +1,11 @@
 import { Show } from 'solid-js';
 
 import { setState } from '@/devtools-panel/api/api';
-import { setStatePropertyLock } from '@/devtools-panel/api/api';
 import {
-  addLockPath,
   createGetViewState,
   getActiveState,
   getLockedPaths,
-  removeLockPath,
+  setPathLock,
 } from '@/devtools-panel/store/store';
 import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
@@ -54,13 +52,8 @@ export function StateBooleanInput(props: StateBooleanInputProps) {
   };
 
   const handleToggleLock = () => {
-    if (lockStatus() === 'locked') {
-      setStatePropertyLock(props.path, false);
-      removeLockPath(props.path);
-    } else if (lockStatus() === 'unlocked') {
-      setStatePropertyLock(props.path, true);
-      addLockPath(props.path);
-    }
+    if (lockStatus() === 'locked') setPathLock(props.path, false);
+    else if (lockStatus() === 'unlocked') setPathLock(props.path, true);
   };
 
   return (

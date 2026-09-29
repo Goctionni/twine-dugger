@@ -1,4 +1,4 @@
-import type { FormatPassage, Path } from '@/shared/shared-types';
+import type { FormatPassage, Lock, Path } from '@/shared/shared-types';
 
 import { executeCode, injectContentScript } from './remote-execute';
 import { getGameMetaFn } from './remote-functions/getMetaData';
@@ -38,16 +38,10 @@ export async function setPassage(passage: FormatPassage) {
   return execDuggerFunction('setPassage', [passage]);
 }
 
-export async function setStatePropertyLock(path: Path, lock: boolean) {
+/** Replaces the locks the content script enforces */
+export async function setStatePropertyLocks(locks: Lock[]) {
   await injectContentScript();
-  return execDuggerFunction('setStatePropertyLock', [[...path], lock]);
-}
-
-export async function setStatePropertyLocks(paths: Path[]) {
-  await injectContentScript();
-  return execDuggerFunction('setStatePropertyLocks', [
-    paths.map((path) => path.map((slug) => slug)),
-  ]);
+  return execDuggerFunction('setStatePropertyLocks', [locks]);
 }
 
 export async function duplicateStateProperty(

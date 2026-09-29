@@ -14,7 +14,6 @@ import {
   setState as setStateBase,
   getPassageData as getPassageDataBase,
 } from './shared';
-import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
 const harloweSchema = type({
@@ -43,8 +42,6 @@ const harlowe = (): HarloweGlobals['__HarloweInternals'] => {
 const detect = () => harloweSchema.allows(window);
 const getState = () => harlowe().state.variables;
 const setState = (path: Path, value: unknown) => setStateBase(getState(), path, value);
-const { processDiffs, setPathLock } = createPropertyLocker(getState, setState);
-
 export default {
   detect,
   getState,
@@ -53,9 +50,6 @@ export default {
     duplicateStateProperty(getState(), parentPath, sourceKey, targetKey),
   deleteFromState: (path) => deleteFromState(getState(), path),
   getPassage: () => harlowe().state.passage,
-  setStatePropertyLock: setPathLock,
-  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
-  processDiffs,
   goToPassage: (passageName) => harlowe().engine.goToPassage(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
   getPassageData,

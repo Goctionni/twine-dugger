@@ -74,14 +74,28 @@ export type Diff =
   | DiffPrimitiveUpdate
   | DiffTypeChange;
 
-export type ProcessDiffResult = {
-  diffs: Diff[];
-  locksUpdate: Path[] | null;
-};
+/** The value at `path` is kept at `value` by the content script */
+export interface Lock {
+  path: Path;
+  value: JSONSafeValue;
+}
+
+/** A change to a locked path that the content script undid */
+export interface LockRevert {
+  path: Path;
+  /** What the game tried to change the value to */
+  attempted: JSONSafeValue;
+}
 
 export type UpdateResult = {
   passage: string;
   delta: Delta | undefined;
+  reverts: LockRevert[];
+  /**
+   * The content script was (re)initialized since the panel last asked for the state or updates,
+   * for instance because the page was reloaded. The panel's copy of the state is stale then.
+   */
+  initialized: boolean;
 };
 
 export type ValueType =

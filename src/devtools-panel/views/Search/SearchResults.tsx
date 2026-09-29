@@ -19,23 +19,16 @@ export function SearchResults() {
   const setResultTab = (tab: 'state' | 'passage') => setViewState('search', 'resultTab', tab);
   const getSearchResults = createSearchResults();
 
+  // Only tabs with results are shown. The tab that was picked is used if it has results, and
+  // otherwise the first one that does: with a single tab there is nothing else to look at.
   const resultTabs = createMemo(() => {
     const { state, passage } = getSearchResults();
-    const activeTab = getResultTab();
-    const tabs: Tab[] = [];
-    if (state.length) {
-      tabs.push({ text: 'State', id: 'state', active: activeTab === 'state', num: state.length });
-    }
-    if (passage.length) {
-      tabs.push({
-        text: 'Passage',
-        id: 'passage',
-        active: activeTab === 'passage',
-        num: passage.length,
-      });
-    }
-    if (!activeTab && tabs[0]) tabs[0].active = true;
-    return tabs;
+    const available: Omit<Tab, 'active'>[] = [];
+    if (state.length) available.push({ text: 'State', id: 'state', num: state.length });
+    if (passage.length) available.push({ text: 'Passage', id: 'passage', num: passage.length });
+
+    const activeId = (available.find((tab) => tab.id === getResultTab()) ?? available[0])?.id;
+    return available.map((tab): Tab => ({ ...tab, active: tab.id === activeId }));
   });
 
   const activeTab = () => resultTabs().find((tab) => tab.active)?.id;

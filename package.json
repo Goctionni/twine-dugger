@@ -10,6 +10,7 @@
   "dependencies": {
     "@shikijs/langs": "4.4.3",
     "@solidjs/web": "2.0.0-rc.11",
+    "@tanstack/virtual-core": "3.17.11",
     "arktype": "2.2.5",
     "clsx": "2.1.1",
     "jsondiffpatch": "0.7.6",
@@ -34,7 +35,6 @@
     "jsdom": "^30.1.1",
     "oxfmt": "0.70.0",
     "oxlint": "1.85.0",
-    "solid-devtools": "0.34.5",
     "typescript": "7.0.2",
     "vite-plugin-solid": "3.0.0-next.27",
     "vite-plus": "catalog:"

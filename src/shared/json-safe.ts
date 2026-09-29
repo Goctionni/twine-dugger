@@ -51,3 +51,20 @@ export function getPathValue(root: unknown, path: ReadonlyArray<string | number>
   }
   return value;
 }
+
+export function jsonEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((key) => Object.hasOwn(b, key) && jsonEqual(a[key as never], b[key as never]));
+}
+
+/** Functions can't be sent to or restored from the panel */
+export function containsFunction(value: unknown): boolean {
+  if (getJsonType(value) === 'function') return true;
+  if (!value || typeof value !== 'object') return false;
+  return Object.values(value).some(containsFunction);
+}

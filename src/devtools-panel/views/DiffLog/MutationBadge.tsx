@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-type Kind = 'add' | 'del' | 'chg' | 'typ' | 'mov';
+type Kind = 'add' | 'del' | 'chg' | 'typ' | 'mov' | 'lock';
 
 interface BadgeStyle {
   bg: string;
@@ -28,6 +28,12 @@ const badgeStyles: Record<Kind, BadgeStyle> = {
     text: 'text-violet-200',
     border: 'border-violet-700/60',
     label: 'TYPE',
+  },
+  lock: {
+    bg: 'bg-rose-900/40',
+    text: 'text-rose-200',
+    border: 'border-rose-700/60',
+    label: 'LOCK',
   },
   mov: {
     bg: 'bg-cyan-900/40',

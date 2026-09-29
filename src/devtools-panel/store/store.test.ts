@@ -1,12 +1,13 @@
 import { create as createDiffer } from 'jsondiffpatch';
 import { createEffect, createRoot, flush } from 'solid-js';
-import { describe, expect, it, vi } from 'vite-plus/test';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { pretransformState } from '@/content-script/util/pre-transform';
 import { getObjectId, setupIdentityHasher } from '@/shared/id-helper';
 import type { JSONSafeObject } from '@/shared/shared-types';
 
-vi.mock('../api/api', () => ({ getPassageData: async () => [] }));
+const setStatePropertyLocks = vi.fn<(locks: unknown) => Promise<void>>(async () => {});
+vi.mock('../api/api', () => ({ getPassageData: async () => [], setStatePropertyLocks }));
 
 const store = await import('./store');
 
@@ -24,7 +25,7 @@ function createGame(live: Record<string, any>) {
     const delta = differ.diff(old, next);
     old = next;
     oldLookup = nextLookup;
-    return { passage: 'P', delta };
+    return { passage: 'P', delta, reverts: [], initialized: false };
   };
   return { live, initial: () => structuredClone(pretransformState(live)[0]), poll };
 }
@@ -144,6 +145,123 @@ describe('store', () => {
     const after = (store.getActiveState() as any).list[0];
     expect(after.id).toBe(2);
     expect(after).toBe(before);
+  });
+
+  describe('locks', () => {
+    beforeEach(() => {
+      store.clearLocks();
+      flush();
+    });
+
+    it('stores the locked value and hands the locks to the content script', () => {
+      const game = createGame({ hp: 10, inv: [{ id: 1 }], onHit: () => 1 });
+      store.resetGameState(game.initial());
+      flush();
+
+      store.setPathLock(['hp'], true);
+      store.setPathLock(['inv'], true);
+      flush();
+
+      expect(store.getLockedPaths()).toEqual([['hp'], ['inv']]);
+      expect(setStatePropertyLocks).toHaveBeenLastCalledWith([
+        { path: ['hp'], value: 10 },
+        { path: ['inv'], value: [{ id: 1 }] },
+      ]);
+
+      store.setPathLock(['hp'], false);
+      flush();
+      expect(store.getLockedPaths()).toEqual([['inv']]);
+    });
+
+    it('refuses to lock functions, and says so', () => {
+      const game = createGame({ onHit: () => 1, nested: { fn: () => 2 } });
+      store.resetGameState(game.initial());
+      flush();
+
+      expect(store.isPathLockable(['onHit'])).toBe(false);
+      expect(store.isPathLockable(['nested'])).toBe(false);
+      expect(() => store.setPathLock(['onHit'], true)).toThrow(/function/);
+      expect(() => store.setPathLock(['missing'], true)).toThrow(/no value/);
+    });
+
+    it('logs what a lock undid, and counts repeats of the same revert', () => {
+      const game = createGame({ hp: 10 });
+      store.resetGameState(game.initial());
+      store.setPathLock(['hp'], true);
+      flush();
+
+      const revert = { path: ['hp'], attempted: 3 };
+      const update = { passage: 'P', delta: undefined, initialized: false };
+      for (let i = 0; i < 3; i++) {
+        store.applyUpdate({ ...update, reverts: [revert] });
+        flush();
+      }
+
+      const frames = store.getDiffFrames();
+      expect(frames).toHaveLength(1);
+      expect(frames[0]!.repeats).toBe(3);
+      expect(frames[0]!.changes).toMatchObject([
+        { kind: 'lock', path: ['hp'], attempted: 3, locked: 10 },
+      ]);
+
+      // Something else happening in between makes it a new entry
+      game.live.hp = 11;
+      store.applyUpdate(game.poll());
+      flush();
+      store.applyUpdate({ ...update, reverts: [revert] });
+      flush();
+      expect(store.getDiffFrames()).toHaveLength(3);
+    });
+
+    it('ignores reverts of locks that were removed', () => {
+      const game = createGame({ hp: 10 });
+      store.resetGameState(game.initial());
+      flush();
+      store.applyUpdate({
+        passage: 'P',
+        delta: undefined,
+        initialized: false,
+        reverts: [{ path: ['hp'], attempted: 3 }],
+      });
+      flush();
+      expect(store.getDiffFrames()).toHaveLength(0);
+    });
+
+    it('keeps the log across a reload, but only lets you travel to what came after it', () => {
+      const game = createGame({ hp: 10 });
+      store.resetGameState(game.initial());
+      for (const hp of [9, 8]) {
+        game.live.hp = hp;
+        store.applyUpdate(game.poll());
+        flush();
+      }
+      expect(store.getHistoryIds()).toEqual([2, 1, 0]);
+
+      // A reloaded page gets a fresh content script, which takes a new baseline
+      game.live.hp = 100;
+      const reloaded = createGame(game.live);
+      store.resetGameState(reloaded.initial(), true);
+      flush();
+      game.live.hp = 99;
+      store.applyUpdate(reloaded.poll());
+      flush();
+
+      const frames = store.getDiffFrames();
+      expect(frames.map((frame) => frame.id)).toEqual([4, 3, 2, 1]);
+      expect(frames[1]!.changes).toMatchObject([{ kind: 'reload' }]);
+      expect(frames.map((frame) => store.isFrameTainted(frame))).toEqual([
+        false,
+        false,
+        true,
+        true,
+      ]);
+
+      // The marker is the state right after the reload; nothing older can be reached
+      expect(store.getHistoryIds()).toEqual([4, 3]);
+      store.setViewState('state', 'historyRef', 3);
+      flush();
+      expect((store.getActiveState() as { hp: number }).hp).toBe(100);
+    });
   });
 });
 

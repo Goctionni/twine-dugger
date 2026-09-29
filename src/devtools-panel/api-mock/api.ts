@@ -1,4 +1,4 @@
-import type { Path } from '@/shared/shared-types';
+import type { Lock, Path } from '@/shared/shared-types';
 
 import type * as T from '../api/api';
 
@@ -56,6 +56,8 @@ export async function getUpdates(): Return<'getUpdates'> {
   return Promise.resolve({
     passage: '',
     delta: undefined,
+    reverts: [],
+    initialized: false,
   });
 }
 
@@ -63,14 +65,7 @@ export async function setState(_path: Array<string | number>, _value: unknown): 
   return Promise.resolve();
 }
 
-export async function setStatePropertyLock(
-  _path: Path,
-  _lock: boolean,
-): Return<'setStatePropertyLock'> {
-  return Promise.resolve([]);
-}
-
-export async function setStatePropertyLocks(_paths: Path[]): Return<'setStatePropertyLocks'> {
+export async function setStatePropertyLocks(_locks: Lock[]): Return<'setStatePropertyLocks'> {
   return Promise.resolve();
 }
 

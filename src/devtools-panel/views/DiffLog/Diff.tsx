@@ -60,6 +60,26 @@ export function DiffItem(props: { change: DiffChange }) {
           <RenderValue value={(change as Change<'del'>).value} faded />
         </div>
       </Match>
+      <Match when={change.kind === 'lock'}>
+        <div class="whitespace-normal">
+          <MutationBadge kind="lock" />
+          <DiffPath
+            path={change.path}
+            kinds={change.kinds}
+            onClick={() => goTo(change.path)}
+            onAddFilter={addFilteredPath}
+          />
+          {' was locked at '}
+          <RenderValue value={(change as Change<'lock'>).locked} />
+          {', the game tried '}
+          <RenderValue value={(change as Change<'lock'>).attempted} faded />
+        </div>
+      </Match>
+      <Match when={change.kind === 'reload'}>
+        <div class="whitespace-normal text-gray-300 italic">
+          Game reloaded, state and history reset
+        </div>
+      </Match>
       <Match when={change.kind === 'mov'}>
         <div class="whitespace-normal">
           <MutationBadge kind="mov" />

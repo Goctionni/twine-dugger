@@ -3,7 +3,6 @@ import { type } from 'arktype';
 import type { FormatPassage, Path, SugarCubeGlobals } from '@/shared/shared-types';
 
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
-import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
 const sugarCubeSchema = type({
@@ -26,8 +25,6 @@ const sugarcube = () => sugarCubeSchema.assert(window).SugarCube;
 const getState = () => sugarcube().State.variables;
 const setState = (path: Path, value: unknown) => setStateBase(getState(), path, value);
 
-const { processDiffs, setPathLock } = createPropertyLocker(getState, setState);
-
 export default {
   detect: () => sugarCubeSchema.allows(window),
   getState,
@@ -36,9 +33,6 @@ export default {
   duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
     duplicateStateProperty(getState(), parentPath, sourceKey, targetKey),
   deleteFromState: (path) => deleteFromState(getState(), path),
-  setStatePropertyLock: setPathLock,
-  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
-  processDiffs,
   goToPassage: (passageName) => sugarcube().Engine.play(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;

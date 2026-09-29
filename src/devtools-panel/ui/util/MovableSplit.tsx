@@ -1,5 +1,6 @@
 import type { JSX } from '@solidjs/web';
-import { createSignal, onSettled } from 'solid-js';
+import clsx from 'clsx';
+import { createSignal, onCleanup } from 'solid-js';
 
 import { getPersistedValue, setPersistedValue } from './persistedValue';
 
@@ -11,6 +12,8 @@ interface Interface {
   class?: string;
 }
 
+const DIVIDER_WIDTH = 8;
+
 export function MovableSplit(props: Interface) {
   const splitKey = () => props.splitKey;
   const initialWidthPct = props.initialLeftWidthPercent || 50;
@@ -21,40 +24,58 @@ export function MovableSplit(props: Interface) {
   const [isDragging, setIsDragging] = createSignal(false);
   let containerRef: HTMLDivElement | undefined;
 
-  const handleMouseDown = (e: MouseEvent) => {
+  // The container doesn't move while dragging, so it's measured once instead of on every move
+  let containerLeft = 0;
+  let pendingX = 0;
+  let frame = 0;
+
+  // Moves come in faster than frames are drawn; only the latest position matters
+  const handlePointerMove = (e: PointerEvent) => {
+    pendingX = e.clientX;
+    if (frame) return;
+
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      const width = `${pendingX - containerLeft - DIVIDER_WIDTH / 2}px`;
+      setLeftWidth(width);
+      if (splitKey()) setPersistedValue(splitKey()!, width);
+    });
+  };
+
+  // The listeners are on the document, not the divider: the drag has to end wherever the pointer is
+  const removeListeners = () => {
+    document.removeEventListener('pointermove', handlePointerMove);
+    document.removeEventListener('pointerup', stopDragging);
+    document.removeEventListener('pointercancel', stopDragging);
+    cancelAnimationFrame(frame);
+    frame = 0;
+  };
+
+  function stopDragging() {
+    removeListeners();
+    setIsDragging(false);
+  }
+
+  const startDragging = (e: PointerEvent) => {
     e.preventDefault();
+    containerLeft = containerRef?.getBoundingClientRect().left ?? 0;
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', stopDragging);
+    document.addEventListener('pointercancel', stopDragging);
     setIsDragging(true);
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging() || !containerRef) return;
-    const containerRect = containerRef.getBoundingClientRect();
-    let newLeftWidth = e.clientX - containerRect.left;
-
-    // Constrain width (e.g., min 10%, max 90%)
-    const width = `${newLeftWidth - 4}px`;
-    setLeftWidth(width);
-    if (splitKey()) setPersistedValue(splitKey()!, width);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  onSettled(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  });
+  onCleanup(removeListeners);
 
   return (
-    <div ref={containerRef} class={props.class || 'flex w-full grow overflow-hidden'}>
-      {/* Left Panel */}
+    <div
+      ref={containerRef}
+      class={clsx(props.class || 'flex w-full grow overflow-hidden', isDragging() && 'select-none')}
+    >
+      {/* Left Panel: the only thing that gets a width, the right panel takes what's left */}
       <div
-        class="bg-gray-900" // Slightly different bg for panels
+        // Nothing in the panels needs the pointer while dragging, so no hover styles are computed
+        class={clsx('shrink-0 bg-gray-900', isDragging() && 'pointer-events-none')}
         style={{ width: leftWidth() }}
       >
         {props.leftContent}
@@ -62,12 +83,13 @@ export function MovableSplit(props: Interface) {
 
       {/* Divider */}
       <div
-        class="w-2 shrink-0 cursor-col-resize bg-gray-700 hover:bg-sky-600"
-        onMouseDown={handleMouseDown}
+        class="shrink-0 cursor-col-resize touch-none bg-gray-700 hover:bg-sky-600"
+        style={{ width: `${DIVIDER_WIDTH}px` }}
+        onPointerDown={startDragging}
       />
 
       {/* Right Panel */}
-      <div class="grow bg-gray-900" style={{ width: `calc(100% - 8px - ${leftWidth()}` }}>
+      <div class={clsx('min-w-0 flex-1 bg-gray-900', isDragging() && 'pointer-events-none')}>
         {props.rightContent}
       </div>
     </div>

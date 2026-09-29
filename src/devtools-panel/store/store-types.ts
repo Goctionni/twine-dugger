@@ -4,6 +4,7 @@ import type { ContainerType } from '@/shared/json-safe';
 import type {
   ConnectionState,
   GameMetaData,
+  Lock,
   Page,
   Path,
   PropertyFilterKey,
@@ -37,18 +38,22 @@ export interface StoreData {
   };
 }
 
-/** One poll's worth of changes. Immutable once created. */
+/** One poll's worth of changes (or a marker in the log). Immutable once created. */
 export interface StateDiff {
   /** Sequential; the initial state is id 0, the first diff is id 1 */
   id: number;
   timestamp: number;
   passage: string;
-  delta: Delta;
+  /** Missing when nothing in the state changed, for instance when a lock undid a change */
+  delta?: Delta;
   changes: DiffChange[];
+  /** How many times in a row this same frame happened (only for frames without a delta) */
+  repeats?: number;
 }
 
 export interface GameConfig {
-  lockedPaths: Path[];
+  /** The locked paths and the values they are locked at */
+  locks: Lock[];
   filteredPaths: Path[];
 }
 

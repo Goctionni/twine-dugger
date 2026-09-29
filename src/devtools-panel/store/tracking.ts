@@ -6,9 +6,26 @@ import {
   resetGameState,
   setConnectionState,
   setPassageData,
+  syncLocks,
 } from './store';
 
 const getPollingInterval = createGetSetting('diffLog.pollingInterval');
+
+/**
+ * Loads the state and passages, and hands the locks to the content script.
+ * Also what to do when the content script says it was just initialized: the game was reloaded,
+ * so what we have is stale and the locks it enforced are gone.
+ */
+async function load(reloaded: boolean) {
+  // Sequential: the first call injects the content script, which takes the diff baseline
+  const state = await getState();
+  if (!state) throw new Error('Could not read the game state');
+  const passageData = await getPassageData();
+
+  resetGameState(state.state, reloaded);
+  setPassageData(passageData.map(parsePassage));
+  await syncLocks();
+}
 
 /** Loads the initial state, then polls the content script for changes. Returns a stop function. */
 export async function startTrackingFrames() {
@@ -17,13 +34,7 @@ export async function startTrackingFrames() {
   setConnectionState('loading-game');
 
   try {
-    // Sequential: the first call injects the content script, which takes the diff baseline
-    const initialState = await getState();
-    if (!initialState) throw new Error('Could not read the game state');
-    const passageData = await getPassageData();
-
-    resetGameState(initialState.state);
-    setPassageData(passageData.map(parsePassage));
+    await load(false);
     setConnectionState('live');
 
     const poll = async () => {
@@ -31,7 +42,8 @@ export async function startTrackingFrames() {
       try {
         const update = await getUpdates();
         if (stopped) return;
-        if (update) applyUpdate(update, started);
+        if (update?.initialized) await load(true);
+        else if (update) applyUpdate(update, started);
       } catch {
         return setConnectionState('error');
       }
