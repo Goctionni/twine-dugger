@@ -2,10 +2,11 @@ import { createMemo, For, Match, Show, Switch } from 'solid-js';
 
 import { createGetSetting } from '@/devtools-panel/store/store';
 import type { ContainerType } from '@/shared/json-safe';
-import { getContainerKeys, getJsonType, isContainerType } from '@/shared/json-safe';
+import { getContainerKeys, getJsonType, getKeyLabel, isContainerType } from '@/shared/json-safe';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { TypeIcon } from '../../../ui/display/TypeIcon';
+import { sameItems } from '../../../utils/same-items';
 import { RenderValue } from '../../DiffLog/RenderValue';
 import { createSorter } from '../property-sorter';
 import { StateBooleanInput } from './StateBooleanInput';
@@ -13,9 +14,6 @@ import { StateNumberInput } from './StateNumberInput';
 import { StateStringInput } from './StateStringInput';
 
 const getPropertyOrder = createGetSetting('state.propertyOrder');
-
-const sameKeys = (a: Array<string | number>, b: Array<string | number>) =>
-  a.length === b.length && a.every((v, i) => v === b[i]);
 
 interface StateContainerInputProps {
   path: Path;
@@ -34,7 +32,7 @@ export function StateContainerInput(props: StateContainerInputProps) {
       if (type !== 'object' && type !== 'map') return keys;
       return createSorter(value, getPropertyOrder(), false, props.path)(keys);
     },
-    { equals: sameKeys },
+    { equals: sameItems },
   );
 
   return (
@@ -44,7 +42,7 @@ export function StateContainerInput(props: StateContainerInputProps) {
           const value = () => (props.getValue() as Record<string | number, unknown>)[key];
           const type = createMemo(() => getJsonType(value()));
           const childPath = () => [...props.path, key];
-          const label = () => (props.getType() === 'set' ? (key as number) - 1 : key);
+          const label = () => getKeyLabel(props.getType(), key);
 
           return (
             // Containers are navigated to, not edited here

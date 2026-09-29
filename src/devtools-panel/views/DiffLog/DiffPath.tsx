@@ -1,13 +1,11 @@
 import { isPathFiltered } from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
-import type { ContainerType } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
 
 export function DiffPath(props: {
   path: Path;
-  kinds: ContainerType[];
   onClick: () => void;
   onAddFilter: (path: Path) => void;
   action?: 'added' | 'removed';
@@ -18,8 +16,7 @@ export function DiffPath(props: {
     getParentPaths(props.path).map((path) => ({
       label: () => (
         <>
-          Filter out changes to "
-          <PrettyPath path={path} kinds={props.kinds} class="font-mono" globSuffix />"
+          Filter out changes to "<PrettyPath path={path} class="font-mono" globSuffix />"
         </>
       ),
       onClick: () => props.onAddFilter(path),
@@ -33,7 +30,7 @@ export function DiffPath(props: {
       onClick={() => props.onClick()}
       class="cursor-pointer hover:underline"
     >
-      <PrettyPath path={props.path} kinds={props.kinds} action={props.action} />
+      <PrettyPath path={props.path} action={props.action} />
     </code>
   );
 }

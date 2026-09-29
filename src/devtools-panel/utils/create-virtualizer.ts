@@ -16,8 +16,6 @@ import {
   untrack,
 } from 'solid-js';
 
-export * from '@tanstack/virtual-core';
-
 type Options<TScrollElement extends Element, TItemElement extends Element> = PartialKeys<
   VirtualizerOptions<TScrollElement, TItemElement>,
   'observeElementRect' | 'observeElementOffset' | 'scrollToFn'

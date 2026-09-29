@@ -1,6 +1,3 @@
-import { create as createDiffer } from 'jsondiffpatch';
-
-import { getObjectId, setupIdentityHasher } from '@/shared/id-helper';
 import type { Lock, UpdateResult } from '@/shared/shared-types';
 
 import chapbookHelpers from './format-helpers/chapbook';
@@ -9,8 +6,8 @@ import { getPassageData } from './format-helpers/shared';
 import snowmanHelpers from './format-helpers/snowman';
 import sugarcubeHelpers from './format-helpers/sugarcube';
 import type { FormatHelpers } from './format-helpers/type';
-import { enforceLocks } from './util/locks';
-import { pretransformState } from './util/pre-transform';
+import { createLockEnforcer } from './util/locks';
+import { createUpdateTracker } from './util/update-tracker';
 
 const formatHelpers: FormatHelpers[] = [
   sugarcubeHelpers,
@@ -24,14 +21,8 @@ function init() {
   const formatHelper = formatHelpers.find((helper) => helper.detect());
   if (!formatHelper) return;
 
-  const { getObjectHash, setIdentitySources } = setupIdentityHasher();
-
-  const differ = createDiffer({
-    objectHash: (item, index) => getObjectHash(item) ?? getObjectId(item) ?? `$$index:${index}`,
-    arrays: { detectMove: true, includeValueOnMove: false },
-  });
-
-  let [oldState, , oldIdentityLookup] = pretransformState(formatHelper.getState());
+  const tracker = createUpdateTracker(formatHelper.getState);
+  const enforceLocks = createLockEnforcer(formatHelper.getState, formatHelper.setState);
   let locks: Lock[] = [];
   // Set until the panel has been told (by `getState` or `getUpdates`) that we just started
   let initialized = true;
@@ -39,19 +30,13 @@ function init() {
   window.TwineDugger = {
     getState: () => {
       initialized = false;
-      return { passage: formatHelper.getPassage(), state: oldState };
+      return { passage: formatHelper.getPassage(), state: tracker.getState() };
     },
     getUpdates: (): UpdateResult => {
       // Locked values are restored before the state is read, so the changes never show up in the delta
-      const reverts = enforceLocks(locks, formatHelper.getState, formatHelper.setState);
+      const reverts = enforceLocks(locks);
 
-      const [newState, , newIdentityLookup] = pretransformState(formatHelper.getState());
-      setIdentitySources({ oldIdentityLookup, newIdentityLookup });
-
-      const delta = differ.diff(oldState, newState);
-      oldState = newState;
-      oldIdentityLookup = newIdentityLookup;
-
+      const delta = tracker.getDelta();
       const result = { passage: formatHelper.getPassage(), delta, reverts, initialized };
       initialized = false;
       return result;

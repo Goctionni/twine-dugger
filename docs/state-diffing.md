@@ -1,15 +1,29 @@
 # State Diffing Model
 
-The diff engine (`src/content-script/util/differ.ts`) computes changes between **last** and **current** state:
+Diffing uses [`jsondiffpatch`](https://github.com/benjamine/jsondiffpatch); there is no custom diff engine.
 
-- Supports primitives, arrays, objects, Maps, Sets, and functions (functions treated as equal when both are functions).
-- Uses identity hints from `getPotentialId` to match array/object entries when possible.
-- Emits a list of **Diff** items with types like:
-  - `add` / `remove` / `update`
-  - `type-changed`
-  - `map-*`, `set-*` for Map/Set operations
-  - Primitive updates: `{ type: 'string' | 'number' | 'boolean', path, oldValue, newValue }`
+## Content script
 
-The content script caches **lastState** and exposes `getDiffs()` which returns `{ passage, diffs }` and updates the cache.
+`createUpdateTracker` (`src/content-script/util/update-tracker.ts`) keeps the last seen state and, on each
+`getUpdates()`, returns a **delta** between it and the live state.
 
-See shared types in `src/shared/shared-types.ts` for the full `Diff`, `Path`, `Value` model.
+- The live state is first made JSON-safe by `pre-transform.ts`: Maps become objects tagged with
+  `TYPE_KEY`, Sets become arrays whose first item is `SET_MARKER`, functions and Dates become marker
+  objects, and engine-internal `TwineScript_*` values are dropped. See `src/shared/json-safe.ts`.
+- Array items are matched by identity (`$$ref:`, `$$id:`, `$$index:` hashes), so reordering and
+  insertion show up as moves/adds instead of rewrites.
+- The delta is in jsondiffpatch's format: `[new]` add, `[old, new]` change, `[old, 0, 0]` delete,
+  `_t: 'a'` arrays, `['', to, 3]` moves.
+
+## Devtools panel
+
+- `store/game-state.ts` holds the current state in a Solid store. Each update is patched onto it and
+  kept as a history frame (newest first, sequential ids, `0` = initial state). Older states are
+  rebuilt by `unpatch`ing, which is what history navigation shows.
+- `store/diff.ts` (`getDiffFromDelta`) flattens a delta into add/del/chg/typ/mov changes for the diff
+  log. It is computed lazily per frame.
+- When the game reloads, history is kept but marked **tainted** (shown dimmed in the diff log, hidden
+  from history navigation).
+
+`getUpdates()` returns `{ passage, delta, reverts, initialized }`; `initialized` is true the first time
+after the content script (re)starts, which is how the panel notices a reload.

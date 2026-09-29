@@ -1,16 +1,13 @@
 import { createSignal, Show } from 'solid-js';
 
 import { setState } from '@/devtools-panel/api/api';
-import {
-  createGetViewState,
-  getActiveState,
-  getLockedPaths,
-  setPathLock,
-} from '@/devtools-panel/store/store';
+import { getActiveState } from '@/devtools-panel/store/game-state';
+import { getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
+import { createGetViewState } from '@/devtools-panel/store/store';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
 import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
-import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { isPathEditable } from '../editable';
@@ -26,7 +23,7 @@ export function StateNumberInput(props: StateNumberInputProps) {
   const currentValue = () => {
     const activeState = getActiveState();
     if (!activeState) return 0;
-    const pathValue = getObjectPathValue(activeState, props.path);
+    const pathValue = getPathValue(activeState, props.path);
     return typeof pathValue === 'number' ? pathValue : 0;
   };
 

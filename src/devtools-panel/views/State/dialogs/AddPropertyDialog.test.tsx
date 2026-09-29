@@ -2,10 +2,10 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { getActiveState } from '../../../store/store';
+import { getActiveState } from '../../../store/game-state';
 import { AddPropertyDialog } from './AddPropertyDialog';
 
-vi.mock('../../../store/store', () => ({ getActiveState: vi.fn<() => unknown>() }));
+vi.mock('../../../store/game-state', () => ({ getActiveState: vi.fn<() => unknown>() }));
 
 beforeEach(() => vi.resetAllMocks());
 afterEach(() => cleanup());

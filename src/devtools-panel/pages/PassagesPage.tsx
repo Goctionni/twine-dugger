@@ -1,6 +1,7 @@
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { getGameMetaData, getPassageData, getSelectedPassage, setViewState } from '../store/store';
+import { getPassageData, getSelectedPassage } from '../store/passages';
+import { getGameMetaData, setViewState } from '../store/store';
 import { MovableSplit } from '../ui/util/MovableSplit';
 import { PassageList } from '../views/Passage/PassageList';
 import { PassageView } from '../views/Passage/PassageView';

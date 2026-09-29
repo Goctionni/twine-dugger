@@ -1,6 +1,6 @@
 import { createMemo, For, Show } from 'solid-js';
 
-import { clearLocks, getLockedPaths, setPathLock } from '@/devtools-panel/store/store';
+import { clearLocks, getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { sortPaths } from '@/shared/path-sorter';
 import type { Path } from '@/shared/shared-types';

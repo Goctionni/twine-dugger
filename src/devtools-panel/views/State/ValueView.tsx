@@ -1,6 +1,7 @@
 import { createMemo, Match, Show, Switch } from 'solid-js';
 
-import { createGetViewState, getActiveState } from '@/devtools-panel/store/store';
+import { getActiveState } from '@/devtools-panel/store/game-state';
+import { createGetViewState } from '@/devtools-panel/store/store';
 import type { ContainerType } from '@/shared/json-safe';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import type { JSONSafeValue } from '@/shared/shared-types';

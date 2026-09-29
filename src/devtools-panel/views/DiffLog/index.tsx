@@ -1,17 +1,13 @@
 import { createMemo, For } from 'solid-js';
 
-import {
-  clearDiffFrames,
-  clearFilteredPaths,
-  getDiffFrames,
-  isPathFiltered,
-} from '../../store/store';
+import { clearDiffFrames, getDiffFrames } from '../../store/game-state';
+import { clearFilteredPaths } from '../../store/store';
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
+import { sameItems } from '../../utils/same-items';
 import { DiffFrame } from './DiffFrame';
+import { hasVisibleEntries } from './frame-entries';
 
 const MAX_FRAMES = 30;
-
-const sameFrames = <T,>(a: T[], b: T[]) => a.length === b.length && a.every((v, i) => v === b[i]);
 
 export function DiffLog() {
   const onContextMenu = createContextMenuHandler([
@@ -21,13 +17,9 @@ export function DiffLog() {
 
   // Frames are immutable and keep their identity, so a new frame adds one row and changing the
   // filters only touches the rows that appear or disappear.
-  const frames = createMemo(
-    () =>
-      getDiffFrames()
-        .filter((frame) => frame.changes.some((change) => !isPathFiltered(change.path)))
-        .slice(0, MAX_FRAMES),
-    { equals: sameFrames },
-  );
+  const frames = createMemo(() => getDiffFrames().filter(hasVisibleEntries).slice(0, MAX_FRAMES), {
+    equals: sameItems,
+  });
 
   return (
     <div onContextMenu={onContextMenu} class="flex h-full flex-col p-4">

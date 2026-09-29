@@ -19,6 +19,8 @@ vi.mock('./search-utils', async (importOriginal) => {
 });
 
 const store = await import('../../store/store');
+const gameState = await import('../../store/game-state');
+const passageStore = await import('../../store/passages');
 const utils = await import('./search-utils');
 const { createSearchResults } = await import('./create-searchResults');
 
@@ -37,8 +39,8 @@ beforeEach(() => {
   });
   vi.mocked(utils.findStateMatches).mockClear();
   vi.mocked(utils.findPassageMatches).mockClear();
-  store.resetGameState({ boss: 'dragon', list: ['dragon fly', 'newt'] });
-  store.setPassageData(passages);
+  gameState.startGameState({ boss: 'dragon', list: ['dragon fly', 'newt'] });
+  passageStore.setPassageData(passages);
   store.setNavigationPage('search');
   store.setViewState('search', 'query', '');
   flush();
@@ -68,34 +70,26 @@ const type = async (query: string) => {
 };
 
 describe('createSearchResults', () => {
-  it('searches, and narrows the results while the query gets longer', async () => {
+  it('searches the state and the passages for what is typed', async () => {
     const { results, dispose } = setup();
 
     await type('dr');
-    expect(utils.findStateMatches).toHaveBeenCalledTimes(1);
     expect(results().state.map((r) => r.path.join('.'))).toEqual(['boss', 'list.0']);
     expect(results().passage.map((p) => p.id)).toEqual([1]);
 
-    await type('drag');
     await type('dragon f');
-    expect(utils.findStateMatches).toHaveBeenCalledTimes(1);
-    expect(utils.findPassageMatches).toHaveBeenCalledTimes(1);
     expect(results().state.map((r) => r.path.join('.'))).toEqual(['list.0']);
     expect(results().passage).toEqual([]);
-
-    // A shorter query has to look at everything again
-    await type('d');
-    expect(utils.findStateMatches).toHaveBeenCalledTimes(2);
     dispose();
   });
 
-  it('refreshes the results for new diffs at most once a second, and never narrows stale ones', async () => {
+  it('searches again for new diffs, at most once a second', async () => {
     const { results, dispose } = setup();
     await type('dr');
     expect(utils.findStateMatches).toHaveBeenCalledTimes(1);
 
     const change = (value: string) => {
-      store.applyUpdate({
+      gameState.applyUpdate({
         passage: 'P',
         delta: { boss: [value === 'dragon' ? 'newt' : 'dragon', value] } as never,
         reverts: [],
@@ -104,21 +98,14 @@ describe('createSearchResults', () => {
       flush();
     };
 
-    // The state changes, and the results follow after the second
-    change('dragon');
+    change('newt');
     await settle(500);
-    expect(utils.findStateMatches).toHaveBeenCalledTimes(1);
     change('dragon');
     await settle(499);
     expect(utils.findStateMatches).toHaveBeenCalledTimes(1);
     await settle(1);
     expect(utils.findStateMatches).toHaveBeenCalledTimes(2);
-
-    // Typing right after a diff can't narrow results that were made from the old state
-    change('newt');
-    await type('dra');
-    expect(utils.findStateMatches).toHaveBeenCalledTimes(3);
-    expect(results().state.map((r) => r.path.join('.'))).toEqual(['list.0']);
+    expect(results().state.map((r) => r.path.join('.'))).toEqual(['boss', 'list.0']);
     dispose();
   });
 

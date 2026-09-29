@@ -1,10 +1,10 @@
 import type { JSX } from '@solidjs/web';
 import { Dynamic } from '@solidjs/web';
-import { createMemo, For, Show } from 'solid-js';
+import { createMemo, For, Show, untrack } from 'solid-js';
 
-import { getActiveState } from '@/devtools-panel/store/store';
+import { getActiveState } from '@/devtools-panel/store/game-state';
 import type { ContainerType } from '@/shared/json-safe';
-import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
+import { getJsonType, getKeyLabel, getPathValue, isContainerType } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 const colorClasses = {
@@ -28,13 +28,18 @@ function needsBracketNotation(propertyName: string | number): boolean {
   return !validIdentifier.test(propertyName);
 }
 
+/**
+ * What holds `path[index]` in the state, which decides how it's written. A path that isn't in the
+ * state (anymore) is written the way its segments suggest.
+ */
+function getParentType(state: unknown, path: Path, index: number): ContainerType {
+  const type = getJsonType(getPathValue(state, path.slice(0, index)));
+  if (isContainerType(type)) return type;
+  return typeof path[index] === 'number' ? 'array' : 'object';
+}
+
 interface Props {
   path: Path;
-  /**
-   * Container type of each ancestor (`kinds[i]` holds `path[i]`). Without it the types are looked
-   * up in the active state, which only works for paths that exist in it.
-   */
-  kinds?: ContainerType[];
   statePrefix?: boolean;
   globSuffix?: boolean;
   action?: 'added' | 'removed';
@@ -43,43 +48,43 @@ interface Props {
 
 export function PrettyPath(props: Props) {
   const atoms = createMemo(() => {
-    const lastIndex = props.path.length - 1;
+    const path = [...props.path];
+    const lastIndex = path.length - 1;
 
-    return props.path.flatMap((slug, index): AtomProps[] => {
-      const parentType =
-        props.kinds?.[index] ??
-        getJsonType(getPathValue(getActiveState(), props.path.slice(0, index)));
-      const leafClass = (index === lastIndex && props.action) || null;
+    // A path is about the state as it was when the path was made, so how it's written is worked out
+    // once. If a Map is removed later, its keys are still written as the keys of a Map.
+    return untrack(() => {
+      const state = getActiveState();
+      return path.flatMap((slug, index): AtomProps[] => {
+        const parentType = getParentType(state, path, index);
+        const leafClass = (index === lastIndex && props.action) || null;
 
-      if (parentType === 'object') {
-        if (props.statePrefix || index > 0) {
-          if (needsBracketNotation(slug)) {
-            // Use bracket notation for invalid identifiers
-            return [
-              { color: 'pathBrackets', text: '[' },
-              { color: leafClass ?? 'typeString', text: `"${slug}"` },
-              { color: 'pathBrackets', text: ']' },
-            ];
-          } else {
-            // Use dot notation for valid identifiers
-            return [
-              { color: 'pathDot', text: '.' },
-              { color: leafClass ?? 'pathChunk', text: slug },
-            ];
+        if (parentType === 'object') {
+          if (props.statePrefix || index > 0) {
+            if (needsBracketNotation(slug)) {
+              // Use bracket notation for invalid identifiers
+              return [
+                { color: 'pathBrackets', text: '[' },
+                { color: leafClass ?? 'typeString', text: `"${slug}"` },
+                { color: 'pathBrackets', text: ']' },
+              ];
+            } else {
+              // Use dot notation for valid identifiers
+              return [
+                { color: 'pathDot', text: '.' },
+                { color: leafClass ?? 'pathChunk', text: slug },
+              ];
+            }
           }
+          return [{ color: leafClass ?? 'pathRoot', text: slug }];
         }
-        return [{ color: leafClass ?? 'pathRoot', text: slug }];
-      }
-      if (parentType === 'array' || parentType === 'set') {
-        // The first item of a Set's array is its marker
-        const text = parentType === 'set' && typeof slug === 'number' ? slug - 1 : slug;
-        return [
-          { color: 'pathBrackets', text: '[' },
-          { color: leafClass ?? 'typeNumber', text },
-          { color: 'pathBrackets', text: ']' },
-        ];
-      }
-      if (parentType === 'map') {
+        if (parentType === 'array' || parentType === 'set') {
+          return [
+            { color: 'pathBrackets', text: '[' },
+            { color: leafClass ?? 'typeNumber', text: getKeyLabel(parentType, slug) },
+            { color: 'pathBrackets', text: ']' },
+          ];
+        }
         const keyNode: AtomProps =
           typeof slug === 'string'
             ? { color: leafClass ?? 'typeString', text: `"${slug}"` }
@@ -92,13 +97,12 @@ export function PrettyPath(props: Props) {
           keyNode,
           { color: 'pathBrackets', text: ')' },
         ];
-      }
-      return [];
+      });
     });
   });
 
   const isContainer = () =>
-    isContainerType(getJsonType(getPathValue(getActiveState(), props.path)));
+    untrack(() => isContainerType(getJsonType(getPathValue(getActiveState(), props.path))));
 
   return (
     <Dynamic

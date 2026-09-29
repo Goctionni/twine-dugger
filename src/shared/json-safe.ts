@@ -68,3 +68,8 @@ export function containsFunction(value: unknown): boolean {
   if (!value || typeof value !== 'object') return false;
   return Object.values(value).some(containsFunction);
 }
+
+/** What a child is called when it's shown: the first item of a Set's array is its marker */
+export function getKeyLabel(type: ContainerType, key: string | number) {
+  return type === 'set' && typeof key === 'number' ? key - 1 : key;
+}

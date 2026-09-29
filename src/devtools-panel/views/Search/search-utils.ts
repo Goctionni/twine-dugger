@@ -8,233 +8,145 @@ import type {
 
 export type FindResult<T> = [Promise<T[]>, (reason?: string) => void];
 
-// --- Not blocking the page --------------------------------------------------------------------
-
 /** How long searching may keep the main thread before the browser gets to handle input again */
 const SLICE_MS = 8;
 
-/** Tells a long loop when to pause: cheap to ask, only reads the clock every `checkEvery` calls */
-function createSlicer(signal: AbortSignal, checkEvery: number) {
-  let sliceStart = performance.now();
-  let calls = 0;
-  return {
-    /** True once the time budget is used up, or the search was aborted */
-    due: () =>
-      signal.aborted || (++calls % checkEvery === 0 && performance.now() - sliceStart > SLICE_MS),
-    /** Lets the browser catch up. Resolves to false when the search was aborted meanwhile. */
-    async yield() {
-      await scheduler.yield();
-      sliceStart = performance.now();
-      return !signal.aborted;
-    },
-  };
+/**
+ * Runs `step` until it says there's nothing left to do, giving way to the browser every so often.
+ * Resolves to false when aborted. `step` is cheap, so the clock is only read every few steps.
+ */
+async function runInSlices(signal: AbortSignal, step: () => boolean) {
+  for (let more = true; more;) {
+    const sliceEnd = performance.now() + SLICE_MS;
+    do {
+      for (let steps = 0; steps < 64 && more; steps++) more = step();
+    } while (more && performance.now() < sliceEnd);
+
+    if (more) await scheduler.yield();
+    if (signal.aborted) return false;
+  }
+  return true;
 }
 
-/** Starts as its own task, so the caller isn't held up by the first slice of work */
-function runSearch<T>(work: (signal: AbortSignal) => Promise<T[]>): FindResult<T> {
+/** Starts as its own task, so that the caller isn't held up by the first slice */
+function runSearch<T>(search: (signal: AbortSignal) => Promise<T[]>): FindResult<T> {
   const abortController = new AbortController();
-  const promise = scheduler.postTask(() => work(abortController.signal), {
+  const promise = scheduler.postTask(() => search(abortController.signal), {
     signal: abortController.signal,
   });
   return [promise, (reason?: string) => abortController.abort(reason)];
 }
 
-// --- Passages -----------------------------------------------------------------------------------
+/**
+ * What is searched for. A case-insensitive regex finds it without making a lowercase copy of every
+ * text that is looked at, which is faster than `toLowerCase().includes()` and doesn't allocate.
+ */
+function createQuery(rawQuery: string) {
+  const regex = new RegExp(rawQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  const number = Number(rawQuery.trim());
+  return {
+    regex,
+    length: rawQuery.length,
+    lowerCase: rawQuery.toLowerCase(),
+    number: Number.isFinite(number) ? number : undefined,
+  };
+}
+type Query = ReturnType<typeof createQuery>;
 
-interface LoweredPassage {
-  name: string;
-  tags: string[];
-  content: string;
+// How well something matches. What is the whole query is found before what only contains it.
+const NONE = 0;
+const PARTIAL = 1;
+const FULL = 2;
+type MatchKind = typeof NONE | typeof PARTIAL | typeof FULL;
+
+function matchText(text: string, { regex, length }: Query): MatchKind {
+  if (!regex.test(text)) return NONE;
+  return text.length === length ? FULL : PARTIAL;
 }
 
-// Lowercasing the text of every passage on every search is most of what searching them costs. The
-// passage objects are replaced when the passages are reloaded, which drops what is cached here.
-const lowered = new WeakMap<ParsedPassageData, LoweredPassage>();
-
-function getLowered(passage: ParsedPassageData) {
-  let entry = lowered.get(passage);
-  if (!entry) {
-    entry = {
-      name: passage.name.toLowerCase(),
-      tags: passage.tags?.map((tag) => tag.toLowerCase()) ?? [],
-      content: passage.content.toLowerCase(),
-    };
-    lowered.set(passage, entry);
+function matchValue(value: unknown, query: Query): MatchKind {
+  if (typeof value === 'string') return matchText(value, query);
+  if (typeof value === 'number' && query.number !== undefined) {
+    if (value === query.number) return FULL;
+    return String(value).includes(String(query.number)) ? PARTIAL : NONE;
   }
-  return entry;
-}
-
-function passageMatches(passage: ParsedPassageData, query: string) {
-  const { name, tags, content } = getLowered(passage);
-  return name.includes(query) || tags.some((tag) => tag.includes(query)) || content.includes(query);
+  if (typeof value === 'boolean') {
+    return query.lowerCase === String(value) ? FULL : NONE;
+  }
+  return NONE;
 }
 
 export function findPassageMatches(
   data: ParsedPassageData[],
   rawQuery: string,
 ): FindResult<ParsedPassageData> {
-  const query = rawQuery.toLowerCase();
+  const { regex } = createQuery(rawQuery);
+  const matches = (passage: ParsedPassageData) =>
+    regex.test(passage.name) ||
+    !!passage.tags?.some((tag) => regex.test(tag)) ||
+    regex.test(passage.content);
 
   return runSearch(async (signal) => {
     const results: ParsedPassageData[] = [];
-    // Passages can be large, so the clock is checked often
-    const slicer = createSlicer(signal, 8);
-
-    for (const passage of data) {
-      if (passageMatches(passage, query)) results.push(passage);
-      if (slicer.due() && !(await slicer.yield())) return [];
-    }
-    return results;
+    let index = 0;
+    const finished = await runInSlices(signal, () => {
+      const passage = data[index++];
+      if (passage && matches(passage)) results.push(passage);
+      return index < data.length;
+    });
+    return finished ? results : [];
   });
-}
-
-/** Whether the results of `previousQuery` contain everything that `query` matches */
-export function canNarrowPassages(previousQuery: string, query: string) {
-  return query.toLowerCase().includes(previousQuery.toLowerCase());
-}
-
-export function narrowPassageMatches(previous: ParsedPassageData[], rawQuery: string) {
-  const query = rawQuery.toLowerCase();
-  return previous.filter((passage) => passageMatches(passage, query));
-}
-
-// --- State --------------------------------------------------------------------------------------
-
-interface Query {
-  text: string;
-  /** What the query is as a number, for matching numbers in the state */
-  number: number | undefined;
-}
-
-function parseQuery(rawQuery: string): Query {
-  const number = Number(rawQuery.trim());
-  return { text: rawQuery.toLowerCase(), number: Number.isFinite(number) ? number : undefined };
-}
-
-const NONE = 0;
-const PARTIAL = 1;
-const FULL = 2;
-type MatchKind = typeof NONE | typeof PARTIAL | typeof FULL;
-
-function valueMatch(value: unknown, { text, number }: Query): MatchKind {
-  if (typeof value === 'string') {
-    const lower = value.toLowerCase();
-    if (lower === text) return FULL;
-    return lower.includes(text) ? PARTIAL : NONE;
-  }
-  if (typeof value === 'number' && number !== undefined) {
-    if (value === number) return FULL;
-    return String(value).includes(String(number)) ? PARTIAL : NONE;
-  }
-  if (typeof value === 'boolean') {
-    return (text === 'true' && value) || (text === 'false' && !value) ? FULL : NONE;
-  }
-  return NONE;
-}
-
-/** `key` is the property name for values of an object, and undefined for items of an array */
-function match(key: string | undefined, value: unknown, query: Query): MatchKind {
-  let kind: MatchKind = NONE;
-  if (key !== undefined) {
-    const lowerKey = key.toLowerCase();
-    if (lowerKey === query.text) return FULL;
-    if (lowerKey.includes(query.text)) kind = PARTIAL;
-  }
-  return Math.max(kind, valueMatch(value, query)) as MatchKind;
-}
-
-/** Where a value was found: paths are only put together for the values that match */
-interface PathNode {
-  key: string | number;
-  parent: PathNode | null;
-}
-
-function pathOf(node: PathNode): Path {
-  const path: Path = [];
-  for (let current: PathNode | null = node; current; current = current.parent) {
-    path.push(current.key);
-  }
-  return path.reverse();
 }
 
 export function findStateMatches(
   data: JSONSafeObject,
   rawQuery: string,
 ): FindResult<SearchResultState> {
-  const query = parseQuery(rawQuery);
+  const query = createQuery(rawQuery);
 
   return runSearch(async (signal) => {
-    const fullMatches: SearchResultState[] = [];
-    const partialMatches: SearchResultState[] = [];
-    const slicer = createSlicer(signal, 128);
+    const full: SearchResultState[] = [];
+    const partial: SearchResultState[] = [];
+    const found = (kind: MatchKind, path: Path, value: unknown) => {
+      if (kind !== NONE)
+        (kind === FULL ? full : partial).push({ path, value } as SearchResultState);
+    };
 
-    // Depth first, without recursion: what a Set or Map stands for is skipped or unwrapped here
-    const stack: Array<[value: unknown, node: PathNode | null]> = [[data, null]];
-    while (stack.length) {
-      if (slicer.due() && !(await slicer.yield())) return [];
-
-      const [value, node] = stack.pop()!;
-      if (!value || typeof value !== 'object') continue;
+    // Depth first, without recursion
+    const stack: Array<[value: unknown, path: Path]> = [[data, []]];
+    const finished = await runInSlices(signal, () => {
+      const [value, path] = stack.pop()!;
+      if (!value || typeof value !== 'object') return stack.length > 0;
 
       // The source of a function or the parts of a date aren't worth searching
       const type = getJsonType(value);
-      if (type === 'function' || type === 'date') continue;
+      if (type === 'function' || type === 'date') return stack.length > 0;
 
-      const children: Array<[unknown, PathNode]> = [];
-      const visit = (key: string | number, child: unknown, isProperty: boolean) => {
-        const childNode = { key, parent: node };
-        const kind = match(isProperty ? String(key) : undefined, child, query);
-        if (kind) {
-          (kind === FULL ? fullMatches : partialMatches).push({
-            path: pathOf(childNode),
-            value: child as SearchResultState['value'],
-          });
-        }
-        if (child && typeof child === 'object') children.push([child, childNode]);
+      const children: Array<[unknown, Path]> = [];
+      const visit = (key: string | number, child: unknown, matchKey: boolean) => {
+        const childPath = [...path, key];
+        const valueMatch = matchValue(child, query);
+        const keyMatch = matchKey ? matchText(String(key), query) : NONE;
+        found(Math.max(keyMatch, valueMatch) as MatchKind, childPath, child);
+        if (child && typeof child === 'object') children.push([child, childPath]);
       };
 
       if (Array.isArray(value)) {
         // The first item of a Set's array is its marker, not one of its items
-        for (let i = value[0] === SET_MARKER ? 1 : 0; i < value.length; i++)
+        for (let i = value[0] === SET_MARKER ? 1 : 0; i < value.length; i++) {
           visit(i, value[i], false);
+        }
       } else {
-        for (const key of Object.keys(value)) {
-          if (key !== TYPE_KEY) visit(key, (value as Record<string, unknown>)[key], true);
+        for (const [key, child] of Object.entries(value)) {
+          if (key !== TYPE_KEY) visit(key, child, true);
         }
       }
+
       // Reversed, so that what is found first in the state is found first in the results
-      for (let i = children.length - 1; i >= 0; i--) stack.push(children[i]!);
-    }
+      stack.push(...children.reverse());
+      return stack.length > 0;
+    });
 
-    return [...fullMatches, ...partialMatches];
+    return finished ? [...full, ...partial] : [];
   });
-}
-
-/**
- * Whether the results of `previousQuery` contain everything that `query` matches, when the state
- * is the same. Longer queries match less, with two exceptions: only the whole word "true" (or
- * "false") matches a boolean, and numbers only match a query that reads as a number.
- */
-export function canNarrowState(previousQuery: string, rawQuery: string) {
-  const previous = parseQuery(previousQuery);
-  const query = parseQuery(rawQuery);
-
-  if (!query.text.includes(previous.text)) return false;
-  if (query.text === 'true' || query.text === 'false') return false;
-  if (query.number === undefined) return true;
-  return previous.number !== undefined && String(query.number).includes(String(previous.number));
-}
-
-/** Filters the results of an earlier search that `canNarrowState` says contain all matches */
-export function narrowStateMatches(previous: SearchResultState[], rawQuery: string) {
-  const query = parseQuery(rawQuery);
-  const full: SearchResultState[] = [];
-  const partial: SearchResultState[] = [];
-
-  for (const result of previous) {
-    const key = result.path.at(-1);
-    const kind = match(typeof key === 'string' ? key : undefined, result.value, query);
-    if (kind) (kind === FULL ? full : partial).push(result);
-  }
-  return [...full, ...partial];
 }

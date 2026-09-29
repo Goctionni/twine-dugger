@@ -10,7 +10,6 @@ inspects and diffs the runtime state of **Twine** games (SugarCube, Harlowe, Cha
 - Extension panels & flows: [`devtools.md`](./devtools.md)
 - Content script & Twine integration: [`content-script.md`](./content-script.md)
 - State diffing model: [`state-diffing.md`](./state-diffing.md)
-- Stack & tooling: [`stack.md`](./stack.md)
 - Conventions & contributing: [`contributing.md`](./contributing.md)
 - Build & release: [`build-release.md`](./build-release.md)
 - Troubleshooting: [`troubleshooting.md`](./troubleshooting.md)

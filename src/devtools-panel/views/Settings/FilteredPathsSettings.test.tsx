@@ -13,6 +13,8 @@ vi.mock('@/devtools-panel/store/store', () => ({
   ]),
   removeFilteredPath: vi.fn(() => vi.fn()),
   clearFilteredPaths: vi.fn(() => vi.fn()),
+}));
+vi.mock('@/devtools-panel/store/game-state', () => ({
   getActiveState: vi.fn(() => ({
     state: { a: { name: 'test', inventory: [] }, z: { score: 10 } },
   })),

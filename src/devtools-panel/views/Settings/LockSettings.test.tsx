@@ -2,17 +2,19 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { clearLocks, getLockedPaths, setPathLock } from '@/devtools-panel/store/store';
+import { clearLocks, getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
 
 import { LockSettings } from './LockSettings';
 
-vi.mock('@/devtools-panel/store/store', () => ({
+vi.mock('@/devtools-panel/store/locks', () => ({
   getLockedPaths: vi.fn(() => [
     ['state', 'z', 'score'],
     ['state', 'a', 'name'],
   ]),
   setPathLock: vi.fn(),
   clearLocks: vi.fn(),
+}));
+vi.mock('@/devtools-panel/store/game-state', () => ({
   getActiveState: vi.fn(() => ({
     state: { a: { name: 'test', inventory: [] }, z: { score: 10 } },
   })),

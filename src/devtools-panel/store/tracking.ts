@@ -1,40 +1,36 @@
+import type { JSONSafeObject } from '@/shared/shared-types';
+
 import { getPassageData, getState, getUpdates } from '../api/api';
-import {
-  applyUpdate,
-  createGetSetting,
-  parsePassage,
-  resetGameState,
-  setConnectionState,
-  setPassageData,
-  syncLocks,
-} from './store';
+import { applyUpdate, restartGameState, startGameState } from './game-state';
+import { syncLocks } from './locks';
+import { parsePassage, setPassageData } from './passages';
+import { createGetSetting, setConnectionState } from './store';
 
 const getPollingInterval = createGetSetting('diffLog.pollingInterval');
 
 /**
- * Loads the state and passages, and hands the locks to the content script.
- * Also what to do when the content script says it was just initialized: the game was reloaded,
- * so what we have is stale and the locks it enforced are gone.
+ * Loads the state and the passages, and hands the locks to the content script. When the game was
+ * reloaded the locks that the content script had are gone, so they have to be handed over again.
  */
-async function load(reloaded: boolean) {
-  // Sequential: the first call injects the content script, which takes the diff baseline
-  const state = await getState();
-  if (!state) throw new Error('Could not read the game state');
+async function load(setGameState: (state: JSONSafeObject) => void) {
+  // One after the other: the first call injects the content script, which takes the diff baseline
+  const game = await getState();
+  if (!game) throw new Error('Could not read the game state');
   const passageData = await getPassageData();
 
-  resetGameState(state.state, reloaded);
+  setGameState(game.state);
   setPassageData(passageData.map(parsePassage));
   await syncLocks();
 }
 
-/** Loads the initial state, then polls the content script for changes. Returns a stop function. */
+/** Loads the state, then polls the content script for changes. Returns a function that stops. */
 export async function startTrackingFrames() {
   let timeout: ReturnType<typeof setTimeout> | undefined;
   let stopped = false;
   setConnectionState('loading-game');
 
   try {
-    await load(false);
+    await load(startGameState);
     setConnectionState('live');
 
     const poll = async () => {
@@ -42,10 +38,11 @@ export async function startTrackingFrames() {
       try {
         const update = await getUpdates();
         if (stopped) return;
-        if (update?.initialized) await load(true);
+        if (update?.initialized) await load(restartGameState);
         else if (update) applyUpdate(update, started);
       } catch {
-        return setConnectionState('error');
+        setConnectionState('error');
+        return;
       }
       timeout = setTimeout(poll, Math.max(0, getPollingInterval() - (Date.now() - started)));
     };

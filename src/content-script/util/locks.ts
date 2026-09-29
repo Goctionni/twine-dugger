@@ -1,5 +1,12 @@
 import { jsonEqual } from '@/shared/json-safe';
-import type { Lock, LockRevert, ObjectValue, Path, Value } from '@/shared/shared-types';
+import type {
+  JSONSafeValue,
+  Lock,
+  LockRevert,
+  ObjectValue,
+  Path,
+  Value,
+} from '@/shared/shared-types';
 
 import { posttransformValue } from './post-transform';
 import { pretransformValue } from './pre-transform';
@@ -22,26 +29,40 @@ function findLiveValue(root: Value, path: Path): [found: boolean, value: Value] 
 }
 
 /**
- * Makes sure the value at the path of every lock is the locked value, and reports what it undid.
- * A lock whose path doesn't exist is left alone until it does.
+ * Makes sure the value at the path of every lock is the locked value, and reports the writes that
+ * it undid. A game that keeps trying the same write is only reported the first time. A lock whose
+ * path doesn't exist is left alone until it does.
  */
-export function enforceLocks(
-  locks: Lock[],
+export function createLockEnforcer(
   getState: () => ObjectValue,
   setState: (path: Path, value: unknown) => void,
-): LockRevert[] {
-  const reverts: LockRevert[] = [];
+) {
+  let lastLocks: Lock[] = [];
+  let lastBlocked = new Map<string, JSONSafeValue>();
 
-  for (const { path, value } of locks) {
-    const [found, live] = findLiveValue(getState(), path);
-    if (!found) continue;
+  return (locks: Lock[]): LockRevert[] => {
+    if (locks !== lastLocks) {
+      lastLocks = locks;
+      lastBlocked = new Map();
+    }
+    const reverts: LockRevert[] = [];
 
-    const attempted = pretransformValue(live, new Map(), new Map());
-    if (jsonEqual(attempted, value)) continue;
+    for (const { path, value } of locks) {
+      const [found, live] = findLiveValue(getState(), path);
+      if (!found) continue;
 
-    reverts.push({ path, attempted });
-    setState(path, posttransformValue(value));
-  }
+      const attempted = pretransformValue(live, new Map(), new Map());
+      const id = JSON.stringify(path);
+      if (jsonEqual(attempted, value)) {
+        lastBlocked.delete(id);
+        continue;
+      }
 
-  return reverts;
+      if (!jsonEqual(attempted, lastBlocked.get(id))) reverts.push({ path, attempted });
+      lastBlocked.set(id, attempted);
+      setState(path, posttransformValue(value));
+    }
+
+    return reverts;
+  };
 }

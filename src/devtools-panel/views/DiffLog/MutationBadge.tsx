@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-type Kind = 'add' | 'del' | 'chg' | 'typ' | 'mov' | 'lock';
+export type Kind = 'add' | 'del' | 'chg' | 'typ' | 'mov' | 'lock';
 
 interface BadgeStyle {
   bg: string;

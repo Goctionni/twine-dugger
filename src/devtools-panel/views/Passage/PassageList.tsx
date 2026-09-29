@@ -1,6 +1,6 @@
 import { For, onCleanup, onSettled, Show, untrack } from 'solid-js';
 
-import { reloadPassagesData } from '@/devtools-panel/store/store';
+import { reloadPassagesData } from '@/devtools-panel/store/passages';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
 import { virtualizerScrollToFn } from '@/devtools-panel/utils/virtualizer-scrollto';

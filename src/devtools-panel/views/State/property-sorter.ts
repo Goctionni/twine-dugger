@@ -1,4 +1,4 @@
-import { getLastChangeId } from '@/devtools-panel/store/store';
+import { getLastChangeId } from '@/devtools-panel/store/game-state';
 import { getJsonType } from '@/shared/json-safe';
 import type { Path, PropertyOrder, ValueType } from '@/shared/shared-types';
 

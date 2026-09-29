@@ -3,16 +3,14 @@ import clsx from 'clsx';
 import { createMemo, createProjection, createSignal, For, Show, untrack } from 'solid-js';
 
 import { deleteFromState, duplicateStateProperty, setState } from '@/devtools-panel/api/api';
+import { getActiveState } from '@/devtools-panel/store/game-state';
+import { getLockedPaths, isPathLockable, setPathLock } from '@/devtools-panel/store/locks';
 import {
   addFilteredPath,
   createGetSetting,
   createGetViewState,
   createSetSetting,
-  getActiveState,
-  getLockedPaths,
   isPathFiltered,
-  isPathLockable,
-  setPathLock,
   setViewState,
 } from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
@@ -21,7 +19,7 @@ import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { baseInputClasses } from '@/devtools-panel/ui/util/common-classes';
 import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
-import { getContainerKeys, getJsonType, isContainerType } from '@/shared/json-safe';
+import { getContainerKeys, getJsonType, getKeyLabel, isContainerType } from '@/shared/json-safe';
 import type {
   LockStatus,
   OrderConfig,
@@ -118,10 +116,11 @@ export function ObjectNav(props: Props) {
       const children = object as Record<string | number, unknown>;
 
       return sorter(getContainerKeys(object, type))
-        .map((key): Entry => {
-          const label = type === 'set' ? (key as number) - 1 : key;
-          return { key, label, type: getJsonType(children[key]) };
-        })
+        .map((key): Entry => ({
+          key,
+          label: getKeyLabel(type, key),
+          type: getJsonType(children[key]),
+        }))
         .filter(({ key, type }) => {
           if (activeFilters.includes(type as PropertyFilterKey)) return false;
           return !(activeFilters.includes('filtered') && isPathFiltered([...parentPath(), key]));

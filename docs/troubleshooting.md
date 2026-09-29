@@ -13,10 +13,10 @@
 
 **Edits not applying**
 
-- Ensure you are editing a primitive type when using inline editors.
+- Ensure you are editing a primitive type when using inline editors, and that the property is not locked.
 - For object/array edits, confirm the path and keys exist.
 
 **Diffs never update**
 
 - Interact with the game so its variables change.
-- The diff engine compares the current snapshot to the last snapshot held in memory.
+- Each update is a jsondiffpatch delta against the last snapshot held by the content script.

@@ -5,7 +5,7 @@ import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { getContainerKeys, getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
-import { getActiveState } from '../../../store/store';
+import { getActiveState } from '../../../store/game-state';
 
 const inputClasses =
   'block px-2 py-1 bg-gray-700 border border-gray-600 text-sm shadow-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500';

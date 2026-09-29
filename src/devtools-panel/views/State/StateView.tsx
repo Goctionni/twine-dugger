@@ -1,6 +1,7 @@
 import { createMemo, Repeat } from 'solid-js';
 
-import { createGetViewState, getActiveState } from '@/devtools-panel/store/store';
+import { getActiveState } from '@/devtools-panel/store/game-state';
+import { createGetViewState } from '@/devtools-panel/store/store';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 
 import { ObjectNav } from './ObjectNav';

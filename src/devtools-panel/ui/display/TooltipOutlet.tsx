@@ -4,7 +4,7 @@ import { createMemo, createSignal, onCleanup } from 'solid-js';
 const [tooltipContent, setTooltipContent] = createSignal<JSX.Element>(null);
 const [outletStack, setOutletStack] = createSignal<string[]>([]);
 
-export const useTooltipOutlet = () => {
+const useTooltipOutlet = () => {
   const id = crypto.randomUUID();
   setOutletStack((stack) => [...stack, id]);
   onCleanup(() => {

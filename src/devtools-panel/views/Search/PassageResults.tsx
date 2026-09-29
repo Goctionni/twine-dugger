@@ -6,12 +6,8 @@ import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
 import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import {
-  getGameMetaData,
-  getSelectedPassage,
-  setPassageData,
-  setViewState,
-} from '../../store/store';
+import { getSelectedPassage, setPassageData } from '../../store/passages';
+import { getGameMetaData, setViewState } from '../../store/store';
 import { PassageHeader } from '../Passage/PassageHeader';
 import { PassageListItem } from '../Passage/PassageListItem';
 

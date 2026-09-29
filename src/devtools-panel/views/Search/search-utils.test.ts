@@ -3,18 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { pretransformState } from '@/content-script/util/pre-transform';
 import type { JSONSafeObject, ParsedPassageData, SearchResultState } from '@/shared/shared-types';
 
-import {
-  canNarrowPassages,
-  canNarrowState,
-  findPassageMatches,
-  findStateMatches,
-  narrowPassageMatches,
-  narrowStateMatches,
-} from './search-utils';
+import { findPassageMatches, findStateMatches } from './search-utils';
 
 let yields = 0;
 
-// The browser has a scheduler, node doesn't. This one really lets other things run.
+// The browser has a scheduler, node doesn't. This one counts how often a search gives way.
 beforeEach(() => {
   yields = 0;
   Object.assign(globalThis, {
@@ -28,7 +21,7 @@ beforeEach(() => {
         }),
       yield: () => {
         yields++;
-        return new Promise((resolve) => setTimeout(resolve));
+        return Promise.resolve();
       },
     },
   });
@@ -166,72 +159,6 @@ describe('findStateMatches', () => {
   });
 });
 
-describe('narrowing the results of an earlier query', () => {
-  const queries = [
-    '',
-    'a',
-    'ab',
-    'abc',
-    'x',
-    'x1',
-    'e',
-    'e5',
-    '1',
-    '12',
-    '112',
-    '1.',
-    '1.5',
-    '-',
-    '-5',
-    '0',
-    '0x1',
-    '0x10',
-    't',
-    'tr',
-    'tru',
-    'true',
-    'trues',
-    'false',
-    'npc',
-    'Npc',
-    'castle',
-    ' 1',
-  ];
-
-  it(
-    'gives the same results as searching again, for every query that it says it can',
-    { timeout: 30000 },
-    async () => {
-      let narrowed = 0;
-      for (let seed = 1; seed <= 6; seed++) {
-        const random = randomState(seed);
-        for (const previous of queries) {
-          const previousResults = await search(random, previous);
-          for (const query of queries) {
-            if (!canNarrowState(previous, query)) continue;
-            narrowed++;
-            const expected = new Set((await search(random, query)).map(keyOf));
-            const actual = narrowStateMatches(previousResults, query).map(keyOf);
-            const context = { seed, previous, query };
-            expect({ ...context, found: new Set(actual) }).toEqual({ ...context, found: expected });
-            expect(actual.length).toBe(expected.size);
-          }
-        }
-      }
-      expect(narrowed).toBeGreaterThan(100);
-    },
-  );
-
-  it('is not used where longer queries can match more', () => {
-    expect(canNarrowState('tru', 'true')).toBe(false); // only the whole word matches booleans
-    expect(canNarrowState('-', '-5')).toBe(false); // only a number matches numbers
-    expect(canNarrowState('0x10', '0x100')).toBe(false); // 256 doesn't contain 16
-    expect(canNarrowState('ab', 'abc')).toBe(true);
-    expect(canNarrowState('ab', 'xab')).toBe(true);
-    expect(canNarrowState('abc', 'ab')).toBe(false);
-  });
-});
-
 describe('passages', () => {
   const passage = (
     id: number,
@@ -259,15 +186,5 @@ describe('passages', () => {
     expect(await find('DARK')).toEqual([2]);
     expect(await find('dragon')).toEqual([3]);
     expect(await find('zzz')).toEqual([]);
-  });
-
-  it('narrows to what searching again would find', async () => {
-    const all = await findPassageMatches(passages, 't')[0];
-    for (const query of ['ta', 'tav', 'tavern', 'tavernx', 'rat']) {
-      if (!canNarrowPassages('t', query)) continue;
-      const expected = (await findPassageMatches(passages, query)[0]).map((p) => p.id);
-      expect(narrowPassageMatches(all, query).map((p) => p.id)).toEqual(expected);
-    }
-    expect(canNarrowPassages('tav', 'ta')).toBe(false);
   });
 });

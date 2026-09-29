@@ -1,25 +1,13 @@
 import { createEffect, createRoot, createSignal, flush } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { createScheduled, debounce, throttle } from './scheduled';
+import { createScheduled, throttle } from './scheduled';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
-describe('debounce / throttle', () => {
-  it('debounce calls on the trailing edge with the last arguments', () => {
-    const fn = vi.fn<(v: number) => void>();
-    const debounced = debounce(fn, 100);
-    debounced(1);
-    vi.advanceTimersByTime(50);
-    debounced(2);
-    vi.advanceTimersByTime(99);
-    expect(fn).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(1);
-    expect(fn).toHaveBeenCalledExactlyOnceWith(2);
-  });
-
-  it('throttle calls once per window with the last arguments', () => {
+describe('throttle', () => {
+  it('calls once per window with the last arguments', () => {
     const fn = vi.fn<(v: number) => void>();
     const throttled = throttle(fn, 100);
     throttled(1);
@@ -27,19 +15,28 @@ describe('debounce / throttle', () => {
     vi.advanceTimersByTime(100);
     expect(fn).toHaveBeenCalledExactlyOnceWith(2);
   });
+
+  it('can be cleared', () => {
+    const fn = vi.fn();
+    const throttled = throttle(fn, 100);
+    throttled();
+    throttled.clear();
+    vi.advanceTimersByTime(100);
+    expect(fn).not.toHaveBeenCalled();
+  });
 });
 
 describe('createScheduled', () => {
-  it('is true in an effect once the debounce has settled after a change', () => {
+  it('is true in an effect once the schedule has fired after a change', () => {
     const [count, setCount] = createSignal(0);
     const seen: Array<[number, boolean]> = [];
 
     const dispose = createRoot((dispose) => {
-      const scheduled = createScheduled((fn) => debounce(fn, 100));
+      const scheduled = createScheduled((fn) => throttle(fn, 100));
       createEffect(
         () => [count(), scheduled()] as const,
-        ([value, dirty]) => {
-          seen.push([value, dirty]);
+        ([value, isReady]) => {
+          seen.push([value, isReady]);
         },
       );
       return dispose;
@@ -51,7 +48,7 @@ describe('createScheduled', () => {
     flush();
     setCount(2);
     flush();
-    expect(seen.every(([, dirty]) => !dirty)).toBe(true);
+    expect(seen.every(([, isReady]) => !isReady)).toBe(true);
 
     vi.advanceTimersByTime(100);
     flush();

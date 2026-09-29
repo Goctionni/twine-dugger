@@ -1,4 +1,4 @@
-import { getActiveState } from '@/devtools-panel/store/store';
+import { getActiveState } from '@/devtools-panel/store/game-state';
 import { getJsonType } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 

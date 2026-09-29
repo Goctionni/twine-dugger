@@ -1,7 +1,8 @@
 import clsx from 'clsx';
 import { For } from 'solid-js';
 
-import { createGetViewState, getHistoryIds, getLatestId, setViewState } from '../../store/store';
+import { getHistoryIds, getLatestId } from '../../store/game-state';
+import { createGetViewState, setViewState } from '../../store/store';
 
 const getHistoryRef = createGetViewState('state', 'historyRef');
 
