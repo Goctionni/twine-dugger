@@ -4,6 +4,8 @@ import type {
   GameMetaData,
   SnowmanGlobals,
   SugarCubeGlobals,
+  VersionInfo,
+  XLoweGlobals,
 } from '@/shared/shared-types';
 
 type SchemaFn = (value: unknown) => boolean;
@@ -94,6 +96,10 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
     },
   };
 
+  const xloweSchema: NanoSchema = { XLowe: 'object' };
+
+  const versionSchema: NanoSchema = { major: 'number', minor: 'number', patch: 'number' };
+
   const chapbookSchema: NanoSchema = {
     engine: {
       state: {
@@ -133,7 +139,9 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
 
   const isHarlowe = () => {
     return (
-      !!document.querySelector('tw-storydata[format="Harlowe"]') || isType(window, harloweSchema)
+      !!document.querySelector('tw-storydata[format="Harlowe"]') ||
+      isType(window, harloweSchema) ||
+      isType(window, xloweSchema)
     );
   };
 
@@ -290,11 +298,31 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
 
   function getHarloweMeta(): GameMetaData | null {
     const storyData = document.querySelector('tw-storydata');
+    const xlowe = (): XLoweGlobals['XLowe'] => {
+      return isType<XLoweGlobals>(window, xloweSchema) ? window.XLowe : {};
+    };
+    const text = (value: unknown) => (isType<string>(value, 'string') && value ? value : undefined);
+    const toVersion = (value: unknown): VersionInfo | undefined => {
+      type XLoweVersion = { major: number; minor: number; patch: number; semantic?: unknown };
+      if (!isType<XLoweVersion>(value, versionSchema)) {
+        return undefined;
+      }
+      const { major, minor, patch } = value;
+      return {
+        major,
+        minor,
+        patch,
+        shortStr: text(value.semantic) ?? `${major}.${minor}.${patch}`,
+      };
+    };
+
     const getName = () => {
-      return storyData?.getAttribute('name') || document.title || 'Untitled';
+      return (
+        storyData?.getAttribute('name') || text(xlowe().story?.name) || document.title || 'Untitled'
+      );
     };
     const getIfid = () => {
-      return storyData?.getAttribute('ifid') || '';
+      return storyData?.getAttribute('ifid') || text(xlowe().story?.ifid) || '';
     };
     const getCompiler = () => {
       const creator = storyData?.getAttribute('creator') ?? 'unknown';
@@ -304,7 +332,7 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
     };
     const getVersion = () => {
       const shortStr = storyData?.getAttribute('format-version');
-      if (!shortStr) return null;
+      if (!shortStr) return toVersion(xlowe().engine) ?? null;
       const [major, minor, patch] = shortStr.split('.').map(Number);
       return {
         major,
@@ -312,6 +340,10 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
         patch,
         shortStr: shortStr,
       };
+    };
+    const getFramework = () => {
+      const version = toVersion(xlowe().framework);
+      return version && { name: 'XLowe' as const, version };
     };
     const getStartingPassage = () => {
       const startnode = storyData?.getAttribute('startnode');
@@ -352,6 +384,7 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
         name: 'Harlowe',
         version: getVersion() ?? undefined,
       },
+      framework: getFramework(),
       passages: getPassages(),
       incompatible: getIsIncompatible(),
     };

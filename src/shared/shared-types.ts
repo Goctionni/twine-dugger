@@ -37,7 +37,10 @@ export type Path = typeof pathSchema.infer;
 
 export type PropertyFilterKey = ValueType | 'filtered';
 
-export const lockSchema = type({ path: pathSchema, value: type({}).as<JSONSafeValue>() });
+export const jsonSafeValueSchema = type(
+  'string | number | boolean | null | object',
+).as<JSONSafeValue>();
+export const lockSchema = type({ path: pathSchema, value: jsonSafeValueSchema });
 export type Lock = typeof lockSchema.infer;
 
 export interface LockRevert {
@@ -96,6 +99,13 @@ export interface CandidateGameIframes {
   urls: string[];
 }
 
+export interface VersionInfo {
+  major: number | undefined;
+  minor: number | undefined;
+  patch: number | undefined;
+  shortStr: string;
+}
+
 export interface GameMetaData {
   name: string;
   ifId: string;
@@ -113,12 +123,11 @@ export interface GameMetaData {
   };
   format?: {
     name: 'SugarCube' | 'Harlowe' | 'Chapbook' | 'Snowman';
-    version?: {
-      major: number | undefined;
-      minor: number | undefined;
-      patch: number | undefined;
-      shortStr: string;
-    };
+    version?: VersionInfo;
+  };
+  framework?: {
+    name: 'XLowe';
+    version: VersionInfo;
   };
   compiler?: {
     name: string;
@@ -242,6 +251,14 @@ export interface HarloweGlobals {
       clearTagCache?: () => void;
       values?: () => MapIterator<Map<'source' | 'tags' | 'name', string>>;
     };
+  };
+}
+
+export interface XLoweGlobals {
+  XLowe: {
+    story?: { ifid?: unknown; name?: unknown };
+    framework?: unknown;
+    engine?: unknown;
   };
 }
 

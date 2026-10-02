@@ -13,7 +13,14 @@ import {
 } from './store-types';
 
 const LS_PREFIX = 'twine-dugger-';
-const getGameSettingsKey = (ifId: string) => `${LS_PREFIX}${ifId}`;
+const getGameSettingsKey = (gameId: string) => `${LS_PREFIX}${gameId}`;
+
+// The name is only a fallback for games without an ifid. 'Untitled' is what the metadata falls back
+// to, and every unnamed game would share a config under it.
+const getGameId = (meta: Pick<GameMetaData, 'ifId' | 'name'> | null) => {
+  if (meta?.ifId) return meta.ifId;
+  return meta?.name && meta.name !== 'Untitled' ? `name:${meta.name}` : undefined;
+};
 const getGlobalSettingsKey = () => `${LS_PREFIX}settings`;
 
 const defaultSettings: Settings = {
@@ -35,9 +42,9 @@ function loadGlobalSettings(): Settings {
   }
 }
 
-function loadGameConfig(ifId: string): GameConfig {
+function loadGameConfig(gameId: string | undefined): GameConfig {
   try {
-    const saved = localStorage.getItem(getGameSettingsKey(ifId));
+    const saved = gameId && localStorage.getItem(getGameSettingsKey(gameId));
     if (saved) {
       const config = fromJson(saved, gameConfigSchema.partial());
       return { filteredPaths: config.filteredPaths ?? [], locks: config.locks ?? [] };
@@ -71,9 +78,9 @@ export function createPersistenceEffects() {
 
   // The config belongs to the game, so it's kept under the id of the game
   createEffect(
-    () => ({ ifId: store.gameMeta?.ifId, config: deep(store.gameConfig) }),
-    ({ ifId, config }) => {
-      if (ifId) localStorage.setItem(getGameSettingsKey(ifId), JSON.stringify(config));
+    () => ({ gameId: getGameId(store.gameMeta), config: deep(store.gameConfig) }),
+    ({ gameId, config }) => {
+      if (gameId) localStorage.setItem(getGameSettingsKey(gameId), JSON.stringify(config));
     },
   );
 }
@@ -96,7 +103,7 @@ export const getGameMetaData = () => store.gameMeta;
 export function setGameMetaData(meta: GameMetaData) {
   setStore((draft) => {
     draft.gameMeta = meta;
-    draft.gameConfig = loadGameConfig(meta.ifId);
+    draft.gameConfig = loadGameConfig(getGameId(meta));
   });
 }
 

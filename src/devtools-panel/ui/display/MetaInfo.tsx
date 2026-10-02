@@ -15,6 +15,14 @@ export function MetaInfo() {
           </span>
         </span>
       )}
+      {getGameMetaData()?.framework && (
+        <span>
+          Framework:{' '}
+          <span class="font-medium text-gray-300">
+            {getGameMetaData()?.framework?.name} {getGameMetaData()?.framework?.version.shortStr}
+          </span>
+        </span>
+      )}
       {getGameMetaData()?.compiler && (
         <span>
           Compiled with:{' '}

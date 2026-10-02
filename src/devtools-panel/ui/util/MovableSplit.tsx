@@ -1,6 +1,5 @@
-import type { JSX } from '@solidjs/web';
-import clsx from 'clsx';
-import { createSignal, onCleanup } from 'solid-js';
+import type { JSX } from '@solidjs/web/jsx-runtime';
+import { createSignal, onSettled } from 'solid-js';
 
 import { getPersistedValue, setPersistedValue } from './persistedValue';
 
@@ -12,8 +11,6 @@ interface Interface {
   class?: string;
 }
 
-const DIVIDER_WIDTH = 8;
-
 export function MovableSplit(props: Interface) {
   const splitKey = () => props.splitKey;
   const initialWidthPct = props.initialLeftWidthPercent || 50;
@@ -24,56 +21,41 @@ export function MovableSplit(props: Interface) {
   const [isDragging, setIsDragging] = createSignal(false);
   let containerRef: HTMLDivElement | undefined;
 
-  let containerLeft = 0;
-  let pendingX = 0;
-  let frame = 0;
-
-  // Moves come in faster than frames are drawn; only the latest position matters
-  const handlePointerMove = (e: PointerEvent) => {
-    pendingX = e.clientX;
-    if (frame) return;
-
-    frame = requestAnimationFrame(() => {
-      frame = 0;
-      const width = `${pendingX - containerLeft - DIVIDER_WIDTH / 2}px`;
-      setLeftWidth(width);
-      if (splitKey()) setPersistedValue(splitKey()!, width);
-    });
-  };
-
-  // The listeners are on the document, not the divider: the drag has to end wherever the pointer is
-  let listeners: AbortController | undefined;
-  const removeListeners = () => {
-    listeners?.abort();
-    cancelAnimationFrame(frame);
-    frame = 0;
-  };
-
-  function stopDragging() {
-    removeListeners();
-    setIsDragging(false);
-  }
-
-  const startDragging = (e: PointerEvent) => {
+  const handleMouseDown = (e: MouseEvent) => {
     e.preventDefault();
-    containerLeft = containerRef?.getBoundingClientRect().left ?? 0;
-    listeners = new AbortController();
-    const { signal } = listeners;
-    document.addEventListener('pointermove', handlePointerMove, { signal });
-    document.addEventListener('pointerup', stopDragging, { signal });
-    document.addEventListener('pointercancel', stopDragging, { signal });
     setIsDragging(true);
   };
 
-  onCleanup(removeListeners);
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging() || !containerRef) return;
+    const containerRect = containerRef.getBoundingClientRect();
+    let newLeftWidth = e.clientX - containerRect.left;
+
+    // Constrain width (e.g., min 10%, max 90%)
+    const width = `${newLeftWidth - 4}px`;
+    setLeftWidth(width);
+    if (splitKey()) setPersistedValue(splitKey()!, width);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  onSettled(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  });
 
   return (
-    <div
-      ref={containerRef}
-      class={clsx(props.class || 'flex w-full grow overflow-hidden', isDragging() && 'select-none')}
-    >
+    <div ref={containerRef} class={props.class || 'flex w-full grow overflow-hidden'}>
+      {/* Left Panel */}
       <div
-        class={clsx('shrink-0 bg-gray-900', isDragging() && 'pointer-events-none')}
+        class="bg-gray-900" // Slightly different bg for panels
         style={{ width: leftWidth() }}
       >
         {props.leftContent}
@@ -81,13 +63,12 @@ export function MovableSplit(props: Interface) {
 
       {/* Divider */}
       <div
-        class="shrink-0 cursor-col-resize touch-none bg-gray-700 hover:bg-sky-600"
-        style={{ width: `${DIVIDER_WIDTH}px` }}
-        onPointerDown={startDragging}
+        class="w-2 shrink-0 cursor-col-resize bg-gray-700 hover:bg-sky-600"
+        onMouseDown={handleMouseDown}
       />
 
       {/* Right Panel */}
-      <div class={clsx('min-w-0 flex-1 bg-gray-900', isDragging() && 'pointer-events-none')}>
+      <div class="grow bg-gray-900" style={{ width: `calc(100% - 8px - ${leftWidth()}` }}>
         {props.rightContent}
       </div>
     </div>
