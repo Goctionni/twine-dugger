@@ -16,5 +16,6 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: ['tests/e2e/**'],
+    sequence: { shuffle: true },
   },
 });

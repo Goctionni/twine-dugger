@@ -8,20 +8,32 @@ import { PrettyPath } from './PrettyPath';
 
 vi.mock('@/devtools-panel/store/game-state', async () => {
   const { createStore } = await import('solid-js');
-  const [state, setState] = createStore<Record<string, unknown>>({
+  const initialState = (): Record<string, unknown> => ({
     player: { 'first-name': 'Ada', 'items': [1, 2] },
     seen: { '__twinedugger-type': 'Map', 'tavern': 3, '1': 'one' },
     counts: { '__twinedugger-type': 'NumberMap', '1': 'one', 'other': 2 },
     tags: ['__twinedugger-type: Set', 'a', 'b'],
   });
-  return { getActiveState: () => state, setMockState: setState };
+  const [state, setState] = createStore(initialState());
+  const resetMockState = () => {
+    setState((draft) => {
+      for (const key of Object.keys(draft)) delete draft[key];
+      Object.assign(draft, initialState());
+    });
+  };
+  return { getActiveState: () => state, setMockState: setState, resetMockState };
 });
 
-const { setMockState } = gameState as unknown as {
+const { setMockState, resetMockState } = gameState as unknown as {
   setMockState: (update: (state: Record<string, unknown>) => void) => void;
+  resetMockState: () => void;
 };
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  resetMockState();
+  flush();
+});
 
 const written = (path: Array<string | number>) => {
   const { container } = render(() => <PrettyPath path={path} />);

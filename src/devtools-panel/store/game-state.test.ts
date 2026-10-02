@@ -43,6 +43,7 @@ describe('game state', () => {
       set: new Set([1, 2]),
     });
     startGameState(game.state());
+    flush();
 
     play(game, (s) => (s.hp = 9));
     play(game, (s) => (s.inv[1].item = 'bow'));
