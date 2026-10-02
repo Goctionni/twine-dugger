@@ -5,6 +5,7 @@ import { PassagesPage } from '../pages/PassagesPage';
 import { SearchPage } from '../pages/SearchPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { StatePage } from '../pages/StatePage';
+import { createHistoryEffects } from '../store/game-state';
 import { getConnectionState, getGameMetaData, getNavigationPage } from '../store/store';
 import { startTrackingFrames } from '../store/tracking';
 import { TooltipOutlet } from '../ui/display/TooltipOutlet';
@@ -17,6 +18,7 @@ import { Layout } from './Layout';
 initMeta();
 
 export function App() {
+  createHistoryEffects();
   const state = () => getConnectionState();
 
   const start = async () => {

@@ -6,6 +6,7 @@ import { pretransformState } from '@/content-script/util/pre-transform';
 import { getDiffFromDelta } from './diff-from-delta';
 import {
   applyUpdate,
+  createHistoryEffects,
   getActiveState,
   getDiffFrames,
   getHistoryIds,
@@ -13,7 +14,7 @@ import {
   restartGameState,
   startGameState,
 } from './game-state';
-import { setViewState } from './store';
+import { setSetting, setViewState } from './store';
 import { createGame } from './test-game';
 
 vi.mock('../api/api', () => ({
@@ -159,5 +160,43 @@ describe('game state', () => {
     setViewState('state', 'historyRef', 3);
     flush();
     expect(state().hp).toBe(100);
+  });
+
+  describe('createHistoryEffects', () => {
+    const setup = () => {
+      createRoot((dispose) => {
+        createHistoryEffects();
+        onTestFinished(dispose);
+      });
+      onTestFinished(() => setSetting('diffLog.maxHistorySlices', 50));
+      const game = createGame({ hp: 10 });
+      startGameState(game.state());
+      flush();
+      return game;
+    };
+
+    it('goes back to the latest state when the slice that is looked at is gone', () => {
+      const game = setup();
+      for (let hp = 9; hp > 5; hp--) play(game, (s) => (s.hp = hp));
+
+      setViewState('state', 'historyRef', 1);
+      flush();
+      expect(state().hp).toBe(9);
+
+      setSetting('diffLog.maxHistorySlices', 2);
+      flush();
+      expect(getHistoryIds()).toEqual([4, 3, 2]);
+      expect(getActiveState().hp).toBe(6);
+    });
+
+    it('keeps no more frames than the setting allows', () => {
+      const game = setup();
+      for (let hp = 9; hp > 5; hp--) play(game, (s) => (s.hp = hp));
+      expect(getDiffFrames()).toHaveLength(4);
+
+      setSetting('diffLog.maxHistorySlices', 2);
+      flush();
+      expect(getDiffFrames().map((frame) => frame.id)).toEqual([4, 3]);
+    });
   });
 });

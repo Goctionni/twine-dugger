@@ -1,14 +1,6 @@
 import type { Delta } from 'jsondiffpatch';
 import { patch, unpatch } from 'jsondiffpatch';
-import {
-  createEffect,
-  createMemo,
-  createRoot,
-  createSignal,
-  createStore,
-  snapshot,
-  untrack,
-} from 'solid-js';
+import { createEffect, createMemo, createSignal, createStore, snapshot, untrack } from 'solid-js';
 
 import { pathEquals, pathKey } from '@/shared/path-equals';
 import type { DeltaUpdate, JSONSafeObject, LockRevert, Path } from '@/shared/shared-types';
@@ -97,44 +89,45 @@ export function clearDiffFrames() {
   setLogStartId(untrack(latestId));
 }
 
-const derived = createRoot(() => {
-  const historicalState = createMemo(() => {
-    const ref = store.viewState.state.historyRef;
-    if (ref === 'latest') return null;
+const historicalState = createMemo(() => {
+  const ref = store.viewState.state.historyRef;
+  if (ref === 'latest') return null;
 
-    // Only `historyRef` is tracked: new frames don't change what an older slice looks like
-    return untrack(() => {
-      const state = structuredClone(snapshot(gameState));
-      for (const frame of frames()) {
-        if (frame.id <= ref) break;
-        if (frame.delta) unpatch(state, frame.delta);
-      }
-      return state;
-    });
+  // Only `historyRef` is tracked: new frames don't change what an older slice looks like
+  return untrack(() => {
+    const state = structuredClone(snapshot(gameState));
+    for (const frame of frames()) {
+      if (frame.id <= ref) break;
+      if (frame.delta) unpatch(state, frame.delta);
+    }
+    return state;
   });
+});
 
-  const getActiveState = (): JSONSafeObject => historicalState() ?? gameState;
+export const getActiveState = (): JSONSafeObject => historicalState() ?? gameState;
 
-  const getReloadId = createMemo(() => frames().find((frame) => frame.reloaded)?.id);
+const getReloadId = createMemo(() => frames().find((frame) => frame.reloaded)?.id);
 
-  const isFrameTainted = (frame: StateDiff) => frame.id < (getReloadId() ?? -Infinity);
+export const isFrameTainted = (frame: StateDiff) => frame.id < (getReloadId() ?? -Infinity);
 
-  const getHistoryFloor = createMemo(() => {
-    return Math.max(getReloadId() ?? -Infinity, latestId() - frames().length);
-  });
+const getHistoryFloor = createMemo(() => {
+  return Math.max(getReloadId() ?? -Infinity, latestId() - frames().length);
+});
 
-  const getHistoryIds = createMemo(
-    () => {
-      const latest = latestId();
-      return Array.from({ length: latest - getHistoryFloor() + 1 }, (_, i) => latest - i);
-    },
-    { equals: sameItems },
-  );
+export const getHistoryIds = createMemo(
+  () => {
+    const latest = latestId();
+    return Array.from({ length: latest - getHistoryFloor() + 1 }, (_, i) => latest - i);
+  },
+  { equals: sameItems },
+);
 
-  const getDiffFrames = createMemo(() => frames().filter((frame) => frame.id > logStartId()), {
-    equals: sameItems,
-  });
+export const getDiffFrames = createMemo(() => frames().filter((frame) => frame.id > logStartId()), {
+  equals: sameItems,
+});
 
+/** Call once from a component: effects need an owner to be disposed with */
+export function createHistoryEffects() {
   createEffect(
     () => ({ floor: getHistoryFloor(), ref: store.viewState.state.historyRef }),
     ({ floor, ref }) => {
@@ -148,8 +141,4 @@ const derived = createRoot(() => {
       setFrames((current) => current.slice(0, max));
     },
   );
-
-  return { getActiveState, getHistoryIds, getDiffFrames, isFrameTainted };
-});
-
-export const { getActiveState, getHistoryIds, getDiffFrames, isFrameTainted } = derived;
+}
