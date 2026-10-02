@@ -22,18 +22,18 @@ const sugarCubeSchema = type({
 
 const sugarcube = () => sugarCubeSchema.assert(window).SugarCube;
 
-const getState = () => sugarcube().State.variables;
-const setState = (path: Path, value: unknown) => setStateBase(getState(), path, value);
+const getRawState = () => sugarcube().State.variables;
+const setState = (path: Path, value: unknown) => setStateBase(getRawState(), path, value);
 
 export default {
   detect: () => sugarCubeSchema.allows(window),
-  getState,
+  getRawState,
   getPassage: () => sugarcube().State.passage,
   setState,
   duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
-    duplicateStateProperty(getState(), parentPath, sourceKey, targetKey);
+    duplicateStateProperty(getRawState(), parentPath, sourceKey, targetKey);
   },
-  deleteFromState: (path) => deleteFromState(getState(), path),
+  deleteFromState: (path) => deleteFromState(getRawState(), path),
   goToPassage: (passageName) => sugarcube().Engine.play(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;

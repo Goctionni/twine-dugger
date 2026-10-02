@@ -32,7 +32,7 @@ function findLiveValue(root: Value, path: Path): [found: boolean, value: Value] 
 }
 
 export function createLockEnforcer(
-  getState: () => ObjectValue,
+  getRawState: () => ObjectValue,
   setState: (path: Path, value: unknown) => void,
 ) {
   let lastLocks: Lock[] = [];
@@ -46,7 +46,7 @@ export function createLockEnforcer(
     const reverts: LockRevert[] = [];
 
     for (const { path, value } of locks) {
-      const [found, live] = findLiveValue(getState(), path);
+      const [found, live] = findLiveValue(getRawState(), path);
       if (!found) continue;
 
       const attempted = pretransformValue(live, new Map(), new Map());

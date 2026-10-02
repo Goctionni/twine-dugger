@@ -40,16 +40,16 @@ const harlowe = (): HarloweGlobals['__HarloweInternals'] => {
 };
 
 const detect = () => harloweSchema.allows(window);
-const getState = () => harlowe().state.variables;
-const setState = (path: Path, value: unknown) => setStateBase(getState(), path, value);
+const getRawState = () => harlowe().state.variables;
+const setState = (path: Path, value: unknown) => setStateBase(getRawState(), path, value);
 export default {
   detect,
-  getState,
+  getRawState,
   setState,
   duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
-    return duplicateStateProperty(getState(), parentPath, sourceKey, targetKey);
+    return duplicateStateProperty(getRawState(), parentPath, sourceKey, targetKey);
   },
-  deleteFromState: (path) => deleteFromState(getState(), path),
+  deleteFromState: (path) => deleteFromState(getRawState(), path),
   getPassage: () => harlowe().state.passage,
   goToPassage: (passageName) => harlowe().engine.goToPassage(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),

@@ -35,21 +35,23 @@ export function pretransformState(
   return [pretransformObject(state, identityCache, identityLookup), identityCache, identityLookup];
 }
 
+const primitiveTypes = new Set(['undefined', 'string', 'number', 'boolean']);
+
 export function pretransformValue(
   value: Value,
   identityCache: IdentityCache,
   identityLookup: IdentityLookup,
 ): JSONSafeValue {
   if (!value) return value;
-  const t = typeof value as 'string' | 'number' | 'boolean' | 'object' | 'function';
-  if (t === 'string' || t === 'number' || t === 'boolean') return value as Primitive;
+  if (primitiveTypes.has(typeof value)) return value as Primitive;
 
-  const cached = identityCache.get(value as object);
+  const object = value as ContainerValue;
+  const cached = identityCache.get(object);
   if (cached !== undefined) return cached;
 
-  const result = pretransformOther(value as ContainerValue, identityCache, identityLookup);
-  identityCache.set(value as object, result);
-  identityLookup.set(result, value as object);
+  const result = pretransformOther(object, identityCache, identityLookup);
+  identityCache.set(object, result);
+  identityLookup.set(result, object);
   return result;
 }
 

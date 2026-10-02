@@ -6,7 +6,7 @@ export function createGame(live: Record<string, any>) {
 
   return {
     live,
-    state: () => structuredClone(tracker.getState()),
+    state: () => structuredClone(tracker.getJsonSafeState()),
     update: (): UpdateResult => ({
       passage: 'P',
       delta: tracker.getDelta(),

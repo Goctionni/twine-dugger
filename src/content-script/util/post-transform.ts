@@ -1,5 +1,5 @@
 import { isNumberLike, SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
-import type { JSONSafeObject, JSONSafeValue } from '@/shared/shared-types';
+import type { JSONSafeDate, JSONSafeObject, JSONSafeValue } from '@/shared/shared-types';
 
 export function posttransformValue(value: JSONSafeValue): unknown {
   if (value === null || typeof value !== 'object') return value;
@@ -21,7 +21,7 @@ export function posttransformValue(value: JSONSafeValue): unknown {
         ]),
       );
     case 'Date': {
-      const { Y, M, D, h, m, s } = value as Record<string, number>;
+      const { Y, M, D, h, m, s } = value as JSONSafeDate;
       return new Date(Y!, M! - 1, D, h, m, s);
     }
     case 'function':

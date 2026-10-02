@@ -25,7 +25,7 @@ const chapbookSchema = type({
 
 const chapbook = () => chapbookSchema.assert(window);
 
-const getState = () => chapbook().engine.state.saveToObject();
+const getRawState = () => chapbook().engine.state.saveToObject();
 const setState = (path: Path, value: unknown) => chapbook().engine.state.set(path.join('.'), value);
 
 export default {
@@ -34,7 +34,7 @@ export default {
       chapbookSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata')
     );
   },
-  getState,
+  getRawState,
   getPassage: () => chapbook().engine.state.get('passage.name') as string,
   setState,
   duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
@@ -66,7 +66,7 @@ export default {
     const parentPath = path.slice(0, -1);
     // If root value
     if (!parentPath.length) {
-      const state = getState();
+      const state = getRawState();
       const copy = { ...state };
       delete copy[deleteKey];
       chapbook().engine.state.restoreFromObject(copy);

@@ -21,8 +21,8 @@ function init() {
   const formatHelper = formatHelpers.find((helper) => helper.detect());
   if (!formatHelper) return;
 
-  const tracker = createUpdateTracker(formatHelper.getState);
-  const enforceLocks = createLockEnforcer(formatHelper.getState, formatHelper.setState);
+  const tracker = createUpdateTracker(formatHelper.getRawState);
+  const enforceLocks = createLockEnforcer(formatHelper.getRawState, formatHelper.setState);
   let locks: Lock[] = [];
   // Set until the panel has been told (by `getState` or `getUpdates`) that we just started
   let initialized = true;
@@ -30,7 +30,7 @@ function init() {
   window.TwineDugger = {
     getState: () => {
       initialized = false;
-      return { passage: formatHelper.getPassage(), state: tracker.getState() };
+      return { passage: formatHelper.getPassage(), state: tracker.getJsonSafeState() };
     },
     getUpdates: (): UpdateResult => {
       // Locked values are restored before the state is read, so the changes never show up in the delta

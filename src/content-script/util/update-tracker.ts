@@ -17,7 +17,7 @@ export function createUpdateTracker(getLiveState: () => ObjectValue) {
   let [oldState, , oldIdentityLookup] = pretransformState(getLiveState());
 
   return {
-    getState: () => oldState,
+    getJsonSafeState: () => oldState,
 
     getDelta(): Delta {
       const [newState, , newIdentityLookup] = pretransformState(getLiveState());

@@ -28,8 +28,8 @@ const snowmanSchema = type({
 
 const snowman = () => snowmanSchema.assert(window);
 
-const getState = () => snowman().story.state;
-const setState = (path: Path, value: unknown) => setStateBase(getState(), path, value);
+const getRawState = () => snowman().story.state;
+const setState = (path: Path, value: unknown) => setStateBase(getRawState(), path, value);
 
 export default {
   detect: () => {
@@ -37,13 +37,13 @@ export default {
       snowmanSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata')
     );
   },
-  getState,
+  getRawState,
   getPassage: () => snowman().passage.name,
   setState,
   duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
-    duplicateStateProperty(getState(), parentPath, sourceKey, targetKey);
+    duplicateStateProperty(getRawState(), parentPath, sourceKey, targetKey);
   },
-  deleteFromState: (path) => deleteFromState(getState(), path),
+  deleteFromState: (path) => deleteFromState(getRawState(), path),
   goToPassage: (passageName) => snowman().story.show(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;
