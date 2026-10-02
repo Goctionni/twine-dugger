@@ -4,12 +4,12 @@ The content script (`src/content-script/content-script.ts`) detects the active T
 
 ```ts
 window.TwineDugger = {
-  getState: () => ({ passage, state }), // JSON-safe snapshot
+  getState: () => ({ passage, state }),
   getUpdates: () => ({ passage, delta, reverts, initialized }),
   setState: (path, value) => void,
   deleteFromState: (path) => void,
   duplicateStateProperty: (parentPath, sourceKey, targetKey) => void,
-  setStatePropertyLocks: (locks) => void, // locks: { path, value }[]
+  setStatePropertyLocks: (locks) => void,
   getPassageData: () => PassageData[],
   goToPassage: (name) => void,
   setPassage: (passage) => void,
