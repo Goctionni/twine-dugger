@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 
+import { setState } from '../format-helpers/shared';
 import { createLockEnforcer } from './locks';
 import { posttransformValue } from './post-transform';
 import { pretransformValue } from './pre-transform';
@@ -10,13 +11,13 @@ const lockOf = (path: Array<string | number>, value: unknown) => ({
 });
 
 function setup(state: Record<string, any>) {
-  const setState = (path: Array<string | number>, value: unknown) => {
-    const parent = path.slice(0, -1).reduce((obj, key) => obj[key], state as any);
-    const key = path.at(-1)!;
-    if (parent instanceof Map) parent.set(`${key}`, value);
-    else parent[key] = value;
+  return {
+    state,
+    enforce: createLockEnforcer(
+      () => state,
+      (path, value) => setState(state, [...path], value),
+    ),
   };
-  return { state, enforce: createLockEnforcer(() => state, setState) };
 }
 
 describe('createLockEnforcer', () => {
@@ -35,16 +36,87 @@ describe('createLockEnforcer', () => {
     expect(state).toEqual({ hp: 10, player: { gold: 5 } });
   });
 
-  it('ignores a lock while its path does not exist, and enforces it once it does', () => {
-    const { state, enforce } = setup({ items: [1, 2] });
-    const locks = [lockOf(['items', 2], 99), lockOf(['gone', 'deeper'], 1)];
+  it('puts back a deleted property, but ignores a lock whose container does not exist', () => {
+    const { state, enforce } = setup({ player: { gold: 5 } });
+    const locks = [lockOf(['player', 'gold'], 5), lockOf(['gone', 'deeper'], 1)];
 
+    delete state.player.gold;
+    expect(enforce(locks)).toEqual([{ path: ['player', 'gold'], attempted: undefined }]);
+    expect(state).toEqual({ player: { gold: 5 } });
+
+    delete state.player;
     expect(enforce(locks)).toEqual([]);
-    expect(state).toEqual({ items: [1, 2] });
+    expect(state).toEqual({});
+  });
 
-    state.items.push(3);
-    expect(enforce(locks)).toEqual([{ path: ['items', 2], attempted: 3 }]);
-    expect(state.items).toEqual([1, 2, 99]);
+  it('keeps an array index locked for as long as the item before it exists', () => {
+    const { state, enforce } = setup({ items: [1, 2, 3] });
+    const locks = [lockOf(['items', 2], 3)];
+
+    state.items.pop();
+    expect(enforce(locks)).toEqual([{ path: ['items', 2], attempted: undefined }]);
+    expect(state.items).toEqual([1, 2, 3]);
+
+    state.items.length = 1;
+    expect(enforce(locks)).toEqual([]);
+    expect(state.items).toEqual([1]);
+  });
+
+  describe('inside a Map', () => {
+    it('finds number keys and string keys that look like numbers', () => {
+      const { state, enforce } = setup({
+        numbers: new Map<unknown, unknown>([[1, 'a']]),
+        strings: new Map<unknown, unknown>([['1', 'a']]),
+      });
+      const locks = [lockOf(['numbers', '1'], 'a'), lockOf(['strings', '1'], 'a')];
+
+      state.numbers.set(1, 'x');
+      state.strings.set('1', 'x');
+      expect(enforce(locks)).toHaveLength(2);
+      expect(state.numbers).toEqual(new Map([[1, 'a']]));
+      expect(state.strings).toEqual(new Map([['1', 'a']]));
+    });
+
+    it('puts a deleted entry back under the kind of key the map uses', () => {
+      const { state, enforce } = setup({
+        numbers: new Map<unknown, unknown>([
+          [1, 'a'],
+          [2, 'b'],
+        ]),
+        empty: new Map<unknown, unknown>(),
+        mixed: new Map<unknown, unknown>([
+          [1, 'a'],
+          ['name', 'b'],
+        ]),
+      });
+      const locks = [
+        lockOf(['numbers', '2'], 'b'),
+        lockOf(['empty', '5'], 'c'),
+        lockOf(['mixed', 'name'], 'b'),
+      ];
+
+      state.numbers.delete(2);
+      state.mixed.delete('name');
+      enforce(locks);
+      expect([...state.numbers.keys()]).toEqual([1, 2]);
+      expect([...state.empty.keys()]).toEqual([5]);
+      expect([...state.mixed.keys()]).toEqual([1, 'name']);
+    });
+
+    it('restores a whole map with the keys it had', () => {
+      const original = new Map<unknown, unknown>([
+        [1, 'a'],
+        ['name', 'b'],
+      ]);
+      const strings = new Map<unknown, unknown>([['1', 'a']]);
+      const { state, enforce } = setup({ numbers: new Map(original), strings: new Map(strings) });
+
+      state.numbers.set(2, 'c');
+      state.strings.set('2', 'c');
+      enforce([lockOf(['numbers'], original), lockOf(['strings'], strings)]);
+      expect(state.numbers).toEqual(original);
+      expect(state.strings).toEqual(strings);
+    });
   });
 
   it('locks a path, not the object that was there: a reorder gets undone', () => {

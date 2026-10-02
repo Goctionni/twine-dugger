@@ -4,7 +4,14 @@ import { createMemo, For, Show, untrack } from 'solid-js';
 
 import { getActiveState } from '@/devtools-panel/store/game-state';
 import type { ContainerType } from '@/shared/json-safe';
-import { getJsonType, getKeyLabel, getPathValue, isContainerType } from '@/shared/json-safe';
+import {
+  getJsonType,
+  getKeyLabel,
+  getPathValue,
+  isContainerType,
+  isNumberLike,
+  isNumberMapValue,
+} from '@/shared/json-safe';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 const colorClasses = {
@@ -28,10 +35,10 @@ function needsBracketNotation(propertyName: string | number): boolean {
   return !validIdentifier.test(propertyName);
 }
 
-function getParentType(state: JSONSafeValue, path: Path, index: number): ContainerType {
-  const type = getJsonType(getPathValue(state, path.slice(0, index)));
+function getParentType(parent: JSONSafeValue, slug: string | number): ContainerType {
+  const type = getJsonType(parent);
   if (isContainerType(type)) return type;
-  return typeof path[index] === 'number' ? 'array' : 'object';
+  return typeof slug === 'number' ? 'array' : 'object';
 }
 
 const Passthrough = (p: { children: JSX.Element }) => p.children;
@@ -54,7 +61,8 @@ export function PrettyPath(props: Props) {
     return untrack(() => {
       const state = getActiveState();
       return path.flatMap((slug, index): AtomProps[] => {
-        const parentType = getParentType(state, path, index);
+        const parent = getPathValue(state, path.slice(0, index));
+        const parentType = getParentType(parent, slug);
         const leafClass = (index === lastIndex && props.action) || null;
 
         if (parentType === 'object') {
@@ -84,7 +92,7 @@ export function PrettyPath(props: Props) {
           ];
         }
         const keyNode: AtomProps =
-          typeof slug === 'string'
+          typeof slug === 'string' && !(isNumberMapValue(parent) && isNumberLike(slug))
             ? { color: leafClass ?? 'typeString', text: `"${slug}"` }
             : { color: leafClass ?? 'typeNumber', text: slug };
 

@@ -9,21 +9,24 @@ import type {
   Value,
 } from '@/shared/shared-types';
 
+import { resolveMapKey } from './map-keys';
 import { posttransformValue } from './post-transform';
 import { pretransformValue } from './pre-transform';
+import { isObj } from './type-helpers';
+
+function readChild(container: Value, key: string | number): [found: boolean, value: Value] {
+  if (container instanceof Map) return [true, container.get(resolveMapKey(container, key))];
+  if (Array.isArray(container)) return [Number(key) <= container.length, container[Number(key)]];
+  if (!isObj(container) || container instanceof Set) return [false, undefined];
+  return [true, (container as Record<string | number, Value>)[key]];
+}
 
 function findLiveValue(root: Value, path: Path): [found: boolean, value: Value] {
   let value = root;
   for (const key of path) {
-    if (value instanceof Map) {
-      if (!value.has(`${key}`)) return [false, undefined];
-      value = value.get(`${key}`) as Value;
-    } else if (value && typeof value === 'object' && !(value instanceof Set)) {
-      if (!Object.hasOwn(value, key)) return [false, undefined];
-      value = (value as Record<string | number, Value>)[key];
-    } else {
-      return [false, undefined];
-    }
+    const [found, child] = readChild(value, key);
+    if (!found) return [false, undefined];
+    value = child;
   }
   return [true, value];
 }
@@ -53,7 +56,8 @@ export function createLockEnforcer(
         continue;
       }
 
-      if (!jsonEqual(attempted, lastBlocked.get(id))) reverts.push({ path, attempted });
+      if (!lastBlocked.has(id) || !jsonEqual(attempted, lastBlocked.get(id)))
+        reverts.push({ path, attempted });
       lastBlocked.set(id, attempted);
       setState(path, posttransformValue(value));
     }

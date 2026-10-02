@@ -23,4 +23,19 @@ describe('pretransformState', () => {
       map: { '__twinedugger-type': 'Map', 'fine': 2 },
     });
   });
+
+  it('marks the maps that have number keys', () => {
+    const [state] = pretransformState({
+      numbers: new Map<unknown, unknown>([
+        [1, 'a'],
+        ['name', 'b'],
+      ]) as never,
+      strings: new Map<unknown, unknown>([['1', 'a']]) as never,
+    });
+
+    expect(state).toEqual({
+      numbers: { '__twinedugger-type': 'NumberMap', '1': 'a', 'name': 'b' },
+      strings: { '__twinedugger-type': 'Map', '1': 'a' },
+    });
+  });
 });

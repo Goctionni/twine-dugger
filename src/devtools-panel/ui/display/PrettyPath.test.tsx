@@ -6,7 +6,8 @@ vi.mock('@/devtools-panel/store/game-state', async () => {
   const { createStore } = await import('solid-js');
   const [state, setState] = createStore<Record<string, unknown>>({
     player: { 'first-name': 'Ada', 'items': [1, 2] },
-    seen: { '__twinedugger-type': 'Map', 'tavern': 3 },
+    seen: { '__twinedugger-type': 'Map', 'tavern': 3, '1': 'one' },
+    counts: { '__twinedugger-type': 'NumberMap', '1': 'one', 'other': 2 },
     tags: ['__twinedugger-type: Set', 'a', 'b'],
   });
   return { getActiveState: () => state, setMockState: setState };
@@ -33,6 +34,12 @@ describe('PrettyPath', () => {
   it('writes the items of a Map with get, and a Set by the position of the item', () => {
     expect(written(['seen', 'tavern'])).toBe('seen.get("tavern")');
     expect(written(['tags', 2])).toBe('tags[1]');
+  });
+
+  it('writes the keys of a map that has number keys as numbers, and the others as text', () => {
+    expect(written(['counts', '1'])).toBe('counts.get(1)');
+    expect(written(['counts', 'other'])).toBe('counts.get("other")');
+    expect(written(['seen', '1'])).toBe('seen.get("1")');
   });
 
   it('writes a path that is not in the state (anymore) the way its segments suggest', () => {

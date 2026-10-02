@@ -110,6 +110,7 @@ function pretransformMap(
   const copy: JSONSafeObject = { [TYPE_KEY]: 'Map' };
   for (const [k, v] of map) {
     if (isInternal(String(k), v)) continue;
+    if (typeof k === 'number') copy[TYPE_KEY] = 'NumberMap';
     copy[String(k)] = pretransformValue(v, identityCache, identityRegistry);
   }
   return copy;

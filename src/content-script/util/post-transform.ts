@@ -1,4 +1,4 @@
-import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
+import { isNumberLike, SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
 import type { JSONSafeObject, JSONSafeValue } from '@/shared/shared-types';
 
 export function posttransformValue(value: JSONSafeValue): unknown {
@@ -13,6 +13,13 @@ export function posttransformValue(value: JSONSafeValue): unknown {
   switch (value[TYPE_KEY]) {
     case 'Map':
       return new Map(entries.map(([key, item]) => [key, posttransformValue(item)]));
+    case 'NumberMap':
+      return new Map(
+        entries.map(([key, item]) => [
+          isNumberLike(key) ? Number(key) : key,
+          posttransformValue(item),
+        ]),
+      );
     case 'Date': {
       const { Y, M, D, h, m, s } = value as Record<string, number>;
       return new Date(Y!, M! - 1, D, h, m, s);

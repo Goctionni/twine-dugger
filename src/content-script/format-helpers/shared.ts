@@ -8,6 +8,7 @@ import type {
   Value,
 } from '@/shared/shared-types';
 
+import { resolveMapKey } from '../util/map-keys';
 import { isObj } from '../util/type-helpers';
 
 export function getStateValue(
@@ -15,17 +16,16 @@ export function getStateValue(
   path: Array<string | number>,
 ) {
   let stateObj: Value = stateRoot;
-  for (let i = 0; i < path.length; i++) {
+  for (const key of path) {
     if (!isObj(stateObj)) {
       console.error(`[Twine Dugger]: Could not resolve path`, { path });
       return null;
     }
 
-    const key = path[i];
     if (Array.isArray(stateObj)) {
       stateObj = stateObj[Number(key)] as ContainerValue;
     } else if (stateObj instanceof Map) {
-      stateObj = stateObj.get(`${key}`) as ContainerValue;
+      stateObj = stateObj.get(resolveMapKey(stateObj, key)) as ContainerValue;
     } else {
       stateObj = stateObj[`${key}`] as ContainerValue;
     }
@@ -57,8 +57,8 @@ export function duplicateStateProperty(
   }
   // Map
   if (parentObj instanceof Map) {
-    const value = parentObj.get(`${sourceKey}`);
-    parentObj.set(`${targetKey}`, structuredClone(value));
+    const value = parentObj.get(resolveMapKey(parentObj, sourceKey));
+    parentObj.set(resolveMapKey(parentObj, targetKey), structuredClone(value));
     return;
   }
   // Normal object
@@ -77,7 +77,7 @@ export function setState(
   if (Array.isArray(stateObj)) {
     stateObj[Number(valueKey)] = value as Value;
   } else if (stateObj instanceof Map) {
-    stateObj.set(`${valueKey}`, value as Value);
+    stateObj.set(resolveMapKey(stateObj, valueKey), value as Value);
   } else {
     stateObj[`${valueKey}`] = value as Value;
   }
@@ -91,7 +91,7 @@ export function deleteFromState(stateRoot: ContainerValue, path: Array<string | 
   if (Array.isArray(stateObj)) {
     stateObj.splice(Number(valueKey), 1);
   } else if (stateObj instanceof Map) {
-    stateObj.delete(`${valueKey}`);
+    stateObj.delete(resolveMapKey(stateObj, valueKey));
   } else if (typeof stateObj === 'object' && stateObj !== null) {
     delete stateObj[`${valueKey}`];
   } else {

@@ -1,4 +1,4 @@
-import type { JSONSafeArray, JSONSafeValue, ValueType } from './shared-types';
+import type { JSONSafeArray, JSONSafeObject, JSONSafeValue, ValueType } from './shared-types';
 
 /** Marks objects that stand in for a non-JSON value (Map, function, Date) */
 export const TYPE_KEY = '__twinedugger-type' as const;
@@ -17,6 +17,7 @@ export function getJsonType(value: unknown): ValueType {
   if (t === 'object') {
     switch ((value as Record<string, unknown>)[TYPE_KEY]) {
       case 'Map':
+      case 'NumberMap':
         return 'map';
       case 'function':
         return 'function';
@@ -27,6 +28,15 @@ export function getJsonType(value: unknown): ValueType {
     }
   }
   return 'other';
+}
+
+export function isNumberLike(key: string) {
+  const number = Number(key);
+  return Number.isFinite(number) && String(number) === key;
+}
+
+export function isNumberMapValue(value: JSONSafeValue) {
+  return getJsonType(value) === 'map' && (value as JSONSafeObject)[TYPE_KEY] === 'NumberMap';
 }
 
 export function isContainerType(type: ValueType): type is ContainerType {
