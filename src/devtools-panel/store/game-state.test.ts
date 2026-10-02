@@ -4,14 +4,7 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import { pretransformState } from '@/content-script/util/pre-transform';
 
 import { getDiffFromDelta } from './diff';
-import { createGame } from './test-game';
-
-vi.mock('../api/api', () => ({
-  getPassageData: async () => [],
-  setStatePropertyLocks: async () => {},
-}));
-
-const {
+import {
   applyUpdate,
   getActiveState,
   getDiffFrames,
@@ -19,8 +12,14 @@ const {
   isFrameTainted,
   restartGameState,
   startGameState,
-} = await import('./game-state');
-const { setViewState } = await import('./store');
+} from './game-state';
+import { setViewState } from './store';
+import { createGame } from './test-game';
+
+vi.mock('../api/api', () => ({
+  getPassageData: async () => [],
+  setStatePropertyLocks: async () => {},
+}));
 
 type Game = ReturnType<typeof createGame>;
 

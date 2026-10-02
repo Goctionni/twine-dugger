@@ -48,7 +48,7 @@ export function createVirtualizer<TScrollElement extends Element, TItemElement e
   );
 
   const [virtualItems, setVirtualItems] = createStore(instance.getVirtualItems());
-  const [totalSize, setTotalSize] = createSignal(instance.getTotalSize());
+  const [totalSize, setTotalSize] = createSignal(instance.getTotalSize(), { ownedWrite: true });
 
   // The virtualizer is an outside source of truth: its changes are pushed into state, which
   // Solid only allows from outside an owner (an effect is one)

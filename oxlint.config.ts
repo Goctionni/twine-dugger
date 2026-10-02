@@ -1,4 +1,4 @@
-import solid from 'eslint-plugin-solid';
+import solid from 'eslint-plugin-solid/configs/v2';
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
@@ -26,7 +26,7 @@ export default defineConfig({
       files: ['src/devtools-panel/**/*.{ts,tsx}'],
       jsPlugins: ['eslint-plugin-solid'],
       env: { browser: true },
-      rules: solid.configs['flat/typescript'].rules,
+      rules: solid.rules,
     },
     {
       files: ['src/**/*.test.{ts,tsx}'],

@@ -1,9 +1,9 @@
 import { cp } from 'fs/promises';
 import { resolve } from 'path';
 
+import solidPlugin from '@solidjs/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
-import solidPlugin from 'vite-plugin-solid';
-import { defineConfig } from 'vite-plus';
+import { defineConfig, type PluginOption } from 'vite-plus';
 
 import { buildLib } from './build/build-lib.ts';
 import { copyTransform } from './build/copy-transform.ts';
@@ -16,7 +16,7 @@ export default defineConfig({
   staged: { '*': '' },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
   build: { minify: false, sourcemap: true },
-  plugins: [solidPlugin(), tailwindcss(), htmlInsertFontPlugin, mockApiPlugin()],
+  plugins: [solidPlugin() as PluginOption, tailwindcss(), htmlInsertFontPlugin, mockApiPlugin()],
   lint: (await import('./oxlint.config.ts')).default,
   fmt: (await import('./oxfmt.config.ts')).default,
   environments: {},
@@ -26,10 +26,10 @@ export default defineConfig({
       const buildResult = await builder.build(builder.environments.client);
 
       if (Array.isArray(buildResult) || !('on' in buildResult)) {
-        buildExtra();
+        return buildExtra();
       } else {
         buildResult.on('event', (e) => {
-          if (e.code === 'BUNDLE_END') buildExtra();
+          if (e.code === 'BUNDLE_END') return buildExtra();
         });
       }
     },

@@ -3,6 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import type { ParsedPassageData } from '@/shared/shared-types';
 
+import * as gameState from '../../store/game-state';
+import * as passageStore from '../../store/passages';
+import * as store from '../../store/store';
+import { createSearchResults } from './create-searchResults';
+import * as utils from './search-utils';
 import type * as SearchUtils from './search-utils';
 
 vi.mock('../../api/api', () => ({
@@ -17,12 +22,6 @@ vi.mock('./search-utils', async (importOriginal) => {
     findPassageMatches: vi.fn(actual.findPassageMatches),
   };
 });
-
-const store = await import('../../store/store');
-const gameState = await import('../../store/game-state');
-const passageStore = await import('../../store/passages');
-const utils = await import('./search-utils');
-const { createSearchResults } = await import('./create-searchResults');
 
 const passages: ParsedPassageData[] = [
   { id: 1, name: 'Tavern', content: 'A dragon sleeps.', tags: [], size: null, position: null },
@@ -54,12 +53,7 @@ const settle = async (ms = 10) => {
 };
 
 const setup = () => {
-  let results!: ReturnType<typeof createSearchResults>;
-  const dispose = createRoot((dispose) => {
-    results = createSearchResults();
-    return dispose;
-  });
-  return { results, dispose };
+  return createRoot((dispose) => ({ results: createSearchResults(), [Symbol.dispose]: dispose }));
 };
 
 const type = async (query: string) => {
@@ -70,20 +64,19 @@ const type = async (query: string) => {
 
 describe('createSearchResults', () => {
   it('searches the state and the passages for what is typed', async () => {
-    const { results, dispose } = setup();
+    using res = setup();
 
     await type('dr');
-    expect(results().state.map((r) => r.path.join('.'))).toEqual(['boss', 'list.0']);
-    expect(results().passage.map((p) => p.id)).toEqual([1]);
+    expect(res.results().state.map((r) => r.path.join('.'))).toEqual(['boss', 'list.0']);
+    expect(res.results().passage.map((p) => p.id)).toEqual([1]);
 
     await type('dragon f');
-    expect(results().state.map((r) => r.path.join('.'))).toEqual(['list.0']);
-    expect(results().passage).toEqual([]);
-    dispose();
+    expect(res.results().state.map((r) => r.path.join('.'))).toEqual(['list.0']);
+    expect(res.results().passage).toEqual([]);
   });
 
   it('searches again for new diffs, at most once a second', async () => {
-    const { results, dispose } = setup();
+    using res = setup();
     await type('dr');
     expect(utils.findStateMatches).toHaveBeenCalledTimes(1);
 
@@ -104,12 +97,11 @@ describe('createSearchResults', () => {
     expect(utils.findStateMatches).toHaveBeenCalledTimes(1);
     await settle(1);
     expect(utils.findStateMatches).toHaveBeenCalledTimes(2);
-    expect(results().state.map((r) => r.path.join('.'))).toEqual(['boss', 'list.0']);
-    dispose();
+    expect(res.results().state.map((r) => r.path.join('.'))).toEqual(['boss', 'list.0']);
   });
 
   it('does nothing while another page is open, and clears when the query is', async () => {
-    const { results, dispose } = setup();
+    using res = setup();
     store.setNavigationPage('state');
     await type('dr');
     expect(utils.findStateMatches).not.toHaveBeenCalled();
@@ -117,10 +109,9 @@ describe('createSearchResults', () => {
     store.setNavigationPage('search');
     flush();
     await settle();
-    expect(results().state.length).toBeGreaterThan(0);
+    expect(res.results().state.length).toBeGreaterThan(0);
 
     await type('');
-    expect(results()).toEqual({ state: [], passage: [] });
-    dispose();
+    expect(res.results()).toEqual({ state: [], passage: [] });
   });
 });

@@ -1,3 +1,4 @@
+import { createScheduled, scheduleIdle, throttle } from '@solid-primitives/scheduled';
 import { createEffect, createSignal, onCleanup, snapshot } from 'solid-js';
 
 import { getLatestId, getLatestState } from '@/devtools-panel/store/game-state';
@@ -5,7 +6,6 @@ import { getPassageData } from '@/devtools-panel/store/passages';
 import { createGetViewState, getNavigationPage } from '@/devtools-panel/store/store';
 import type { ParsedPassageData, SearchResultsCombined } from '@/shared/shared-types';
 
-import { createScheduled, scheduleIdle, throttle } from '../../utils/scheduled';
 import { findPassageMatches, findStateMatches } from './search-utils';
 
 const EMPTY: SearchResultsCombined = { state: [], passage: [] };

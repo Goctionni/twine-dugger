@@ -124,13 +124,13 @@ export function tooltip(accessor: Accessor<TooltipValue>) {
   onSettled(() => {
     const target = el;
     if (!target) return;
-    target.addEventListener('mouseenter', onMouseEnter);
-    target.addEventListener('mouseleave', onMouseLeave);
-    target.addEventListener('mousemove', onMouseMove);
+    const listeners = new AbortController();
+    const { signal } = listeners;
+    target.addEventListener('mouseenter', onMouseEnter, { signal });
+    target.addEventListener('mouseleave', onMouseLeave, { signal });
+    target.addEventListener('mousemove', onMouseMove, { signal });
     return () => {
-      target.removeEventListener('mouseenter', onMouseEnter);
-      target.removeEventListener('mouseleave', onMouseLeave);
-      target.removeEventListener('mousemove', onMouseMove);
+      listeners.abort();
       setTooltip(null);
     };
   });

@@ -1,10 +1,10 @@
 import { resolve } from 'node:path';
 
-import solid from 'vite-plugin-solid';
-import { defineConfig } from 'vite-plus';
+import solidPlugin from '@solidjs/vite-plugin';
+import { defineConfig, type PluginOption } from 'vite-plus';
 
 export default defineConfig({
-  plugins: [solid({ hot: false })],
+  plugins: [solidPlugin({ hot: false }) as PluginOption],
   resolve: {
     conditions: ['development', 'browser'],
     alias: {

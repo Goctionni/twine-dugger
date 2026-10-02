@@ -2,6 +2,10 @@ import { cleanup, render } from '@solidjs/testing-library';
 import { flush } from 'solid-js';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
+import * as gameState from '@/devtools-panel/store/game-state';
+
+import { PrettyPath } from './PrettyPath';
+
 vi.mock('@/devtools-panel/store/game-state', async () => {
   const { createStore } = await import('solid-js');
   const [state, setState] = createStore<Record<string, unknown>>({
@@ -13,8 +17,7 @@ vi.mock('@/devtools-panel/store/game-state', async () => {
   return { getActiveState: () => state, setMockState: setState };
 });
 
-const { PrettyPath } = await import('./PrettyPath');
-const { setMockState } = (await import('@/devtools-panel/store/game-state')) as unknown as {
+const { setMockState } = gameState as unknown as {
   setMockState: (update: (state: Record<string, unknown>) => void) => void;
 };
 

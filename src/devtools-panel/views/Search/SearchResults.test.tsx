@@ -4,6 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import type { SearchResultsCombined } from '@/shared/shared-types';
 
+import * as store from '../../store/store';
+import { SearchResults } from './SearchResults';
+
 const [results, setResults] = createSignal<SearchResultsCombined>({ state: [], passage: [] });
 vi.mock('../../api/api', () => ({
   getPassageData: async () => [],
@@ -12,9 +15,6 @@ vi.mock('../../api/api', () => ({
 vi.mock('./create-searchResults', () => ({ createSearchResults: () => results }));
 vi.mock('./StateResults', () => ({ StateResults: () => <p>state list</p> }));
 vi.mock('./PassageResults', () => ({ PassageResults: () => <p>passage list</p> }));
-
-const store = await import('../../store/store');
-const { SearchResults } = await import('./SearchResults');
 
 const stateResult = { path: ['hp'], value: 1 };
 const passage = { id: 1, name: 'A', content: '', tags: [], size: null, position: null };

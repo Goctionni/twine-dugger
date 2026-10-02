@@ -119,7 +119,7 @@ export function Code(props: PassageCodeProps) {
             'absolute inset-0 h-full w-full cursor-auto resize-none overflow-auto bg-transparent text-transparent caret-white outline-none',
             sharedClasses,
           )}
-          spellcheck={false}
+          spellcheck="false"
           autocapitalize="off"
           autocomplete="off"
           autocorrect="off"

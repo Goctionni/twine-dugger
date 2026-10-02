@@ -1,13 +1,14 @@
 import { flush } from 'solid-js';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+import { applyUpdate, getDiffFrames, startGameState } from './game-state';
+import { clearLocks, getLockedPaths, isPathLockable, setPathLock } from './locks';
 import { createGame } from './test-game';
 
-const setStatePropertyLocks = vi.fn<(locks: unknown) => Promise<void>>(async () => {});
+const { setStatePropertyLocks } = vi.hoisted(() => ({
+  setStatePropertyLocks: vi.fn<(locks: unknown) => Promise<void>>(async () => {}),
+}));
 vi.mock('../api/api', () => ({ getPassageData: async () => [], setStatePropertyLocks }));
-
-const { applyUpdate, getDiffFrames, startGameState } = await import('./game-state');
-const { clearLocks, getLockedPaths, isPathLockable, setPathLock } = await import('./locks');
 
 beforeEach(() => {
   clearLocks();

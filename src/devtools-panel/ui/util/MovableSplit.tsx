@@ -42,10 +42,9 @@ export function MovableSplit(props: Interface) {
   };
 
   // The listeners are on the document, not the divider: the drag has to end wherever the pointer is
+  let listeners: AbortController | undefined;
   const removeListeners = () => {
-    document.removeEventListener('pointermove', handlePointerMove);
-    document.removeEventListener('pointerup', stopDragging);
-    document.removeEventListener('pointercancel', stopDragging);
+    listeners?.abort();
     cancelAnimationFrame(frame);
     frame = 0;
   };
@@ -58,9 +57,11 @@ export function MovableSplit(props: Interface) {
   const startDragging = (e: PointerEvent) => {
     e.preventDefault();
     containerLeft = containerRef?.getBoundingClientRect().left ?? 0;
-    document.addEventListener('pointermove', handlePointerMove);
-    document.addEventListener('pointerup', stopDragging);
-    document.addEventListener('pointercancel', stopDragging);
+    listeners = new AbortController();
+    const { signal } = listeners;
+    document.addEventListener('pointermove', handlePointerMove, { signal });
+    document.addEventListener('pointerup', stopDragging, { signal });
+    document.addEventListener('pointercancel', stopDragging, { signal });
     setIsDragging(true);
   };
 

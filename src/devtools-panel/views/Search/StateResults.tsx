@@ -59,12 +59,11 @@ export function StateResults(props: Props) {
   };
 
   onSettled(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
+    const listeners = new AbortController();
+    const { signal } = listeners;
+    document.addEventListener('mousemove', handleMouseMove, { signal });
+    document.addEventListener('mouseup', handleMouseUp, { signal });
+    return () => listeners.abort();
   });
 
   return (
