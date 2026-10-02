@@ -1,7 +1,7 @@
 import { createEffect, createRoot, createStore, deep } from 'solid-js';
 
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
-import type { GameMetaData, Path } from '@/shared/shared-types';
+import type { GameMetaData, Page, Path } from '@/shared/shared-types';
 
 import type { GameConfig, Settings, StoreData } from './store-types';
 
@@ -21,12 +21,11 @@ const defaultSettings: Settings = {
 
 function loadGlobalSettings(): Settings {
   try {
-    const saved = localStorage.getItem(getGlobalSettingsKey());
-    if (saved) return { ...defaultSettings, ...(JSON.parse(saved) as Partial<Settings>) };
+    const saved = localStorage.getItem(getGlobalSettingsKey()) || '{}';
+    return { ...defaultSettings, ...(JSON.parse(saved) as Partial<Settings>) };
   } catch {
-    // Settings that can't be read are the same as no settings
+    return { ...defaultSettings };
   }
-  return { ...defaultSettings };
 }
 
 function loadGameConfig(ifId: string): GameConfig {
@@ -49,7 +48,7 @@ export const [store, setStore] = createStore<StoreData>({
   viewState: {
     activeTab: 'state',
     state: { historyRef: 'latest', path: [] },
-    passage: { selected: null },
+    passages: { selected: null },
     search: { query: '', resultTab: 'state' },
   },
 });
@@ -72,16 +71,18 @@ createRoot(() => {
 });
 
 export const getConnectionState = () => store.connectionState;
-export const setConnectionState = (connection: StoreData['connectionState']) =>
+export function setConnectionState(connection: StoreData['connectionState']) {
   setStore((draft) => {
     draft.connectionState = connection;
   });
+}
 
 export const getCandidateIframes = () => store.candidateIframes;
-export const setCandidateIframes = (urls: string[]) =>
+export function setCandidateIframes(urls: string[]) {
   setStore((draft) => {
     draft.candidateIframes = urls;
   });
+}
 
 export const getGameMetaData = () => store.gameMeta;
 export function setGameMetaData(meta: GameMetaData) {
@@ -92,65 +93,71 @@ export function setGameMetaData(meta: GameMetaData) {
 }
 
 export const getNavigationPage = () => store.viewState.activeTab;
-export const setNavigationPage = (page: StoreData['viewState']['activeTab']) =>
+export function setNavigationPage(page: Page) {
   setStore((draft) => {
     draft.viewState.activeTab = page;
   });
+}
 
 type ViewState = StoreData['viewState'];
-type ViewName = Exclude<keyof ViewState, 'activeTab'>;
+type ViewName = Exclude<Page, 'settings'>;
 
-export const createGetViewState =
-  <TView extends ViewName, TProperty extends keyof ViewState[TView]>(
-    view: TView,
-    property: TProperty,
-  ) =>
-  (): ViewState[TView][TProperty] =>
-    store.viewState[view][property];
+export function createGetViewState<
+  TView extends ViewName,
+  TProperty extends keyof ViewState[TView],
+>(view: TView, property: TProperty) {
+  return (): ViewState[TView][TProperty] => {
+    return store.viewState[view][property];
+  };
+}
 
-export const setViewState = <TView extends ViewName, TProperty extends keyof ViewState[TView]>(
+export function setViewState<TView extends ViewName, TProperty extends keyof ViewState[TView]>(
   view: TView,
   property: TProperty,
   value: ViewState[TView][TProperty],
-) =>
-  setStore((draft) => {
+) {
+  return setStore((draft) => {
     draft.viewState[view][property] = value;
   });
+}
 
-export const createGetSetting =
-  <T extends keyof Settings>(setting: T) =>
-  (): Settings[T] =>
-    store.settings[setting];
+export function createGetSetting<T extends keyof Settings>(setting: T) {
+  return (): Settings[T] => store.settings[setting];
+}
 
-export const setSetting = <T extends keyof Settings>(setting: T, value: Settings[T]) =>
+export function setSetting<T extends keyof Settings>(setting: T, value: Settings[T]) {
   setStore((draft) => {
     draft.settings[setting] = value;
   });
+}
 
-export const createSetSetting =
-  <T extends keyof Settings>(setting: T) =>
-  (value: Settings[T]) =>
-    setSetting(setting, value);
+export function createSetSetting<T extends keyof Settings>(setting: T) {
+  return (value: Settings[T]) => setSetting(setting, value);
+}
 
 export const getFilteredPaths = () => store.gameConfig.filteredPaths;
 
-export const isPathFiltered = (path: Path) =>
-  store.gameConfig.filteredPaths.some((filterPath) => pathStartsWith(path, filterPath));
+export function isPathFiltered(path: Path) {
+  return store.gameConfig.filteredPaths.some((filterPath) => pathStartsWith(path, filterPath));
+}
 
-export const addFilteredPath = (path: Path) =>
+export function addFilteredPath(path: Path) {
   setStore((draft) => {
     const { filteredPaths } = draft.gameConfig;
     if (!filteredPaths.some((current) => pathEquals(current, path))) filteredPaths.push([...path]);
   });
+}
 
-export const removeFilteredPath = (path: Path) =>
+export function removeFilteredPath(path: Path) {
   setStore((draft) => {
     draft.gameConfig.filteredPaths = draft.gameConfig.filteredPaths.filter(
       (current) => !pathEquals(current, path),
     );
   });
+}
 
-export const clearFilteredPaths = () =>
+export function clearFilteredPaths() {
   setStore((draft) => {
     draft.gameConfig.filteredPaths = [];
   });
+}

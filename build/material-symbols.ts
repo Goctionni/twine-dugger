@@ -13,9 +13,9 @@ async function load(
   const cached = await fromCache(url);
   if (cached) return cached;
 
-  const result = await fetch(url, { headers: { 'User-Agent': BROWSER_USER_AGENT } }).then((res) =>
-    parser(res),
-  );
+  const result = await fetch(url, { headers: { 'User-Agent': BROWSER_USER_AGENT } }).then((res) => {
+    return parser(res);
+  });
   await toCache(url, result);
   return result;
 }

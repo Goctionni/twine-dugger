@@ -5,8 +5,7 @@ import type { ParsedPassageData, PassageData } from '@/shared/shared-types';
 import { getPassageData as fetchPassageData } from '../api/api';
 import { store } from './store';
 
-const [getPassageData, setPassageData] = createSignal<ParsedPassageData[]>([]);
-export { getPassageData, setPassageData };
+export const [getPassageData, setPassageData] = createSignal<ParsedPassageData[]>([]);
 
 function parseDoubleIntAttr(str: string) {
   return str.split(',').map(Number) as [number, number];

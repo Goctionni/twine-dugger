@@ -32,13 +32,17 @@ const getState = () => snowman().story.state;
 const setState = (path: Path, value: unknown) => setStateBase(getState(), path, value);
 
 export default {
-  detect: () =>
-    snowmanSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata'),
+  detect: () => {
+    return (
+      snowmanSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata')
+    );
+  },
   getState,
   getPassage: () => snowman().passage.name,
   setState,
-  duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
-    duplicateStateProperty(getState(), parentPath, sourceKey, targetKey),
+  duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
+    duplicateStateProperty(getState(), parentPath, sourceKey, targetKey);
+  },
   deleteFromState: (path) => deleteFromState(getState(), path),
   goToPassage: (passageName) => snowman().story.show(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),

@@ -41,12 +41,8 @@ export interface LockRevert {
 
 export type UpdateResult = {
   passage: string;
-  delta: Delta | undefined;
+  delta: Delta;
   reverts: LockRevert[];
-  /**
-   * The content script was (re)initialized since the panel last asked for the state or updates,
-   * for instance because the page was reloaded. The panel's copy of the state is stale then.
-   */
   initialized: boolean;
 };
 

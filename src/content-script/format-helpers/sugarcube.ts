@@ -30,8 +30,9 @@ export default {
   getState,
   getPassage: () => sugarcube().State.passage,
   setState,
-  duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
-    duplicateStateProperty(getState(), parentPath, sourceKey, targetKey),
+  duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
+    duplicateStateProperty(getState(), parentPath, sourceKey, targetKey);
+  },
   deleteFromState: (path) => deleteFromState(getState(), path),
   goToPassage: (passageName) => sugarcube().Engine.play(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),

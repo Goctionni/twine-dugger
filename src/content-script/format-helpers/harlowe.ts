@@ -46,8 +46,9 @@ export default {
   detect,
   getState,
   setState,
-  duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
-    duplicateStateProperty(getState(), parentPath, sourceKey, targetKey),
+  duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
+    return duplicateStateProperty(getState(), parentPath, sourceKey, targetKey);
+  },
   deleteFromState: (path) => deleteFromState(getState(), path),
   getPassage: () => harlowe().state.passage,
   goToPassage: (passageName) => harlowe().engine.goToPassage(passageName),

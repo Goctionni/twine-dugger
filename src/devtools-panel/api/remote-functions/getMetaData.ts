@@ -51,8 +51,9 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   };
 
   const isArray = (value: unknown) => isType<unknown[]>(value, 'array');
-  const isArrayOf = <T>(value: unknown, schema: NanoSchema): value is T[] =>
-    isArray(value) && value.every((item) => isType(item, schema));
+  const isArrayOf = <T>(value: unknown, schema: NanoSchema): value is T[] => {
+    return isArray(value) && value.every((item) => isType(item, schema));
+  };
 
   const genericPassageSchema: NanoSchema = {
     id: 'number',
@@ -126,8 +127,9 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
     passage: genericPassageSchema,
   };
 
-  const isSugarCube = (value: unknown): value is SugarCubeGlobals =>
-    isType<SugarCubeGlobals>(value, sugarCubeSchema);
+  const isSugarCube = (value: unknown): value is SugarCubeGlobals => {
+    return isType<SugarCubeGlobals>(value, sugarCubeSchema);
+  };
 
   const isHarlowe = () => {
     return (
@@ -135,11 +137,13 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
     );
   };
 
-  const isChapbook = (value: unknown): value is ChapbookGlobals =>
-    isType<ChapbookGlobals>(value, chapbookSchema);
+  const isChapbook = (value: unknown): value is ChapbookGlobals => {
+    return isType<ChapbookGlobals>(value, chapbookSchema);
+  };
 
-  const isSnowman = (value: unknown): value is SnowmanGlobals =>
-    isType<SnowmanGlobals>(value, snowmanSchema);
+  const isSnowman = (value: unknown): value is SnowmanGlobals => {
+    return isType<SnowmanGlobals>(value, snowmanSchema);
+  };
 
   const sugarcube = () => {
     const value: unknown = window;

@@ -14,9 +14,9 @@ import { pathEquals } from '@/shared/path-equals';
 import type { JSONSafeObject, LockRevert, Path, UpdateResult } from '@/shared/shared-types';
 
 import { sameItems } from '../utils/same-items';
+import type { BlockedWrite, StateDiff } from '../views/DiffLog/diff-types';
 import { getDiffFromDelta } from './diff';
 import { setViewState, store } from './store';
-import type { BlockedWrite, StateDiff } from './store-types';
 
 // The state of the game is patched with the deltas that the content script sends, so that only the
 // properties that actually changed notify their readers.
@@ -88,7 +88,7 @@ function addFrame(frame: Omit<StateDiff, 'id'>) {
   setLatestId(id);
 }
 
-function markChanged(delta: Delta | undefined, id: number) {
+function markChanged(delta: Delta, id: number) {
   setLastChanged((draft) => {
     for (const { path } of getDiffFromDelta(delta)) {
       for (let length = 1; length <= path.length; length++) {
@@ -124,9 +124,9 @@ const derived = createRoot(() => {
 
   const isFrameTainted = (frame: StateDiff) => frame.id < (getReloadId() ?? -Infinity);
 
-  const getHistoryFloor = createMemo(() =>
-    Math.max(getReloadId() ?? -Infinity, latestId() - frames().length),
-  );
+  const getHistoryFloor = createMemo(() => {
+    return Math.max(getReloadId() ?? -Infinity, latestId() - frames().length);
+  });
 
   const getHistoryIds = createMemo(
     () => {

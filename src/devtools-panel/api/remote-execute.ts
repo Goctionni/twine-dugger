@@ -11,8 +11,11 @@ type EvaluationExceptionInfo = Partial<chrome.devtools.inspectedWindow.Evaluatio
 type EvalBehavior = 'immediate' | 'array';
 
 let evalBehavior: EvalBehavior | undefined = undefined;
-const getEvalBehavior = () =>
-  devtools.inspectedWindow.eval('123').then((res) => (Array.isArray(res) ? 'array' : 'immediate'));
+const getEvalBehavior = () => {
+  return devtools.inspectedWindow
+    .eval('123')
+    .then((res) => (Array.isArray(res) ? 'array' : 'immediate'));
+};
 
 async function evalWrapper<T>(code: string): Promise<T> {
   evalBehavior ??= await getEvalBehavior();

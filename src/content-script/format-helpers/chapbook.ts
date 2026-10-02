@@ -29,8 +29,11 @@ const getState = () => chapbook().engine.state.saveToObject();
 const setState = (path: Path, value: unknown) => chapbook().engine.state.set(path.join('.'), value);
 
 export default {
-  detect: () =>
-    chapbookSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata'),
+  detect: () => {
+    return (
+      chapbookSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata')
+    );
+  },
   getState,
   getPassage: () => chapbook().engine.state.get('passage.name') as string,
   setState,

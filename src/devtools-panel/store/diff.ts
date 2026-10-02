@@ -3,10 +3,7 @@ import type { Delta } from 'jsondiffpatch';
 import { getJsonType, TYPE_KEY } from '@/shared/json-safe';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
-export type DiffChange =
-  | { kind: 'add' | 'del'; path: Path; value: JSONSafeValue }
-  | { kind: 'chg' | 'typ'; path: Path; oldValue: JSONSafeValue; newValue: JSONSafeValue }
-  | { kind: 'mov'; path: Path };
+import type { DiffChange } from '../views/DiffLog/diff-types';
 
 // The parts of jsondiffpatch's delta format that are relied on:
 //  - `[value]` is an added value, `[old, new]` a change and `[old, 0, 0]` a deleted value
@@ -52,7 +49,7 @@ function walkDelta(delta: DeltaNode): DiffChange[] {
 
 const diffs = new WeakMap<object, DiffChange[]>();
 
-export function getDiffFromDelta(delta: Delta | undefined): DiffChange[] {
+export function getDiffFromDelta(delta: Delta): DiffChange[] {
   if (!delta) return [];
 
   let diff = diffs.get(delta as object);

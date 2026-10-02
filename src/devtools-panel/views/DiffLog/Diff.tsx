@@ -3,9 +3,8 @@ import { Match, Switch } from 'solid-js';
 
 import type { Path } from '@/shared/shared-types';
 
-import type { DiffChange } from '../../store/diff';
 import { addFilteredPath, setViewState } from '../../store/store';
-import type { BlockedWrite } from '../../store/store-types';
+import type { BlockedWrite, DiffChange } from './diff-types';
 import { DiffPath } from './DiffPath';
 import type { Kind } from './MutationBadge';
 import { MutationBadge } from './MutationBadge';

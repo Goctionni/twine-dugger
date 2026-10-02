@@ -3,9 +3,9 @@ import { createMemo, For, Show } from 'solid-js';
 
 import { isFrameTainted } from '@/devtools-panel/store/game-state';
 import { createGetSetting, setNavigationPage, setViewState } from '@/devtools-panel/store/store';
-import type { StateDiff } from '@/devtools-panel/store/store-types';
 
 import { BlockedWriteItem, DiffItem, ReloadedItem } from './Diff';
+import type { StateDiff } from './diff-types';
 import { getVisibleEntries } from './frame-entries';
 import { RelativeTime } from './RelativeTime';
 
@@ -44,7 +44,7 @@ export function DiffFrame(props: Props) {
           <button
             class="cursor-pointer font-bold text-gray-300"
             onClick={() => {
-              setViewState('passage', 'selected', props.frame.passage);
+              setViewState('passages', 'selected', props.frame.passage);
               setNavigationPage('passages');
             }}
           >
