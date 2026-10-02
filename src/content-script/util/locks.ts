@@ -1,4 +1,5 @@
 import { jsonEqual } from '@/shared/json-safe';
+import { pathKey } from '@/shared/path-equals';
 import type {
   JSONSafeValue,
   Lock,
@@ -46,7 +47,7 @@ export function createLockEnforcer(
       if (!found) continue;
 
       const attempted = pretransformValue(live, new Map(), new Map());
-      const id = JSON.stringify(path);
+      const id = pathKey(path);
       if (jsonEqual(attempted, value)) {
         lastBlocked.delete(id);
         continue;

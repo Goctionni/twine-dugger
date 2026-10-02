@@ -10,7 +10,7 @@ import {
   untrack,
 } from 'solid-js';
 
-import { pathEquals } from '@/shared/path-equals';
+import { pathEquals, pathKey } from '@/shared/path-equals';
 import type { JSONSafeObject, LockRevert, Path, UpdateResult } from '@/shared/shared-types';
 
 import { sameItems } from '../utils/same-items';
@@ -30,7 +30,6 @@ const [logStartId, setLogStartId] = createSignal(0);
 const [lastChanged, setLastChanged] = createStore<Record<string, number>>({});
 
 const differ = createDiffer({ arrays: { detectMove: true, includeValueOnMove: false } });
-const pathKey = (path: Path) => path.join('\u0000');
 const getMaxFrames = () => untrack(() => store.settings['diffLog.maxHistorySlices']);
 
 export const getLatestId = latestId;

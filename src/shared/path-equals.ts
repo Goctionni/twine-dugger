@@ -11,3 +11,6 @@ export function pathEquals(path1: Path, path2: Path) {
 export function pathStartsWith(path: Path, prefix: Path) {
   return prefix.every((value, index) => value === path[index]);
 }
+
+/** A string that is the same for equal paths, for use as a key */
+export const pathKey = (path: Path) => JSON.stringify(path);
