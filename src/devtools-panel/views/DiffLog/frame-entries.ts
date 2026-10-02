@@ -1,4 +1,4 @@
-import { getDiffFromDelta } from '../../store/diff';
+import { getDiffFromDelta } from '../../store/diff-from-delta';
 import { isPathFiltered } from '../../store/store';
 import type { StateDiff } from './diff-types';
 

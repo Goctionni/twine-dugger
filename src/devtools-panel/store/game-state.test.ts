@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { pretransformState } from '@/content-script/util/pre-transform';
 
-import { getDiffFromDelta } from './diff';
+import { getDiffFromDelta } from './diff-from-delta';
 import {
   applyUpdate,
   getActiveState,

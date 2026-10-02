@@ -15,7 +15,7 @@ import type { DeltaUpdate, JSONSafeObject, LockRevert, Path } from '@/shared/sha
 
 import { sameItems } from '../utils/same-items';
 import type { BlockedWrite, StateDiff } from '../views/DiffLog/diff-types';
-import { getDiffFromDelta } from './diff';
+import { getDiffFromDelta } from './diff-from-delta';
 import { setViewState, store } from './store';
 
 // The state of the game is patched with the deltas that the content script sends, so that only the
