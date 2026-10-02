@@ -1,5 +1,5 @@
 import type { Delta } from 'jsondiffpatch';
-import { create as createDiffer } from 'jsondiffpatch';
+import { patch, unpatch } from 'jsondiffpatch';
 import {
   createEffect,
   createMemo,
@@ -29,7 +29,6 @@ const [latestId, setLatestId] = createSignal(0);
 const [logStartId, setLogStartId] = createSignal(0);
 const [lastChanged, setLastChanged] = createStore<Record<string, number>>({});
 
-const differ = createDiffer({ arrays: { detectMove: true, includeValueOnMove: false } });
 const getMaxFrames = () => untrack(() => store.settings['diffLog.maxHistorySlices']);
 
 export const getLatestId = latestId;
@@ -66,7 +65,7 @@ export function applyUpdate({ passage, delta, reverts }: DeltaUpdate, timestamp 
 
   if (delta) {
     setGameState((draft) => {
-      differ.patch(draft, delta);
+      patch(draft, delta);
     });
   }
   addFrame({ timestamp, passage, delta, blocked });
@@ -108,7 +107,7 @@ const derived = createRoot(() => {
       const state = structuredClone(snapshot(gameState));
       for (const frame of frames()) {
         if (frame.id <= ref) break;
-        if (frame.delta) differ.unpatch(state, frame.delta);
+        if (frame.delta) unpatch(state, frame.delta);
       }
       return state;
     });
