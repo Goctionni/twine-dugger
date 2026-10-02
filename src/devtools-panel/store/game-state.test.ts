@@ -1,4 +1,4 @@
-import { createEffect, createRoot, flush } from 'solid-js';
+import { createEffect, createRoot, flush, snapshot } from 'solid-js';
 import { describe, expect, it, onTestFinished, vi } from 'vite-plus/test';
 
 import { pretransformState } from '@/content-script/util/pre-transform';
@@ -56,9 +56,7 @@ describe('game state', () => {
     });
     play(game, (s) => delete s.hp);
 
-    expect(JSON.parse(JSON.stringify(state()))).toEqual(
-      JSON.parse(JSON.stringify(pretransformState(game.live)[0])),
-    );
+    expect(snapshot(state())).toEqual(structuredClone(pretransformState(game.live)[0]));
 
     const frames = getDiffFrames();
     expect(frames.map((frame) => frame.id)).toEqual([6, 5, 4, 3, 2, 1]);
@@ -80,10 +78,12 @@ describe('game state', () => {
     setViewState('state', 'historyRef', 5);
     flush();
     expect(state().hp).toBe(9);
+
     setViewState('state', 'historyRef', 0);
     flush();
     expect(state().hp).toBe(10);
     expect(state().inv).toHaveLength(2);
+
     setViewState('state', 'historyRef', 'latest');
     flush();
     expect(getHistoryIds()).toEqual([6, 5, 4, 3, 2, 1, 0]);

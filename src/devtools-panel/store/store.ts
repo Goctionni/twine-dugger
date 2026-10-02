@@ -1,4 +1,4 @@
-import { createEffect, createRoot, createStore, deep } from 'solid-js';
+import { createEffect, createStore, deep } from 'solid-js';
 
 import { fromJson } from '@/shared/from-json';
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
@@ -60,7 +60,8 @@ export const [store, setStore] = createStore<StoreData>({
   },
 });
 
-createRoot(() => {
+/** Call once from a component: effects need an owner to be disposed with */
+export function createPersistenceEffects() {
   createEffect(
     () => deep(store.settings),
     (settings) => {
@@ -75,7 +76,7 @@ createRoot(() => {
       if (ifId) localStorage.setItem(getGameSettingsKey(ifId), JSON.stringify(config));
     },
   );
-});
+}
 
 export const getConnectionState = () => store.connectionState;
 export function setConnectionState(connection: StoreData['connectionState']) {

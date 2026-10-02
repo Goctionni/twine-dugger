@@ -6,7 +6,12 @@ import { SearchPage } from '../pages/SearchPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { StatePage } from '../pages/StatePage';
 import { createHistoryEffects } from '../store/game-state';
-import { getConnectionState, getGameMetaData, getNavigationPage } from '../store/store';
+import {
+  createPersistenceEffects,
+  getConnectionState,
+  getGameMetaData,
+  getNavigationPage,
+} from '../store/store';
 import { startTrackingFrames } from '../store/tracking';
 import { TooltipOutlet } from '../ui/display/TooltipOutlet';
 import { ContextMenuUI } from '../ui/util/ContextMenu';
@@ -19,6 +24,7 @@ initMeta();
 
 export function App() {
   createHistoryEffects();
+  createPersistenceEffects();
   const state = () => getConnectionState();
 
   const start = async () => {
@@ -65,7 +71,7 @@ export function App() {
                       <h3 class="mb-1 text-lg font-bold text-gray-100">{msg}</h3>
                     ) : (
                       <p>{msg}</p>
-                    )}{' '}
+                    )}
                   </>
                 )}
               </For>
