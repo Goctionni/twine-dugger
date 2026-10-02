@@ -14,7 +14,7 @@ import { Candidates } from './CandidateFrames';
 import { initMeta } from './initMeta';
 import { Layout } from './Layout';
 
-void initMeta();
+initMeta();
 
 export function App() {
   const state = () => getConnectionState();
@@ -22,7 +22,7 @@ export function App() {
   const start = async () => {
     const metadata = getGameMetaData();
     if (metadata?.format?.name === 'Harlowe') await exposeHarloweInternals();
-    void startTrackingFrames();
+    startTrackingFrames();
   };
 
   return (
