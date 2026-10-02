@@ -38,8 +38,8 @@ export function Candidates() {
         would give the extension access.
       </p>
       <ul class="mt-4 flex flex-col gap-2">
-        <For each={urls()} keyed={false}>
-          {(item) => (
+        <For each={urls()}>
+          {(url) => (
             <li class="flex items-center gap-2">
               <button
                 class="
@@ -51,11 +51,11 @@ export function Candidates() {
                   focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-none
                   disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300 disabled:hover:bg-gray-500
                 "
-                onClick={() => openIframeUrl(item())}
+                onClick={() => openIframeUrl(url)}
               >
                 Open
               </button>
-              <code>{item()}</code>
+              <code>{url}</code>
             </li>
           )}
         </For>

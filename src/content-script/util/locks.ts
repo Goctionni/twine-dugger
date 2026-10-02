@@ -35,33 +35,35 @@ export function createLockEnforcer(
   getRawState: () => ObjectValue,
   setState: (path: Path, value: unknown) => void,
 ) {
-  let lastLocks: Lock[] = [];
+  let locks: Lock[] = [];
   let lastBlocked = new Map<string, JSONSafeValue>();
 
-  return (locks: Lock[]): LockRevert[] => {
-    if (locks !== lastLocks) {
-      lastLocks = locks;
+  return {
+    setLocks(newLocks: Lock[]) {
+      locks = newLocks;
       lastBlocked = new Map();
-    }
-    const reverts: LockRevert[] = [];
+    },
+    enforce(): LockRevert[] {
+      const reverts: LockRevert[] = [];
 
-    for (const { path, value } of locks) {
-      const [found, live] = findLiveValue(getRawState(), path);
-      if (!found) continue;
+      for (const { path, value } of locks) {
+        const [found, live] = findLiveValue(getRawState(), path);
+        if (!found) continue;
 
-      const attempted = pretransformValue(live, new Map(), new Map());
-      const id = pathKey(path);
-      if (jsonEqual(attempted, value)) {
-        lastBlocked.delete(id);
-        continue;
+        const attempted = pretransformValue(live, new Map(), new Map());
+        const id = pathKey(path);
+        if (jsonEqual(attempted, value)) {
+          lastBlocked.delete(id);
+          continue;
+        }
+
+        if (!lastBlocked.has(id) || !jsonEqual(attempted, lastBlocked.get(id)))
+          reverts.push({ path, attempted });
+        lastBlocked.set(id, attempted);
+        setState(path, posttransformValue(value));
       }
 
-      if (!lastBlocked.has(id) || !jsonEqual(attempted, lastBlocked.get(id)))
-        reverts.push({ path, attempted });
-      lastBlocked.set(id, attempted);
-      setState(path, posttransformValue(value));
-    }
-
-    return reverts;
+      return reverts;
+    },
   };
 }

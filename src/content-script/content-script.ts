@@ -1,4 +1,4 @@
-import type { Lock, UpdateResult } from '@/shared/shared-types';
+import type { UpdateResult } from '@/shared/shared-types';
 
 import chapbookHelpers from './format-helpers/chapbook';
 import harloweHelpers from './format-helpers/harlowe';
@@ -22,8 +22,7 @@ function init() {
   if (!formatHelper) return;
 
   const tracker = createUpdateTracker(formatHelper.getRawState);
-  const enforceLocks = createLockEnforcer(formatHelper.getRawState, formatHelper.setState);
-  let locks: Lock[] = [];
+  const lockEnforcer = createLockEnforcer(formatHelper.getRawState, formatHelper.setState);
   let initialized = false;
 
   window.TwineDugger = {
@@ -35,15 +34,13 @@ function init() {
       }
 
       // Locked values are restored before the state is read, so the changes never show up in the delta
-      const reverts = enforceLocks(locks);
+      const reverts = lockEnforcer.enforce();
       return { type: 'update', passage, delta: tracker.getDelta(), reverts };
     },
     setState: formatHelper.setState,
     deleteFromState: formatHelper.deleteFromState,
     duplicateStateProperty: formatHelper.duplicateStateProperty,
-    setStatePropertyLocks: (newLocks) => {
-      locks = newLocks;
-    },
+    setStatePropertyLocks: lockEnforcer.setLocks,
     getPassageData: formatHelper.getPassageData ?? getPassageData,
     goToPassage: formatHelper.goToPassage,
     setPassage: formatHelper.setPassage,

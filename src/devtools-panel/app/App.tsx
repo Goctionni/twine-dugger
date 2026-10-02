@@ -14,7 +14,7 @@ import { Candidates } from './CandidateFrames';
 import { initMeta } from './initMeta';
 import { Layout } from './Layout';
 
-initMeta();
+void initMeta();
 
 export function App() {
   const state = () => getConnectionState();
@@ -22,7 +22,7 @@ export function App() {
   const start = async () => {
     const metadata = getGameMetaData();
     if (metadata?.format?.name === 'Harlowe') await exposeHarloweInternals();
-    startTrackingFrames();
+    void startTrackingFrames();
   };
 
   return (
@@ -56,14 +56,16 @@ export function App() {
           </Match>
           <Match when={state() === 'incompatible'}>
             <div class="m-auto max-w-2xl">
-              <For each={getGameMetaData()?.incompatible ?? []} keyed={false}>
-                {(msg, index) =>
-                  index === 0 ? (
-                    <h3 class="mb-1 text-lg font-bold text-gray-100">{msg()}</h3>
-                  ) : (
-                    <p>{msg()}</p>
-                  )
-                }
+              <For each={getGameMetaData()?.incompatible ?? []}>
+                {(msg, index) => (
+                  <>
+                    {index() === 0 ? (
+                      <h3 class="mb-1 text-lg font-bold text-gray-100">{msg}</h3>
+                    ) : (
+                      <p>{msg}</p>
+                    )}{' '}
+                  </>
+                )}
               </For>
             </div>
             <span class="m-auto">{}</span>
