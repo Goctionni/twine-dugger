@@ -21,7 +21,6 @@ export interface StoreData {
   viewState: {
     activeTab: Page;
     state: {
-      /** Id of the state slice being inspected, or 'latest' to follow the live state */
       historyRef: number | 'latest';
       path: Path;
     };
@@ -35,13 +34,10 @@ export interface StoreData {
   };
 }
 
-/** A write to a locked path, that the lock undid */
 export interface BlockedWrite extends LockRevert {
-  /** What the path is locked at */
   locked: JSONSafeValue;
 }
 
-/** One poll's worth of changes, or a marker in the log. Immutable once created. */
 export interface StateDiff {
   /** Sequential; the initial state is id 0, the first diff is id 1 */
   id: number;
@@ -55,7 +51,6 @@ export interface StateDiff {
 }
 
 export interface GameConfig {
-  /** The locked paths and the values they are locked at */
   locks: Lock[];
   filteredPaths: Path[];
 }

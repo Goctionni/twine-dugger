@@ -33,7 +33,6 @@ export function StateStringInput(props: StateStringInputProps) {
   const isDisabled = () =>
     lockStatus() !== 'unlocked' || isReadOnly() || !isPathEditable(props.path);
 
-  // Follows the current value until edited, then again when the current value changes
   const [localValue, setLocalValue] = createSignal(currentValue);
 
   const handleSave = async () => {

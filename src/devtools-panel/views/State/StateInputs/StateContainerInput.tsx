@@ -21,7 +21,6 @@ interface StateContainerInputProps {
   getType: () => ContainerType;
 }
 
-/** Inputs for the primitive children of a container */
 export function StateContainerInput(props: StateContainerInputProps) {
   // Only the set of keys (and the order) is tracked here; each row reads its own value
   const keys = createMemo(
@@ -45,7 +44,6 @@ export function StateContainerInput(props: StateContainerInputProps) {
           const label = () => getKeyLabel(props.getType(), key);
 
           return (
-            // Containers are navigated to, not edited here
             <Show when={!isContainerType(type())}>
               <TypeIcon type={type()} />
               <span>{label()}</span>

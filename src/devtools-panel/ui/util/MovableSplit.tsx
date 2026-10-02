@@ -24,7 +24,6 @@ export function MovableSplit(props: Interface) {
   const [isDragging, setIsDragging] = createSignal(false);
   let containerRef: HTMLDivElement | undefined;
 
-  // The container doesn't move while dragging, so it's measured once instead of on every move
   let containerLeft = 0;
   let pendingX = 0;
   let frame = 0;
@@ -72,9 +71,7 @@ export function MovableSplit(props: Interface) {
       ref={containerRef}
       class={clsx(props.class || 'flex w-full grow overflow-hidden', isDragging() && 'select-none')}
     >
-      {/* Left Panel: the only thing that gets a width, the right panel takes what's left */}
       <div
-        // Nothing in the panels needs the pointer while dragging, so no hover styles are computed
         class={clsx('shrink-0 bg-gray-900', isDragging() && 'pointer-events-none')}
         style={{ width: leftWidth() }}
       >

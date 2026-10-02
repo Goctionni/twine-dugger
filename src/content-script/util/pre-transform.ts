@@ -13,9 +13,9 @@ import type {
   Value,
 } from '@/shared/shared-types';
 
-// Harlowe keeps its own bookkeeping in properties prefixed with "TwineScript_", on the state itself
-// and on the objects it stores in it. Those are not part of the game's state, so they are left out
-// (for every format: a property with that name in another format is collateral).
+// Harlowe uses `TwineScript_*` properties for inernals, but stores this state. We remove it
+// when making a copy of gamestate for all story-formats.
+// (We accept the small risk of games having actual state using this prefix)
 const INTERNAL_PREFIX = 'TwineScript_';
 
 function isInternal(key: string, value: Value) {

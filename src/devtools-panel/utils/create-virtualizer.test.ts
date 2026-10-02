@@ -7,7 +7,6 @@ const element = {} as HTMLDivElement;
 const disposers: Array<() => void> = [];
 afterEach(() => disposers.splice(0).forEach((dispose) => dispose()));
 
-/** Creates the virtualizer in a root, but hands back what's needed to poke at it from outside */
 function setup(initialCount: number) {
   let scrollTo: (offset: number) => void = () => {};
 

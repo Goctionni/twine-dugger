@@ -26,9 +26,7 @@ const [gameState, setGameState] = createStore<JSONSafeObject>({});
 // state is found by undoing the diffs after it. The initial state is 0.
 const [frames, setFrames] = createSignal<StateDiff[]>([]);
 const [latestId, setLatestId] = createSignal(0);
-/** Clearing the diff log only hides frames, the history is still there */
 const [logStartId, setLogStartId] = createSignal(0);
-/** Path -> the id of the last frame that changed it or something below it */
 const [lastChanged, setLastChanged] = createStore<Record<string, number>>({});
 
 const differ = createDiffer({ arrays: { detectMove: true, includeValueOnMove: false } });
@@ -36,18 +34,14 @@ const pathKey = (path: Path) => path.join('\u0000');
 const getMaxFrames = () => untrack(() => store.settings['diffLog.maxHistorySlices']);
 
 export const getLatestId = latestId;
-/** The live state, whichever slice of the history is being looked at */
 export const getLatestState = () => gameState;
 export const getLastChangeId = (path: Path) => lastChanged[pathKey(path)] ?? 0;
-
-// --- Changing the state
 
 function resetView() {
   setLastChanged(() => ({}));
   setViewState('state', 'historyRef', 'latest');
 }
 
-/** The state of a game that was just opened: there's no history yet */
 export function startGameState(state: JSONSafeObject) {
   setGameState(() => state);
   setFrames([]);
@@ -82,7 +76,6 @@ export function applyUpdate({ passage, delta, reverts }: UpdateResult, timestamp
   addFrame({ timestamp, passage, delta, blocked });
 }
 
-/** A lock that was removed while the update was on its way has nothing to report */
 function toBlockedWrite({ path, attempted }: LockRevert): BlockedWrite[] {
   const lock = untrack(() => store.gameConfig.locks.find((lock) => pathEquals(lock.path, path)));
   return lock ? [{ path, attempted, locked: snapshot(lock.value) }] : [];
@@ -109,10 +102,7 @@ export function clearDiffFrames() {
   setLogStartId(untrack(latestId));
 }
 
-// --- What the views look at
-
 const derived = createRoot(() => {
-  /** The state as it was after the diff with id `historyRef`, made by undoing the newer diffs */
   const historicalState = createMemo(() => {
     const ref = store.viewState.state.historyRef;
     if (ref === 'latest') return null;
@@ -130,18 +120,14 @@ const derived = createRoot(() => {
 
   const getActiveState = (): JSONSafeObject => historicalState() ?? gameState;
 
-  /** The frame that marks the last time the game was reloaded, if it's still in the history */
   const getReloadId = createMemo(() => frames().find((frame) => frame.reloaded)?.id);
 
-  /** Frames from before the last reload can be read in the log, but their states are out of reach */
   const isFrameTainted = (frame: StateDiff) => frame.id < (getReloadId() ?? -Infinity);
 
-  /** The oldest state that can be looked at: the one after the last reload, or before the oldest frame */
   const getHistoryFloor = createMemo(() =>
     Math.max(getReloadId() ?? -Infinity, latestId() - frames().length),
   );
 
-  /** The ids of the states that can be looked at, latest first */
   const getHistoryIds = createMemo(
     () => {
       const latest = latestId();
@@ -154,7 +140,6 @@ const derived = createRoot(() => {
     equals: sameItems,
   });
 
-  // The slice that is looked at can go away when frames are trimmed
   createEffect(
     () => ({ floor: getHistoryFloor(), ref: store.viewState.state.historyRef }),
     ({ floor, ref }) => {

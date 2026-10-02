@@ -28,7 +28,6 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
-/** Makes every look at the clock cost 10ms, so that a search has to give way all the time */
 const makeSearchesYield = () => {
   let now = 0;
   vi.spyOn(performance, 'now').mockImplementation(() => (now += 10));
@@ -42,7 +41,6 @@ const search = async (state: JSONSafeObject, query: string) => {
   return promise;
 };
 
-// A slow, obviously right version to compare the real one with
 function reference(state: JSONSafeObject, rawQuery: string) {
   const query = rawQuery.toLowerCase();
   const n = Number(rawQuery.trim());
@@ -70,7 +68,6 @@ function reference(state: JSONSafeObject, rawQuery: string) {
   return found;
 }
 
-// A repeatable random state with every kind of value in it
 function randomState(seed: number, topLevel = 12) {
   let s = seed;
   const random = () => {
@@ -135,10 +132,9 @@ describe('findStateMatches', () => {
   it('finds exactly what a plain walk finds, also while giving way to the page all the time', async () => {
     makeSearchesYield();
     for (let seed = 1; seed <= 8; seed++) {
-      const random = randomState(seed, 150); // enough for the search to give way to the page
+      const random = randomState(seed, 150);
       for (const query of ['abc', 'ab', 'npc', '1', '12', '-5', 'true', 'e5', 'castle']) {
         const results = await search(random, query);
-        // The seed and query are part of what is compared, so a failure says where it happened
         const found = new Set(results.map(keyOf));
         expect({ seed, query, found }).toEqual({ seed, query, found: reference(random, query) });
         expect({ seed, query, results: results.length }).toEqual({

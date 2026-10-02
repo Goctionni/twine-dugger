@@ -5,10 +5,6 @@ import type { GameMetaData, Path } from '@/shared/shared-types';
 
 import type { GameConfig, Settings, StoreData } from './store-types';
 
-// What is edited in place: connection, settings, config and what each view is looking at.
-// The state of the game is in `game-state.ts`, the locks in `locks.ts` and the passages in
-// `passages.ts`. They use `store` and `setViewState` from here.
-
 const LS_PREFIX = 'twine-dugger-';
 const getGameSettingsKey = (ifId: string) => `${LS_PREFIX}${ifId}`;
 const getGlobalSettingsKey = () => `${LS_PREFIX}settings`;
@@ -40,9 +36,7 @@ function loadGameConfig(ifId: string): GameConfig {
       const config = JSON.parse(saved) as Partial<GameConfig>;
       return { filteredPaths: config.filteredPaths ?? [], locks: config.locks ?? [] };
     }
-  } catch {
-    // Config that can't be read is the same as no config
-  }
+  } catch {}
   return { filteredPaths: [], locks: [] };
 }
 
@@ -77,8 +71,6 @@ createRoot(() => {
   );
 });
 
-// --- Connection & meta
-
 export const getConnectionState = () => store.connectionState;
 export const setConnectionState = (connection: StoreData['connectionState']) =>
   setStore((draft) => {
@@ -98,8 +90,6 @@ export function setGameMetaData(meta: GameMetaData) {
     draft.gameConfig = loadGameConfig(meta.ifId);
   });
 }
-
-// --- Navigation & view state
 
 export const getNavigationPage = () => store.viewState.activeTab;
 export const setNavigationPage = (page: StoreData['viewState']['activeTab']) =>
@@ -127,8 +117,6 @@ export const setViewState = <TView extends ViewName, TProperty extends keyof Vie
     draft.viewState[view][property] = value;
   });
 
-// --- Settings
-
 export const createGetSetting =
   <T extends keyof Settings>(setting: T) =>
   (): Settings[T] =>
@@ -143,8 +131,6 @@ export const createSetSetting =
   <T extends keyof Settings>(setting: T) =>
   (value: Settings[T]) =>
     setSetting(setting, value);
-
-// --- Filtered paths: changes to these are left out of the diff log
 
 export const getFilteredPaths = () => store.gameConfig.filteredPaths;
 

@@ -17,8 +17,6 @@ export function HistoryNav() {
   );
 }
 
-// Slices are identified by the id of the diff that produced them, so a row keeps its identity
-// when new diffs arrive; only its "-N" label moves.
 function HistoryItem(props: { id: number }) {
   const offset = () => getLatestId() - props.id;
   const active = () => {

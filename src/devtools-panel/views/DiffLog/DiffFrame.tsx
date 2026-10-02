@@ -17,8 +17,6 @@ interface Props {
 const getFontSize = createGetSetting('diffLog.fontSize');
 
 export function DiffFrame(props: Props) {
-  // The changes are worked out from the delta when they're first shown, and after that only the
-  // filters can change what is shown of a frame
   const entries = createMemo(() => getVisibleEntries(props.frame));
   const date = () => new Date(props.frame.timestamp);
 

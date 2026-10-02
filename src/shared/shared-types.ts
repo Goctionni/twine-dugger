@@ -29,16 +29,13 @@ export type Path = Array<string | number>;
 
 export type PropertyFilterKey = ValueType | 'filtered';
 
-/** The value at `path` is kept at `value` by the content script */
 export interface Lock {
   path: Path;
   value: JSONSafeValue;
 }
 
-/** A change to a locked path that the content script undid */
 export interface LockRevert {
   path: Path;
-  /** What the game tried to change the value to */
   attempted: JSONSafeValue;
 }
 

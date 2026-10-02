@@ -19,7 +19,6 @@ const currentLocks = (): Lock[] => untrack(() => snapshot(store.gameConfig.locks
 const getLatestValue = (path: Path) =>
   untrack(() => snapshot(getPathValue(getLatestState(), path)));
 
-/** Whether the value at the path (as it is now) can be locked: a function can't be put back */
 export function isPathLockable(path: Path) {
   const value = getLatestValue(path);
   return value !== undefined && !containsFunction(value);
@@ -47,5 +46,4 @@ export function setPathLock(path: Path, lock: boolean) {
 
 export const clearLocks = () => setLocks([]);
 
-/** Hands the locks to the content script, for instance after it was started again */
 export const syncLocks = () => setStatePropertyLocks(currentLocks());

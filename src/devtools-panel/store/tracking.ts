@@ -8,10 +8,6 @@ import { createGetSetting, setConnectionState } from './store';
 
 const getPollingInterval = createGetSetting('diffLog.pollingInterval');
 
-/**
- * Loads the state and the passages, and hands the locks to the content script. When the game was
- * reloaded the locks that the content script had are gone, so they have to be handed over again.
- */
 async function load(setGameState: (state: JSONSafeObject) => void) {
   // One after the other: the first call injects the content script, which takes the diff baseline
   const game = await getState();
@@ -23,7 +19,6 @@ async function load(setGameState: (state: JSONSafeObject) => void) {
   await syncLocks();
 }
 
-/** Loads the state, then polls the content script for changes. Returns a function that stops. */
 export async function startTrackingFrames() {
   let timeout: ReturnType<typeof setTimeout> | undefined;
   let stopped = false;

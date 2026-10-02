@@ -17,7 +17,6 @@ interface ChangeLineProps {
   badge: Kind;
   path: Path;
   action?: 'added' | 'removed';
-  /** Where clicking the path leads to, when that's not the path itself */
   goTo?: Path;
   children?: JSX.Element;
 }
@@ -63,7 +62,6 @@ export function DiffItem(props: { change: DiffChange }) {
         </ChangeLine>
       </Match>
       <Match when={change.kind === 'del'}>
-        {/* What was deleted isn't there to go to */}
         <ChangeLine badge="del" path={change.path} goTo={change.path.slice(0, -1)} action="removed">
           <Colon />
           <RenderValue value={(change as Change<'add' | 'del'>).value} faded />

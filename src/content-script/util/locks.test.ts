@@ -9,7 +9,6 @@ const lockOf = (path: Array<string | number>, value: unknown) => ({
   value: pretransformValue(value as never, new Map(), new Map()) as never,
 });
 
-/** A game with a state to lock things in, and the enforcer for it */
 function setup(state: Record<string, any>) {
   const setState = (path: Array<string | number>, value: unknown) => {
     const parent = path.slice(0, -1).reduce((obj, key) => obj[key], state as any);
@@ -88,7 +87,7 @@ describe('createLockEnforcer', () => {
       expect(enforce(locks)).toEqual([{ path: ['hp'], attempted: 3 }]);
       state.hp = 3;
       expect(enforce(locks)).toEqual([]);
-      expect(state.hp).toBe(10); // still put back
+      expect(state.hp).toBe(10);
 
       state.hp = 4;
       expect(enforce(locks)).toEqual([{ path: ['hp'], attempted: 4 }]);
@@ -100,7 +99,7 @@ describe('createLockEnforcer', () => {
 
       state.hp = 3;
       enforce(locks);
-      enforce(locks); // the game left it alone this time
+      enforce(locks);
       state.hp = 3;
       expect(enforce(locks)).toEqual([{ path: ['hp'], attempted: 3 }]);
 

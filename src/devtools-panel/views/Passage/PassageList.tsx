@@ -37,7 +37,6 @@ export function PassageList(props: Props) {
     const selectedPassageId = props.selectedPassage.id;
     if (selectedPassageId === beforeCleanup?.passageId) return;
 
-    // If its a different passage, smooth scroll to that passage
     const index = props.passages.findIndex((passage) => passage.id === selectedPassageId);
     if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center', behavior: 'smooth' });
   });

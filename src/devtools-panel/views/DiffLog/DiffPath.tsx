@@ -10,7 +10,6 @@ export function DiffPath(props: {
   onAddFilter: (path: Path) => void;
   action?: 'added' | 'removed';
 }) {
-  // A change never changes, so the menu is built once
   const onContextMenu = createContextMenuHandler(
     // oxlint-disable-next-line solid/reactivity
     getParentPaths(props.path).map((path) => ({

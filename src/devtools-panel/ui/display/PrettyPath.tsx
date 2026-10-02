@@ -28,10 +28,6 @@ function needsBracketNotation(propertyName: string | number): boolean {
   return !validIdentifier.test(propertyName);
 }
 
-/**
- * What holds `path[index]` in the state, which decides how it's written. A path that isn't in the
- * state (anymore) is written the way its segments suggest.
- */
 function getParentType(state: unknown, path: Path, index: number): ContainerType {
   const type = getJsonType(getPathValue(state, path.slice(0, index)));
   if (isContainerType(type)) return type;

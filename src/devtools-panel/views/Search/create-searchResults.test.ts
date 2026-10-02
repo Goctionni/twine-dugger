@@ -47,7 +47,6 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
-/** Lets the timers and the promises of a search run */
 const settle = async (ms = 10) => {
   await vi.advanceTimersByTimeAsync(ms);
   flush();

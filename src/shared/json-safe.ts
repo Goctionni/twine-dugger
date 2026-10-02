@@ -33,7 +33,6 @@ export function isContainerType(type: ValueType): type is ContainerType {
   return type === 'object' || type === 'array' || type === 'map' || type === 'set';
 }
 
-/** The keys under which a container's children live (the key of a Set item is its array index) */
 export function getContainerKeys(value: unknown, type: ContainerType): Array<string | number> {
   const arr = value as JSONSafeValue[];
   if (type === 'array') return Array.from({ length: arr.length }, (_, i) => i);
@@ -42,7 +41,6 @@ export function getContainerKeys(value: unknown, type: ContainerType): Array<str
   return type === 'map' ? keys.filter((key) => key !== TYPE_KEY) : keys;
 }
 
-/** Like `getObjectPathValue`, but doesn't complain when the path no longer resolves */
 export function getPathValue(root: unknown, path: ReadonlyArray<string | number>): unknown {
   let value = root;
   for (const key of path) {
@@ -62,14 +60,12 @@ export function jsonEqual(a: unknown, b: unknown): boolean {
   return keys.every((key) => Object.hasOwn(b, key) && jsonEqual(a[key as never], b[key as never]));
 }
 
-/** Functions can't be sent to or restored from the panel */
 export function containsFunction(value: unknown): boolean {
   if (getJsonType(value) === 'function') return true;
   if (!value || typeof value !== 'object') return false;
   return Object.values(value).some(containsFunction);
 }
 
-/** What a child is called when it's shown: the first item of a Set's array is its marker */
 export function getKeyLabel(type: ContainerType, key: string | number) {
   return type === 'set' && typeof key === 'number' ? key - 1 : key;
 }

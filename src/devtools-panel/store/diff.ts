@@ -52,10 +52,6 @@ function walkDelta(delta: DeltaNode): DiffChange[] {
 
 const diffs = new WeakMap<object, DiffChange[]>();
 
-/**
- * Lists what a delta says changed, with the full path to each change. A delta never changes, so
- * this is only worked out the first time it's asked for a delta.
- */
 export function getDiffFromDelta(delta: Delta | undefined): DiffChange[] {
   if (!delta) return [];
 

@@ -26,7 +26,6 @@ type Game = ReturnType<typeof createGame>;
 
 const state = () => getActiveState() as any;
 
-/** Changes the live state of the game, and hands the panel the update */
 function play(game: Game, mutate: (live: any) => void) {
   mutate(game.live);
   applyUpdate(game.update());
@@ -77,7 +76,6 @@ describe('game state', () => {
       ['chg:hp'],
     ]);
 
-    // Slice 5 is the state after the fifth diff, slice 0 the one the game started with
     setViewState('state', 'historyRef', 5);
     flush();
     expect(state().hp).toBe(9);
@@ -146,7 +144,6 @@ describe('game state', () => {
     play(game, (s) => (s.hp = 8));
     expect(getHistoryIds()).toEqual([2, 1, 0]);
 
-    // A reloaded page gets a fresh content script, which takes a new baseline
     game.live.hp = 100;
     const reloaded = createGame(game.live);
     restartGameState(reloaded.state());
@@ -158,7 +155,6 @@ describe('game state', () => {
     expect(frames[1]!.reloaded).toBe(true);
     expect(frames.map((frame) => isFrameTainted(frame))).toEqual([false, false, true, true]);
 
-    // The marker is the state right after the reload; nothing older can be reached
     expect(getHistoryIds()).toEqual([4, 3]);
     setViewState('state', 'historyRef', 3);
     flush();

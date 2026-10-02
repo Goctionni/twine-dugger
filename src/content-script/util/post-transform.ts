@@ -1,7 +1,6 @@
 import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
 import type { JSONSafeObject, JSONSafeValue } from '@/shared/shared-types';
 
-/** The inverse of `pretransformValue`, for values that come back from the panel */
 export function posttransformValue(value: JSONSafeValue): unknown {
   if (value === null || typeof value !== 'object') return value;
 

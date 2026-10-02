@@ -10,7 +10,6 @@ vi.mock('../../api/api', () => ({
   setStatePropertyLocks: async () => {},
 }));
 vi.mock('./create-searchResults', () => ({ createSearchResults: () => results }));
-// The lists have their own tests, and need a layout to render anything
 vi.mock('./StateResults', () => ({ StateResults: () => <p>state list</p> }));
 vi.mock('./PassageResults', () => ({ PassageResults: () => <p>passage list</p> }));
 

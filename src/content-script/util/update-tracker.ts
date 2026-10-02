@@ -6,7 +6,6 @@ import type { ObjectValue } from '@/shared/shared-types';
 
 import { pretransformState } from './pre-transform';
 
-/** Follows the live state of the game, and tells what changed in it each time it's asked */
 export function createUpdateTracker(getLiveState: () => ObjectValue) {
   const { getObjectHash, setIdentitySources } = setupIdentityHasher();
 
@@ -18,10 +17,8 @@ export function createUpdateTracker(getLiveState: () => ObjectValue) {
   let [oldState, , oldIdentityLookup] = pretransformState(getLiveState());
 
   return {
-    /** The state as it was the last time it was looked at */
     getState: () => oldState,
 
-    /** What changed since the last time it was looked at, if anything did */
     getDelta(): Delta | undefined {
       const [newState, , newIdentityLookup] = pretransformState(getLiveState());
       setIdentitySources({ oldIdentityLookup, newIdentityLookup });

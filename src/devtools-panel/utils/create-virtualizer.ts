@@ -76,7 +76,6 @@ export function createVirtualizer<TScrollElement extends Element, TItemElement e
     return cleanup;
   });
 
-  // The options are read here, so a change to what they depend on (`count`, say) updates the list
   createEffect(
     () => ({ ...resolved }),
     (current) => {

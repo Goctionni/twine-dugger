@@ -29,7 +29,6 @@ interface PassageCodeProps {
 
 export function Code(props: PassageCodeProps) {
   const [autoSave, setAutoSave] = createSignal(false);
-  // Follows the code prop until edited, then again when the prop changes
   const [localCode, setLocalCode] = createSignal(() => props.code);
   const [highlighter, setHighlighter] = createSignal<Awaited<
     ReturnType<typeof createHighlighter>
@@ -55,7 +54,6 @@ export function Code(props: PassageCodeProps) {
     },
   );
 
-  // The highlighted HTML follows the code
   const html = createMemo(() => (highlighter()?.toHtml ?? escapeHtml)(localCode()));
 
   const handleScroll = () => {

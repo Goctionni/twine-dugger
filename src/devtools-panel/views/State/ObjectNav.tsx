@@ -55,7 +55,6 @@ const getNameForProperty = () =>
 
 interface Entry {
   key: string | number;
-  /** What is shown for the key; Set items are numbered from 0 while their key is the array index */
   label: string | number;
   type: ValueType;
 }
@@ -63,7 +62,6 @@ interface Entry {
 const primitiveTypes: ValueType[] = ['string', 'number', 'boolean', 'null', 'undefined'];
 
 interface Props {
-  /** How many segments of the selected path lead to the container this column lists */
   depth: number;
 }
 

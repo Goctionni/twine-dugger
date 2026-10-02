@@ -38,7 +38,6 @@ export async function setPassage(passage: FormatPassage) {
   return execDuggerFunction('setPassage', [passage]);
 }
 
-/** Replaces the locks the content script enforces */
 export async function setStatePropertyLocks(locks: Lock[]) {
   await injectContentScript();
   return execDuggerFunction('setStatePropertyLocks', [locks]);

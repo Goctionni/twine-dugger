@@ -8,7 +8,6 @@ import type {
 
 export type FindResult<T> = [Promise<T[]>, (reason?: string) => void];
 
-/** How long searching may keep the main thread before the browser gets to handle input again */
 const SLICE_MS = 8;
 
 /**
@@ -28,7 +27,6 @@ async function runInSlices(signal: AbortSignal, step: () => boolean) {
   return true;
 }
 
-/** Starts as its own task, so that the caller isn't held up by the first slice */
 function runSearch<T>(search: (signal: AbortSignal) => Promise<T[]>): FindResult<T> {
   const abortController = new AbortController();
   const promise = scheduler.postTask(() => search(abortController.signal), {
@@ -53,7 +51,6 @@ function createQuery(rawQuery: string) {
 }
 type Query = ReturnType<typeof createQuery>;
 
-// How well something matches. What is the whole query is found before what only contains it.
 const NONE = 0;
 const PARTIAL = 1;
 const FULL = 2;
@@ -112,13 +109,11 @@ export function findStateMatches(
         (kind === FULL ? full : partial).push({ path, value } as SearchResultState);
     };
 
-    // Depth first, without recursion
     const stack: Array<[value: unknown, path: Path]> = [[data, []]];
     const finished = await runInSlices(signal, () => {
       const [value, path] = stack.pop()!;
       if (!value || typeof value !== 'object') return stack.length > 0;
 
-      // The source of a function or the parts of a date aren't worth searching
       const type = getJsonType(value);
       if (type === 'function' || type === 'date') return stack.length > 0;
 
@@ -132,7 +127,6 @@ export function findStateMatches(
       };
 
       if (Array.isArray(value)) {
-        // The first item of a Set's array is its marker, not one of its items
         for (let i = value[0] === SET_MARKER ? 1 : 0; i < value.length; i++) {
           visit(i, value[i], false);
         }

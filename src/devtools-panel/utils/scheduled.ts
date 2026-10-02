@@ -11,10 +11,6 @@ type ScheduleCallback = <Args extends unknown[]>(
   wait?: number,
 ) => Scheduled<Args>;
 
-/**
- * Creates a callback that is throttled and cancellable. It is called on the **trailing** edge, with
- * the last arguments. The timeout is cleared when the owner is disposed.
- */
 export const throttle: ScheduleCallback = (callback, wait) => {
   let isThrottled = false;
   let timeoutId: ReturnType<typeof setTimeout>;

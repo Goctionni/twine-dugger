@@ -19,8 +19,6 @@ export function SearchResults() {
   const setResultTab = (tab: 'state' | 'passage') => setViewState('search', 'resultTab', tab);
   const getSearchResults = createSearchResults();
 
-  // Only tabs with results are shown. The tab that was picked is used if it has results, and
-  // otherwise the first one that does: with a single tab there is nothing else to look at.
   const resultTabs = createMemo(() => {
     const { state, passage } = getSearchResults();
     const available: Omit<Tab, 'active'>[] = [];

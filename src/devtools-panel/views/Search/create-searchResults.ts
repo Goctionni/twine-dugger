@@ -43,7 +43,6 @@ export function createSearchResults() {
       .catch(() => {});
   }
 
-  // Typing, and new passages
   createEffect(
     () => ({
       page: getNavigationPage(),
@@ -52,7 +51,6 @@ export function createSearchResults() {
       passages: getPassageData(),
     }),
     ({ page, query, shouldRunSearch, passages }) => {
-      // If we're not looking at the search results tab, dont both updating
       if (page !== 'search') return;
 
       if (!query) {
@@ -64,7 +62,6 @@ export function createSearchResults() {
     },
   );
 
-  // New diffs
   const refresh = throttle(() => {
     if (getNavigationPage() === 'search' && getQuery()) search(getQuery(), getPassageData());
   }, REFRESH_MS);

@@ -15,8 +15,6 @@ export function DiffLog() {
     { label: 'Clear All Filters', onClick: () => clearFilteredPaths() },
   ]);
 
-  // Frames are immutable and keep their identity, so a new frame adds one row and changing the
-  // filters only touches the rows that appear or disappear.
   const frames = createMemo(() => getDiffFrames().filter(hasVisibleEntries).slice(0, MAX_FRAMES), {
     equals: sameItems,
   });
