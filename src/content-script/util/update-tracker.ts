@@ -2,7 +2,7 @@ import type { Delta } from 'jsondiffpatch';
 import { create as createDiffer } from 'jsondiffpatch';
 
 import { getObjectId, setupIdentityHasher } from '@/shared/id-helper';
-import type { ObjectValue } from '@/shared/shared-types';
+import type { JSONSafeObject, ObjectValue } from '@/shared/shared-types';
 
 import { pretransformState } from './pre-transform';
 
@@ -17,7 +17,10 @@ export function createUpdateTracker(getLiveState: () => ObjectValue) {
   let [oldState, , oldIdentityLookup] = pretransformState(getLiveState());
 
   return {
-    getJsonSafeState: () => oldState,
+    reset(): JSONSafeObject {
+      [oldState, , oldIdentityLookup] = pretransformState(getLiveState());
+      return oldState;
+    },
 
     getDelta(): Delta {
       const [newState, , newIdentityLookup] = pretransformState(getLiveState());

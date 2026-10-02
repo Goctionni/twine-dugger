@@ -24,22 +24,19 @@ function init() {
   const tracker = createUpdateTracker(formatHelper.getRawState);
   const enforceLocks = createLockEnforcer(formatHelper.getRawState, formatHelper.setState);
   let locks: Lock[] = [];
-  // Set until the panel has been told (by `getState` or `getUpdates`) that we just started
-  let initialized = true;
+  let initialized = false;
 
   window.TwineDugger = {
-    getState: () => {
-      initialized = false;
-      return { passage: formatHelper.getPassage(), state: tracker.getJsonSafeState() };
-    },
-    getUpdates: (): UpdateResult => {
+    getUpdates: (full = false): UpdateResult => {
+      const passage = formatHelper.getPassage();
+      if (full || !initialized) {
+        initialized = true;
+        return { type: 'init', passage, state: tracker.reset() };
+      }
+
       // Locked values are restored before the state is read, so the changes never show up in the delta
       const reverts = enforceLocks(locks);
-
-      const delta = tracker.getDelta();
-      const result = { passage: formatHelper.getPassage(), delta, reverts, initialized };
-      initialized = false;
-      return result;
+      return { type: 'update', passage, delta: tracker.getDelta(), reverts };
     },
     setState: formatHelper.setState,
     deleteFromState: formatHelper.deleteFromState,

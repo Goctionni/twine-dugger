@@ -50,9 +50,9 @@ describe('locks', () => {
     setPathLock(['hp'], true);
 
     applyUpdate({
+      type: 'update',
       passage: 'P',
       delta: undefined,
-      initialized: false,
       reverts: [{ path: ['hp'], attempted: 3 }],
     });
     flush();
@@ -68,9 +68,9 @@ describe('locks', () => {
     flush();
 
     applyUpdate({
+      type: 'update',
       passage: 'P',
       delta: undefined,
-      initialized: false,
       reverts: [{ path: ['hp'], attempted: 3 }],
     });
     flush();

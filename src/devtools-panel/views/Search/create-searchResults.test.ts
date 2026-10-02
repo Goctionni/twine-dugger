@@ -89,10 +89,10 @@ describe('createSearchResults', () => {
 
     const change = (value: string) => {
       gameState.applyUpdate({
+        type: 'update',
         passage: 'P',
         delta: { boss: [value === 'dragon' ? 'newt' : 'dragon', value] } as never,
         reverts: [],
-        initialized: false,
       });
       flush();
     };

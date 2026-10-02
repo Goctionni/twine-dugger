@@ -3,7 +3,6 @@ import '@types/chrome';
 import type {
   FormatPassage,
   Lock,
-  JSONSafeObject,
   JSONSafeValue,
   ObjectValue,
   PassageData,
@@ -26,8 +25,7 @@ declare global {
   interface Window {
     TwineDugger: {
       getPassageData: () => PassageData[];
-      getUpdates: () => UpdateResult;
-      getState: () => { passage: string; state: JSONSafeObject };
+      getUpdates: (full?: boolean) => UpdateResult;
       setState: (path: Path, value: unknown) => void;
       deleteFromState: (path: Path) => void;
       duplicateStateProperty: (

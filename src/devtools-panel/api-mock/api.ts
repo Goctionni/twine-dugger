@@ -42,23 +42,11 @@ export async function getGameMetaData(): Return<'getGameMetaData'> {
   });
 }
 
-export async function getState(): Return<'getState'> {
-  return Promise.resolve({
-    passage: '',
-    state: {
-      test: 123,
-      example: 'test',
-    },
-  });
-}
-
-export async function getUpdates(): Return<'getUpdates'> {
-  return Promise.resolve({
-    passage: '',
-    delta: undefined,
-    reverts: [],
-    initialized: false,
-  });
+export async function getUpdates(full = false): Return<'getUpdates'> {
+  if (full) {
+    return Promise.resolve({ type: 'init', passage: '', state: { test: 123, example: 'test' } });
+  }
+  return Promise.resolve({ type: 'update', passage: '', delta: undefined, reverts: [] });
 }
 
 export async function setState(_path: Array<string | number>, _value: unknown): Return<'setState'> {

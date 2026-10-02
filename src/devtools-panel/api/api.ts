@@ -7,20 +7,15 @@ export async function getGameMetaData() {
   return executeCode(getGameMetaFn);
 }
 
-export async function getState() {
+export async function getUpdates(full = false) {
   await injectContentScript();
-  return executeCode(() => {
-    if (!('TwineDugger' in window)) return null;
-    return window.TwineDugger.getState();
-  });
-}
-
-export async function getUpdates() {
-  await injectContentScript();
-  return executeCode(() => {
-    if (!('TwineDugger' in window)) return null;
-    return window.TwineDugger.getUpdates();
-  });
+  return executeCode(
+    (full) => {
+      if (!('TwineDugger' in window)) return null;
+      return window.TwineDugger.getUpdates(full);
+    },
+    { args: [full] },
+  );
 }
 
 export async function setState(path: Array<string | number>, value: unknown) {

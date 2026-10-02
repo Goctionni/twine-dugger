@@ -1,6 +1,6 @@
-import type { JSONSafeObject } from '@/shared/shared-types';
+import type { InitUpdate } from '@/shared/shared-types';
 
-import { getPassageData, getState, getUpdates } from '../api/api';
+import { getPassageData, getUpdates } from '../api/api';
 import { applyUpdate, restartGameState, startGameState } from './game-state';
 import { syncLocks } from './locks';
 import { parsePassage, setPassageData } from './passages';
@@ -8,13 +8,11 @@ import { createGetSetting, setConnectionState } from './store';
 
 const getPollingInterval = createGetSetting('diffLog.pollingInterval');
 
-async function load(setGameState: (state: JSONSafeObject) => void) {
-  // One after the other: the first call injects the content script, which takes the diff baseline
-  const game = await getState();
-  if (!game) throw new Error('Could not read the game state');
+async function load({ state, passage }: InitUpdate, isReload: boolean) {
   const passageData = await getPassageData();
 
-  setGameState(game.state);
+  if (isReload) restartGameState(state, passage);
+  else startGameState(state);
   setPassageData(passageData.map(parsePassage));
   await syncLocks();
 }
@@ -25,7 +23,9 @@ export async function startTrackingFrames() {
   setConnectionState('loading-game');
 
   try {
-    await load(startGameState);
+    const first = await getUpdates(true);
+    if (first?.type !== 'init') throw new Error('Could not read the game state');
+    await load(first, false);
     setConnectionState('live');
 
     const poll = async () => {
@@ -33,7 +33,7 @@ export async function startTrackingFrames() {
       try {
         const update = await getUpdates();
         if (stopped) return;
-        if (update?.initialized) await load(restartGameState);
+        if (update?.type === 'init') await load(update, true);
         else if (update) applyUpdate(update, started);
       } catch {
         setConnectionState('error');

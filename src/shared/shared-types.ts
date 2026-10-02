@@ -45,12 +45,14 @@ export interface LockRevert {
   attempted: JSONSafeValue;
 }
 
-export type UpdateResult = {
+export type InitUpdate = { type: 'init'; passage: string; state: JSONSafeObject };
+export type DeltaUpdate = {
+  type: 'update';
   passage: string;
   delta: Delta;
   reverts: LockRevert[];
-  initialized: boolean;
 };
+export type UpdateResult = InitUpdate | DeltaUpdate;
 
 export const valueTypeSchema = type(
   "'other' | 'null' | 'undefined' | 'object' | 'array' | 'map' | 'set' | 'function' | 'date' | 'string' | 'number' | 'boolean'",

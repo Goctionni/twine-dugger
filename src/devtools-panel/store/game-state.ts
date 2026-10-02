@@ -11,7 +11,7 @@ import {
 } from 'solid-js';
 
 import { pathEquals, pathKey } from '@/shared/path-equals';
-import type { JSONSafeObject, LockRevert, Path, UpdateResult } from '@/shared/shared-types';
+import type { DeltaUpdate, JSONSafeObject, LockRevert, Path } from '@/shared/shared-types';
 
 import { sameItems } from '../utils/same-items';
 import type { BlockedWrite, StateDiff } from '../views/DiffLog/diff-types';
@@ -54,13 +54,13 @@ export function startGameState(state: JSONSafeObject) {
  * the log is kept, but it's marked where the game was reloaded and what is before it (which is
  * "tainted") can't be travelled to anymore.
  */
-export function restartGameState(state: JSONSafeObject) {
+export function restartGameState(state: JSONSafeObject, passage: string) {
   setGameState(() => state);
   resetView();
-  addFrame({ timestamp: Date.now(), passage: '', blocked: [], reloaded: true });
+  addFrame({ timestamp: Date.now(), passage, blocked: [], reloaded: true });
 }
 
-export function applyUpdate({ passage, delta, reverts }: UpdateResult, timestamp = Date.now()) {
+export function applyUpdate({ passage, delta, reverts }: DeltaUpdate, timestamp = Date.now()) {
   const blocked = reverts.flatMap(toBlockedWrite);
   if (!delta && !blocked.length) return;
 

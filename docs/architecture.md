@@ -30,7 +30,7 @@ DevTools Panel  ──► (chrome.scripting.executeScript) ──►  Content Sc
      │◄─ JSON (state, diffs, passage) ◄─ window.TwineDugger ◄──┘
 ```
 
-- Panel calls functions (e.g., `getState`, `getUpdates`, `setState`) by executing code in the page context.
+- Panel calls functions (e.g., `getUpdates`, `setState`) by executing code in the page context.
 - The content script keeps the last seen state in memory to produce deltas.
 - State is made JSON-safe (Maps, Sets, functions and Dates as marked values, see `src/shared/json-safe.ts`) so it survives the trip.
 

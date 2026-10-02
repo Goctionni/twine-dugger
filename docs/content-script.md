@@ -3,7 +3,7 @@
 The content script (`src/content-script/content-script.ts`) detects the active Twine engine and exposes
 `window.TwineDugger`, which the panel calls through the page bridge:
 
-- `getState()` / `getUpdates()` — a JSON-safe snapshot of the state, and the delta since the last call
+- `getUpdates()` — the full JSON-safe state the first time it is asked (or when full is passed), and the delta since the last call after that
   (see [`state-diffing.md`](./state-diffing.md)).
 - `setState`, `deleteFromState`, `duplicateStateProperty` — modify the live state by path.
 - `setStatePropertyLocks` — keep properties at a fixed value; writes to them are undone and reported.

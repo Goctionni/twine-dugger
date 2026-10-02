@@ -146,7 +146,7 @@ describe('game state', () => {
 
     game.live.hp = 100;
     const reloaded = createGame(game.live);
-    restartGameState(reloaded.state());
+    restartGameState(reloaded.state(), 'P');
     flush();
     play(reloaded, (s) => (s.hp = 99));
 
