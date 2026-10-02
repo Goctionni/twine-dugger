@@ -1,9 +1,16 @@
 import { createEffect, createRoot, createStore, deep } from 'solid-js';
 
+import { fromJson } from '@/shared/from-json';
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
 import type { GameMetaData, Page, Path } from '@/shared/shared-types';
 
-import type { GameConfig, Settings, StoreData } from './store-types';
+import {
+  gameConfigSchema,
+  settingsSchema,
+  type GameConfig,
+  type Settings,
+  type StoreData,
+} from './store-types';
 
 const LS_PREFIX = 'twine-dugger-';
 const getGameSettingsKey = (ifId: string) => `${LS_PREFIX}${ifId}`;
@@ -22,7 +29,7 @@ const defaultSettings: Settings = {
 function loadGlobalSettings(): Settings {
   try {
     const saved = localStorage.getItem(getGlobalSettingsKey()) || '{}';
-    return { ...defaultSettings, ...(JSON.parse(saved) as Partial<Settings>) };
+    return { ...defaultSettings, ...fromJson(saved, settingsSchema.partial()) };
   } catch {
     return { ...defaultSettings };
   }
@@ -32,7 +39,7 @@ function loadGameConfig(ifId: string): GameConfig {
   try {
     const saved = localStorage.getItem(getGameSettingsKey(ifId));
     if (saved) {
-      const config = JSON.parse(saved) as Partial<GameConfig>;
+      const config = fromJson(saved, gameConfigSchema.partial());
       return { filteredPaths: config.filteredPaths ?? [], locks: config.locks ?? [] };
     }
   } catch {}

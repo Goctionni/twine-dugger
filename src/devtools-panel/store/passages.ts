@@ -23,7 +23,7 @@ export function parsePassage(passage: PassageData): ParsedPassageData {
 }
 
 export const getSelectedPassage = () => {
-  const name = store.viewState.passage.selected;
+  const name = store.viewState.passages.selected;
   if (name === null) return null;
   return getPassageData().find((passage) => passage.name === name) ?? null;
 };

@@ -1,11 +1,14 @@
-import type {
-  ConnectionState,
-  GameMetaData,
-  Lock,
-  Page,
-  Path,
-  PropertyFilterKey,
-  PropertyOrder,
+import { type } from 'arktype';
+
+import {
+  lockSchema,
+  pathSchema,
+  propertyOrderSchema,
+  valueTypeSchema,
+  type ConnectionState,
+  type GameMetaData,
+  type Page,
+  type Path,
 } from '@/shared/shared-types';
 
 export interface StoreData {
@@ -30,17 +33,19 @@ export interface StoreData {
   };
 }
 
-export interface GameConfig {
-  locks: Lock[];
-  filteredPaths: Path[];
-}
+export const gameConfigSchema = type({
+  locks: lockSchema.array(),
+  filteredPaths: pathSchema.array(),
+});
+export type GameConfig = typeof gameConfigSchema.infer;
 
-export interface Settings {
-  'diffLog.fontSize': number;
-  'diffLog.pollingInterval': number;
-  'diffLog.maxHistorySlices': number;
-  'diffLog.headingStyle': 'default' | 'distinct';
-  'state.propertyOrder': PropertyOrder;
-  'state.propertyOrderDesc': boolean;
-  'state.filters': PropertyFilterKey[];
-}
+export const settingsSchema = type({
+  'diffLog.fontSize': 'number',
+  'diffLog.pollingInterval': 'number',
+  'diffLog.maxHistorySlices': 'number',
+  'diffLog.headingStyle': "'default' | 'distinct'",
+  'state.propertyOrder': propertyOrderSchema,
+  'state.propertyOrderDesc': 'boolean',
+  'state.filters': valueTypeSchema.or("'filtered'").array(),
+});
+export type Settings = typeof settingsSchema.infer;

@@ -1,4 +1,5 @@
 import type { JSX } from '@solidjs/web';
+import { type } from 'arktype';
 import type { Delta } from 'jsondiffpatch';
 
 export type Primitive = string | number | boolean | null | undefined;
@@ -25,14 +26,13 @@ export type SetValue = Set<Value>;
 
 export type ContainerValue = ObjectValue | ArrayValue | MapValue;
 
-export type Path = Array<string | number>;
+export const pathSchema = type('(string | number)[]');
+export type Path = typeof pathSchema.infer;
 
 export type PropertyFilterKey = ValueType | 'filtered';
 
-export interface Lock {
-  path: Path;
-  value: JSONSafeValue;
-}
+export const lockSchema = type({ path: pathSchema, value: type({}).as<JSONSafeValue>() });
+export type Lock = typeof lockSchema.infer;
 
 export interface LockRevert {
   path: Path;
@@ -46,19 +46,10 @@ export type UpdateResult = {
   initialized: boolean;
 };
 
-export type ValueType =
-  | 'other'
-  | 'null'
-  | 'undefined'
-  | 'object'
-  | 'array'
-  | 'map'
-  | 'set'
-  | 'function'
-  | 'date'
-  | 'string'
-  | 'number'
-  | 'boolean';
+export const valueTypeSchema = type(
+  "'other' | 'null' | 'undefined' | 'object' | 'array' | 'map' | 'set' | 'function' | 'date' | 'string' | 'number' | 'boolean'",
+);
+export type ValueType = typeof valueTypeSchema.infer;
 
 export type LockStatus = 'locked' | 'ancestor-lock' | 'unlocked';
 
@@ -74,7 +65,8 @@ export interface ParsedPassageData {
   content: string;
   tags: string[];
 }
-export type PropertyOrder = 'alphabetic' | 'type' | 'most-recent' | 'none';
+export const propertyOrderSchema = type("'alphabetic' | 'type' | 'most-recent' | 'none'");
+export type PropertyOrder = typeof propertyOrderSchema.infer;
 export interface OrderConfig {
   orderBy: PropertyOrder;
   descending: boolean;

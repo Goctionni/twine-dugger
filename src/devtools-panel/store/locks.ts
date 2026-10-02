@@ -2,7 +2,7 @@ import { createMemo, createRoot, flush, snapshot, untrack } from 'solid-js';
 
 import { containsFunction, getPathValue } from '@/shared/json-safe';
 import { pathEquals } from '@/shared/path-equals';
-import type { JSONSafeValue, Lock, Path } from '@/shared/shared-types';
+import type { Lock, Path } from '@/shared/shared-types';
 
 import { setStatePropertyLocks } from '../api/api';
 import { getLatestState } from './game-state';
@@ -39,7 +39,7 @@ export function setPathLock(path: Path, lock: boolean) {
     const value = getLatestValue(path);
     if (value === undefined) throw new Error('Cannot lock a path that has no value');
     if (containsFunction(value)) throw new Error('Cannot lock a value that contains a function');
-    locks.push({ path: [...path], value: structuredClone(value) as JSONSafeValue });
+    locks.push({ path: [...path], value: structuredClone(value) as Lock['value'] });
   }
   return setLocks(locks);
 }

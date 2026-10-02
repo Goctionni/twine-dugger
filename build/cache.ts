@@ -3,15 +3,19 @@ import { mkdir, readFile, writeFile } from 'fs/promises';
 import { dirname, resolve } from 'path';
 import { cwd } from 'process';
 
+import { type } from 'arktype';
+
+import { fromJson } from '../src/shared/from-json.ts';
+
 const cacheLoc = resolve(cwd(), 'node_modules/.wb-temp/_cache.json');
 
-type Cache = Record<string, { timestamp: number; data: string }>;
+const cacheSchema = type({ '[string]': { timestamp: 'number', data: 'string' } });
 
 export async function fromCache(key: string): Promise<string | false> {
   if (!existsSync(cacheLoc)) return false;
   const cacheRaw = await readFile(cacheLoc, 'utf-8');
   if (!cacheRaw) return false;
-  const cacheContent = JSON.parse(cacheRaw) as Cache;
+  const cacheContent = fromJson(cacheRaw, cacheSchema);
   const result = cacheContent[key];
   if (!result || typeof result !== 'object') return false;
   if (Date.now() - result.timestamp > 1000 * 60 * 60) return false;
@@ -30,7 +34,7 @@ export async function toCache(url: string, content: string): Promise<void> {
   }
   const cacheRaw = await readFile(cacheLoc, 'utf-8');
   const cacheContent = {
-    ...JSON.parse(cacheRaw),
+    ...fromJson(cacheRaw, cacheSchema),
     [url]: { data: content, timestamp },
   };
   await writeFile(cacheLoc, JSON.stringify(cacheContent, null, '  '), {

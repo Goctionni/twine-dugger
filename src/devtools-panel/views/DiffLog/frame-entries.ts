@@ -1,6 +1,6 @@
 import { getDiffFromDelta } from '../../store/diff';
 import { isPathFiltered } from '../../store/store';
-import type { StateDiff } from '../../store/store-types';
+import type { StateDiff } from './diff-types';
 
 export function getVisibleEntries(frame: StateDiff) {
   return {

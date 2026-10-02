@@ -4,6 +4,7 @@ type StyleTextColor = Parameters<typeof styleText>[0] & string;
 
 import { type TsdownBundle } from 'vite-plus/pack';
 
+import { isNonNullish } from '../src/shared/is-nonnullish.ts';
 import { parseRolldownChunk } from './build-lib.ts';
 import { parseCopyResultLogLine, type CopyTransformResult } from './copy-transform.ts';
 
@@ -81,7 +82,7 @@ export function logLines(lines: LogLine[], elapsed: number) {
 function logBundleResults(bundles: TsdownBundle[]) {
   return bundles
     .flatMap((item) => item.chunks.map((chunk) => parseRolldownChunk(chunk)))
-    .filter((value): value is LogLine => !!value);
+    .filter(isNonNullish);
 }
 
 export async function logResults(

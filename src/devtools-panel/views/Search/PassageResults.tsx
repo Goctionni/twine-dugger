@@ -27,7 +27,7 @@ export function PassageResults(props: Props) {
   });
 
   const onPassageClick = (passage: ParsedPassageData) => {
-    setViewState('passage', 'selected', passage.name);
+    setViewState('passages', 'selected', passage.name);
   };
 
   const format = () => getGameMetaData()!.format;
