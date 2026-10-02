@@ -65,11 +65,8 @@ export function applyUpdate({ passage, delta, reverts }: DeltaUpdate, timestamp 
   if (!delta && !blocked.length) return;
 
   if (delta) {
-    // The patch puts values from the delta in the state, which are changed later on. The frame
-    // keeps the original delta.
-    const patch = structuredClone(delta);
     setGameState((draft) => {
-      differ.patch(draft, patch);
+      differ.patch(draft, delta);
     });
   }
   addFrame({ timestamp, passage, delta, blocked });
@@ -111,7 +108,7 @@ const derived = createRoot(() => {
       const state = structuredClone(snapshot(gameState));
       for (const frame of frames()) {
         if (frame.id <= ref) break;
-        if (frame.delta) differ.unpatch(state, structuredClone(frame.delta));
+        if (frame.delta) differ.unpatch(state, frame.delta);
       }
       return state;
     });

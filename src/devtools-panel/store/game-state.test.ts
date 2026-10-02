@@ -1,5 +1,5 @@
 import { createEffect, createRoot, flush } from 'solid-js';
-import { describe, expect, it, vi } from 'vite-plus/test';
+import { describe, expect, it, onTestFinished, vi } from 'vite-plus/test';
 
 import { pretransformState } from '@/content-script/util/pre-transform';
 
@@ -93,7 +93,7 @@ describe('game state', () => {
     flush();
 
     const runs = { a: 0, b: 0, n1: 0, len: 0 };
-    createRoot(() => {
+    createRoot((dispose) => {
       const readers = {
         a: () => state().a,
         b: () => state().b,
@@ -105,6 +105,7 @@ describe('game state', () => {
           runs[name as keyof typeof runs]++;
         });
       }
+      onTestFinished(dispose);
     });
     flush();
     const before = { ...runs };

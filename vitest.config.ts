@@ -8,9 +8,9 @@ export default defineConfig({
   resolve: {
     conditions: ['development', 'browser'],
     alias: {
-      '@': resolve(__dirname, 'src'),
-      '@panel': resolve(__dirname, 'src/devtools-panel'),
-      '@content': resolve(__dirname, 'src/content-script'),
+      '@': resolve(import.meta.dirname, 'src'),
+      '@panel': resolve(import.meta.dirname, 'src/devtools-panel'),
+      '@content': resolve(import.meta.dirname, 'src/content-script'),
     },
   },
   test: {
