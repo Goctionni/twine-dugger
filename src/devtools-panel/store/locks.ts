@@ -39,7 +39,7 @@ export function setPathLock(path: Path, lock: boolean) {
     const value = getLatestValue(path);
     if (value === undefined) throw new Error('Cannot lock a path that has no value');
     if (containsFunction(value)) throw new Error('Cannot lock a value that contains a function');
-    locks.push({ path: [...path], value: structuredClone(value) as Lock['value'] });
+    locks.push({ path: [...path], value: structuredClone(value) });
   }
   return setLocks(locks);
 }

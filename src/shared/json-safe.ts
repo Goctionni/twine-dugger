@@ -1,4 +1,4 @@
-import type { JSONSafeValue, ValueType } from './shared-types';
+import type { JSONSafeArray, JSONSafeValue, ValueType } from './shared-types';
 
 /** Marks objects that stand in for a non-JSON value (Map, function, Date) */
 export const TYPE_KEY = '__twinedugger-type' as const;
@@ -34,23 +34,26 @@ export function isContainerType(type: ValueType): type is ContainerType {
 }
 
 export function getContainerKeys(value: unknown, type: ContainerType): Array<string | number> {
-  const arr = value as JSONSafeValue[];
+  const arr = value as JSONSafeArray;
   if (type === 'array') return Array.from({ length: arr.length }, (_, i) => i);
   if (type === 'set') return Array.from({ length: Math.max(0, arr.length - 1) }, (_, i) => i + 1);
   const keys = Object.keys(value as object);
   return type === 'map' ? keys.filter((key) => key !== TYPE_KEY) : keys;
 }
 
-export function getPathValue(root: unknown, path: ReadonlyArray<string | number>): unknown {
+export function getPathValue(
+  root: JSONSafeValue,
+  path: ReadonlyArray<string | number>,
+): JSONSafeValue {
   let value = root;
   for (const key of path) {
     if (value === null || typeof value !== 'object') return undefined;
-    value = (value as Record<string | number, unknown>)[key];
+    value = (value as Record<string | number, JSONSafeValue>)[key];
   }
   return value;
 }
 
-export function jsonEqual(a: unknown, b: unknown): boolean {
+export function jsonEqual(a: JSONSafeValue, b: JSONSafeValue): boolean {
   if (a === b) return true;
   if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
   if (Array.isArray(a) !== Array.isArray(b)) return false;
@@ -60,7 +63,7 @@ export function jsonEqual(a: unknown, b: unknown): boolean {
   return keys.every((key) => Object.hasOwn(b, key) && jsonEqual(a[key as never], b[key as never]));
 }
 
-export function containsFunction(value: unknown): boolean {
+export function containsFunction(value: JSONSafeValue): boolean {
   if (getJsonType(value) === 'function') return true;
   if (!value || typeof value !== 'object') return false;
   return Object.values(value).some(containsFunction);

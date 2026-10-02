@@ -1,11 +1,11 @@
 import type { JSX } from '@solidjs/web';
-import { Dynamic } from '@solidjs/web';
+import { dynamic } from '@solidjs/web';
 import { createMemo, For, Show, untrack } from 'solid-js';
 
 import { getActiveState } from '@/devtools-panel/store/game-state';
 import type { ContainerType } from '@/shared/json-safe';
 import { getJsonType, getKeyLabel, getPathValue, isContainerType } from '@/shared/json-safe';
-import type { Path } from '@/shared/shared-types';
+import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',
@@ -28,11 +28,13 @@ function needsBracketNotation(propertyName: string | number): boolean {
   return !validIdentifier.test(propertyName);
 }
 
-function getParentType(state: unknown, path: Path, index: number): ContainerType {
+function getParentType(state: JSONSafeValue, path: Path, index: number): ContainerType {
   const type = getJsonType(getPathValue(state, path.slice(0, index)));
   if (isContainerType(type)) return type;
   return typeof path[index] === 'number' ? 'array' : 'object';
 }
+
+const Passthrough = (p: { children: JSX.Element }) => p.children;
 
 interface Props {
   path: Path;
@@ -97,14 +99,14 @@ export function PrettyPath(props: Props) {
     });
   });
 
+  // oxlint-disable-next-line solid/reactivity
+  const Wrapper = dynamic(() => (props.class ? 'span' : Passthrough));
+
   const isContainer = () =>
     untrack(() => isContainerType(getJsonType(getPathValue(getActiveState(), props.path))));
 
   return (
-    <Dynamic
-      component={props.class ? 'span' : (p: { children: JSX.Element }) => p.children}
-      class={props.class}
-    >
+    <Wrapper class={props.class}>
       <Show when={props.statePrefix}>
         <span class={colorClasses.pathRoot}>State</span>
       </Show>
@@ -115,7 +117,7 @@ export function PrettyPath(props: Props) {
         <span class={colorClasses.pathDot}>.</span>
         <span class={colorClasses.glob}>*</span>
       </Show>
-    </Dynamic>
+    </Wrapper>
   );
 }
 
