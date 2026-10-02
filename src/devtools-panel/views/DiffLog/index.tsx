@@ -7,15 +7,13 @@ import { sameItems } from '../../utils/same-items';
 import { DiffFrame } from './DiffFrame';
 import { hasVisibleEntries } from './frame-entries';
 
-const MAX_FRAMES = 30;
-
 export function DiffLog() {
   const onContextMenu = createContextMenuHandler([
     { label: 'Clear Diff Log', onClick: () => clearDiffFrames() },
     { label: 'Clear All Filters', onClick: () => clearFilteredPaths() },
   ]);
 
-  const frames = createMemo(() => getDiffFrames().filter(hasVisibleEntries).slice(0, MAX_FRAMES), {
+  const frames = createMemo(() => getDiffFrames().filter(hasVisibleEntries), {
     equals: sameItems,
   });
 

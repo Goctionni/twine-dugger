@@ -169,7 +169,7 @@ describe('game state', () => {
         createHistoryEffects();
         onTestFinished(dispose);
       });
-      onTestFinished(() => setSetting('diffLog.maxHistorySlices', 50));
+      onTestFinished(() => setSetting('diffLog.maxHistorySlices', 30));
       const game = createGame({ hp: 10 });
       startGameState(game.state());
       flush();

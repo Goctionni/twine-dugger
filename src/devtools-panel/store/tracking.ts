@@ -18,7 +18,7 @@ async function load({ state, passage }: InitUpdate, isReload: boolean) {
 }
 
 export async function startTrackingFrames() {
-  let timeout: ReturnType<typeof setTimeout> | undefined;
+  let timeout = 0;
   let stopped = false;
   setConnectionState('loading-game');
 
@@ -39,9 +39,11 @@ export async function startTrackingFrames() {
         setConnectionState('error');
         return;
       }
-      timeout = setTimeout(poll, Math.max(0, getPollingInterval() - (Date.now() - started)));
+      const elapsed = Date.now() - started;
+      const delay = Math.max(0, getPollingInterval() - elapsed);
+      timeout = setTimeout(poll, delay);
     };
-    timeout = setTimeout(poll, getPollingInterval());
+    poll();
   } catch {
     setConnectionState('error');
   }

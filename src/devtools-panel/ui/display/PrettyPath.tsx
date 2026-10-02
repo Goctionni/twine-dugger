@@ -110,8 +110,13 @@ export function PrettyPath(props: Props) {
   // oxlint-disable-next-line solid/reactivity
   const Wrapper = dynamic(() => (props.class ? 'span' : Passthrough));
 
-  const isContainer = () =>
-    untrack(() => isContainerType(getJsonType(getPathValue(getActiveState(), props.path))));
+  const isContainer = () => {
+    return untrack(() => {
+      const container = getPathValue(getActiveState(), props.path);
+      const jsonType = getJsonType(container);
+      return isContainerType(jsonType);
+    });
+  };
 
   return (
     <Wrapper class={props.class}>

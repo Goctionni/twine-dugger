@@ -19,7 +19,7 @@ const getGlobalSettingsKey = () => `${LS_PREFIX}settings`;
 const defaultSettings: Settings = {
   'diffLog.fontSize': 14,
   'diffLog.pollingInterval': 200,
-  'diffLog.maxHistorySlices': 50,
+  'diffLog.maxHistorySlices': 30,
   'diffLog.headingStyle': 'default',
   'state.propertyOrder': 'type',
   'state.propertyOrderDesc': false,

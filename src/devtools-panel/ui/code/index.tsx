@@ -54,7 +54,10 @@ export function Code(props: PassageCodeProps) {
     },
   );
 
-  const html = createMemo(() => (highlighter()?.toHtml ?? escapeHtml)(localCode()));
+  const html = createMemo(() => {
+    const escape = highlighter()?.toHtml ?? escapeHtml;
+    return escape(localCode());
+  });
 
   const handleScroll = () => {
     if (preRef && textareaRef) {
