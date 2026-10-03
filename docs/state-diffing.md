@@ -1,15 +1,15 @@
 # State Diffing Model
 
-The diff engine (`src/content-script/util/differ.ts`) computes changes between **last** and **current** state:
+Changes to the game state are tracked as **deltas** in the format of
+[`jsondiffpatch`](https://github.com/benjamine/jsondiffpatch).
 
-- Supports primitives, arrays, objects, Maps, Sets, and functions (functions treated as equal when both are functions).
-- Uses identity hints from `getPotentialId` to match array/object entries when possible.
-- Emits a list of **Diff** items with types like:
-  - `add` / `remove` / `update`
-  - `type-changed`
-  - `map-*`, `set-*` for Map/Set operations
-  - Primitive updates: `{ type: 'string' | 'number' | 'boolean', path, oldValue, newValue }`
+The content script keeps the last seen state and, each time the panel polls, returns the delta between
+that state and the live one. To make this possible the live state is first converted to JSON safe values
+(Maps, Sets, functions and Dates are represented by marked values, see `src/shared/json-safe.ts`).
+Array items are matched by identity where the game provides it, so reordering and insertion don't show
+up as rewrites of the whole array.
 
-The content script caches **lastState** and exposes `getDiffs()` which returns `{ passage, diffs }` and updates the cache.
+The panel applies each delta to its own copy of the state and keeps the deltas as its history. Earlier
+states are reconstructed by undoing deltas, and the diff log shows each delta as a list of changes.
 
-See shared types in `src/shared/shared-types.ts` for the full `Diff`, `Path`, `Value` model.
+See `src/shared/shared-types.ts` for the shared types.

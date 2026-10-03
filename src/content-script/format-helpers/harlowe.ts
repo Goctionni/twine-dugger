@@ -4,21 +4,16 @@ import type {
   FormatPassage,
   HarloweGlobals,
   HarloweGlobalsMacroFramework,
-  ObjectValue,
   PassageData,
   Path,
-  Value,
 } from '@/shared/shared-types';
 
-import { getDiffer as getDifferBase } from '../util/differ';
-import { isObj } from '../util/type-helpers';
 import {
   deleteFromState,
   duplicateStateProperty,
   setState as setStateBase,
   getPassageData as getPassageDataBase,
 } from './shared';
-import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
 const harloweSchema = type({
@@ -44,46 +39,18 @@ const harlowe = (): HarloweGlobals['__HarloweInternals'] => {
   };
 };
 
-function sanitize(obj: ObjectValue) {
-  const result: ObjectValue = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (key.startsWith('TwineScript_')) continue;
-    if (isObj(value) && Object.keys(value).some((subkey) => subkey.startsWith('TwineScript_')))
-      continue;
-    result[key] = value;
-  }
-  return result;
-}
-
-function ignoreCheck(key: unknown, value: Value) {
-  if (typeof key === 'string' && key.startsWith('TwineScript_')) return true;
-  if (
-    value &&
-    typeof value === 'object' &&
-    Object.keys(value).some((key) => key.startsWith('TwineScript_'))
-  ) {
-    return true;
-  }
-  return false;
-}
-
 const detect = () => harloweSchema.allows(window);
-const getBaseState = () => harlowe().state.variables;
-const setState = (path: Path, value: unknown) => setStateBase(getBaseState(), path, value);
-const { processDiffs, setPathLock } = createPropertyLocker(getBaseState, setState);
-
+const getRawState = () => harlowe().state.variables;
+const setState = (path: Path, value: unknown) => setStateBase(getRawState(), path, value);
 export default {
   detect,
-  getState: () => sanitize(getBaseState()),
-  getDiffer: () => getDifferBase(ignoreCheck),
+  getRawState,
   setState,
-  duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
-    duplicateStateProperty(getBaseState(), parentPath, sourceKey, targetKey),
-  deleteFromState: (path) => deleteFromState(getBaseState(), path),
+  duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
+    return duplicateStateProperty(getRawState(), parentPath, sourceKey, targetKey);
+  },
+  deleteFromState: (path) => deleteFromState(getRawState(), path),
   getPassage: () => harlowe().state.passage,
-  setStatePropertyLock: setPathLock,
-  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
-  processDiffs,
   goToPassage: (passageName) => harlowe().engine.goToPassage(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
   getPassageData,

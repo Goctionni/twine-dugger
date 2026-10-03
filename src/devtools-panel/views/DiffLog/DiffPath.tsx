@@ -1,4 +1,4 @@
-import { isPathFiltered } from '@/devtools-panel/store';
+import { isPathFiltered } from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import type { Path } from '@/shared/shared-types';
 
@@ -9,17 +9,13 @@ export function DiffPath(props: {
   onClick: () => void;
   onAddFilter: (path: Path) => void;
   action?: 'added' | 'removed';
-  leafKey?: Path[number];
 }) {
-  const fullPath = () =>
-    props.leafKey === undefined ? props.path : [...props.path, props.leafKey];
-
   const onContextMenu = createContextMenuHandler(
-    getParentPaths(fullPath()).map((path) => ({
+    // oxlint-disable-next-line solid/reactivity
+    getParentPaths(props.path).map((path) => ({
       label: () => (
         <>
-          Filter out changes to "
-          <PrettyPath path={path} class="font-mono" globSuffix />"
+          Filter out changes to "<PrettyPath path={path} class="font-mono" globSuffix />"
         </>
       ),
       onClick: () => props.onAddFilter(path),
@@ -33,7 +29,7 @@ export function DiffPath(props: {
       onClick={() => props.onClick()}
       class="cursor-pointer hover:underline"
     >
-      <PrettyPath path={fullPath()} action={props.action} />
+      <PrettyPath path={props.path} action={props.action} />
     </code>
   );
 }

@@ -1,6 +1,6 @@
 import javascriptLangDef from '@shikijs/langs/javascript';
 import clsx from 'clsx';
-import { createEffect, createSignal, onCleanup, untrack } from 'solid-js';
+import { createEffect, createMemo, createSignal } from 'solid-js';
 import type { IRawGrammar } from 'vscode-textmate';
 
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
@@ -29,8 +29,7 @@ interface PassageCodeProps {
 
 export function Code(props: PassageCodeProps) {
   const [autoSave, setAutoSave] = createSignal(false);
-  const [localCode, setLocalCode] = createSignal(untrack(() => props.code));
-  const [html, setHtml] = createSignal('');
+  const [localCode, setLocalCode] = createSignal(() => props.code);
   const [highlighter, setHighlighter] = createSignal<Awaited<
     ReturnType<typeof createHighlighter>
   > | null>(null);
@@ -38,29 +37,26 @@ export function Code(props: PassageCodeProps) {
   let textareaRef!: HTMLTextAreaElement;
   let preRef!: HTMLPreElement;
 
-  // Sync state if external code prop changes
-  createEffect(() => setLocalCode(props.code));
-
   // Initialize the highlighter
-  createEffect(() => {
-    const format = props.format ?? 'sugarcube';
-    createHighlighter({
-      registry: createRegistry([
-        harloweLangDef as unknown as IRawGrammar,
-        sugarcubeLangDef as unknown as IRawGrammar,
-        chapbookLangDef as unknown as IRawGrammar,
-        snowmanLangDef as unknown as IRawGrammar,
-        ...(javascriptLangDef as unknown as IRawGrammar[]),
-      ]),
-      scope: formatDict[format.toLowerCase()] ?? sugarcubeLangDef.scopeName,
-    }).then(setHighlighter);
-  });
+  createEffect(
+    () => props.format ?? 'sugarcube',
+    (format) => {
+      createHighlighter({
+        registry: createRegistry([
+          harloweLangDef as unknown as IRawGrammar,
+          sugarcubeLangDef as unknown as IRawGrammar,
+          chapbookLangDef as unknown as IRawGrammar,
+          snowmanLangDef as unknown as IRawGrammar,
+          ...(javascriptLangDef as unknown as IRawGrammar[]),
+        ]),
+        scope: formatDict[format.toLowerCase()] ?? sugarcubeLangDef.scopeName,
+      }).then(setHighlighter);
+    },
+  );
 
-  // Update the highlighted HTML when code changes
-  createEffect(() => {
-    const h = highlighter();
-    const format = h?.toHtml ?? escapeHtml;
-    setHtml(format(localCode()));
+  const html = createMemo(() => {
+    const escape = highlighter()?.toHtml ?? escapeHtml;
+    return escape(localCode());
   });
 
   const handleScroll = () => {
@@ -102,18 +98,16 @@ export function Code(props: PassageCodeProps) {
 
   const hasChanges = () => localCode() !== props.code;
 
-  createEffect(() => {
-    const onSave = props.onSave;
-    if (!autoSave() || !onSave) return;
+  createEffect(
+    () => ({ onSave: props.onSave, autoSave: autoSave(), code: localCode() }),
+    ({ onSave, autoSave, code }) => {
+      if (!autoSave || !onSave) return;
+      if (code === props.code) return;
 
-    // oxlint-disable-next-line solid/reactivity -- snapshot debounced in createEffect
-    const code = localCode();
-    const savedCode = untrack(() => props.code);
-    if (code === savedCode) return;
-
-    const timeout = setTimeout(() => onSave(code), 2500);
-    onCleanup(() => clearTimeout(timeout));
-  });
+      const timeout = setTimeout(() => onSave(code), 2500);
+      return () => clearTimeout(timeout);
+    },
+  );
 
   return (
     <div class="flex h-full w-full flex-col">
@@ -128,7 +122,7 @@ export function Code(props: PassageCodeProps) {
             'absolute inset-0 h-full w-full cursor-auto resize-none overflow-auto bg-transparent text-transparent caret-white outline-none',
             sharedClasses,
           )}
-          spellcheck={false}
+          spellcheck="false"
           autocapitalize="off"
           autocomplete="off"
           autocorrect="off"

@@ -1,19 +1,16 @@
-import { createEffect, createSignal, Show } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 
-import { setState, setStatePropertyLock } from '@/devtools-panel/api/api';
-import {
-  addLockPath,
-  createGetViewState,
-  getActiveState,
-  getLockedPaths,
-  removeLockPath,
-} from '@/devtools-panel/store';
+import { setState } from '@/devtools-panel/api/api';
+import { getActiveState } from '@/devtools-panel/store/game-state';
+import { getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
+import { createGetViewState } from '@/devtools-panel/store/store';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
 import { StringInput } from '@/devtools-panel/ui/inputs/StringInput';
-import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
+import { isPathEditable } from '../editable';
 import { getLockStatus } from '../lock-helper';
 
 interface StateStringInputProps {
@@ -21,24 +18,22 @@ interface StateStringInputProps {
 }
 
 export function StateStringInput(props: StateStringInputProps) {
-  const getHistoryId = createGetViewState('state', 'historyId');
+  const getHistoryRef = createGetViewState('state', 'historyRef');
 
   const currentValue = () => {
     const activeState = getActiveState();
     if (!activeState) return '';
-    const pathValue = getObjectPathValue(activeState, props.path);
+    const pathValue = getPathValue(activeState, props.path);
     return typeof pathValue === 'string' ? pathValue : '';
   };
 
   const getPath = () => props.path;
-  const isReadOnly = () => getHistoryId() !== -1; // Not on latest
+  const isReadOnly = () => getHistoryRef() !== 'latest';
   const lockStatus = () => getLockStatus(getPath, getLockedPaths);
-  const isDisabled = () => lockStatus() !== 'unlocked' || isReadOnly();
+  const isDisabled = () =>
+    lockStatus() !== 'unlocked' || isReadOnly() || !isPathEditable(props.path);
 
-  const [localValue, setLocalValue] = createSignal(currentValue());
-
-  // Sync local value when current value changes
-  createEffect(() => setLocalValue(currentValue()));
+  const [localValue, setLocalValue] = createSignal(currentValue);
 
   const handleSave = async () => {
     try {
@@ -60,13 +55,8 @@ export function StateStringInput(props: StateStringInputProps) {
   };
 
   const handleToggleLock = () => {
-    if (lockStatus() === 'locked') {
-      removeLockPath(props.path);
-      setStatePropertyLock(props.path, false);
-    } else if (lockStatus() === 'unlocked') {
-      addLockPath(props.path);
-      setStatePropertyLock(props.path, true);
-    }
+    if (lockStatus() === 'locked') setPathLock(props.path, false);
+    else if (lockStatus() === 'unlocked') setPathLock(props.path, true);
   };
 
   const hasChanges = () => localValue() !== currentValue();

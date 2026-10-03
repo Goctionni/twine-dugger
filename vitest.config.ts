@@ -1,20 +1,21 @@
 import { resolve } from 'node:path';
 
-import solid from 'vite-plugin-solid';
-import { defineConfig } from 'vite-plus';
+import solidPlugin from '@solidjs/vite-plugin';
+import { defineConfig, type PluginOption } from 'vite-plus';
 
 export default defineConfig({
-  plugins: [solid({ hot: false })],
+  plugins: [solidPlugin({ hot: false }) as PluginOption],
   resolve: {
     conditions: ['development', 'browser'],
     alias: {
-      '@': resolve(__dirname, 'src'),
-      '@panel': resolve(__dirname, 'src/devtools-panel'),
-      '@content': resolve(__dirname, 'src/content-script'),
+      '@': resolve(import.meta.dirname, 'src'),
+      '@panel': resolve(import.meta.dirname, 'src/devtools-panel'),
+      '@content': resolve(import.meta.dirname, 'src/content-script'),
     },
   },
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: ['tests/e2e/**'],
+    sequence: { shuffle: true },
   },
 });

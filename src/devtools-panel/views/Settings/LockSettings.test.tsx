@@ -2,26 +2,22 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { setStatePropertyLock, setStatePropertyLocks } from '@/devtools-panel/api/api';
-import { clearLockPaths, getLockedPaths, removeLockPath } from '@/devtools-panel/store';
+import { clearLocks, getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
 
 import { LockSettings } from './LockSettings';
 
-vi.mock('@/devtools-panel/store', () => ({
+vi.mock('@/devtools-panel/store/locks', () => ({
   getLockedPaths: vi.fn(() => [
     ['state', 'z', 'score'],
     ['state', 'a', 'name'],
   ]),
-  removeLockPath: vi.fn(),
-  clearLockPaths: vi.fn(),
+  setPathLock: vi.fn(),
+  clearLocks: vi.fn(),
+}));
+vi.mock('@/devtools-panel/store/game-state', () => ({
   getActiveState: vi.fn(() => ({
     state: { a: { name: 'test', inventory: [] }, z: { score: 10 } },
   })),
-}));
-
-vi.mock('@/devtools-panel/api/api', () => ({
-  setStatePropertyLock: vi.fn(),
-  setStatePropertyLocks: vi.fn(),
 }));
 
 describe('LockSettings', () => {
@@ -40,8 +36,7 @@ describe('LockSettings', () => {
     const [button] = screen.getAllByRole('button', { name: 'Unlock' });
     await user.click(button!);
 
-    expect(setStatePropertyLock).toHaveBeenCalledWith(['state', 'a', 'name'], false);
-    expect(removeLockPath).toHaveBeenCalledWith(['state', 'a', 'name']);
+    expect(setPathLock).toHaveBeenCalledWith(['state', 'a', 'name'], false);
   });
 
   it('Calls methods to clear locks when Clear all is clicked', async () => {
@@ -50,14 +45,15 @@ describe('LockSettings', () => {
 
     await user.click(screen.getByRole('button', { name: 'Clear all' }));
 
-    expect(setStatePropertyLocks).toHaveBeenCalledWith([]);
-    expect(clearLockPaths).toHaveBeenCalled();
+    expect(clearLocks).toHaveBeenCalled();
   });
 
   it('If no locks exist, clear button is disabled', async () => {
     vi.mocked(getLockedPaths).mockReturnValue([]);
     render(() => <LockSettings />);
 
-    expect(screen.getByRole('button', { name: 'Clear all' })).toBeDisabled();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Clear all' }).disabled).toBe(
+      true,
+    );
   });
 });

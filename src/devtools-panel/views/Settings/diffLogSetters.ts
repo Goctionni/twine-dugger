@@ -1,4 +1,4 @@
-import { setSetting } from '@/devtools-panel/store';
+import { setSetting } from '@/devtools-panel/store/store';
 
 function createValidatingSetter<T>(setter: (v: T) => void, validator: (v: T) => boolean) {
   return (value: T) => (validator(value) ? setter(value) : undefined);

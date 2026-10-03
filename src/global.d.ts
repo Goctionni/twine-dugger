@@ -2,10 +2,11 @@ import '@types/firefox-webext-browser';
 import '@types/chrome';
 import type {
   FormatPassage,
+  Lock,
+  JSONSafeValue,
   ObjectValue,
   PassageData,
   Path,
-  TooltipValue,
   UpdateResult,
 } from '@/shared/shared-types';
 
@@ -24,8 +25,7 @@ declare global {
   interface Window {
     TwineDugger: {
       getPassageData: () => PassageData[];
-      getUpdates: () => UpdateResult;
-      getState: () => { passage: string; state: ObjectValue };
+      getUpdates: (full?: boolean) => UpdateResult;
       setState: (path: Path, value: unknown) => void;
       deleteFromState: (path: Path) => void;
       duplicateStateProperty: (
@@ -33,25 +33,12 @@ declare global {
         sourceKey: string | number,
         targetKey?: string | null,
       ) => void;
-      setStatePropertyLock: (path: Path, lock: boolean) => Path[];
-      setStatePropertyLocks: (paths: Path[]) => void;
+      setStatePropertyLocks: (locks: Lock[]) => void;
       goToPassage: (passageName: string) => void;
       setPassage: (passage: FormatPassage) => void;
-      utils: {
-        jsonReplacer(key: string, value: any): any;
-        jsonReviver(key: string, value: any): any;
-      };
     };
   }
   interface ErrorConstructor {
     isError(value: unknown): value is Error;
-  }
-}
-
-declare module 'solid-js' {
-  namespace JSX {
-    interface Directives {
-      tooltip: TooltipValue;
-    }
   }
 }

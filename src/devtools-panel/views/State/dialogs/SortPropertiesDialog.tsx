@@ -70,7 +70,7 @@ export function SortPropertiesDialog(props: Props) {
         <For each={primarySortOptions}>
           {(option) => (
             <label
-              use:tooltip={option.tooltip}
+              ref={tooltip(() => option.tooltip)}
               class={clsx(
                 `group cursor-pointer select-none`,
                 `flex items-center gap-3`,
@@ -102,7 +102,7 @@ export function SortPropertiesDialog(props: Props) {
       <fieldset class="mb-5 grid grid-cols-2 gap-2">
         <legend class="sr-only">Direction</legend>
         <label
-          use:tooltip="Sort in ascending order"
+          ref={tooltip(() => 'Sort in ascending order')}
           class={clsx(
             `group cursor-pointer select-none`,
             `flex items-center gap-3`,
@@ -128,7 +128,7 @@ export function SortPropertiesDialog(props: Props) {
         </label>
 
         <label
-          use:tooltip="Sort in descending order"
+          ref={tooltip(() => 'Sort in descending order')}
           class={clsx(
             `group cursor-pointer select-none`,
             `flex items-center gap-3`,

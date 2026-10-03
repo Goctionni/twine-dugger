@@ -1,10 +1,9 @@
 import { cp } from 'fs/promises';
 import { resolve } from 'path';
 
+import solidPlugin from '@solidjs/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
-import solidJsDevtools from 'solid-devtools/vite';
-import solidPlugin from 'vite-plugin-solid';
-import { defineConfig } from 'vite-plus';
+import { defineConfig, type PluginOption } from 'vite-plus';
 
 import { buildLib } from './build/build-lib.ts';
 import { copyTransform } from './build/copy-transform.ts';
@@ -17,13 +16,7 @@ export default defineConfig({
   staged: { '*': 'vp check --fix' },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
   build: { minify: false, sourcemap: true },
-  plugins: [
-    solidJsDevtools({ autoname: true }),
-    solidPlugin(),
-    tailwindcss(),
-    htmlInsertFontPlugin,
-    mockApiPlugin(),
-  ],
+  plugins: [solidPlugin() as PluginOption, tailwindcss(), htmlInsertFontPlugin, mockApiPlugin()],
   lint: (await import('./oxlint.config.ts')).default,
   fmt: (await import('./oxfmt.config.ts')).default,
   environments: {},
@@ -33,10 +26,10 @@ export default defineConfig({
       const buildResult = await builder.build(builder.environments.client);
 
       if (Array.isArray(buildResult) || !('on' in buildResult)) {
-        buildExtra();
+        return buildExtra();
       } else {
         buildResult.on('event', (e) => {
-          if (e.code === 'BUNDLE_END') buildExtra();
+          if (e.code === 'BUNDLE_END') return buildExtra();
         });
       }
     },
@@ -66,7 +59,7 @@ async function buildExtra() {
     // content-script.js
     buildLib({
       entry: { 'content-script': 'src/content-script/content-script.ts' },
-      deps: { onlyBundle: false, alwaysBundle: ['arktype'] },
+      deps: { onlyBundle: false, alwaysBundle: ['arktype', 'jsondiffpatch'] },
     }),
   ]);
 

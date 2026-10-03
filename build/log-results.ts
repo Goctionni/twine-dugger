@@ -4,6 +4,7 @@ type StyleTextColor = Parameters<typeof styleText>[0] & string;
 
 import { type TsdownBundle } from 'vite-plus/pack';
 
+import { isNonNullish } from '../src/shared/is-nonnullish.ts';
 import { parseRolldownChunk } from './build-lib.ts';
 import { parseCopyResultLogLine, type CopyTransformResult } from './copy-transform.ts';
 
@@ -78,19 +79,23 @@ export function logLines(lines: LogLine[], elapsed: number) {
   }
 }
 
+function logBundleResults(bundles: TsdownBundle[]) {
+  return bundles
+    .flatMap((item) => item.chunks.map((chunk) => parseRolldownChunk(chunk)))
+    .filter(isNonNullish);
+}
+
 export async function logResults(
-  promises: Array<Promise<CopyTransformResult> | Promise<TsdownBundle[]>>,
+  promises: Array<
+    Promise<CopyTransformResult> | Promise<TsdownBundle[] | { bundles: TsdownBundle[] }>
+  >,
 ) {
   const before = Date.now();
   const results = await Promise.all(promises);
   const lines = results.flatMap((result) => {
-    if (Array.isArray(result)) {
-      return result
-        .flatMap((item) => item.chunks.map((chunk) => parseRolldownChunk(chunk)))
-        .filter((value): value is LogLine => !!value);
-    } else {
-      return parseCopyResultLogLine(result);
-    }
+    if ('bundles' in result) return logBundleResults(result.bundles);
+    if (Array.isArray(result)) return logBundleResults(result);
+    return parseCopyResultLogLine(result);
   });
   const elapsed = Date.now() - before;
 

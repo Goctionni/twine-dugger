@@ -1,11 +1,18 @@
-import type { JSX } from 'solid-js';
-import { createMemo, Show } from 'solid-js';
-import { Dynamic } from 'solid-js/web';
+import type { JSX } from '@solidjs/web';
+import { dynamic } from '@solidjs/web';
+import { createMemo, For, Show, untrack } from 'solid-js';
 
-import { getActiveState } from '@/devtools-panel/store';
-import { getObjectPathValue } from '@/shared/get-object-path-value';
-import type { Path } from '@/shared/shared-types';
-import { getSpecificType } from '@/shared/type-helpers';
+import { getActiveState } from '@/devtools-panel/store/game-state';
+import type { ContainerType } from '@/shared/json-safe';
+import {
+  getJsonType,
+  getKeyLabel,
+  getPathValue,
+  isContainerType,
+  isNumberLike,
+  isNumberMapValue,
+} from '@/shared/json-safe';
+import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 const colorClasses = {
   pathRoot: 'text-sky-500',
@@ -28,6 +35,14 @@ function needsBracketNotation(propertyName: string | number): boolean {
   return !validIdentifier.test(propertyName);
 }
 
+function getParentType(parent: JSONSafeValue, slug: string | number): ContainerType {
+  const type = getJsonType(parent);
+  if (isContainerType(type)) return type;
+  return typeof slug === 'number' ? 'array' : 'object';
+}
+
+const Passthrough = (p: { children: JSX.Element }) => p.children;
+
 interface Props {
   path: Path;
   statePrefix?: boolean;
@@ -37,15 +52,17 @@ interface Props {
 }
 
 export function PrettyPath(props: Props) {
-  const chunks = createMemo(() => {
-    const state = getActiveState()!;
-    const lastIndex = props.path.length - 1;
+  const atoms = createMemo(() => {
+    const path = [...props.path];
+    const lastIndex = path.length - 1;
 
-    return props.path
-      .flatMap((slug, index): Array<false | AtomProps> => {
-        const partialPath = props.path.slice(0, index + 1);
-        const parentValue = getObjectPathValue(state, partialPath.slice(0, -1));
-        const parentType = getSpecificType(parentValue);
+    // A path is about the state as it was when the path was made, so how it's written is worked out
+    // once. If a Map is removed later, its keys are still written as the keys of a Map.
+    return untrack(() => {
+      const state = getActiveState();
+      return path.flatMap((slug, index): AtomProps[] => {
+        const parent = getPathValue(state, path.slice(0, index));
+        const parentType = getParentType(parent, slug);
         const leafClass = (index === lastIndex && props.action) || null;
 
         if (parentType === 'object') {
@@ -67,53 +84,53 @@ export function PrettyPath(props: Props) {
           }
           return [{ color: leafClass ?? 'pathRoot', text: slug }];
         }
-        if (parentType === 'array') {
+        if (parentType === 'array' || parentType === 'set') {
           return [
             { color: 'pathBrackets', text: '[' },
-            { color: leafClass ?? 'typeNumber', text: slug },
+            { color: leafClass ?? 'typeNumber', text: getKeyLabel(parentType, slug) },
             { color: 'pathBrackets', text: ']' },
           ];
         }
-        if (parentType === 'map') {
-          const keyNode: AtomProps =
-            typeof slug === 'string'
-              ? { color: leafClass ?? 'typeString', text: `"${slug}"` }
-              : { color: leafClass ?? 'typeNumber', text: slug };
+        const keyNode: AtomProps =
+          typeof slug === 'string' && !(isNumberMapValue(parent) && isNumberLike(slug))
+            ? { color: leafClass ?? 'typeString', text: `"${slug}"` }
+            : { color: leafClass ?? 'typeNumber', text: slug };
 
-          return [
-            { color: 'pathDot', text: '.' },
-            { color: 'typeString', text: 'get' },
-            { color: 'pathBrackets', text: '(' },
-            keyNode,
-            { color: 'pathBrackets', text: ')' },
-          ];
-        }
-        return [];
-      })
-      .filter((v): v is AtomProps => !!v)
-      .map((atomProps) => <PathAtom {...atomProps} />);
+        return [
+          { color: 'pathDot', text: '.' },
+          { color: 'typeString', text: 'get' },
+          { color: 'pathBrackets', text: '(' },
+          keyNode,
+          { color: 'pathBrackets', text: ')' },
+        ];
+      });
+    });
   });
 
-  const isObjectValue = () => {
-    const state = getActiveState()!;
-    const value = getObjectPathValue(state, props.path);
-    return !!value && typeof value === 'object';
+  // oxlint-disable-next-line solid/reactivity
+  const Wrapper = dynamic(() => (props.class ? 'span' : Passthrough));
+
+  const isContainer = () => {
+    return untrack(() => {
+      const container = getPathValue(getActiveState(), props.path);
+      const jsonType = getJsonType(container);
+      return isContainerType(jsonType);
+    });
   };
 
   return (
-    <Dynamic
-      component={props.class ? 'span' : (p: { children: JSX.Element }) => p.children}
-      class={props.class}
-    >
+    <Wrapper class={props.class}>
       <Show when={props.statePrefix}>
         <span class={colorClasses.pathRoot}>State</span>
       </Show>
-      {chunks()}
-      <Show when={props.globSuffix && isObjectValue()}>
+      <For each={atoms()} keyed={false}>
+        {(atom) => <PathAtom {...atom()} />}
+      </For>
+      <Show when={props.globSuffix && isContainer()}>
         <span class={colorClasses.pathDot}>.</span>
         <span class={colorClasses.glob}>*</span>
       </Show>
-    </Dynamic>
+    </Wrapper>
   );
 }
 

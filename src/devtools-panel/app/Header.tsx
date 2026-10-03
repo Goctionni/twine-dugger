@@ -1,4 +1,4 @@
-import { getGameMetaData } from '../store';
+import { getGameMetaData } from '../store/store';
 import { MetaInfo } from '../ui/display/MetaInfo';
 import { Navigation } from './Navigation';
 

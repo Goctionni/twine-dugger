@@ -1,50 +1,43 @@
 import clsx from 'clsx';
-import { createMemo, For } from 'solid-js';
+import { For } from 'solid-js';
 
-import { createGetViewState, getHistoryIds, setViewState } from '../../store';
+import { getHistoryIds, getLatestId } from '../../store/game-state';
+import { createGetViewState, setViewState } from '../../store/store';
 
-interface HistoryNode {
-  text: string;
-  active: boolean;
-  onClick: () => void;
-}
+const getHistoryRef = createGetViewState('state', 'historyRef');
 
 export function HistoryNav() {
-  const getHistoryId = createGetViewState('state', 'historyId');
-
-  const items = createMemo(() => {
-    const historyId = getHistoryId();
-    return getHistoryIds().map((id, index): HistoryNode => {
-      return {
-        text: index === 0 ? 'latest' : `-${index}`,
-        active: id === historyId || (historyId === -1 && index === 0),
-        onClick: () => setViewState('state', 'historyId', index ? id : -1),
-      };
-    });
-  });
-
   return (
     <div class="flex items-center justify-start gap-4 p-2">
       <span class="text-lg font-bold">History slice:</span>
       <ul class="flex items-center justify-center gap-2">
-        <For each={items()}>
-          {(item) => {
-            return (
-              <li>
-                <button class="cursor-pointer" onClick={item.onClick}>
-                  <div
-                    class={clsx('rounded-full px-1 text-xs outline', {
-                      'outline-2 outline-offset-2': item.active,
-                    })}
-                  >
-                    {item.text}
-                  </div>
-                </button>
-              </li>
-            );
-          }}
-        </For>
+        <For each={getHistoryIds()}>{(id) => <HistoryItem id={id} />}</For>
       </ul>
     </div>
+  );
+}
+
+function HistoryItem(props: { id: number }) {
+  const offset = () => getLatestId() - props.id;
+  const active = () => {
+    const ref = getHistoryRef();
+    return ref === props.id || (ref === 'latest' && offset() === 0);
+  };
+
+  return (
+    <li>
+      <button
+        class="cursor-pointer"
+        onClick={() => setViewState('state', 'historyRef', offset() === 0 ? 'latest' : props.id)}
+      >
+        <div
+          class={clsx('rounded-full px-1 text-xs outline', {
+            'outline-2 outline-offset-2': active(),
+          })}
+        >
+          {offset() === 0 ? 'latest' : `-${offset()}`}
+        </div>
+      </button>
+    </li>
   );
 }

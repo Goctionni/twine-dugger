@@ -2,8 +2,6 @@ import { type } from 'arktype';
 
 import type { ChapbookGlobals, FormatPassage, Path, Value } from '@/shared/shared-types';
 
-import { getDiffer as getDifferBase } from '../util/differ';
-import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
 const chapbookSchema = type({
@@ -27,16 +25,16 @@ const chapbookSchema = type({
 
 const chapbook = () => chapbookSchema.assert(window);
 
-const getState = () => chapbook().engine.state.saveToObject();
+const getRawState = () => chapbook().engine.state.saveToObject();
 const setState = (path: Path, value: unknown) => chapbook().engine.state.set(path.join('.'), value);
 
-const { processDiffs, setPathLock } = createPropertyLocker(getState, setState);
-
 export default {
-  getDiffer: () => getDifferBase(),
-  detect: () =>
-    chapbookSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata'),
-  getState,
+  detect: () => {
+    return (
+      chapbookSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata')
+    );
+  },
+  getRawState,
   getPassage: () => chapbook().engine.state.get('passage.name') as string,
   setState,
   duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
@@ -68,7 +66,7 @@ export default {
     const parentPath = path.slice(0, -1);
     // If root value
     if (!parentPath.length) {
-      const state = getState();
+      const state = getRawState();
       const copy = { ...state };
       delete copy[deleteKey];
       chapbook().engine.state.restoreFromObject(copy);
@@ -100,9 +98,6 @@ export default {
       chapbook().engine.state.set(parentPath.join('.'), newObj);
     }
   },
-  setStatePropertyLock: setPathLock,
-  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
-  processDiffs,
   goToPassage: (passageName) => chapbook().go(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;

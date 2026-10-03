@@ -1,5 +1,5 @@
-import type { JSX } from 'solid-js';
-import { createSignal, onCleanup, onMount } from 'solid-js';
+import type { JSX } from '@solidjs/web/jsx-runtime';
+import { createSignal, onSettled } from 'solid-js';
 
 import { getPersistedValue, setPersistedValue } from './persistedValue';
 
@@ -41,14 +41,14 @@ export function MovableSplit(props: Interface) {
     setIsDragging(false);
   };
 
-  onMount(() => {
+  onSettled(() => {
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  });
 
-  onCleanup(() => {
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
   });
 
   return (

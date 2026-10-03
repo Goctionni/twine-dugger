@@ -1,4 +1,4 @@
-import type { Path } from '@/shared/shared-types';
+import type { FormatPassage, Lock, Path } from '@/shared/shared-types';
 
 import type * as T from '../api/api';
 
@@ -42,35 +42,18 @@ export async function getGameMetaData(): Return<'getGameMetaData'> {
   });
 }
 
-export async function getState(): Return<'getState'> {
-  return Promise.resolve({
-    passage: '',
-    state: {
-      test: 123,
-      example: 'test',
-    },
-  });
-}
-
-export async function getUpdates(): Return<'getUpdates'> {
-  return Promise.resolve({
-    diffPackage: null,
-    locksUpdate: null,
-  });
+export async function getUpdates(full = false): Return<'getUpdates'> {
+  if (full) {
+    return Promise.resolve({ type: 'init', passage: '', state: { test: 123, example: 'test' } });
+  }
+  return Promise.resolve({ type: 'update', passage: '', delta: undefined, reverts: [] });
 }
 
 export async function setState(_path: Array<string | number>, _value: unknown): Return<'setState'> {
   return Promise.resolve();
 }
 
-export async function setStatePropertyLock(
-  _path: Path,
-  _lock: boolean,
-): Return<'setStatePropertyLock'> {
-  return Promise.resolve([]);
-}
-
-export async function setStatePropertyLocks(_paths: Path[]): Return<'setStatePropertyLocks'> {
+export async function setStatePropertyLocks(_locks: Lock[]): Return<'setStatePropertyLocks'> {
   return Promise.resolve();
 }
 
@@ -92,4 +75,12 @@ export async function getPassageData(): Return<'getPassageData'> {
 
 export async function gotoUrl(_url: string): Return<'gotoUrl'> {
   return Promise.resolve(null);
+}
+
+export async function goToPassage(_passageName: string): Return<'goToPassage'> {
+  return Promise.resolve();
+}
+
+export async function setPassage(_passage: FormatPassage): Return<'setPassage'> {
+  return Promise.resolve();
 }

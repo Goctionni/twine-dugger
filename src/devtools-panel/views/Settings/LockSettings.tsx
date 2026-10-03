@@ -1,7 +1,6 @@
 import { createMemo, For, Show } from 'solid-js';
 
-import { setStatePropertyLock, setStatePropertyLocks } from '@/devtools-panel/api/api';
-import { clearLockPaths, getLockedPaths, removeLockPath } from '@/devtools-panel/store';
+import { clearLocks, getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { sortPaths } from '@/shared/path-sorter';
 import type { Path } from '@/shared/shared-types';
@@ -9,15 +8,10 @@ import type { Path } from '@/shared/shared-types';
 import { btnClass } from '../../ui/util/btnClass';
 
 export function LockSettings() {
-  const onUnlock = (path: Path) => {
-    setStatePropertyLock(path, false);
-    removeLockPath(path);
-  };
+  const onUnlock = (path: Path) => setPathLock(path, false);
 
   const onClearAll = () => {
-    if (!lockedPaths().length) return;
-    setStatePropertyLocks([]);
-    clearLockPaths();
+    if (lockedPaths().length) clearLocks();
   };
 
   const lockedPaths = createMemo(() => sortPaths(getLockedPaths()));

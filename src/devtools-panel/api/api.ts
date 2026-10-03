@@ -1,5 +1,4 @@
-import { jsonReviver } from '@/shared/json-helper';
-import type { FormatPassage, Path } from '@/shared/shared-types';
+import type { FormatPassage, Lock, Path } from '@/shared/shared-types';
 
 import { executeCode, injectContentScript } from './remote-execute';
 import { getGameMetaFn } from './remote-functions/getMetaData';
@@ -8,26 +7,15 @@ export async function getGameMetaData() {
   return executeCode(getGameMetaFn);
 }
 
-export async function getState() {
+export async function getUpdates(full = false) {
   await injectContentScript();
-  return executeCode(() => {
-    if (!('TwineDugger' in window)) return null;
-    return JSON.stringify(window.TwineDugger.getState(), window.TwineDugger.utils.jsonReplacer);
-  }).then((jsonStr) => {
-    if (typeof jsonStr !== 'string') return jsonStr;
-    return JSON.parse(jsonStr, jsonReviver) as ReturnType<Window['TwineDugger']['getState']>;
-  });
-}
-
-export async function getUpdates() {
-  await injectContentScript();
-  return executeCode(() => {
-    if (!('TwineDugger' in window)) return null;
-    return JSON.stringify(window.TwineDugger.getUpdates(), window.TwineDugger.utils.jsonReplacer);
-  }).then((jsonStr) => {
-    if (typeof jsonStr !== 'string') return jsonStr;
-    return JSON.parse(jsonStr, jsonReviver) as ReturnType<Window['TwineDugger']['getUpdates']>;
-  });
+  return executeCode(
+    (full) => {
+      if (!('TwineDugger' in window)) return null;
+      return window.TwineDugger.getUpdates(full);
+    },
+    { args: [full] },
+  );
 }
 
 export async function setState(path: Array<string | number>, value: unknown) {
@@ -45,16 +33,9 @@ export async function setPassage(passage: FormatPassage) {
   return execDuggerFunction('setPassage', [passage]);
 }
 
-export async function setStatePropertyLock(path: Path, lock: boolean) {
+export async function setStatePropertyLocks(locks: Lock[]) {
   await injectContentScript();
-  return execDuggerFunction('setStatePropertyLock', [[...path], lock]);
-}
-
-export async function setStatePropertyLocks(paths: Path[]) {
-  await injectContentScript();
-  return execDuggerFunction('setStatePropertyLocks', [
-    paths.map((path) => path.map((slug) => slug)),
-  ]);
+  return execDuggerFunction('setStatePropertyLocks', [locks]);
 }
 
 export async function duplicateStateProperty(

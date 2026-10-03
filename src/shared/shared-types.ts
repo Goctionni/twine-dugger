@@ -1,6 +1,8 @@
-import type { JSX } from 'solid-js';
+import type { JSX } from '@solidjs/web';
+import { type } from 'arktype';
+import type { Delta } from 'jsondiffpatch';
 
-import type { SpecificType } from './type-helpers';
+import type { TYPE_KEY } from './json-safe';
 
 export type Primitive = string | number | boolean | null | undefined;
 
@@ -12,6 +14,14 @@ export type Value =
   | Map<string | number, Value>
   | Function;
 
+export type JSONSafeValue = Primitive | JSONSafeValue[] | { [key: string]: JSONSafeValue };
+export type JSONSafeArray = JSONSafeValue[];
+export type JSONSafeObject = { [key: string]: JSONSafeValue };
+export type JSONSafeDate = { [TYPE_KEY]: 'Date' } & Record<
+  'Y' | 'M' | 'D' | 'h' | 'm' | 's',
+  number
+>;
+
 export type ObjectValue = { [key: string]: Value };
 
 export type ArrayValue = Value[];
@@ -22,106 +32,35 @@ export type SetValue = Set<Value>;
 
 export type ContainerValue = ObjectValue | ArrayValue | MapValue;
 
-export type Path = Array<string | number>;
+export const pathSchema = type('(string | number)[]');
+export type Path = typeof pathSchema.infer;
 
-export type PropertyFilterKey = SpecificType | 'filtered';
+export type PropertyFilterKey = ValueType | 'filtered';
 
-type DiffGeneric<T extends string> = { type: T; path: Path } & (
-  | { subtype: 'add'; newValue: Value }
-  | { subtype: 'remove'; oldValue: Value }
+export const jsonSafeValueSchema = type(
+  'string | number | boolean | null | object',
+).as<JSONSafeValue>();
+export const lockSchema = type({ path: pathSchema, value: jsonSafeValueSchema });
+export type Lock = typeof lockSchema.infer;
+
+export interface LockRevert {
+  path: Path;
+  attempted: JSONSafeValue;
+}
+
+export type InitUpdate = { type: 'init'; passage: string; state: JSONSafeObject };
+export type DeltaUpdate = {
+  type: 'update';
+  passage: string;
+  delta: Delta;
+  reverts: LockRevert[];
+};
+export type UpdateResult = InitUpdate | DeltaUpdate;
+
+export const valueTypeSchema = type(
+  "'other' | 'null' | 'undefined' | 'object' | 'array' | 'map' | 'set' | 'function' | 'date' | 'string' | 'number' | 'boolean'",
 );
-
-export type DiffObjectMapChange = DiffGeneric<'object' | 'map'> & {
-  key: string | number;
-};
-
-export interface DiffArrayInstruction {
-  type: 'array';
-  subtype: 'instructions';
-  path: Path;
-  instructions: Instruction[];
-}
-
-export type DiffArrayChangeInfo = DiffGeneric<'array'> & { index: number };
-
-export type DiffArrayChange = DiffArrayChangeInfo | DiffArrayInstruction;
-
-export type DiffSetChange = DiffGeneric<'set'>;
-
-export interface DiffPrimitiveUpdate {
-  type: 'string' | 'number' | 'boolean';
-  path: Path;
-  oldValue: Primitive;
-  newValue: Primitive;
-}
-
-export interface DiffTypeChange {
-  type: 'type-changed';
-  path: Path;
-  oldValue: Value;
-  newValue: Value;
-}
-
-export type Diff =
-  | DiffObjectMapChange
-  | DiffArrayChange
-  | DiffSetChange
-  | DiffPrimitiveUpdate
-  | DiffTypeChange;
-
-export type ProcessDiffResult = {
-  diffs: Diff[];
-  locksUpdate: Path[] | null;
-};
-
-type DiffPackage = {
-  passage: string;
-  diffs: Diff[];
-};
-
-export type UpdateResult = {
-  diffPackage: DiffPackage | null;
-  locksUpdate: Path[] | null;
-};
-
-export type ValueType =
-  | 'other'
-  | 'null'
-  | 'undefined'
-  | 'object'
-  | 'array'
-  | 'map'
-  | 'set'
-  | 'function'
-  | 'string'
-  | 'number'
-  | 'boolean';
-
-export type IdentityMap = Map<string | number, Value>;
-
-export type MatchPair = {
-  oldIndex: number;
-  newIndex: number;
-  matchType: 'basic' | 'ref' | 'id' | 'deep' | 'index';
-  doRecursion: boolean;
-};
-
-export type RemoveInstruction = { type: 'remove'; index: number };
-export type AddInstruction = { type: 'add'; index: number; value: Value };
-export type MoveInstruction = { type: 'move'; from: number; to: number };
-export type Instruction = RemoveInstruction | AddInstruction | MoveInstruction;
-
-export interface DiffFrame {
-  timestamp: Date;
-  passage: string;
-  changes: Diff[];
-}
-
-export interface StateFrame {
-  id: number;
-  diffingFrame?: DiffFrame;
-  state: ObjectValue;
-}
+export type ValueType = typeof valueTypeSchema.infer;
 
 export type LockStatus = 'locked' | 'ancestor-lock' | 'unlocked';
 
@@ -137,7 +76,8 @@ export interface ParsedPassageData {
   content: string;
   tags: string[];
 }
-export type PropertyOrder = 'alphabetic' | 'type' | 'most-recent' | 'none';
+export const propertyOrderSchema = type("'alphabetic' | 'type' | 'most-recent' | 'none'");
+export type PropertyOrder = typeof propertyOrderSchema.infer;
 export interface OrderConfig {
   orderBy: PropertyOrder;
   descending: boolean;
@@ -159,6 +99,13 @@ export interface CandidateGameIframes {
   urls: string[];
 }
 
+export interface VersionInfo {
+  major: number | undefined;
+  minor: number | undefined;
+  patch: number | undefined;
+  shortStr: string;
+}
+
 export interface GameMetaData {
   name: string;
   ifId: string;
@@ -176,12 +123,11 @@ export interface GameMetaData {
   };
   format?: {
     name: 'SugarCube' | 'Harlowe' | 'Chapbook' | 'Snowman';
-    version?: {
-      major: number | undefined;
-      minor: number | undefined;
-      patch: number | undefined;
-      shortStr: string;
-    };
+    version?: VersionInfo;
+  };
+  framework?: {
+    name: 'XLowe';
+    version: VersionInfo;
   };
   compiler?: {
     name: string;
@@ -221,7 +167,7 @@ export interface TooltipConfig {
   placement?: Placement | [Placement, ...PlacementOrFallback[]];
   offset?: number;
 }
-export type TooltipContent = string | JSX.Element;
+type TooltipContent = string | JSX.Element;
 export type TooltipValue = TooltipContent | [TooltipContent, TooltipConfig];
 
 export interface FormatPassage {
@@ -308,6 +254,14 @@ export interface HarloweGlobals {
   };
 }
 
+export interface XLoweGlobals {
+  XLowe: {
+    story?: { ifid?: unknown; name?: unknown };
+    framework?: unknown;
+    engine?: unknown;
+  };
+}
+
 export interface HarloweGlobalsMacroFramework {
   Harlowe: {
     API_ACCESS: {
@@ -364,7 +318,7 @@ export interface SnowmanGlobals {
   passage: GenericPassage;
 }
 
-export interface GenericPassage {
+interface GenericPassage {
   id: number;
   name: string;
   source: string;

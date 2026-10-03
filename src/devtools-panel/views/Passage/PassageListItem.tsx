@@ -1,5 +1,5 @@
+import type { JSX } from '@solidjs/web';
 import clsx from 'clsx';
-import type { JSX } from 'solid-js';
 import { For } from 'solid-js';
 
 import { Tag } from '@/devtools-panel/ui/display/Tag';
@@ -9,7 +9,7 @@ interface ListItemProps {
   passageData: ParsedPassageData;
   onClick: () => void;
   active?: boolean;
-  style?: JSX.CSSProperties | undefined;
+  style?: JSX.CSSProperties;
 }
 
 export function PassageListItem(props: ListItemProps) {

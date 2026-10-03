@@ -64,6 +64,11 @@ const allFilters: FilterOption[] = [
     tooltip: 'Show properties of type Function',
   },
   {
+    key: 'date',
+    label: 'Date',
+    tooltip: 'Show properties of type Date',
+  },
+  {
     key: 'other',
     label: 'Other',
     tooltip: 'Show properties of other types',
@@ -102,7 +107,7 @@ export function FilterPropertiesDialog(props: {
         <For each={filters}>
           {(filter) => (
             <label
-              use:tooltip={filter.tooltip}
+              ref={tooltip(() => filter.tooltip)}
               class={clsx(
                 `group cursor-pointer select-none`,
                 `flex items-center gap-2`,

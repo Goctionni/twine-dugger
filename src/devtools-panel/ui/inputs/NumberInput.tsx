@@ -1,5 +1,5 @@
+import type { JSX } from '@solidjs/web';
 import clsx from 'clsx';
-import type { JSX } from 'solid-js';
 
 import { btnClass } from '../util/btnClass';
 import { baseInputClasses } from '../util/common-classes';
@@ -43,7 +43,7 @@ export function NumberInput(props: NumberInputProps) {
         onInput={(e) => safeOnChange(e.target.valueAsNumber)}
         onKeyDown={onKeyDown}
         disabled={props.disabled}
-        readOnly={props.readOnly}
+        readonly={props.readOnly}
         class={clsx(
           baseInputClasses,
           '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',

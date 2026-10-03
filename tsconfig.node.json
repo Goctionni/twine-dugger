@@ -7,6 +7,14 @@
     "allowImportingTsExtensions": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "oxfmt.config.ts", "oxlint.config.ts", "build"],
+  "include": [
+    "vite.config.ts",
+    "oxfmt.config.ts",
+    "oxlint.config.ts",
+    "build",
+    "src/json.d.ts",
+    "src/shared/from-json.ts",
+    "src/shared/is-nonnullish.ts"
+  ],
   "exclude": ["node_modules", "dist", "dist-ff"]
 }

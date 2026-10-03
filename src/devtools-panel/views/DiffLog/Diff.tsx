@@ -1,188 +1,93 @@
+import type { JSX } from '@solidjs/web';
 import { Match, Switch } from 'solid-js';
 
-import type {
-  Diff,
-  DiffArrayChange,
-  DiffArrayChangeInfo,
-  DiffObjectMapChange,
-  DiffPrimitiveUpdate,
-  DiffSetChange,
-  DiffTypeChange,
-  Path,
-  Value,
-} from '@/shared/shared-types';
+import type { Path } from '@/shared/shared-types';
 
-import { addFilteredPath, setViewState } from '../../store';
+import { addFilteredPath, setViewState } from '../../store/store';
+import type { BlockedWrite, DiffChange } from './diff-types';
 import { DiffPath } from './DiffPath';
+import type { Kind } from './MutationBadge';
 import { MutationBadge } from './MutationBadge';
 import { RenderValue } from './RenderValue';
 
-const setPath = (path: Path) => setViewState('state', 'path', [...path]);
+type Change<K extends DiffChange['kind']> = Extract<DiffChange, { kind: K }>;
 
-function DiffItemTypeChanged(props: DiffChangeProps<DiffTypeChange>) {
+interface ChangeLineProps {
+  badge: Kind;
+  path: Path;
+  action?: 'added' | 'removed';
+  goTo?: Path;
+  children?: JSX.Element;
+}
+
+function ChangeLine(props: ChangeLineProps) {
+  const goToPath = () => setViewState('state', 'path', [...(props.goTo ?? props.path)]);
+
   return (
     <div class="whitespace-normal">
-      <MutationBadge kind="typ" />
+      <MutationBadge kind={props.badge} />
       <DiffPath
-        path={props.diff.path}
-        onClick={() => setPath(props.diff.path)}
+        path={props.path}
+        onClick={goToPath}
         onAddFilter={addFilteredPath}
+        action={props.action}
       />
-      <code class="text-white">{': '}</code>
-      <RenderValue value={props.diff.oldValue} />
-      {' → '}
-      <RenderValue value={props.diff.newValue} />
+      {props.children}
     </div>
   );
 }
 
-function DiffPrimitiveChanged(props: DiffChangeProps<DiffPrimitiveUpdate>) {
-  return (
-    <div class="whitespace-normal">
-      <MutationBadge kind="chg" />
-      <DiffPath
-        path={props.diff.path}
-        onClick={() => setPath(props.diff.path)}
-        onAddFilter={addFilteredPath}
-      />
-      <code class="text-white">{': '}</code>
-      <RenderValue value={props.diff.oldValue} />
-      {' → '}
-      <RenderValue value={props.diff.newValue} />
-    </div>
-  );
-}
+const Colon = () => <code class="text-white">{': '}</code>;
 
-function DiffListChanged(props: DiffChangeProps<DiffSetChange | DiffArrayChange>) {
-  const action = () => {
-    if (props.diff.subtype === 'add') return 'added' as const;
-    if (props.diff.subtype === 'remove') return 'removed' as const;
-    return undefined;
-  };
-
-  type AddDiff = (DiffSetChange | DiffArrayChange) & { subtype: 'add'; newValue: Value };
-  type RemoveDiff = (DiffSetChange | DiffArrayChange) & { subtype: 'remove'; oldValue: Value };
+// A change is immutable, so what is read from it here never needs to be tracked
+export function DiffItem(props: { change: DiffChange }) {
+  // oxlint-disable-next-line solid/reactivity
+  const change = props.change;
 
   return (
     <Switch>
-      <Match when={props.diff.subtype === 'instructions'}>
-        <div class="whitespace-normal">
-          <MutationBadge kind="mov" />
-          <DiffPath
-            path={props.diff.path}
-            onClick={() => setPath(props.diff.path)}
-            onAddFilter={addFilteredPath}
-          />
+      <Match when={change.kind === 'chg' || change.kind === 'typ'}>
+        <ChangeLine badge={change.kind === 'typ' ? 'typ' : 'chg'} path={change.path}>
+          <Colon />
+          <RenderValue value={(change as Change<'chg' | 'typ'>).oldValue} />
+          {' → '}
+          <RenderValue value={(change as Change<'chg' | 'typ'>).newValue} />
+        </ChangeLine>
+      </Match>
+      <Match when={change.kind === 'add'}>
+        <ChangeLine badge="add" path={change.path} action="added">
+          <Colon />
+          <RenderValue value={(change as Change<'add' | 'del'>).value} />
+        </ChangeLine>
+      </Match>
+      <Match when={change.kind === 'del'}>
+        <ChangeLine badge="del" path={change.path} goTo={change.path.slice(0, -1)} action="removed">
+          <Colon />
+          <RenderValue value={(change as Change<'add' | 'del'>).value} faded />
+        </ChangeLine>
+      </Match>
+      <Match when={change.kind === 'mov'}>
+        <ChangeLine badge="mov" path={change.path}>
           {' items reordered'}
-        </div>
-      </Match>
-      <Match when={props.diff.subtype === 'add'}>
-        <div class="whitespace-normal">
-          <MutationBadge kind="add" />
-          <DiffPath
-            path={props.diff.path}
-            leafKey={(props.diff as DiffArrayChangeInfo).index}
-            onClick={() => setPath(props.diff.path)}
-            onAddFilter={addFilteredPath}
-            action={action()}
-          />
-          <code class="text-white">{': '}</code>
-          <RenderValue value={(props.diff as AddDiff).newValue} />
-        </div>
-      </Match>
-      <Match when={props.diff.subtype === 'remove'}>
-        <div class="whitespace-normal">
-          <MutationBadge kind="del" />
-          <DiffPath
-            path={props.diff.path}
-            leafKey={(props.diff as DiffArrayChangeInfo).index}
-            onClick={() => setPath(props.diff.path)}
-            onAddFilter={addFilteredPath}
-            action={action()}
-          />
-          <code class="text-white">{': '}</code>
-          <RenderValue value={(props.diff as RemoveDiff).oldValue} faded />
-        </div>
+        </ChangeLine>
       </Match>
     </Switch>
   );
 }
 
-function DiffRecordChanged(props: DiffChangeProps<DiffObjectMapChange>) {
-  const onClick = () => {
-    if (props.diff.subtype === 'add') setPath([...props.diff.path, props.diff.key]);
-    else setPath(props.diff.path);
-  };
-
-  type AddDiff = DiffObjectMapChange & { subtype: 'add'; newValue: Value };
-  type RemoveDiff = DiffObjectMapChange & { subtype: 'remove'; oldValue: Value };
-
+export function BlockedWriteItem(props: { write: BlockedWrite }) {
   return (
-    <Switch>
-      <Match when={props.diff.subtype === 'add'}>
-        <div class="whitespace-normal">
-          <MutationBadge kind="add" />
-          <DiffPath
-            path={props.diff.path}
-            leafKey={props.diff.key}
-            onClick={onClick}
-            onAddFilter={addFilteredPath}
-            action="added"
-          />
-          <code class="text-white">{': '}</code>
-          <RenderValue value={(props.diff as AddDiff).newValue} />
-        </div>
-      </Match>
-      <Match when={props.diff.subtype === 'remove'}>
-        <div class="whitespace-normal">
-          <MutationBadge kind="del" />
-          <DiffPath
-            path={props.diff.path}
-            leafKey={props.diff.key}
-            onClick={onClick}
-            onAddFilter={addFilteredPath}
-            action="removed"
-          />
-          <code class="text-white">{': '}</code>
-          <RenderValue value={(props.diff as RemoveDiff).oldValue} faded />
-        </div>
-      </Match>
-    </Switch>
+    <ChangeLine badge="lock" path={props.write.path}>
+      {' was locked at '}
+      <RenderValue value={props.write.locked} />
+      {', the game tried '}
+      <RenderValue value={props.write.attempted} faded />
+    </ChangeLine>
   );
 }
 
-interface DiffChangeProps<T extends Diff> {
-  diff: T;
-}
-
-export function DiffItem(props: DiffChangeProps<Diff>) {
-  const type = () => {
-    if (props.diff.type !== 'array') return props.diff.type;
-    if (props.diff.subtype !== 'instructions') return props.diff.type;
-    if (props.diff.instructions.some((inst) => inst.type === 'move')) return props.diff.type;
-    return 'hide';
-  };
-  const primitives = ['string', 'number', 'boolean'];
-  return (
-    <Switch>
-      <Match when={type() === 'type-changed'}>
-        <DiffItemTypeChanged diff={props.diff as DiffTypeChange} />
-      </Match>
-      <Match when={primitives.includes(type() as string)}>
-        <DiffPrimitiveChanged diff={props.diff as DiffPrimitiveUpdate} />
-      </Match>
-      <Match when={type() === 'set'}>
-        <DiffListChanged diff={props.diff as DiffSetChange} />
-      </Match>
-      <Match when={type() === 'array'}>
-        <DiffListChanged diff={props.diff as DiffArrayChange} />
-      </Match>
-      <Match when={type() === 'map'}>
-        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} />
-      </Match>
-      <Match when={type() === 'object'}>
-        <DiffRecordChanged diff={props.diff as DiffObjectMapChange} />
-      </Match>
-    </Switch>
-  );
-}
+export const ReloadedItem = () => (
+  <div class="whitespace-normal text-gray-300 italic">
+    Game reloaded: what is below can't be travelled to
+  </div>
+);

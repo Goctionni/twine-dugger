@@ -1,45 +1,36 @@
-import { createScheduled, scheduleIdle } from '@solid-primitives/scheduled';
-import { createEffect, createSignal } from 'solid-js';
+import { createScheduled, scheduleIdle, throttle } from '@solid-primitives/scheduled';
+import { createEffect, createSignal, onCleanup, snapshot } from 'solid-js';
 
-import {
-  createGetViewState,
-  getLatestStateFrame,
-  getNavigationPage,
-  getPassageData,
-} from '@/devtools-panel/store';
-import type { SearchResultsCombined } from '@/shared/shared-types';
+import { getLatestId, getLatestState } from '@/devtools-panel/store/game-state';
+import { getPassageData } from '@/devtools-panel/store/passages';
+import { createGetViewState, getNavigationPage } from '@/devtools-panel/store/store';
+import type { ParsedPassageData, SearchResultsCombined } from '@/shared/shared-types';
 
 import { findPassageMatches, findStateMatches } from './search-utils';
 
-type AbortFn = () => void;
 const EMPTY: SearchResultsCombined = { state: [], passage: [] };
+
+/**
+ * New diffs make the results stale, but a running game changes its state all the time and searching
+ * all of it again for each change would keep the page busy. So the results are refreshed at most
+ * this often. Typing is not held back by it.
+ */
+const REFRESH_MS = 1000;
 
 export function createSearchResults() {
   const getQuery = createGetViewState('search', 'query');
   const scheduleSearch = createScheduled((fn) => scheduleIdle(fn));
 
   const [getSearchResults, setSearchResults] = createSignal<SearchResultsCombined>(EMPTY);
+  let abortCurrent: (() => void) | undefined;
 
-  createEffect((abortPrev: null | AbortFn) => {
-    if (abortPrev) abortPrev();
-
-    // If we're not looking at the search results tab, dont both updating
-    if (getNavigationPage() !== 'search') return null;
-
-    const query = getQuery();
-    const shouldRunSearch = scheduleSearch();
-    const gameState = getLatestStateFrame();
-    if (!query || !gameState) {
-      setSearchResults(EMPTY);
-      return null;
-    }
-    if (!shouldRunSearch) return null;
-
-    const [statePromise, stateAbort] = findStateMatches(gameState.state, query);
-    const [passagePromise, passageAbort] = findPassageMatches(getPassageData(), query);
+  function search(query: string, passages: ParsedPassageData[]) {
+    abortCurrent?.();
+    const [statePromise, stateAbort] = findStateMatches(snapshot(getLatestState()), query);
+    const [passagePromise, passageAbort] = findPassageMatches(passages, query);
 
     let alive = true;
-    const abortCurr = () => {
+    abortCurrent = () => {
       alive = false;
       stateAbort();
       passageAbort('Updated search');
@@ -47,13 +38,42 @@ export function createSearchResults() {
 
     Promise.all([statePromise, passagePromise])
       .then(([state, passage]) => {
-        if (!alive) return;
-        setSearchResults({ state, passage });
+        if (alive) setSearchResults({ state, passage });
       })
       .catch(() => {});
+  }
 
-    return abortCurr;
-  }, null);
+  createEffect(
+    () => ({
+      page: getNavigationPage(),
+      query: getQuery(),
+      shouldRunSearch: scheduleSearch(),
+      passages: getPassageData(),
+    }),
+    ({ page, query, shouldRunSearch, passages }) => {
+      if (page !== 'search') return;
+
+      if (!query) {
+        abortCurrent?.();
+        setSearchResults(EMPTY);
+      } else if (shouldRunSearch) {
+        search(query, passages);
+      }
+    },
+  );
+
+  const refresh = throttle(() => {
+    if (getNavigationPage() === 'search' && getQuery()) search(getQuery(), getPassageData());
+  }, REFRESH_MS);
+
+  createEffect(
+    () => getLatestId(),
+    (_, previousId) => {
+      if (previousId !== undefined) refresh();
+    },
+  );
+
+  onCleanup(() => abortCurrent?.());
 
   return getSearchResults;
 }

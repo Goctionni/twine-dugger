@@ -1,16 +1,15 @@
+import type { JSX } from '@solidjs/web';
 import clsx from 'clsx';
-import type { JSX } from 'solid-js';
 import { createMemo, Match, Switch } from 'solid-js';
 
-import type { ArrayValue, MapValue, ObjectValue, SetValue, Value } from '@/shared/shared-types';
+import { getContainerKeys, getJsonType } from '@/shared/json-safe';
+import type { JSONSafeArray, JSONSafeObject, JSONSafeValue } from '@/shared/shared-types';
 
 import { RenderValue } from './RenderValue';
 
-type ObjectType = ObjectValue | MapValue | ArrayValue | SetValue;
-
 // Public component: reads config via hooks, then renders via an inner, typed Switch
 interface Props {
-  value: ObjectType;
+  value: JSONSafeValue;
   class?: string;
 }
 export function DiffPreview(props: Props) {
@@ -35,7 +34,7 @@ const ELLIPSIS = '…';
 
 type Layout = 'inline' | 'pretty';
 
-type InnerProps<T = Value, Rest = unknown> = {
+type InnerProps<T = JSONSafeValue, Rest = unknown> = {
   value: T;
   remainingDepth: number;
   maxItems: number;
@@ -44,41 +43,39 @@ type InnerProps<T = Value, Rest = unknown> = {
 } & Rest;
 
 function DiffPreviewInner(props: InnerProps): JSX.Element {
+  const type = () => getJsonType(props.value);
   return (
     <Switch>
-      <Match when={!props.value || typeof props.value !== 'object'}>
+      <Match when={type() === 'array'}>
+        <ArraySetPreview {...props} prefix="[" suffix="]" items={props.value as JSONSafeArray} />
+      </Match>
+      <Match when={type() === 'set'}>
+        <ArraySetPreview
+          {...props}
+          prefix="new Set("
+          suffix=")"
+          items={(props.value as JSONSafeArray).slice(1)}
+        />
+      </Match>
+      <Match when={type() === 'map'}>
+        <ObjectMapPreview {...props} prefix="new Map([" suffix="])" type="map" />
+      </Match>
+      <Match when={type() === 'object'}>
+        <ObjectMapPreview {...props} prefix="{" suffix="}" type="object" />
+      </Match>
+      <Match when={true}>
         <RenderValue value={props.value} />
-      </Match>
-      <Match when={Array.isArray(props.value)}>
-        <ArrayPreview {...props} value={props.value as ArrayValue} />
-      </Match>
-      <Match when={props.value instanceof Map}>
-        <MapPreview {...props} value={props.value as MapValue} />
-      </Match>
-      <Match when={props.value instanceof Set}>
-        <SetPreview {...props} value={props.value as SetValue} />
-      </Match>
-      <Match when={isPlainObject(props.value)}>
-        <ObjectPreview {...props} value={props.value as ObjectValue} />
       </Match>
     </Switch>
   );
 }
 
-function ArrayPreview(props: InnerProps<ArrayValue>) {
-  return <ArraySetPreview {...props} prefix="[" suffix="]" />;
-}
-
-function SetPreview(props: InnerProps<SetValue>) {
-  return <ArraySetPreview {...props} prefix="new Set(" suffix=")" value={[...props.value]} />;
-}
-
 function ArraySetPreview(
-  props: InnerProps<ArrayValue, { prefix: string; suffix: string }>,
+  props: InnerProps<JSONSafeValue, { prefix: string; suffix: string; items: JSONSafeArray }>,
 ): JSX.Element {
   const result = createMemo(() => {
-    if (props.remainingDepth <= 0) return <span>{`[Array(${props.value.length})]`}</span>;
-    const items = props.value.slice(0, props.maxItems);
+    if (props.remainingDepth <= 0) return <span>{`[Array(${props.items.length})]`}</span>;
+    const items = props.items.slice(0, props.maxItems);
     const indent = (plus = 1) => '  '.repeat(props.level + plus);
     const output: JSX.Element[] = [props.prefix];
     if (props.layout === 'pretty') output.push(<br />);
@@ -95,12 +92,12 @@ function ArraySetPreview(
           maxItems={props.maxItems}
         />,
       );
-      if (i + 1 < props.value.length) output.push(',');
+      if (i + 1 < props.items.length) output.push(',');
       if (props.layout === 'pretty') output.push(<br />);
     }
-    if (props.value.length > items.length) {
+    if (props.items.length > items.length) {
       if (props.layout === 'pretty') output.push(indent());
-      output.push(`${ELLIPSIS} (${props.value.length - items.length} more items)`);
+      output.push(`${ELLIPSIS} (${props.items.length - items.length} more items)`);
       if (props.layout === 'pretty') output.push(<br />);
     }
     if (props.layout === 'pretty') output.push(indent(0));
@@ -110,25 +107,19 @@ function ArraySetPreview(
   return <>{result()}</>;
 }
 
-function MapPreview(props: InnerProps<MapValue>) {
-  return (
-    <ObjectMapPreview {...props} prefix="new Map([" suffix="])" value={mapToObj(props.value)} />
-  );
-}
-
-function ObjectPreview(props: InnerProps<ObjectValue>) {
-  return <ObjectMapPreview {...props} prefix="{" suffix="}" />;
-}
-
 function ObjectMapPreview(
-  props: InnerProps<ObjectValue, { prefix: string; suffix: string }>,
+  props: InnerProps<JSONSafeValue, { prefix: string; suffix: string; type: 'map' | 'object' }>,
 ): JSX.Element {
   const result = createMemo(() => {
+    const object = props.value as JSONSafeObject;
+    const entries = getContainerKeys(object, props.type).map((key): [string, JSONSafeValue] => [
+      `${key}`,
+      object[key]!,
+    ]);
     if (props.remainingDepth <= 0) {
-      return <span>{`[Object(${Object.keys(props).length} properties)]`}</span>;
+      return <span>{`[Object(${entries.length} properties)]`}</span>;
     }
-    const entries = Object.entries(props.value);
-    const items = entries.slice(0, props.maxItems) as Array<[string, Value]>;
+    const items = entries.slice(0, props.maxItems);
     const indent = (plus = 1) => '  '.repeat(props.level + plus);
     const output: JSX.Element[] = [props.prefix];
     if (props.layout === 'pretty') output.push(<br />);
@@ -162,22 +153,6 @@ function ObjectMapPreview(
   });
 
   return <>{result()}</>;
-}
-
-function mapToObj(map: MapValue) {
-  const obj: ObjectValue = {};
-  for (const [key, value] of map.entries()) {
-    obj[key] = value;
-  }
-  return obj;
-}
-
-function isPlainObject(value: Value) {
-  if (!value || typeof value !== 'object') return false;
-  if (Array.isArray(value)) return false;
-  if (value instanceof Map) return false;
-  if (value instanceof Set) return false;
-  return true;
 }
 
 // -----------------------------------------------------------------------------

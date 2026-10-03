@@ -1,147 +1,146 @@
+import { getJsonType, SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
 import type {
-  ObjectValue,
+  JSONSafeObject,
   ParsedPassageData,
   Path,
   SearchResultState,
-  Value,
 } from '@/shared/shared-types';
-import { isPrimitive } from '@/shared/type-helpers';
 
-type FindResult<T> = [Promise<T[]>, (reason?: string) => void];
+export type FindResult<T> = [Promise<T[]>, (reason?: string) => void];
+
+const SLICE_MS = 8;
+
+/**
+ * Runs `step` until it says there's nothing left to do, giving way to the browser every so often.
+ * Resolves to false when aborted. `step` is cheap, so the clock is only read every few steps.
+ */
+async function runInSlices(signal: AbortSignal, step: () => boolean) {
+  for (let more = true; more;) {
+    const sliceEnd = performance.now() + SLICE_MS;
+    do {
+      for (let steps = 0; steps < 64 && more; steps++) more = step();
+    } while (more && performance.now() < sliceEnd);
+
+    if (more) await scheduler.yield();
+    if (signal.aborted) return false;
+  }
+  return true;
+}
+
+function runSearch<T>(search: (signal: AbortSignal) => Promise<T[]>): FindResult<T> {
+  const abortController = new AbortController();
+  const promise = scheduler.postTask(() => search(abortController.signal), {
+    signal: abortController.signal,
+  });
+  return [promise, (reason?: string) => abortController.abort(reason)];
+}
+
+/**
+ * What is searched for. A case-insensitive regex finds it without making a lowercase copy of every
+ * text that is looked at, which is faster than `toLowerCase().includes()` and doesn't allocate.
+ */
+function createQuery(rawQuery: string) {
+  const regex = new RegExp(rawQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  const number = Number(rawQuery.trim());
+  return {
+    regex,
+    length: rawQuery.length,
+    lowerCase: rawQuery.toLowerCase(),
+    number: Number.isFinite(number) ? number : undefined,
+  };
+}
+type Query = ReturnType<typeof createQuery>;
+
+const NONE = 0;
+const PARTIAL = 1;
+const FULL = 2;
+type MatchKind = typeof NONE | typeof PARTIAL | typeof FULL;
+
+function matchText(text: string, { regex, length }: Query): MatchKind {
+  if (!regex.test(text)) return NONE;
+  return text.length === length ? FULL : PARTIAL;
+}
+
+function matchValue(value: unknown, query: Query): MatchKind {
+  if (typeof value === 'string') return matchText(value, query);
+  if (typeof value === 'number' && query.number !== undefined) {
+    if (value === query.number) return FULL;
+    return String(value).includes(String(query.number)) ? PARTIAL : NONE;
+  }
+  if (typeof value === 'boolean') {
+    return query.lowerCase === String(value) ? FULL : NONE;
+  }
+  return NONE;
+}
 
 export function findPassageMatches(
   data: ParsedPassageData[],
   rawQuery: string,
 ): FindResult<ParsedPassageData> {
-  const query = rawQuery.toLowerCase();
-  const results: ParsedPassageData[] = [];
+  const { regex } = createQuery(rawQuery);
+  const matches = (passage: ParsedPassageData) =>
+    regex.test(passage.name) ||
+    !!passage.tags?.some((tag) => regex.test(tag)) ||
+    regex.test(passage.content);
 
-  const abortController = new AbortController();
-  const signal = abortController.signal;
-
-  const promise = scheduler.postTask(
-    async () => {
-      for (const passage of data) {
-        if (passage.name.toLocaleLowerCase().includes(query)) results.push(passage);
-        else if (passage.tags?.some((tag) => tag.toLocaleLowerCase().includes(query))) {
-          results.push(passage);
-        } else if (passage.content.toLocaleLowerCase().includes(query)) {
-          results.push(passage);
-        }
-        if (signal.aborted) return [];
-        await scheduler.yield();
-      }
-      return results;
-    },
-    { signal: abortController.signal },
-  );
-
-  return [promise, (reason?: string) => abortController.abort(reason)];
+  return runSearch(async (signal) => {
+    const results: ParsedPassageData[] = [];
+    let index = 0;
+    const finished = await runInSlices(signal, () => {
+      const passage = data[index++];
+      if (passage && matches(passage)) results.push(passage);
+      return index < data.length;
+    });
+    return finished ? results : [];
+  });
 }
 
 export function findStateMatches(
-  data: ObjectValue,
+  data: JSONSafeObject,
   rawQuery: string,
 ): FindResult<SearchResultState> {
-  const fullMatches: SearchResultState[] = [];
-  const partialMatches: SearchResultState[] = [];
+  const query = createQuery(rawQuery);
 
-  const abortController = new AbortController();
-  const signal = abortController.signal;
+  return runSearch(async (signal) => {
+    const full: SearchResultState[] = [];
+    const partial: SearchResultState[] = [];
+    const found = (kind: MatchKind, path: Path, value: unknown) => {
+      if (kind !== NONE)
+        (kind === FULL ? full : partial).push({ path, value } as SearchResultState);
+    };
 
-  const promise = scheduler.postTask(async () => {
-    const query = rawQuery.toLowerCase();
-    const qNum = (() => {
-      const n = Number(rawQuery.trim());
-      return Number.isFinite(n) ? n : undefined;
-    })();
+    const stack: Array<[value: unknown, path: Path]> = [[data, []]];
+    const finished = await runInSlices(signal, () => {
+      const [value, path] = stack.pop()!;
+      if (!value || typeof value !== 'object') return stack.length > 0;
 
-    const seen = new WeakSet<object>();
+      const type = getJsonType(value);
+      if (type === 'function' || type === 'date') return stack.length > 0;
 
-    async function visit(val: Value, path: Path) {
-      if (!val || typeof val !== 'object' || signal.aborted) return;
-      if (seen.has(val as object)) return;
-      seen.add(val as object);
+      const children: Array<[unknown, Path]> = [];
+      const visit = (key: string | number, child: unknown, matchKey: boolean) => {
+        const childPath = [...path, key];
+        const valueMatch = matchValue(child, query);
+        const keyMatch = matchKey ? matchText(String(key), query) : NONE;
+        found(Math.max(keyMatch, valueMatch) as MatchKind, childPath, child);
+        if (child && typeof child === 'object') children.push([child, childPath]);
+      };
 
-      if (Array.isArray(val)) {
-        for (let i = 0; i < val.length; i++) {
-          checkValue(val[i], i, path);
-          await visit(val[i], [...path, i]);
-        }
-      } else if (val instanceof Map) {
-        for (const [k, v] of val.entries()) {
-          checkKey(`${k}`, path, v);
-          checkValue(v, k, path);
-          visit(v, [...path, k]);
-        }
-      } else if (val instanceof Set) {
-        let i = 0;
-        for (const v of val) {
-          checkValue(v, i, path);
-          visit(v, [...path, i]);
-          i++;
+      if (Array.isArray(value)) {
+        for (let i = value[0] === SET_MARKER ? 1 : 0; i < value.length; i++) {
+          visit(i, value[i], false);
         }
       } else {
-        const obj = val as { [k: string]: Value };
-        for (const k of Object.keys(obj)) {
-          checkKey(k, path, obj[k]);
-          checkValue(obj[k], k, path);
-          visit(obj[k], [...path, k]);
+        for (const [key, child] of Object.entries(value)) {
+          if (key !== TYPE_KEY) visit(key, child, true);
         }
       }
-      if (signal.aborted) return;
-      await scheduler.yield();
-    }
 
-    function checkKey(key: string, path: Path, value: Value) {
-      const lowerKey = key.toLowerCase();
-      if (lowerKey === query) {
-        fullMatches.push({ path: [...path, key], value });
-      } else if (lowerKey.includes(query)) {
-        partialMatches.push({ path: [...path, key], value });
-      }
-    }
+      // Reversed, so that what is found first in the state is found first in the results
+      stack.push(...children.reverse());
+      return stack.length > 0;
+    });
 
-    function checkValue(v: Value, key: string | number, path: Path) {
-      if (!isPrimitive(v)) return;
-
-      if (typeof v === 'string') {
-        const lowerVal = v.toLowerCase();
-        if (lowerVal === query) {
-          fullMatches.push({ path: [...path, key], value: v });
-        } else if (lowerVal.includes(query)) {
-          partialMatches.push({ path: [...path, key], value: v });
-        }
-      } else if (typeof v === 'number' && qNum !== undefined) {
-        if (v === qNum) {
-          fullMatches.push({ path: [...path, key], value: v });
-        } else if (String(v).includes(String(qNum))) {
-          partialMatches.push({ path: [...path, key], value: v });
-        }
-      } else if (typeof v === 'boolean') {
-        if ((query === 'true' && v) || (query === 'false' && !v)) {
-          fullMatches.push({ path: [...path, key], value: v });
-        }
-      }
-    }
-
-    await visit(data, []);
-    if (signal.aborted) return [];
-    return dedupe([...fullMatches, ...partialMatches]);
+    return finished ? [...full, ...partial] : [];
   });
-
-  return [promise, () => abortController.abort()];
-}
-
-function dedupe(results: SearchResultState[]): SearchResultState[] {
-  const seen = new Set<string>();
-  const dedupedResult: SearchResultState[] = [];
-  for (const result of results) {
-    const key = JSON.stringify(result.path);
-    if (!seen.has(key)) {
-      seen.add(key);
-      dedupedResult.push(result);
-    }
-  }
-  return dedupedResult;
 }

@@ -1,5 +1,3 @@
-import { copy } from '@/shared/copy';
-import { jsonReplacer, jsonReviver } from '@/shared/json-helper';
 import type { UpdateResult } from '@/shared/shared-types';
 
 import chapbookHelpers from './format-helpers/chapbook';
@@ -8,6 +6,8 @@ import { getPassageData } from './format-helpers/shared';
 import snowmanHelpers from './format-helpers/snowman';
 import sugarcubeHelpers from './format-helpers/sugarcube';
 import type { FormatHelpers } from './format-helpers/type';
+import { createLockEnforcer } from './util/locks';
+import { createUpdateTracker } from './util/update-tracker';
 
 const formatHelpers: FormatHelpers[] = [
   sugarcubeHelpers,
@@ -17,52 +17,30 @@ const formatHelpers: FormatHelpers[] = [
 ];
 
 function init() {
+  if (window.TwineDugger) return;
   const formatHelper = formatHelpers.find((helper) => helper.detect());
   if (!formatHelper) return;
 
-  const differ = formatHelper.getDiffer();
-  let lastState = copy(formatHelper.getState(false));
+  const tracker = createUpdateTracker(formatHelper.getRawState);
+  const lockEnforcer = createLockEnforcer(formatHelper.getRawState, formatHelper.setState);
+  let initialized = false;
+
   window.TwineDugger = {
-    utils: {
-      jsonReplacer,
-      jsonReviver,
-    },
-    getState: () => ({
-      passage: formatHelper.getPassage(),
-      state: formatHelper.getState(true),
-    }),
-    getUpdates: (): UpdateResult => {
-      let updates: UpdateResult = { diffPackage: null, locksUpdate: null };
-      const newState = formatHelper.getState(false);
-      let diffs = differ(lastState, newState);
-
-      // If there are no diffs, return an empty response
-      if (!diffs.length) return updates;
-
-      // Process diffs or fallback to noop function
-      const processDiffs = formatHelper.processDiffs ?? (() => ({ diffs, locksUpdate: null }));
-      const result = processDiffs(diffs);
-
-      // Create a copy of the state
-      lastState = copy(newState);
-
-      if (result.diffs.length) {
-        updates.diffPackage = {
-          passage: formatHelper.getPassage(),
-          diffs: result.diffs,
-        };
-      }
-      if (result.locksUpdate) {
-        updates.locksUpdate = result.locksUpdate;
+    getUpdates: (full = false): UpdateResult => {
+      const passage = formatHelper.getPassage();
+      if (full || !initialized) {
+        initialized = true;
+        return { type: 'init', passage, state: tracker.reset() };
       }
 
-      return updates;
+      // Locked values are restored before the state is read, so the changes never show up in the delta
+      const reverts = lockEnforcer.enforce();
+      return { type: 'update', passage, delta: tracker.getDelta(), reverts };
     },
     setState: formatHelper.setState,
     deleteFromState: formatHelper.deleteFromState,
     duplicateStateProperty: formatHelper.duplicateStateProperty,
-    setStatePropertyLock: formatHelper.setStatePropertyLock,
-    setStatePropertyLocks: formatHelper.setStatePropertyLocks,
+    setStatePropertyLocks: lockEnforcer.setLocks,
     getPassageData: formatHelper.getPassageData ?? getPassageData,
     goToPassage: formatHelper.goToPassage,
     setPassage: formatHelper.setPassage,

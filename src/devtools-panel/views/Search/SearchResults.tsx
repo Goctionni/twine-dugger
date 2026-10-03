@@ -2,7 +2,7 @@ import { createMemo, For, Match, Show, Switch } from 'solid-js';
 
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 
-import { createGetViewState, setViewState } from '../../store';
+import { createGetViewState, setViewState } from '../../store/store';
 import { createSearchResults } from './create-searchResults';
 import { PassageResults } from './PassageResults';
 import { StateResults } from './StateResults';
@@ -21,21 +21,12 @@ export function SearchResults() {
 
   const resultTabs = createMemo(() => {
     const { state, passage } = getSearchResults();
-    const activeTab = getResultTab();
-    const tabs: Tab[] = [];
-    if (state.length) {
-      tabs.push({ text: 'State', id: 'state', active: activeTab === 'state', num: state.length });
-    }
-    if (passage.length) {
-      tabs.push({
-        text: 'Passage',
-        id: 'passage',
-        active: activeTab === 'passage',
-        num: passage.length,
-      });
-    }
-    if (!activeTab && tabs[0]) tabs[0].active = true;
-    return tabs;
+    const available: Omit<Tab, 'active'>[] = [];
+    if (state.length) available.push({ text: 'State', id: 'state', num: state.length });
+    if (passage.length) available.push({ text: 'Passage', id: 'passage', num: passage.length });
+
+    const activeId = (available.find((tab) => tab.id === getResultTab()) ?? available[0])?.id;
+    return available.map((tab): Tab => ({ ...tab, active: tab.id === activeId }));
   });
 
   const activeTab = () => resultTabs().find((tab) => tab.active)?.id;

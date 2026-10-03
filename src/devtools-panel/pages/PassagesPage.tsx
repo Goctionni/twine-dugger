@@ -1,13 +1,13 @@
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { createGetViewState, getGameMetaData, getPassageData, setViewState } from '../store';
+import { getPassageData, getSelectedPassage } from '../store/passages';
+import { getGameMetaData, setViewState } from '../store/store';
 import { MovableSplit } from '../ui/util/MovableSplit';
 import { PassageList } from '../views/Passage/PassageList';
 import { PassageView } from '../views/Passage/PassageView';
 
 export function PassagesPage() {
   const format = () => getGameMetaData()?.format;
-  const getSelectedPassage = createGetViewState('passage', 'selected');
   return (
     <MovableSplit
       splitKey="passages-page"
@@ -25,5 +25,5 @@ export function PassagesPage() {
 }
 
 function setSelectedPassage(passage: ParsedPassageData) {
-  setViewState('passage', 'selected', { ...passage });
+  setViewState('passages', 'selected', passage.name);
 }

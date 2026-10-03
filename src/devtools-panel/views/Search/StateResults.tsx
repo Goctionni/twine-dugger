@@ -1,11 +1,11 @@
-import { createVirtualizer } from '@tanstack/solid-virtual';
-import { createSignal, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js';
+import { createSignal, For, Match, onSettled, Show, Switch } from 'solid-js';
 
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
+import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
+import { getJsonType } from '@/shared/json-safe';
 import type { Path, SearchResultState } from '@/shared/shared-types';
-import { getSpecificType } from '@/shared/type-helpers';
 
-import { setNavigationPage, setViewState } from '../../store';
+import { setNavigationPage, setViewState } from '../../store/store';
 import { PrettyPath } from '../../ui/display/PrettyPath';
 import { getPersistedValue, setPersistedValue } from '../../ui/util/persistedValue';
 import { StateBooleanInput } from '../State/StateInputs/StateBooleanInput';
@@ -58,14 +58,12 @@ export function StateResults(props: Props) {
     setIsDragging(false);
   };
 
-  onMount(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  });
-
-  onCleanup(() => {
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
+  onSettled(() => {
+    const listeners = new AbortController();
+    const { signal } = listeners;
+    document.addEventListener('mousemove', handleMouseMove, { signal });
+    document.addEventListener('mouseup', handleMouseUp, { signal });
+    return () => listeners.abort();
   });
 
   return (
@@ -75,7 +73,7 @@ export function StateResults(props: Props) {
           <For each={virtualizer.getVirtualItems()}>
             {(virtualItem) => {
               const result = () => props.results[virtualItem.index]!;
-              const type = () => getSpecificType(result().value);
+              const type = () => getJsonType(result().value);
 
               return (
                 <Show when={result()}>

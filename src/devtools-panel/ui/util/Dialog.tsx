@@ -1,6 +1,6 @@
-import type { JSX } from 'solid-js';
+import type { JSX } from '@solidjs/web';
+import { Portal } from '@solidjs/web';
 import { createEffect } from 'solid-js';
-import { Portal } from 'solid-js/web';
 
 import { TooltipOutlet } from '../display/TooltipOutlet';
 
@@ -16,10 +16,13 @@ export function Dialog(props: Props) {
   const id = `dialog-${Math.random().toString(36)}`;
   let dialog!: HTMLDialogElement;
 
-  createEffect(() => {
-    if (props.open) dialog.showModal();
-    else dialog.close();
-  });
+  createEffect(
+    () => props.open,
+    (open) => {
+      if (open) dialog.showModal();
+      else dialog.close();
+    },
+  );
 
   return (
     <Portal>
@@ -40,7 +43,7 @@ export function Dialog(props: Props) {
           open:opacity-100 open:backdrop:backdrop-blur-xs open:backdrop:backdrop-saturate-50
           starting:open:opacity-0 starting:open:backdrop:backdrop-blur-none starting:open:backdrop:backdrop-saturate-100
         "
-        on:close={() => props.onClose?.()}
+        onClose={() => props.onClose?.()}
       >
         <div
           class="pointer-events-auto absolute m-auto bg-gray-900 px-4 py-2 

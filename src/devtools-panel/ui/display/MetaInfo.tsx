@@ -1,4 +1,4 @@
-import { getGameMetaData } from '../../store';
+import { getGameMetaData } from '../../store/store';
 
 export function MetaInfo() {
   return (
@@ -12,6 +12,14 @@ export function MetaInfo() {
           StoryFormat:{' '}
           <span class="font-medium text-gray-300">
             {getGameMetaData()?.format?.name} {getGameMetaData()?.format?.version?.shortStr}
+          </span>
+        </span>
+      )}
+      {getGameMetaData()?.framework && (
+        <span>
+          Framework:{' '}
+          <span class="font-medium text-gray-300">
+            {getGameMetaData()?.framework?.name} {getGameMetaData()?.framework?.version.shortStr}
           </span>
         </span>
       )}

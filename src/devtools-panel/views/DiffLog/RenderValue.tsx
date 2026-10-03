@@ -2,8 +2,8 @@ import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
 
 import { Tooltip } from '@/devtools-panel/ui/display/Tooltip';
-import type { ObjectValue, Value } from '@/shared/shared-types';
-import { getSpecificType } from '@/shared/type-helpers';
+import { getJsonType } from '@/shared/json-safe';
+import type { JSONSafeValue } from '@/shared/shared-types';
 
 import { DiffPreview } from './DiffPreview';
 
@@ -15,15 +15,12 @@ const colorClasses = {
   typeOther: 'text-purple-300',
 } as const;
 
-export function RenderValue(props: { value: Value; faded?: boolean }) {
+export function RenderValue(props: { value: JSONSafeValue; faded?: boolean }) {
   const fadedCls = () => (props.faded ? 'opacity-60 saturate-50' : '');
-  const type = () => typeof props.value;
   const renderType = () => {
-    const t = type();
+    const t = typeof props.value;
     if (t === 'string' && !props.value) return 'empty';
-    if (t === 'string') return 'string';
-    if (t === 'boolean') return 'boolean';
-    if (t === 'number') return 'number';
+    if (t === 'string' || t === 'boolean' || t === 'number') return t;
     return 'type';
   };
   return (
@@ -47,7 +44,7 @@ export function RenderValue(props: { value: Value; faded?: boolean }) {
 }
 
 interface RenderValueFallbackProps {
-  value: Value;
+  value: JSONSafeValue;
   faded?: boolean;
 }
 
@@ -55,7 +52,7 @@ function RenderValueFallback(props: RenderValueFallbackProps) {
   const fadedCls = () => (props.faded ? 'opacity-60 saturate-50' : '');
 
   const base = () => (
-    <code class={clsx(colorClasses.typeOther, fadedCls())}>{getSpecificType(props.value)}</code>
+    <code class={clsx(colorClasses.typeOther, fadedCls())}>{getJsonType(props.value)}</code>
   );
 
   return (
@@ -72,7 +69,7 @@ function RenderValueFallback(props: RenderValueFallbackProps) {
               {base()}
             </span>
           )}
-          tooltip={<DiffPreview value={props.value as ObjectValue} />}
+          tooltip={<DiffPreview value={props.value} />}
         />
       </Match>
     </Switch>

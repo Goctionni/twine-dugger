@@ -1,8 +1,8 @@
-import { createVirtualizer } from '@tanstack/solid-virtual';
-import { createEffect, For, onCleanup, Show, untrack } from 'solid-js';
+import { For, onCleanup, onSettled, Show, untrack } from 'solid-js';
 
-import { reloadPassagesData } from '@/devtools-panel/store';
+import { reloadPassagesData } from '@/devtools-panel/store/passages';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
+import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
 import { virtualizerScrollToFn } from '@/devtools-panel/utils/virtualizer-scrollto';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
@@ -18,6 +18,7 @@ interface Props {
 
 export function PassageList(props: Props) {
   let scrollElRef: HTMLDivElement | undefined;
+
   const virtualizer = createVirtualizer({
     initialOffset: beforeCleanup?.offset ?? 0,
     getScrollElement: () => scrollElRef ?? null,
@@ -29,18 +30,15 @@ export function PassageList(props: Props) {
     scrollToFn: virtualizerScrollToFn,
   });
 
-  // Only run this once, after the initial render
-  createEffect(() => {
-    untrack(() => {
-      if (!props.selectedPassage) return;
+  // Only run this once, after the initial render, so what it reads is deliberately not tracked
+  onSettled(() => {
+    if (!props.selectedPassage) return;
 
-      const selectedPassageId = props.selectedPassage.id;
-      if (selectedPassageId === beforeCleanup?.passageId) return;
+    const selectedPassageId = props.selectedPassage.id;
+    if (selectedPassageId === beforeCleanup?.passageId) return;
 
-      // If its a different passage, smooth scroll to that passage
-      const index = props.passages.findIndex((passage) => passage.id === selectedPassageId);
-      if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center', behavior: 'smooth' });
-    });
+    const index = props.passages.findIndex((passage) => passage.id === selectedPassageId);
+    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center', behavior: 'smooth' });
   });
 
   onCleanup(() => {

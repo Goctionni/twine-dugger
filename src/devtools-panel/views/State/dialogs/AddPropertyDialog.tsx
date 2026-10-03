@@ -2,11 +2,10 @@ import clsx from 'clsx';
 import { createMemo, createSignal, Show } from 'solid-js';
 
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
-import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { getContainerKeys, getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
-import { getSpecificType } from '@/shared/type-helpers';
 
-import { getActiveState } from '../../../store';
+import { getActiveState } from '../../../store/game-state';
 
 const inputClasses =
   'block px-2 py-1 bg-gray-700 border border-gray-600 text-sm shadow-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500';
@@ -22,26 +21,15 @@ export function AddPropertyDialog(props: {
   const [primitiveValue, setPrimitiveValue] = createSignal<string | number | boolean>('');
 
   // Derive container info from current state and path
-  const containerValue = createMemo(() => {
-    const state = getActiveState();
-    return state ? getObjectPathValue(state, props.path) : null;
-  });
+  const containerValue = createMemo(() => getPathValue(getActiveState(), props.path));
 
-  const containerType = createMemo(() => {
-    const value = containerValue();
-    return getSpecificType(value);
-  });
+  const containerType = createMemo(() => getJsonType(containerValue()));
 
   const existingKeys = createMemo(() => {
     const value = containerValue();
-    if (Array.isArray(value)) {
-      return value.length;
-    } else if (value instanceof Map) {
-      return Array.from(value.keys());
-    } else if (value && typeof value === 'object') {
-      return Object.keys(value);
-    }
-    return [];
+    const type = containerType();
+    if (type === 'array') return (value as unknown[]).length;
+    return isContainerType(type) ? getContainerKeys(value, type) : [];
   });
 
   function getValueFromType(

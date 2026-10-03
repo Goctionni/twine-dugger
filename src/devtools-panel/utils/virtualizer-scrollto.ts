@@ -1,5 +1,5 @@
-import type { Virtualizer, VirtualizerOptions } from '@tanstack/solid-virtual';
-import { elementScroll } from '@tanstack/solid-virtual';
+import type { Virtualizer, VirtualizerOptions } from '@tanstack/virtual-core';
+import { elementScroll } from '@tanstack/virtual-core';
 
 type TVirtualizer = Virtualizer<HTMLDivElement, Element>;
 type TVirtualizerOptions = VirtualizerOptions<HTMLDivElement, Element>;

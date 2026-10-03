@@ -2,9 +2,7 @@ import { type } from 'arktype';
 
 import type { FormatPassage, Path, SnowmanGlobals } from '@/shared/shared-types';
 
-import { getDiffer as getDifferBase } from '../util/differ';
 import { deleteFromState, duplicateStateProperty, setState as setStateBase } from './shared';
-import { createPropertyLocker } from './sharedPropertyLocker';
 import type { FormatHelpers } from './type';
 
 const passageSchema = type({
@@ -30,24 +28,22 @@ const snowmanSchema = type({
 
 const snowman = () => snowmanSchema.assert(window);
 
-const getState = () => snowman().story.state;
-const setState = (path: Path, value: unknown) => setStateBase(getState(), path, value);
-
-const { processDiffs, setPathLock } = createPropertyLocker(getState, setState);
+const getRawState = () => snowman().story.state;
+const setState = (path: Path, value: unknown) => setStateBase(getRawState(), path, value);
 
 export default {
-  getDiffer: () => getDifferBase(),
-  detect: () =>
-    snowmanSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata'),
-  getState,
+  detect: () => {
+    return (
+      snowmanSchema.allows(window) && !!document.querySelector('tw-storydata > tw-passagedata')
+    );
+  },
+  getRawState,
   getPassage: () => snowman().passage.name,
   setState,
-  duplicateStateProperty: (parentPath, sourceKey, targetKey) =>
-    duplicateStateProperty(getState(), parentPath, sourceKey, targetKey),
-  deleteFromState: (path) => deleteFromState(getState(), path),
-  setStatePropertyLock: setPathLock,
-  setStatePropertyLocks: (paths) => paths.forEach((path) => setPathLock(path, true)),
-  processDiffs,
+  duplicateStateProperty: (parentPath, sourceKey, targetKey) => {
+    duplicateStateProperty(getRawState(), parentPath, sourceKey, targetKey);
+  },
+  deleteFromState: (path) => deleteFromState(getRawState(), path),
   goToPassage: (passageName) => snowman().story.show(passageName),
   setPassage: (passage) => createOrUpdatePassage(passage),
 } satisfies FormatHelpers;

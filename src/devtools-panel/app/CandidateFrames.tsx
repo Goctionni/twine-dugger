@@ -1,7 +1,7 @@
-import { Index, Match, Switch } from 'solid-js';
+import { For, Match, Switch } from 'solid-js';
 
 import { gotoUrl } from '../api/api';
-import { getCandidateIframes, setConnectionState } from '../store';
+import { getCandidateIframes, setConnectionState } from '../store/store';
 import { initMeta } from './initMeta';
 function openIframeUrl(url: string) {
   setConnectionState('loading-meta');
@@ -38,8 +38,8 @@ export function Candidates() {
         would give the extension access.
       </p>
       <ul class="mt-4 flex flex-col gap-2">
-        <Index each={urls()}>
-          {(item) => (
+        <For each={urls()}>
+          {(url) => (
             <li class="flex items-center gap-2">
               <button
                 class="
@@ -51,14 +51,14 @@ export function Candidates() {
                   focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-none
                   disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300 disabled:hover:bg-gray-500
                 "
-                onClick={() => openIframeUrl(item())}
+                onClick={() => openIframeUrl(url)}
               >
                 Open
               </button>
-              <code>{item()}</code>
+              <code>{url}</code>
             </li>
           )}
-        </Index>
+        </For>
       </ul>
     </div>
   );

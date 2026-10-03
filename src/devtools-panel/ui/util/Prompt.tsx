@@ -1,46 +1,40 @@
-import type { JSXElement } from 'solid-js';
-import { Show } from 'solid-js';
-import { createStore } from 'solid-js/store';
+import type { JSX } from '@solidjs/web';
+import { createSignal, Show } from 'solid-js';
 
 import { Dialog } from './Dialog';
 
-interface Store {
-  prompt?: {
-    dialogTitle: string;
-    content: JSXElement;
-    reject: () => void;
-  };
+interface PromptState {
+  dialogTitle: string;
+  content: JSX.Element;
+  reject: () => void;
 }
 
-const [store, setStore] = createStore<Store>({});
+const [prompt, setPrompt] = createSignal<PromptState>();
 
-type PromptResolver<T> = (createResolver: (result: T) => void) => JSXElement;
+type PromptResolver<T> = (createResolver: (result: T) => void) => JSX.Element;
 
 export function showPromptDialog<T>(dialogTitle: string, resolver: PromptResolver<T>) {
   return new Promise<T>((resolvePromise, rejectPromise) => {
     const resolve = (result: T) => {
       resolvePromise(result);
-      setStore({ prompt: undefined });
+      setPrompt(undefined);
     };
     const reject = () => {
       rejectPromise();
-      setStore({ prompt: undefined });
+      setPrompt(undefined);
     };
-    setStore({ prompt: { dialogTitle, content: resolver(resolve), reject } });
+    setPrompt({ dialogTitle, content: resolver(resolve), reject });
   });
 }
 
 export function PromptDialogOutlet() {
   return (
-    <Show when={store.prompt}>
-      <Dialog
-        onClose={store.prompt!.reject}
-        open
-        closedby="any"
-        heading={store.prompt!.dialogTitle}
-      >
-        {store.prompt!.content}
-      </Dialog>
+    <Show when={prompt()}>
+      {(current) => (
+        <Dialog onClose={current().reject} open closedby="any" heading={current().dialogTitle}>
+          {current().content}
+        </Dialog>
+      )}
     </Show>
   );
 }

@@ -1,19 +1,15 @@
 import { Show } from 'solid-js';
 
 import { setState } from '@/devtools-panel/api/api';
-import { setStatePropertyLock } from '@/devtools-panel/api/api';
-import {
-  addLockPath,
-  createGetViewState,
-  getActiveState,
-  getLockedPaths,
-  removeLockPath,
-} from '@/devtools-panel/store';
+import { getActiveState } from '@/devtools-panel/store/game-state';
+import { getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
+import { createGetViewState } from '@/devtools-panel/store/store';
 import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
-import { getObjectPathValue } from '@/shared/get-object-path-value';
+import { getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
+import { isPathEditable } from '../editable';
 import { getLockStatus } from '../lock-helper';
 
 interface StateBooleanInputProps {
@@ -21,19 +17,20 @@ interface StateBooleanInputProps {
 }
 
 export function StateBooleanInput(props: StateBooleanInputProps) {
-  const getHistoryId = createGetViewState('state', 'historyId');
+  const getHistoryRef = createGetViewState('state', 'historyRef');
 
   const currentValue = () => {
     const activeState = getActiveState();
     if (!activeState) return false;
-    const pathValue = getObjectPathValue(activeState, props.path);
+    const pathValue = getPathValue(activeState, props.path);
     return typeof pathValue === 'boolean' ? pathValue : false;
   };
 
   const getPath = () => props.path;
-  const isReadOnly = () => getHistoryId() !== -1; // Not on latest
+  const isReadOnly = () => getHistoryRef() !== 'latest';
   const lockStatus = () => getLockStatus(getPath, getLockedPaths);
-  const isDisabled = () => lockStatus() !== 'unlocked' || isReadOnly();
+  const isDisabled = () =>
+    lockStatus() !== 'unlocked' || isReadOnly() || !isPathEditable(props.path);
   const getId = () =>
     getPath()
       .join('_')
@@ -52,13 +49,8 @@ export function StateBooleanInput(props: StateBooleanInputProps) {
   };
 
   const handleToggleLock = () => {
-    if (lockStatus() === 'locked') {
-      setStatePropertyLock(props.path, false);
-      removeLockPath(props.path);
-    } else if (lockStatus() === 'unlocked') {
-      setStatePropertyLock(props.path, true);
-      addLockPath(props.path);
-    }
+    if (lockStatus() === 'locked') setPathLock(props.path, false);
+    else if (lockStatus() === 'unlocked') setPathLock(props.path, true);
   };
 
   return (

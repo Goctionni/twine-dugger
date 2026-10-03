@@ -1,8 +1,11 @@
 import { createMemo, For } from 'solid-js';
 
-import { clearDiffFrames, clearFilteredPaths, getDiffFrames, isPathFiltered } from '../../store';
+import { clearDiffFrames, getDiffFrames } from '../../store/game-state';
+import { clearFilteredPaths } from '../../store/store';
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
+import { sameItems } from '../../utils/same-items';
 import { DiffFrame } from './DiffFrame';
+import { hasVisibleEntries } from './frame-entries';
 
 export function DiffLog() {
   const onContextMenu = createContextMenuHandler([
@@ -10,14 +13,8 @@ export function DiffLog() {
     { label: 'Clear All Filters', onClick: () => clearFilteredPaths() },
   ]);
 
-  const frames = createMemo(() => {
-    return getDiffFrames()
-      .map((frame) => ({
-        ...frame,
-        changes: frame.changes.filter((frameChanges) => !isPathFiltered(frameChanges.path)),
-      }))
-      .filter((frame) => frame.changes.length > 0)
-      .slice(0, 30);
+  const frames = createMemo(() => getDiffFrames().filter(hasVisibleEntries), {
+    equals: sameItems,
   });
 
   return (

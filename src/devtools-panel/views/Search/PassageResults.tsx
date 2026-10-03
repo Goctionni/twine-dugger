@@ -1,12 +1,13 @@
-import { createVirtualizer } from '@tanstack/solid-virtual';
 import { For, Match, Show, Switch } from 'solid-js';
 
 import { setPassage } from '@/devtools-panel/api/api';
 import { Code } from '@/devtools-panel/ui/code';
 import { MovableSplit } from '@/devtools-panel/ui/util/MovableSplit';
+import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { createGetViewState, getGameMetaData, setPassageData, setViewState } from '../../store';
+import { getSelectedPassage, setPassageData } from '../../store/passages';
+import { getGameMetaData, setViewState } from '../../store/store';
 import { PassageHeader } from '../Passage/PassageHeader';
 import { PassageListItem } from '../Passage/PassageListItem';
 
@@ -26,11 +27,10 @@ export function PassageResults(props: Props) {
   });
 
   const onPassageClick = (passage: ParsedPassageData) => {
-    setViewState('passage', 'selected', { ...passage });
+    setViewState('passages', 'selected', passage.name);
   };
 
   const format = () => getGameMetaData()!.format;
-  const getSelectedPassage = createGetViewState('passage', 'selected');
 
   const onSave = (code: string) => {
     const passage = getSelectedPassage();
@@ -38,7 +38,6 @@ export function PassageResults(props: Props) {
     setPassage({ name: passage.name, source: code });
 
     const newPassage: ParsedPassageData = { ...passage, content: code };
-    setViewState('passage', 'selected', newPassage);
     setPassageData((current) => {
       return current.map((oldpassage) => {
         if (oldpassage.id !== passage.id) return oldpassage;
