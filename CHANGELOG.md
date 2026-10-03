@@ -1,5 +1,15 @@
 # twine-dugger
 
+## 1.8.0
+
+### Minor Changes
+
+- 89a01b4: Use jsondiffpatch for state diffing, rebuild the panel store on Solid 2, keep the diff log across game reloads, store locks per game, and speed up the diff log, object navigation and search
+
+### Patch Changes
+
+- 9a0c86a: Get rid of webextension polyfill, fix non-cdp inject for xlowe
+
 ## 1.7.1
 
 ### Patch Changes
