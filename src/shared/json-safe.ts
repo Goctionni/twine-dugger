@@ -64,7 +64,7 @@ export function getPathValue(
 }
 
 export function jsonEqual(a: JSONSafeValue, b: JSONSafeValue): boolean {
-  if (a === b) return true;
+  if (a === b || Object.is(a, b)) return true;
   if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
   if (Array.isArray(a) !== Array.isArray(b)) return false;
 

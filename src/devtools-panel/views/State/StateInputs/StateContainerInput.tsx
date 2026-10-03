@@ -34,10 +34,7 @@ export function StateContainerInput(props: StateContainerInputProps) {
       const value = props.getValue();
       const type = props.getType();
       const keys = getContainerKeys(value, type);
-      const sorted =
-        type === 'object' || type === 'map'
-          ? createSorter(value, getPropertyOrder(), false, props.path)(keys)
-          : keys;
+      const sorted = createSorter(value, getPropertyOrder(), false, props.path)(keys);
 
       const children = value as Record<string | number, unknown>;
       return untrack(() => sorted.filter((key) => !isContainerType(getJsonType(children[key]))));

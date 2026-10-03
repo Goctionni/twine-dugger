@@ -28,6 +28,9 @@ export function createSorter(
   desc: boolean,
   path: Path,
 ): Sorter {
+  const type = getJsonType(container);
+  if (type !== 'object' && type !== 'map') return (keys) => keys;
+
   if (desc) {
     const sorter = createSorter(container, order, false, path);
     return (keys) => sorter(keys).toReversed();

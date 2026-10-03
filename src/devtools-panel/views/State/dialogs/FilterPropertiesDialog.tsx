@@ -64,6 +64,11 @@ const allFilters: FilterOption[] = [
     tooltip: 'Show properties of type Function',
   },
   {
+    key: 'date',
+    label: 'Date',
+    tooltip: 'Show properties of type Date',
+  },
+  {
     key: 'other',
     label: 'Other',
     tooltip: 'Show properties of other types',

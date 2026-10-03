@@ -13,7 +13,7 @@ import { mockApiPlugin } from './build/plugin-mock-api.ts';
 import packageJson from './package.json' with { type: 'json' };
 
 export default defineConfig({
-  staged: { '*': '' },
+  staged: { '*': 'vp check --fix' },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
   build: { minify: false, sourcemap: true },
   plugins: [solidPlugin() as PluginOption, tailwindcss(), htmlInsertFontPlugin, mockApiPlugin()],
