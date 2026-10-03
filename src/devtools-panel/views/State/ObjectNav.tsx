@@ -31,6 +31,7 @@ import type {
 
 import { TypeIcon } from '../../ui/display/TypeIcon';
 import { createContextMenuHandler } from '../../ui/util/ContextMenu';
+import { sameItems } from '../../utils/same-items';
 import { AddPropertyDialog } from './dialogs/AddPropertyDialog';
 import { DuplicateKeyDialog } from './dialogs/DuplicateKeyDialog';
 import { FilterPropertiesDialog } from './dialogs/FilterPropertiesDialog';
@@ -78,7 +79,7 @@ export function ObjectNav(props: Props) {
     untrack(() => (isRoot() ? getGlobalPropertyOrderDesc() : null)),
   );
 
-  const parentPath = () => getPath().slice(0, props.depth);
+  const parentPath = createMemo(() => getPath().slice(0, props.depth), { equals: sameItems });
   const name = () => getPath()[props.depth - 1];
 
   // Walks the path one segment at a time, so it only reacts to the properties along the path
