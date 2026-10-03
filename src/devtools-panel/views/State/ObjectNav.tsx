@@ -94,6 +94,19 @@ export function ObjectNav(props: Props) {
   });
 
   const containerType = createMemo(() => getJsonType(container()));
+
+  // The rows are positioned absolutely, so they don't give the column a width. It is worked out
+  // from the longest label instead, which doesn't change when the list is searched or filtered.
+  const longestLabel = createMemo(() => {
+    const object = container();
+    const type = getJsonType(object);
+    if (!isContainerType(type)) return 0;
+    let longest = 0;
+    for (const key of getContainerKeys(object, type)) {
+      longest = Math.max(longest, String(getKeyLabel(type, key)).length);
+    }
+    return longest;
+  });
   const canEdit = () => isPathEditable([...parentPath(), '']);
 
   // A projection reconciles by key: the rows survive re-sorting and only the properties that
@@ -209,9 +222,12 @@ export function ObjectNav(props: Props) {
   };
 
   return (
-    <div class="flex h-full w-max max-w-3xs min-w-25 flex-col border-r border-r-gray-700 px-2">
+    <div
+      class="flex h-full max-w-3xs min-w-26 flex-col border-r border-r-gray-700 px-2"
+      style={{ width: `calc(${longestLabel()}ch + 3rem)` }}
+    >
       <Show when={!isRoot()}>
-        <p class="w-full overflow-hidden text-lg text-ellipsis">{name()}</p>
+        <p class="w-full truncate text-lg">{name()}</p>
       </Show>
       <div class="mb-3 flex justify-items-start gap-1">
         <Show when={isRoot()}>
@@ -340,7 +356,7 @@ function NavItem(props: NavItemProps) {
         )}
       >
         <TypeIcon type={props.entry.type} />
-        <span class="flex-1 overflow-hidden text-ellipsis">
+        <span class="flex-1 truncate">
           {props.entry.label}
           {lockStatus() === 'locked' && '🔒'}
           {lockStatus() === 'ancestor-lock' && <span class="saturate-0">🔒</span>}
