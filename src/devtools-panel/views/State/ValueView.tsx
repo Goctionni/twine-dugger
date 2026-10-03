@@ -21,9 +21,10 @@ export function ValueView() {
   const value = () => getPathValue(getActiveState(), getPath());
   const type = createMemo(() => getJsonType(value()));
   const isReadOnly = () => getHistoryRef() !== 'latest';
+  let scrollElRef: HTMLDivElement | undefined;
 
   return (
-    <div class="flex flex-1 flex-col gap-2 overflow-auto px-2 py-1">
+    <div class="flex min-h-0 flex-1 flex-col gap-2 px-2 py-1">
       <p>
         <PrettyPath class="font-mono text-sm font-bold" path={getPath()} statePrefix />
         <Show when={isReadOnly()}>
@@ -34,37 +35,40 @@ export function ValueView() {
         <TypeIcon type={type()} />
         <span class="font-mono">{type()}</span>
       </p>
-      <Switch>
-        <Match when={type() === 'string'}>
-          <StateStringInput path={getPath()} />
-        </Match>
-        <Match when={type() === 'number'}>
-          <StateNumberInput path={getPath()} />
-        </Match>
-        <Match when={type() === 'boolean'}>
-          <StateBooleanInput path={getPath()} />
-        </Match>
-        <Match when={isContainerType(type())}>
-          <StateContainerInput
-            path={getPath()}
-            getValue={value}
-            getType={() => type() as ContainerType}
-          />
-        </Match>
-        <Match when={type() === 'function'}>
-          <pre class="font-mono text-sm whitespace-pre-wrap">
-            {(value() as { str: string } | undefined)?.str}
-          </pre>
-        </Match>
-        <Match when={type() === 'date'}>
-          <p class="font-mono">{formatDate(value() as Record<string, number>)}</p>
-        </Match>
-        <Match when={true}>
-          <p>
-            <RenderValue value={value() as JSONSafeValue} />
-          </p>
-        </Match>
-      </Switch>
+      <div class="min-h-0 flex-1 overflow-auto" ref={scrollElRef}>
+        <Switch>
+          <Match when={type() === 'string'}>
+            <StateStringInput path={getPath()} />
+          </Match>
+          <Match when={type() === 'number'}>
+            <StateNumberInput path={getPath()} />
+          </Match>
+          <Match when={type() === 'boolean'}>
+            <StateBooleanInput path={getPath()} />
+          </Match>
+          <Match when={isContainerType(type())}>
+            <StateContainerInput
+              path={getPath()}
+              getValue={value}
+              getType={() => type() as ContainerType}
+              getScrollElement={() => scrollElRef}
+            />
+          </Match>
+          <Match when={type() === 'function'}>
+            <pre class="font-mono text-sm whitespace-pre-wrap">
+              {(value() as { str: string } | undefined)?.str}
+            </pre>
+          </Match>
+          <Match when={type() === 'date'}>
+            <p class="font-mono">{formatDate(value() as Record<string, number>)}</p>
+          </Match>
+          <Match when={true}>
+            <p>
+              <RenderValue value={value() as JSONSafeValue} />
+            </p>
+          </Match>
+        </Switch>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { Lock, Path } from '@/shared/shared-types';
+import type { FormatPassage, Lock, Path } from '@/shared/shared-types';
 
 import type * as T from '../api/api';
 
@@ -75,4 +75,12 @@ export async function getPassageData(): Return<'getPassageData'> {
 
 export async function gotoUrl(_url: string): Return<'gotoUrl'> {
   return Promise.resolve(null);
+}
+
+export async function goToPassage(_passageName: string): Return<'goToPassage'> {
+  return Promise.resolve();
+}
+
+export async function setPassage(_passage: FormatPassage): Return<'setPassage'> {
+  return Promise.resolve();
 }

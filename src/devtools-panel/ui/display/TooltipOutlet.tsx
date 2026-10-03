@@ -2,7 +2,7 @@ import type { JSX } from '@solidjs/web';
 import { createMemo, createSignal, onCleanup } from 'solid-js';
 
 const [tooltipContent, setTooltipContent] = createSignal<JSX.Element>(null);
-const [outletStack, setOutletStack] = createSignal<string[]>([]);
+const [outletStack, setOutletStack] = createSignal<string[]>([], { ownedWrite: true });
 
 const useTooltipOutlet = () => {
   const id = crypto.randomUUID();
