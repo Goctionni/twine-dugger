@@ -46,12 +46,12 @@ describe('searchPassages', () => {
 
   it('gives the content details for a name match too', () => {
     const { hits } = searchPassages([passage(1, 'cat', 'a cat, a cat')], q('cat'), scope());
-    expect(hits[0]).toMatchObject({ name: [[0, 3]], content: [2, 5], contentCount: 2 });
+    expect(hits[0]).toMatchObject({ name: [[0, 3]], content: [2, 5] });
   });
 
-  it('counts all matches in the content but keeps the first', () => {
+  it('keeps the first match in the content', () => {
     const { hits } = searchPassages(passages, q('cat'), scope());
-    expect(hits.find((hit) => hit.key === 2)).toMatchObject({ content: [4, 7], contentCount: 2 });
+    expect(hits.find((hit) => hit.key === 2)).toMatchObject({ content: [4, 7] });
   });
 
   it('only searches what the scope allows', () => {

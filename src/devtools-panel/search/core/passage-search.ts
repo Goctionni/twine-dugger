@@ -13,10 +13,8 @@ export function searchPassages(
   query: CompiledQuery,
   scope: PassageScope,
 ): PassageSearchResult {
-  const content = (passage: ParsedPassageData) => {
-    const first = scope.passageContent ? query.first(passage.content) : null;
-    return { content: first, contentCount: first ? query.count(passage.content) : 0 };
-  };
+  const firstInContent = (passage: ParsedPassageData) =>
+    scope.passageContent ? query.first(passage.content) : null;
 
   const titleHits: PassageHit[] = [];
   const rest: ParsedPassageData[] = [];
@@ -24,7 +22,7 @@ export function searchPassages(
     const name = scope.passageName ? query.ranges(passage.name) : NO_RANGES;
     const tags = scope.passageTags ? (passage.tags ?? []).map((tag) => query.ranges(tag)) : [];
     if (name.length || tags.some((ranges) => ranges.length)) {
-      titleHits.push({ key: passage.id, name, tags, ...content(passage) });
+      titleHits.push({ key: passage.id, name, tags, content: firstInContent(passage) });
     } else {
       rest.push(passage);
     }
@@ -33,8 +31,8 @@ export function searchPassages(
   const contentHits: PassageHit[] = [];
   if (scope.passageContent) {
     for (const passage of rest) {
-      const found = content(passage);
-      if (found.content) contentHits.push({ key: passage.id, name: NO_RANGES, tags: [], ...found });
+      const content = firstInContent(passage);
+      if (content) contentHits.push({ key: passage.id, name: NO_RANGES, tags: [], content });
     }
   }
 

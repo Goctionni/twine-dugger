@@ -4,7 +4,7 @@ import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { searchPassages } from '../core/passage-search';
 import { canNarrow, compileQuery, queryKey } from '../core/query';
-import { sortPassageHits, sortStateHits } from '../core/sort';
+import { rankNames, sortPassageHits, sortStateHits } from '../core/sort';
 import { searchState } from '../core/state-search';
 import type {
   CompiledQuery,
@@ -113,6 +113,14 @@ export function createSearch(data: SearchData) {
 
   const passageById = createMemo(() => new Map(data.passages().map((p) => [p.id, p])));
 
+  // Ranked when it is first needed, and again when the passages are other passages
+  let nameRanks: { source: readonly ParsedPassageData[]; ranks: Map<number, number> } | undefined;
+  const getNameRank = (id: number) => {
+    const source = data.passages();
+    if (nameRanks?.source !== source) nameRanks = { source, ranks: rankNames(source) };
+    return nameRanks.ranks.get(id) ?? 0;
+  };
+
   // The order is a plain array that is new every time the results change. The lists below keep
   // the hits that are still there as the same objects, and the order tells a virtual list that the
   // keys at its positions may have changed
@@ -123,7 +131,17 @@ export function createSearch(data: SearchData) {
     const filtered = tags.length
       ? hits.filter((hit) => byId.get(hit.key)?.tags?.some((tag) => tags.includes(tag)))
       : hits;
-    return sortPassageHits(filtered, getSort().passage, (id) => byId.get(id)?.name ?? '');
+    return sortPassageHits(filtered, getSort().passage, {
+      getNameRank,
+      // Only asked for when sorting by matches: counting every match in every passage is real work
+      getMatchCount: (hit) => {
+        const content = passageScope().passageContent ? byId.get(hit.key)?.content : undefined;
+        const inContent = content && query() ? query()!.count(content) : 0;
+        return (
+          hit.name.length + hit.tags.reduce((sum, ranges) => sum + ranges.length, 0) + inContent
+        );
+      },
+    });
   });
   const passageList = createProjection<PassageHit[]>(() => passageOrder(), [], { key: 'key' });
 

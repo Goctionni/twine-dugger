@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 
 import { snippetAround } from './snippet';
-import { sortPassageHits, sortStateHits } from './sort';
+import { rankNames, sortPassageHits, sortStateHits } from './sort';
 import type { PassageHit, StateHit } from './types';
 
 const passageHit = (key: number): PassageHit => ({
@@ -9,7 +9,6 @@ const passageHit = (key: number): PassageHit => ({
   name: [],
   tags: [],
   content: null,
-  contentCount: 0,
 });
 const stateHit = (pathText: string, type: StateHit['type'] = 'string'): StateHit => ({
   key: pathText,
@@ -30,36 +29,32 @@ describe('sortPassageHits', () => {
     5: 'Room 9',
   };
   const hits = [1, 2, 3, 4, 5].map(passageHit);
+  const ranks = rankNames(Object.entries(names).map(([id, name]) => ({ id: Number(id), name })));
+  const lookups = { getNameRank: (key: number) => ranks.get(key)!, getMatchCount: () => 0 };
   const keys = (sorted: PassageHit[]) => sorted.map((hit) => hit.key);
 
   it('keeps the best-match order', () => {
-    expect(keys(sortPassageHits(hits, 'match', (key) => names[key]!))).toEqual([1, 2, 3, 4, 5]);
+    expect(keys(sortPassageHits(hits, 'match', lookups))).toEqual([1, 2, 3, 4, 5]);
   });
 
   it('sorts by name, ignoring case and reading numbers as numbers', () => {
-    expect(keys(sortPassageHits(hits, 'name-asc', (key) => names[key]!))).toEqual([2, 1, 3, 5, 4]);
-    expect(keys(sortPassageHits(hits, 'name-desc', (key) => names[key]!))).toEqual([4, 5, 3, 1, 2]);
+    expect(keys(sortPassageHits(hits, 'name-asc', lookups))).toEqual([2, 1, 3, 5, 4]);
+    expect(keys(sortPassageHits(hits, 'name-desc', lookups))).toEqual([4, 5, 3, 1, 2]);
   });
 
-  it('sorts by the number of matches in name, tags and content, keeping the order for a tie', () => {
-    const counted = [
-      { ...passageHit(1), contentCount: 1 },
-      { ...passageHit(2), contentCount: 5 },
-      {
-        ...passageHit(3),
-        name: [[0, 1]] as PassageHit['name'],
-        tags: [[[0, 1]], [[0, 1]]] as PassageHit['tags'],
-      },
-      { ...passageHit(4), contentCount: 1 },
-    ];
-    expect(keys(sortPassageHits(counted, 'most-matches', (key) => names[key]!))).toEqual([
-      2, 3, 1, 4,
-    ]);
+  it('sorts by the number of matches, counted by the caller, keeping the order for a tie', () => {
+    const counts: Record<number, number> = { 1: 1, 2: 7, 3: 3, 4: 1 };
+    const counted = [1, 2, 3, 4].map(passageHit);
+    const sorted = sortPassageHits(counted, 'most-matches', {
+      ...lookups,
+      getMatchCount: (hit) => counts[hit.key]!,
+    });
+    expect(keys(sorted)).toEqual([2, 3, 1, 4]);
   });
 
   it('leaves its input alone', () => {
     const copy = hits.slice();
-    sortPassageHits(hits, 'name-desc', (key) => names[key]!);
+    sortPassageHits(hits, 'name-desc', lookups);
     expect(hits).toEqual(copy);
   });
 });

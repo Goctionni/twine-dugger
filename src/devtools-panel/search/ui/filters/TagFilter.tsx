@@ -13,20 +13,17 @@ export function TagFilter() {
   const { tagCounts } = useSearch();
   const [find, setFind] = createSignal('');
 
-  // Chosen tags first, then the most common
+  // Chosen tags first, then the most common. Not a sort of everything with a rich comparison: there
+  // can be thousands of tags, and this runs for every change of the results
   const matching = createMemo(() => {
-    const needle = find().trim().toLowerCase();
+    const staticNeedle = find().trim().toLowerCase();
     const counts = tagCounts();
     const chosen = getTagFilter();
-    const all = new Set([...counts.keys(), ...chosen]);
-    return [...all]
-      .filter((tag) => !needle || tag.toLowerCase().includes(needle))
-      .toSorted(
-        (a, b) =>
-          Number(chosen.includes(b)) - Number(chosen.includes(a)) ||
-          (counts.get(b) ?? 0) - (counts.get(a) ?? 0) ||
-          a.localeCompare(b),
-      );
+    const fits = (tag: string) => !staticNeedle || tag.toLowerCase().includes(staticNeedle);
+    const others: string[] = [];
+    for (const tag of counts.keys()) if (!chosen.includes(tag) && fits(tag)) others.push(tag);
+    others.sort((a, b) => counts.get(b)! - counts.get(a)! || (a < b ? -1 : a > b ? 1 : 0));
+    return [...chosen.filter(fits), ...others];
   });
   const listed = () => matching().slice(0, MAX_LISTED);
 

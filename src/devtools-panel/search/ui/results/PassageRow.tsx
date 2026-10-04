@@ -20,7 +20,7 @@ const sameNumbers = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((value, index) => value === b[index]);
 
 export function PassageRow(props: Props) {
-  const { selection, getPassage } = useSearch();
+  const { selection, getPassage, query } = useSearch();
   const passage = createMemo(() => getPassage(props.hit().key));
   const name = () => passage()?.name ?? '';
   const tags = () => passage()?.tags ?? [];
@@ -46,6 +46,11 @@ export function PassageRow(props: Props) {
       return { text: content.slice(0, PREVIEW_LENGTH).replace(/\s/g, ' '), ranges: NO_RANGES };
     },
     { equals: (a, b) => a.text === b.text && a.ranges[0]?.[0] === b.ranges[0]?.[0] },
+  );
+
+  // How often it matches in the content: counted here, for the rows that are shown, not for every hit
+  const contentMatches = createMemo(() =>
+    props.hit().content ? (query()?.count(passage()?.content ?? '') ?? 0) : 0,
   );
 
   // Clicking the selected result again closes it
@@ -87,8 +92,8 @@ export function PassageRow(props: Props) {
         <span class="min-w-0 flex-1 truncate">
           <Highlight text={snippet().text} ranges={snippet().ranges} />
         </span>
-        <Show when={props.hit().contentCount > 1}>
-          <span class="shrink-0">{props.hit().contentCount}×</span>
+        <Show when={contentMatches() > 1}>
+          <span class="shrink-0">{contentMatches()}×</span>
         </Show>
       </span>
     </button>

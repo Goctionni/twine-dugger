@@ -13,9 +13,17 @@ const TYPE_ORDER: Record<string, number> = {
 };
 const typeRank = (type: string) => TYPE_ORDER[type] ?? 7;
 
-/** Everywhere the query was found in the passage: name, tags and content */
-const countMatches = (hit: PassageHit) =>
-  hit.name.length + hit.tags.reduce((sum, ranges) => sum + ranges.length, 0) + hit.contentCount;
+/**
+ * The position of each passage when all of them are in name order. Comparing names is slow, so it is
+ * done once for all passages: sorting hits by that position is then a sort of numbers.
+ */
+export function rankNames(passages: ReadonlyArray<{ id: number; name: string }>) {
+  const ranks = new Map<number, number>();
+  passages
+    .toSorted((a, b) => collator.compare(a.name, b.name))
+    .forEach((passage, rank) => ranks.set(passage.id, rank));
+  return ranks;
+}
 
 /**
  * The order is made by sorting a copy (the input is the search result and stays as it is).
@@ -24,13 +32,24 @@ const countMatches = (hit: PassageHit) =>
 export function sortPassageHits(
   hits: readonly PassageHit[],
   sort: PassageSort,
-  getName: (key: number) => string,
+  lookups: {
+    /** Where the passage is when all passages are in name order, see `rankNames` */
+    getNameRank: (key: number) => number;
+    /** Everywhere the query was found in the passage: name, tags and content */
+    getMatchCount: (hit: PassageHit) => number;
+  },
 ): PassageHit[] {
   if (sort === 'match') return hits.slice();
   // A stable sort: hits with as many matches stay in best-match order
-  if (sort === 'most-matches') return hits.toSorted((a, b) => countMatches(b) - countMatches(a));
+  if (sort === 'most-matches') {
+    // Counting is the work: it is done once per hit, not once per comparison
+    const counts = new Map(hits.map((hit) => [hit, lookups.getMatchCount(hit)]));
+    return hits.toSorted((a, b) => counts.get(b)! - counts.get(a)!);
+  }
   const direction = sort === 'name-asc' ? 1 : -1;
-  return hits.toSorted((a, b) => direction * collator.compare(getName(a.key), getName(b.key)));
+  return hits.toSorted(
+    (a, b) => direction * (lookups.getNameRank(a.key) - lookups.getNameRank(b.key)),
+  );
 }
 
 export function sortStateHits(

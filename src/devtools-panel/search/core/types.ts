@@ -55,10 +55,8 @@ export interface PassageHit {
   name: Range[];
   /** Per tag (same index as `passage.tags`); an empty array = no match in that tag */
   tags: Range[][];
-  /** First match in the content (snippet anchor); null = none. The detail pane recomputes all */
+  /** First match in the content (snippet anchor); null = none. Counting all of them is left to who needs them */
   content: Range | null;
-  /** Total number of matches in the content, including those beyond the stored range */
-  contentCount: number;
 }
 
 export interface StateHit {
