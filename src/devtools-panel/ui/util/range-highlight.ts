@@ -18,13 +18,10 @@ function getHighlight() {
 }
 
 /**
- * Marks characters of the text inside `root` as a search match, without changing the page: the
- * ranges are positions in the text of `root`, counted over all its text nodes, however the text is
- * cut up into elements. Returns what takes the marks away again.
+ * DOM ranges for positions in the text inside `root`, counted over all its text nodes, however the
+ * text is cut up into elements. Positions outside the text are left out.
  */
-export function highlightRanges(root: Node, ranges: readonly CharRange[]): () => void {
-  if (!isSupported() || !ranges.length) return () => {};
-
+export function createTextRanges(root: Node, positions: readonly CharRange[]): Range[] {
   const nodes: Array<{ node: Text; start: number }> = [];
   let length = 0;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -33,25 +30,43 @@ export function highlightRanges(root: Node, ranges: readonly CharRange[]): () =>
     length += node.nodeValue?.length ?? 0;
   }
 
-  /** The text node a position is in; the end of a range may be at the very end of a node */
-  const locate = (position: number, isEnd: boolean) =>
-    nodes.find(({ node, start }) =>
-      isEnd
-        ? position > start && position <= start + node.length
-        : position >= start && position < start + node.length,
-    );
+  /** The last text node that starts before the position (the end of a range may be at a node's end) */
+  const locate = (position: number, isEnd: boolean) => {
+    let low = 0;
+    let high = nodes.length - 1;
+    while (low < high) {
+      const middle = Math.ceil((low + high) / 2);
+      const { start } = nodes[middle]!;
+      if (isEnd ? start < position : start <= position) low = middle;
+      else high = middle - 1;
+    }
+    const found = nodes[low];
+    if (!found) return undefined;
+    const offset = position - found.start;
+    return offset >= 0 && offset <= found.node.length ? { node: found.node, offset } : undefined;
+  };
 
-  const highlight = getHighlight();
-  const made: Range[] = [];
-  for (const [from, to] of ranges) {
-    const first = locate(from, false);
-    const last = locate(to, true);
-    if (!first || !last) continue;
+  const ranges: Range[] = [];
+  for (const [from, to] of positions) {
+    const start = locate(from, false);
+    const end = locate(to, true);
+    if (!start || !end || to > length) continue;
     const range = new Range();
-    range.setStart(first.node, from - first.start);
-    range.setEnd(last.node, to - last.start);
-    highlight.add(range);
-    made.push(range);
+    range.setStart(start.node, start.offset);
+    range.setEnd(end.node, end.offset);
+    ranges.push(range);
   }
-  return () => made.forEach((range) => highlight.delete(range));
+  return ranges;
+}
+
+/**
+ * Marks characters of the text inside `root` as a search match, without changing the page.
+ * Returns what takes the marks away again.
+ */
+export function highlightRanges(root: Node, positions: readonly CharRange[]): () => void {
+  if (!isSupported() || !positions.length) return () => {};
+  const highlight = getHighlight();
+  const ranges = createTextRanges(root, positions);
+  ranges.forEach((range) => highlight.add(range));
+  return () => ranges.forEach((range) => highlight.delete(range));
 }

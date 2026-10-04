@@ -4,6 +4,8 @@ import { SEARCH_MATCH_HIGHLIGHT } from './range-highlight';
 class FakeHighlight extends Set<Range> {}
 
 export function installFakeHighlights() {
+  // Nor does it lay anything out
+  Range.prototype.getBoundingClientRect ??= () => new DOMRect();
   Object.assign(globalThis, { Highlight: FakeHighlight });
   Object.assign(globalThis.CSS ?? (globalThis.CSS = {} as typeof CSS), { highlights: new Map() });
 }

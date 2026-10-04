@@ -32,7 +32,7 @@ const defaultSettings: Settings = {
   'state.propertyOrder': 'type',
   'state.propertyOrderDesc': false,
   'state.filters': [],
-  'editor.syntaxHighlighting': 'small',
+  'editor.disableHighlighting': 'large',
   'search.narrowStyle': 'strip',
   'search.persist.options': false,
   'search.persist.scope': false,

@@ -1,4 +1,4 @@
-import { createEffect, deep, snapshot } from 'solid-js';
+import { createEffect, createSignal, deep, snapshot } from 'solid-js';
 
 import type { ValueType } from '@/shared/shared-types';
 
@@ -127,3 +127,8 @@ export function createSearchPersistence() {
   remember('sort', () => session().sort);
   remember('typeFilter', () => session().typeFilter);
 }
+
+export const [getFocusRequests, setFocusRequests] = createSignal(0);
+
+/** Asks the query input to take the focus: when it is on the page now, or as soon as it is */
+export const requestQueryFocus = () => setFocusRequests((count) => count + 1);

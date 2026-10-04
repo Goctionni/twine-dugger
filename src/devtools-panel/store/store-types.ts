@@ -58,7 +58,7 @@ export const settingsSchema = type({
   'state.propertyOrder': propertyOrderSchema,
   'state.propertyOrderDesc': 'boolean',
   'state.filters': valueTypeSchema.or("'filtered'").array(),
-  'editor.syntaxHighlighting': "'always' | 'small' | 'never'",
+  'editor.disableHighlighting': "'never' | 'very-large' | 'large' | 'normal' | 'always'",
   'search.narrowStyle': "'strip' | 'bar'",
   // Which search options are remembered between sessions (the query and tag filter never are)
   'search.persist.options': 'boolean',

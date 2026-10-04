@@ -1,27 +1,28 @@
+import { For } from 'solid-js';
+
 import { createGetSetting, setSetting } from '@/devtools-panel/store/store';
+import { describeLimit, highlightingLimits } from '@/devtools-panel/ui/code/highlighting-limits';
+import type { HighlightingLimit } from '@/devtools-panel/ui/code/highlighting-limits';
 
 import { SettingControl } from './SettingControl';
 
-const getSyntaxHighlighting = createGetSetting('editor.syntaxHighlighting');
+const getDisableHighlighting = createGetSetting('editor.disableHighlighting');
 
 export function EditorSettings() {
   return (
-    <SettingControl label="Syntax highlighting">
+    <SettingControl label="Disable immediate syntax highlighting">
       {(id) => (
         <select
           id={id}
-          class="w-46 cursor-pointer rounded-sm border border-slate-600 bg-slate-900 px-2 py-1"
-          value={getSyntaxHighlighting()}
+          class="w-64 cursor-pointer rounded-sm border border-slate-600 bg-slate-900 px-2 py-1"
+          value={getDisableHighlighting()}
           onChange={(event) =>
-            setSetting(
-              'editor.syntaxHighlighting',
-              event.currentTarget.value as 'always' | 'small' | 'never',
-            )
+            setSetting('editor.disableHighlighting', event.currentTarget.value as HighlightingLimit)
           }
         >
-          <option value="always">Always</option>
-          <option value="small">Small passages</option>
-          <option value="never">Never</option>
+          <For each={highlightingLimits}>
+            {(limit) => <option value={limit.value}>{describeLimit(limit)}</option>}
+          </For>
         </select>
       )}
     </SettingControl>

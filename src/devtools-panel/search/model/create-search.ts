@@ -142,6 +142,7 @@ export function createSearch(data: SearchData) {
     error,
     /** Whether there is something to search for */
     hasQuery: () => query() !== null,
+    query,
     passageList,
     passageOrder,
     stateList,

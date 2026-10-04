@@ -1,4 +1,4 @@
-import { For, Show } from 'solid-js';
+import { createMemo, For, Show } from 'solid-js';
 
 import { goToPassage } from '@/devtools-panel/api/api';
 import { savePassage } from '@/devtools-panel/store/passages';
@@ -8,11 +8,22 @@ import { Tag } from '@/devtools-panel/ui/display/Tag';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
+import { useSearch } from '../../model/context';
+import { getScope } from '../../model/search-state';
+
+/** More than this many marks in an editor is no use to anyone */
+const MAX_MATCHES = 2000;
+
 interface Props {
   passage: ParsedPassageData;
 }
 
 export function PassageDetail(props: Props) {
+  const { query } = useSearch();
+  const matches = createMemo(() =>
+    getScope().passageContent ? query()?.ranges(props.passage.content, MAX_MATCHES) : undefined,
+  );
+
   const openInPassages = () => {
     setViewState('passages', 'selected', props.passage.name);
     setNavigationPage('passages');
@@ -43,6 +54,7 @@ export function PassageDetail(props: Props) {
         <Code
           code={props.passage.content ?? ''}
           format={getGameMetaData()?.format?.name}
+          matches={matches()}
           onSave={(code) => savePassage(props.passage, code)}
         />
       </div>
