@@ -1,7 +1,6 @@
 import { Match, Switch, untrack } from 'solid-js';
 
-import { setPassage } from '@/devtools-panel/api/api';
-import { setPassageData } from '@/devtools-panel/store/passages';
+import { savePassage } from '@/devtools-panel/store/passages';
 import { Code } from '@/devtools-panel/ui/code';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
@@ -15,16 +14,7 @@ interface Props {
 export function PassageView(props: Props) {
   const onSave = (code: string) => {
     const passage = untrack(() => props.passage);
-    if (!passage) return;
-    setPassage({ name: passage.name, source: code });
-
-    const newPassage: ParsedPassageData = { ...passage, content: code };
-    setPassageData((current) => {
-      return current.map((oldpassage) => {
-        if (oldpassage.id !== passage.id) return oldpassage;
-        return newPassage;
-      });
-    });
+    if (passage) savePassage(passage, code);
   };
 
   return (

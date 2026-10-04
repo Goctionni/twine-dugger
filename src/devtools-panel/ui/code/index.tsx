@@ -1,8 +1,9 @@
 import javascriptLangDef from '@shikijs/langs/javascript';
 import clsx from 'clsx';
-import { createEffect, createMemo, createSignal } from 'solid-js';
+import { createEffect, createMemo, createSignal, Show } from 'solid-js';
 import type { IRawGrammar } from 'vscode-textmate';
 
+import { createGetSetting } from '@/devtools-panel/store/store';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 
 import { Toggle } from '../util/Toggle';
@@ -21,6 +22,14 @@ const formatDict: Record<string, string> = {
   snowman: snowmanLangDef.scopeName,
 };
 
+/**
+ * Highlighting works through the whole text on every change: about 250 ms for 14 000 characters,
+ * and seconds for a few hundred thousand. Above this length the 'small' setting leaves it off.
+ */
+export const LARGE_CODE_LENGTH = 10_000;
+
+const getSyntaxHighlighting = createGetSetting('editor.syntaxHighlighting');
+
 interface PassageCodeProps {
   code: string;
   format?: string;
@@ -33,6 +42,15 @@ export function Code(props: PassageCodeProps) {
   const [highlighter, setHighlighter] = createSignal<Awaited<
     ReturnType<typeof createHighlighter>
   > | null>(null);
+
+  // Decided by the length it was opened with: it should not switch while someone is typing
+  const [forceHighlighting, setForceHighlighting] = createSignal(false);
+  const isLarge = () => props.code.length > LARGE_CODE_LENGTH;
+  const highlighting = () => {
+    const setting = getSyntaxHighlighting();
+    if (setting === 'never') return false;
+    return setting === 'always' || !isLarge() || forceHighlighting();
+  };
 
   let textareaRef!: HTMLTextAreaElement;
   let preRef!: HTMLPreElement;
@@ -55,7 +73,7 @@ export function Code(props: PassageCodeProps) {
   );
 
   const html = createMemo(() => {
-    const escape = highlighter()?.toHtml ?? escapeHtml;
+    const escape = (highlighting() ? highlighter()?.toHtml : undefined) ?? escapeHtml;
     return escape(localCode());
   });
 
@@ -111,6 +129,21 @@ export function Code(props: PassageCodeProps) {
 
   return (
     <div class="flex h-full w-full flex-col">
+      <Show when={getSyntaxHighlighting() === 'small' && isLarge() && !forceHighlighting()}>
+        <div class="flex items-center gap-3 bg-amber-950 px-3 py-1 text-xs text-amber-200">
+          <span>
+            Syntax highlighting is off for this long passage. Turning it on can make this panel
+            freeze for a while.
+          </span>
+          <button
+            type="button"
+            class="shrink-0 cursor-pointer rounded-sm bg-amber-700 px-2 py-0.5 text-white hover:bg-amber-600"
+            onClick={() => setForceHighlighting(true)}
+          >
+            Enable syntax highlighting
+          </button>
+        </div>
+      </Show>
       <div class="relative w-full flex-1 overflow-hidden">
         <textarea
           ref={textareaRef}

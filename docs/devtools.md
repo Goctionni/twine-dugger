@@ -7,7 +7,7 @@ The DevTools app (`src/devtools-panel`) renders the main UI (`views/`):
 - **Diff Log**: Stream of **diff frames**, each showing the changes between two states.
 - **History Navigation**: Jump between frames to inspect prior states.
 - **Passages**: List, view and edit passages.
-- **Search**: Search state and passages.
+- **Search**: Search state and passages, with match case, whole word and regex, and filters (what to search in, state type, passage tag) and sorting. Which options are remembered is set in Settings.
 - **Settings**: Display options, filtered paths and locks. Per-game settings are stored in `localStorage`.
 
 State lives in a Solid store (`store/`), updated by polling the content script.

@@ -18,3 +18,9 @@ input[type='search'] {
     mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M4 4 L20 20 M20 4 L4 20' stroke='black' stroke-width='3' stroke-linecap='square'/></svg>");
   }
 }
+
+/* Search matches that are marked without changing the markup (see ui/util/range-highlight.ts) */
+::highlight(search-match) {
+  background-color: rgb(250 204 21 / 0.4);
+  color: inherit;
+}
