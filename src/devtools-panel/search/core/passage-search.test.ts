@@ -3,8 +3,13 @@ import { describe, expect, it } from 'vite-plus/test';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { searchPassages } from './passage-search';
-import { compileQuery, type CompiledQuery } from './query';
-import { defaultSearchOptions, defaultSearchScope, type SearchScope } from './types';
+import { compileQuery } from './query';
+import {
+  defaultSearchOptions,
+  defaultSearchScope,
+  type CompiledQuery,
+  type SearchScope,
+} from './types';
 
 const passage = (
   id: number,

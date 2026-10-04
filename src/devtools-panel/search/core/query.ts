@@ -1,27 +1,7 @@
-import type { Range, SearchOptions } from './types';
+import type { CompiledQuery, InvalidQuery, Range, SearchOptions } from './types';
 
 /** Ranges kept per field; matches beyond it are still counted by `count` */
-export const MAX_RANGES = 50;
-
-export interface CompiledQuery {
-  readonly ok: true;
-  readonly text: string;
-  readonly options: SearchOptions;
-  /** Identifies text + options; equal keys always give equal results */
-  readonly key: string;
-  /** Whether `text` has at least one (non-empty) match */
-  test(text: string): boolean;
-  /** The first match */
-  first(text: string): Range | null;
-  /** Up to `max` matches */
-  ranges(text: string, max?: number): Range[];
-  /** The number of matches */
-  count(text: string): number;
-}
-export interface InvalidQuery {
-  readonly ok: false;
-  readonly error: string;
-}
+const MAX_RANGES = 50;
 
 export const queryKey = (text: string, { caseSensitive, wholeWord, regex }: SearchOptions) =>
   `${caseSensitive ? 'c' : '-'}${wholeWord ? 'w' : '-'}${regex ? 'r' : '-'}:${text}`;

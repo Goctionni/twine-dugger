@@ -1,21 +1,16 @@
 import type { SearchScope } from '../core/types';
+import type { ActiveFilter } from '../types';
 import {
   getScope,
   getSort,
   getTagFilter,
   getTypeFilter,
-  setSort,
+  setPassageSort,
+  setStateSort,
   toggleScope,
   toggleTag,
   toggleType,
 } from './search-state';
-
-export interface ActiveFilter {
-  /** Unique among the active filters */
-  id: string;
-  label: string;
-  remove: () => void;
-}
 
 export const scopeLabels: Record<keyof SearchScope, string> = {
   statePath: 'Path',
@@ -43,14 +38,14 @@ export function getActiveFilters(): ActiveFilter[] {
     filters.push({
       id: 'sort:state',
       label: 'State sorted',
-      remove: () => setSort('state', 'source'),
+      remove: () => setStateSort('source'),
     });
   }
   if (sort.passage !== 'match') {
     filters.push({
       id: 'sort:passage',
       label: 'Passages sorted',
-      remove: () => setSort('passage', 'match'),
+      remove: () => setPassageSort('match'),
     });
   }
   for (const type of getTypeFilter()) {

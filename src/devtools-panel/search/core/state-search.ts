@@ -1,18 +1,14 @@
-import { getJsonType, isNumberMapValue, SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
-import type { ContainerType } from '@/shared/json-safe';
+import {
+  getContainerKeys,
+  getJsonType,
+  isContainerType,
+  isNumberMapValue,
+} from '@/shared/json-safe';
 import { pathKey } from '@/shared/path-equals';
-import type { JSONSafeObject, JSONSafeValue, Path, ValueType } from '@/shared/shared-types';
+import type { JSONSafeObject, JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { pathSegment } from './path-text';
-import type { CompiledQuery } from './query';
-import type { Range, SearchScope, StateHit } from './types';
-
-export interface StateSearchResult {
-  /** In the order the values are in the state */
-  hits: StateHit[];
-  /** How many hits there are of each type */
-  typeCounts: Partial<Record<ValueType, number>>;
-}
+import type { CompiledQuery, Range, StateHit, StateScope, StateSearchResult } from './types';
 
 interface Frame {
   value: JSONSafeValue;
@@ -32,7 +28,7 @@ const shift = (ranges: Range[], by: number): Range[] =>
 export function searchState(
   root: JSONSafeObject,
   query: CompiledQuery,
-  scope: SearchScope,
+  scope: StateScope,
 ): StateSearchResult {
   const hits: StateHit[] = [];
   const typeCounts: StateSearchResult['typeCounts'] = {};
@@ -43,16 +39,9 @@ export function searchState(
     const { value, path, pathText } = stack.pop()!;
     if (!value || typeof value !== 'object') continue;
 
-    const parentType = getJsonType(value);
-    if (
-      parentType !== 'object' &&
-      parentType !== 'array' &&
-      parentType !== 'map' &&
-      parentType !== 'set'
-    ) {
-      continue;
-    }
-    const container: ContainerType = parentType;
+    const container = getJsonType(value);
+    // Functions and dates are written as objects, but they are not looked into
+    if (!isContainerType(container)) continue;
     const numberMap = isNumberMapValue(value);
     const isRoot = path.length === 0;
     const matchesKeys = container === 'object' || container === 'map';
@@ -91,16 +80,12 @@ export function searchState(
       }
     };
 
-    if (Array.isArray(value)) {
-      for (let i = value[0] === SET_MARKER ? 1 : 0; i < value.length; i++) visit(i, value[i]!);
-    } else {
-      for (const key of Object.keys(value)) {
-        if (key !== TYPE_KEY) visit(key, (value as JSONSafeObject)[key]!);
-      }
+    for (const key of getContainerKeys(value, container)) {
+      visit(key, (value as Record<string | number, JSONSafeValue>)[key]!);
     }
 
     // Reversed, so that what is first in the state is found first
-    for (let i = containers.length - 1; i >= 0; i--) stack.push(containers[i]!);
+    stack.push(...containers.reverse());
   }
 
   return { hits, typeCounts };

@@ -1,7 +1,7 @@
 import { For } from 'solid-js';
 
 import type { PassageSort, StateSort } from '../../core/types';
-import { getSort, setSort } from '../../model/search-state';
+import { getSort, setPassageSort, setStateSort } from '../../model/search-state';
 
 const stateSorts: Array<[StateSort, string]> = [
   ['source', 'Source order'],
@@ -29,7 +29,7 @@ export function SortFilter() {
         <select
           class={selectClass}
           value={getSort().state}
-          onChange={(event) => setSort('state', event.currentTarget.value as StateSort)}
+          onChange={(event) => setStateSort(event.currentTarget.value as StateSort)}
         >
           <For each={stateSorts}>{([value, label]) => <option value={value}>{label}</option>}</For>
         </select>
@@ -39,7 +39,7 @@ export function SortFilter() {
         <select
           class={selectClass}
           value={getSort().passage}
-          onChange={(event) => setSort('passage', event.currentTarget.value as PassageSort)}
+          onChange={(event) => setPassageSort(event.currentTarget.value as PassageSort)}
         >
           <For each={passageSorts}>
             {([value, label]) => <option value={value}>{label}</option>}

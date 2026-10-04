@@ -1,9 +1,4 @@
-import type { Range } from './types';
-
-export interface Snippet {
-  text: string;
-  ranges: Range[];
-}
+import type { Range, Snippet } from './types';
 
 /**
  * One line of `content` around `range`, for a row. Line breaks become spaces (one character each),

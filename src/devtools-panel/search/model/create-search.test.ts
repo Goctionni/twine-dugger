@@ -7,11 +7,13 @@ import { setStore } from '../../store/store';
 import * as passageSearch from '../core/passage-search';
 import * as stateSearch from '../core/state-search';
 import { defaultSearchOptions, defaultSearchScope, defaultSearchSort } from '../core/types';
-import { createSearch, type SearchData } from './create-search';
+import type { SearchData } from '../types';
+import { createSearch } from './create-search';
 import {
   clearTags,
   setQuery,
-  setSort,
+  setPassageSort,
+  setStateSort,
   toggleOption,
   toggleScope,
   toggleTag,
@@ -144,8 +146,8 @@ describe('what is searched again', () => {
     type('girl');
     toggleTag('intro');
     toggleType('string');
-    setSort('passage', 'name-asc');
-    setSort('state', 'path-desc');
+    setPassageSort('name-asc');
+    setStateSort('path-desc');
     toggleScope('stateValue');
     flush();
     expect(passageRuns()).toBe(1);
@@ -230,7 +232,7 @@ describe('identity', () => {
   it('keeps the hits when only the order changes', () => {
     type('girl');
     const before = new Map(fixture.search.passageList.map((hit) => [hit.key, hit]));
-    setSort('passage', 'name-asc');
+    setPassageSort('name-asc');
     flush();
     expect(keys(fixture.search.passageList)).toEqual([3, 2, 1]);
     for (const hit of fixture.search.passageList) expect(hit).toBe(before.get(hit.key));
@@ -284,20 +286,20 @@ describe('filters and sorting', () => {
 
   it('sorts passages by name, and back to best match', () => {
     type('girl');
-    setSort('passage', 'name-asc');
+    setPassageSort('name-asc');
     flush();
     expect(keys(fixture.search.passageList)).toEqual([3, 2, 1]);
-    setSort('passage', 'name-desc');
+    setPassageSort('name-desc');
     flush();
     expect(keys(fixture.search.passageList)).toEqual([1, 2, 3]);
-    setSort('passage', 'match');
+    setPassageSort('match');
     flush();
     expect(keys(fixture.search.passageList)).toEqual([2, 1, 3]);
   });
 
   it('sorts state by path', () => {
     type('girl');
-    setSort('state', 'path-desc');
+    setStateSort('path-desc');
     flush();
     expect(fixture.search.stateList.map((hit) => hit.pathText)).toEqual([
       'nested.girl',

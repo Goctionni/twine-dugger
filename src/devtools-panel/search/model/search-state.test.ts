@@ -7,7 +7,8 @@ import {
   createSearchPersistence,
   resetFilters,
   setQuery,
-  setSort,
+  setPassageSort,
+  setStateSort,
   toggleCollapsed,
   toggleOption,
   toggleScope,
@@ -66,7 +67,7 @@ describe('session state', () => {
     setQuery('abc');
     toggleOption('wholeWord');
     toggleScope('statePath');
-    setSort('passage', 'name-asc');
+    setPassageSort('name-asc');
     toggleType('string');
     toggleTag('room');
     flush();
@@ -85,7 +86,7 @@ describe('session state', () => {
 describe('persistence', () => {
   it('saves nothing unless the setting is on', () => {
     toggleOption('regex');
-    setSort('state', 'type');
+    setStateSort('type');
     flush();
     expect(store.settings['search.saved.options']).toEqual(defaultSearchOptions);
     expect(store.settings['search.saved.sort']).toEqual(defaultSearchSort);
@@ -97,7 +98,7 @@ describe('persistence', () => {
     flush();
     toggleOption('caseSensitive');
     toggleType('boolean');
-    setSort('state', 'type');
+    setStateSort('type');
     flush();
     expect(store.settings['search.saved.options']).toMatchObject({ caseSensitive: true });
     expect(store.settings['search.saved.typeFilter']).toEqual(['boolean']);

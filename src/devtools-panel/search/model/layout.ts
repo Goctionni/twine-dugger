@@ -1,15 +1,13 @@
 import { createMemo, createSignal, onSettled } from 'solid-js';
 
 import type { NarrowStyle } from '../core/types';
+import type { DetailMode, FilterMode } from '../types';
 
 /** From this width the filters are a rail beside the results; below it, a strip or a bar */
-export const RAIL_MIN_WIDTH = 760;
+const RAIL_MIN_WIDTH = 760;
 /** From this width the detail is a column beside the results; below it, it covers them */
-export const DETAIL_MIN_WIDTH_WITH_RAIL = 1120;
-export const DETAIL_MIN_WIDTH = 900;
-
-export type FilterMode = 'rail' | NarrowStyle;
-export type DetailMode = 'column' | 'sheet';
+const DETAIL_MIN_WIDTH_WITH_RAIL = 1120;
+const DETAIL_MIN_WIDTH = 900;
 
 /** The width of an element as it changes. Where DevTools is docked decides the shape of the page */
 export function createContainerWidth(getElement: () => HTMLElement | undefined) {

@@ -1,16 +1,6 @@
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import type { CompiledQuery } from './query';
-import type { PassageHit, Range, SearchScope } from './types';
-
-export interface PassageSearchResult {
-  /** Best match first: matches in the name or tags, then the ones that only match in the content */
-  hits: PassageHit[];
-  /** The passages the hits are about, in the order they were given. This is what a narrower search starts from */
-  passages: ParsedPassageData[];
-  /** How many hits have each tag */
-  tagCounts: Map<string, number>;
-}
+import type { CompiledQuery, PassageHit, PassageScope, PassageSearchResult, Range } from './types';
 
 const NO_RANGES: Range[] = [];
 
@@ -21,60 +11,42 @@ const NO_RANGES: Range[] = [];
 export function searchPassages(
   passages: readonly ParsedPassageData[],
   query: CompiledQuery,
-  scope: SearchScope,
+  scope: PassageScope,
 ): PassageSearchResult {
-  const titleHits: PassageHit[] = [];
-  const contentHits: PassageHit[] = [];
-
-  const searchContent = (passage: ParsedPassageData) => {
-    if (!scope.passageContent) return { content: null, contentCount: 0 };
-    const content = query.first(passage.content);
-    return { content, contentCount: content ? query.count(passage.content) : 0 };
+  const content = (passage: ParsedPassageData) => {
+    const first = scope.passageContent ? query.first(passage.content) : null;
+    return { content: first, contentCount: first ? query.count(passage.content) : 0 };
   };
 
-  const unmatched = new Uint8Array(passages.length);
-  if (scope.passageName || scope.passageTags) {
-    for (let i = 0; i < passages.length; i++) {
-      const passage = passages[i]!;
-      const name = scope.passageName ? query.ranges(passage.name) : NO_RANGES;
-      let tags: Range[][] = [];
-      if (scope.passageTags && passage.tags?.length) {
-        tags = passage.tags.map((tag) => query.ranges(tag));
-      }
-
-      if (name.length || tags.some((ranges) => ranges.length)) {
-        titleHits.push({ key: passage.id, name, tags, ...searchContent(passage) });
-      } else {
-        unmatched[i] = 1;
-      }
+  const titleHits: PassageHit[] = [];
+  const rest: ParsedPassageData[] = [];
+  for (const passage of passages) {
+    const name = scope.passageName ? query.ranges(passage.name) : NO_RANGES;
+    const tags = scope.passageTags ? (passage.tags ?? []).map((tag) => query.ranges(tag)) : [];
+    if (name.length || tags.some((ranges) => ranges.length)) {
+      titleHits.push({ key: passage.id, name, tags, ...content(passage) });
+    } else {
+      rest.push(passage);
     }
-  } else {
-    unmatched.fill(1);
   }
 
+  const contentHits: PassageHit[] = [];
   if (scope.passageContent) {
-    for (let i = 0; i < passages.length; i++) {
-      if (!unmatched[i]) continue;
-      const passage = passages[i]!;
-      const content = query.first(passage.content);
-      if (!content) continue;
-      contentHits.push({
-        key: passage.id,
-        name: NO_RANGES,
-        tags: [],
-        content,
-        contentCount: query.count(passage.content),
-      });
-      unmatched[i] = 0;
+    for (const passage of rest) {
+      const found = content(passage);
+      if (found.content) contentHits.push({ key: passage.id, name: NO_RANGES, tags: [], ...found });
     }
   }
 
-  // Not in the order of the hits: a narrower search must find them in the same order as a new one
-  const resultPassages = passages.filter((_, i) => !unmatched[i]);
+  const hits = [...titleHits, ...contentHits];
+  // In the order they were given, not the order of the hits: a narrower search must find them in the
+  // same order as a new one
+  const found = new Set(hits.map((hit) => hit.key));
+  const matched = passages.filter((passage) => found.has(passage.id));
+
   const tagCounts = new Map<string, number>();
-  for (const passage of resultPassages) {
+  for (const passage of matched) {
     for (const tag of new Set(passage.tags)) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
   }
-
-  return { hits: [...titleHits, ...contentHits], passages: resultPassages, tagCounts };
+  return { hits, passages: matched, tagCounts };
 }

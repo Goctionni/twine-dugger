@@ -3,7 +3,15 @@ import { createEffect, deep, snapshot } from 'solid-js';
 import type { ValueType } from '@/shared/shared-types';
 
 import { setSetting, setStore, store } from '../../store/store';
-import type { PassageSort, SearchOptions, SearchScope, SearchView, StateSort } from '../core/types';
+import {
+  defaultSearchScope,
+  defaultSearchSort,
+  type PassageSort,
+  type SearchOptions,
+  type SearchScope,
+  type SearchView,
+  type StateSort,
+} from '../core/types';
 
 /**
  * What the search page remembers while DevTools is open. It lives in the store, so it is still
@@ -38,12 +46,15 @@ export function toggleScope(scope: keyof SearchScope) {
   });
 }
 
-export function setSort(section: 'state', sort: StateSort): void;
-export function setSort(section: 'passage', sort: PassageSort): void;
-export function setSort(section: 'state' | 'passage', sort: StateSort | PassageSort) {
+export function setStateSort(sort: StateSort) {
   setStore((draft) => {
-    if (section === 'state') draft.viewState.search.sort.state = sort as StateSort;
-    else draft.viewState.search.sort.passage = sort as PassageSort;
+    draft.viewState.search.sort.state = sort;
+  });
+}
+
+export function setPassageSort(sort: PassageSort) {
+  setStore((draft) => {
+    draft.viewState.search.sort.passage = sort;
   });
 }
 
@@ -88,14 +99,8 @@ export function toggleCollapsed(section: 'state' | 'passage') {
 export function resetFilters() {
   setStore((draft) => {
     const search = draft.viewState.search;
-    search.scope = {
-      statePath: true,
-      stateValue: true,
-      passageName: true,
-      passageTags: true,
-      passageContent: true,
-    };
-    search.sort = { state: 'source', passage: 'match' };
+    search.scope = { ...defaultSearchScope };
+    search.sort = { ...defaultSearchSort };
     search.typeFilter = [];
     search.tagFilter = [];
   });

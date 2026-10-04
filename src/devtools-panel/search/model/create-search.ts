@@ -1,12 +1,21 @@
-import { createMemo, createProjection, untrack, type Accessor } from 'solid-js';
+import { createMemo, createProjection, untrack } from 'solid-js';
 
-import type { JSONSafeObject, ParsedPassageData } from '@/shared/shared-types';
+import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { searchPassages, type PassageSearchResult } from '../core/passage-search';
-import { canNarrow, compileQuery, queryKey, type CompiledQuery } from '../core/query';
+import { searchPassages } from '../core/passage-search';
+import { canNarrow, compileQuery, queryKey } from '../core/query';
 import { sortPassageHits, sortStateHits } from '../core/sort';
-import { searchState, type StateSearchResult } from '../core/state-search';
-import type { PassageHit, StateHit } from '../core/types';
+import { searchState } from '../core/state-search';
+import type {
+  CompiledQuery,
+  PassageHit,
+  PassageScope,
+  PassageSearchResult,
+  StateHit,
+  StateScope,
+  StateSearchResult,
+} from '../core/types';
+import type { SearchData } from '../types';
 import {
   getOptions,
   getQuery,
@@ -17,25 +26,12 @@ import {
 } from './search-state';
 import { createSelection } from './selection';
 
-/** Where the search reads from.  is the game that is being inspected */
-export interface SearchData {
-  passages: Accessor<readonly ParsedPassageData[]>;
-  /** Changes whenever the state does, so the state is searched again */
-  stateVersion: Accessor<number>;
-  /** The state as plain data. Reading it is not tracked; `stateVersion` says when to look again */
-  getState: () => JSONSafeObject;
-  /** Higher = changed more recently */
-  getLastChange: (key: string) => number;
-}
-
 interface PassageStage extends PassageSearchResult {
   query: CompiledQuery | null;
   scope: PassageScope;
   /** What was searched, to know if what was found can be searched again */
   source: readonly ParsedPassageData[];
 }
-type PassageScope = { passageName: boolean; passageTags: boolean; passageContent: boolean };
-type StateScope = { statePath: boolean; stateValue: boolean };
 
 const NO_PASSAGES: PassageStage = {
   hits: [],
@@ -103,11 +99,7 @@ export function createSearch(data: SearchData) {
       previous.source === source &&
       sameFlags(previous.scope, scope) &&
       canNarrow(previous.query, current);
-    const result = searchPassages(narrowing ? previous.passages : source, current, {
-      ...scope,
-      statePath: false,
-      stateValue: false,
-    });
+    const result = searchPassages(narrowing ? previous.passages : source, current, scope);
     return { ...result, query: current, scope, source };
   });
 
@@ -116,12 +108,7 @@ export function createSearch(data: SearchData) {
     const scope = stateScope();
     data.stateVersion();
     if (!current) return NO_STATE;
-    return searchState(untrack(data.getState), current, {
-      ...scope,
-      passageName: false,
-      passageTags: false,
-      passageContent: false,
-    });
+    return searchState(untrack(data.getState), current, scope);
   });
 
   const passageById = createMemo(() => new Map(data.passages().map((p) => [p.id, p])));
@@ -170,4 +157,3 @@ export function createSearch(data: SearchData) {
     selection: createSelection(),
   };
 }
-export type SearchModel = ReturnType<typeof createSearch>;

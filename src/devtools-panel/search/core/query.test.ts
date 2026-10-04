@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 
-import { canNarrow, compileQuery, queryKey, type CompiledQuery } from './query';
-import { defaultSearchOptions, type SearchOptions } from './types';
+import { canNarrow, compileQuery, queryKey } from './query';
+import { defaultSearchOptions, type CompiledQuery, type SearchOptions } from './types';
 
 const compile = (text: string, options: Partial<SearchOptions> = {}) => {
   const query = compileQuery(text, { ...defaultSearchOptions, ...options });

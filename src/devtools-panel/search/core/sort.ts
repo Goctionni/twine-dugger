@@ -14,7 +14,7 @@ const TYPE_ORDER: Record<string, number> = {
 const typeRank = (type: string) => TYPE_ORDER[type] ?? 7;
 
 /** Everywhere the query was found in the passage: name, tags and content */
-export const countMatches = (hit: PassageHit) =>
+const countMatches = (hit: PassageHit) =>
   hit.name.length + hit.tags.reduce((sum, ranges) => sum + ranges.length, 0) + hit.contentCount;
 
 /**

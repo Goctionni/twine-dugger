@@ -4,7 +4,7 @@ import { isNumberLike } from '@/shared/json-safe';
 // The plain-text form of what PrettyPath shows
 const isIdentifier = (name: string) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
 
-export interface PathSegment {
+interface PathSegment {
   text: string;
   /** Where the key itself starts in `text` (after the dot, bracket or quote) */
   keyOffset: number;
