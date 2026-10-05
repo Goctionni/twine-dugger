@@ -34,6 +34,24 @@ export function setQuery(query: string) {
   });
 }
 
+let isQueryScheduled = false;
+
+/** The longest a search waits for idle time: the user is waiting for the results */
+const SEARCH_IDLE_TIMEOUT_MS = 50;
+
+/** Searches for what `read` returns when the browser is idle, not inside the key press that caused it. */
+export function setQueryWhenIdle(read: () => string) {
+  if (isQueryScheduled) return;
+  isQueryScheduled = true;
+  requestIdleCallback(
+    () => {
+      isQueryScheduled = false;
+      setQuery(read());
+    },
+    { timeout: SEARCH_IDLE_TIMEOUT_MS },
+  );
+}
+
 export function toggleOption(option: keyof SearchOptions) {
   setStore((draft) => {
     draft.viewState.search.options[option] = !draft.viewState.search.options[option];

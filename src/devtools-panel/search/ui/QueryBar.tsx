@@ -9,6 +9,7 @@ import {
   getOptions,
   getQuery,
   setQuery,
+  setQueryWhenIdle,
   toggleOption,
 } from '../model/search-state';
 import { LayoutToggle } from './filters/LayoutToggle';
@@ -57,7 +58,7 @@ export function QueryBar(props: Props) {
             autocomplete="off"
             ref={input}
             value={getQuery()}
-            onInput={(event) => setQuery(event.currentTarget.value)}
+            onInput={() => setQueryWhenIdle(() => input?.value ?? '')}
           />
           <Show when={getQuery()}>
             <button

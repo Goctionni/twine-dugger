@@ -1,5 +1,5 @@
 import { createRoot, flush } from 'solid-js';
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { setSetting, setStore, store } from '../../store/store';
 import { defaultSearchOptions, defaultSearchScope, defaultSearchSort } from '../core/types';
@@ -7,6 +7,7 @@ import {
   createSearchPersistence,
   resetFilters,
   setQuery,
+  setQueryWhenIdle,
   setPassageSort,
   setStateSort,
   toggleCollapsed,
@@ -112,5 +113,55 @@ describe('persistence', () => {
     flush();
     expect(JSON.stringify(store.settings)).not.toContain('secret');
     expect(JSON.stringify(store.settings)).not.toContain('room');
+  });
+});
+
+describe('setQueryWhenIdle', () => {
+  // jsdom has no idle callbacks: these wait until the test says the browser is idle
+  const idle: Array<() => void> = [];
+  const timeouts: Array<number | undefined> = [];
+  beforeEach(() => {
+    idle.length = 0;
+    timeouts.length = 0;
+    vi.stubGlobal('requestIdleCallback', (callback: () => void, options?: { timeout?: number }) => {
+      idle.push(callback);
+      timeouts.push(options?.timeout);
+      return idle.length;
+    });
+  });
+  afterEach(() => vi.unstubAllGlobals());
+  const becomeIdle = () => idle.splice(0).forEach((callback) => callback());
+
+  it('does not search before the browser is idle, and then searches for what is in the input by then', () => {
+    setQuery('');
+    flush();
+    let typed = 'a';
+    setQueryWhenIdle(() => typed);
+    typed = 'ab';
+    setQueryWhenIdle(() => typed);
+    flush();
+    expect(store.viewState.search.query).toBe('');
+    // One search for both keys
+    expect(idle).toHaveLength(1);
+
+    becomeIdle();
+    flush();
+    expect(store.viewState.search.query).toBe('ab');
+  });
+
+  it('does not wait for idle time for ever', () => {
+    setQueryWhenIdle(() => 'x');
+    expect(timeouts[0]).toBeGreaterThan(0);
+    expect(timeouts[0]).toBeLessThanOrEqual(100);
+    becomeIdle();
+  });
+
+  it('can be used again afterwards', () => {
+    setQueryWhenIdle(() => 'x');
+    becomeIdle();
+    setQueryWhenIdle(() => 'xy');
+    becomeIdle();
+    flush();
+    expect(store.viewState.search.query).toBe('xy');
   });
 });
