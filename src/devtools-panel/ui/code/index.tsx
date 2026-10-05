@@ -1,16 +1,19 @@
 import javascriptLangDef from '@shikijs/langs/javascript';
 import clsx from 'clsx';
-import { createEffect, createMemo, createSignal } from 'solid-js';
+import { createEffect, createMemo, createSignal, Show } from 'solid-js';
 import type { IRawGrammar } from 'vscode-textmate';
 
+import { createGetSetting } from '@/devtools-panel/store/store';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 
+import { highlightRanges, createTextRanges, type CharRange } from '../util/range-highlight';
 import { Toggle } from '../util/Toggle';
 import chapbookLangDef from './grammars/chapbook-grammar.json' with { type: 'json' };
 import harloweLangDef from './grammars/harlowe-grammar.json' with { type: 'json' };
 import snowmanLangDef from './grammars/snowman-grammar.json' with { type: 'json' };
 import sugarcubeLangDef from './grammars/sugarcube-grammar.json' with { type: 'json' };
 import { createHighlighter, createRegistry, escapeHtml } from './highlighter';
+import { getHighlightingLength } from './highlighting-limits';
 
 type TEvent<TE extends Event, TEl extends HTMLElement> = TE & { currentTarget: TEl };
 
@@ -21,10 +24,14 @@ const formatDict: Record<string, string> = {
   snowman: snowmanLangDef.scopeName,
 };
 
+const getDisableHighlighting = createGetSetting('editor.disableHighlighting');
+
 interface PassageCodeProps {
   code: string;
   format?: string;
   onSave?: (code: string) => void;
+  /** Parts of `code` to mark as search matches; the first one is scrolled into view */
+  matches?: readonly CharRange[];
 }
 
 export function Code(props: PassageCodeProps) {
@@ -33,6 +40,11 @@ export function Code(props: PassageCodeProps) {
   const [highlighter, setHighlighter] = createSignal<Awaited<
     ReturnType<typeof createHighlighter>
   > | null>(null);
+
+  // Decided by the length it was opened with: it should not switch while someone is typing
+  const [forceHighlighting, setForceHighlighting] = createSignal(false);
+  const isHeldBack = () => props.code.length >= getHighlightingLength(getDisableHighlighting());
+  const highlighting = () => !isHeldBack() || forceHighlighting();
 
   let textareaRef!: HTMLTextAreaElement;
   let preRef!: HTMLPreElement;
@@ -55,9 +67,34 @@ export function Code(props: PassageCodeProps) {
   );
 
   const html = createMemo(() => {
-    const escape = highlighter()?.toHtml ?? escapeHtml;
+    const escape = (highlighting() ? highlighter()?.toHtml : undefined) ?? escapeHtml;
     return escape(localCode());
   });
+
+  // Marks the matches of what was searched for. Once the text is edited, the positions no longer fit
+  createEffect(
+    () => ({
+      html: html(),
+      matches:
+        localCode() === props.code
+          ? props.matches?.map(([from, to]) => [from, to] as const)
+          : undefined,
+    }),
+    ({ matches }) => (matches ? highlightRanges(preRef, matches) : undefined),
+  );
+
+  // When a passage is opened from a search, it opens at the first match
+  let hasScrolled = false;
+  createEffect(
+    () => props.matches?.[0],
+    (first) => {
+      if (hasScrolled || !first) return;
+      const top = createTextRanges(preRef, [first])[0]?.getBoundingClientRect().top;
+      if (top === undefined) return;
+      hasScrolled = true;
+      textareaRef.scrollTop = Math.max(0, top - preRef.getBoundingClientRect().top - 60);
+    },
+  );
 
   const handleScroll = () => {
     if (preRef && textareaRef) {
@@ -111,6 +148,21 @@ export function Code(props: PassageCodeProps) {
 
   return (
     <div class="flex h-full w-full flex-col">
+      <Show when={!highlighting()}>
+        <div class="flex items-center gap-3 bg-amber-950 px-3 py-1 text-xs text-amber-200">
+          <span>
+            Syntax highlighting is off for this passage. Turning it on can make this panel freeze
+            for a while if the passage is long.
+          </span>
+          <button
+            type="button"
+            class="shrink-0 cursor-pointer rounded-sm bg-amber-700 px-2 py-0.5 text-white hover:bg-amber-600"
+            onClick={() => setForceHighlighting(true)}
+          >
+            Enable syntax highlighting
+          </button>
+        </div>
+      </Show>
       <div class="relative w-full flex-1 overflow-hidden">
         <textarea
           ref={textareaRef}

@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import * as gameState from '@/devtools-panel/store/game-state';
 
+import { installFakeHighlights, getMarkedText } from '../util/test-highlights';
 import { PrettyPath } from './PrettyPath';
 
 vi.mock('@/devtools-panel/store/game-state', async () => {
@@ -70,5 +71,13 @@ describe('PrettyPath', () => {
     });
     flush();
     expect(container.textContent).toBe('seen.get("tavern")');
+  });
+
+  it('marks the ranges it is given as a search match, in the text as it is written', () => {
+    installFakeHighlights();
+
+    render(() => <PrettyPath path={['player', 'items', 1]} ranges={[[7, 12]]} />);
+    flush();
+    expect(getMarkedText()).toEqual(['items']);
   });
 });

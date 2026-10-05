@@ -4,6 +4,7 @@ import { fromJson } from '@/shared/from-json';
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
 import type { GameMetaData, Page, Path } from '@/shared/shared-types';
 
+import { defaultSearchOptions, defaultSearchScope, defaultSearchSort } from '../search/core/types';
 import {
   gameConfigSchema,
   settingsSchema,
@@ -31,6 +32,16 @@ const defaultSettings: Settings = {
   'state.propertyOrder': 'type',
   'state.propertyOrderDesc': false,
   'state.filters': [],
+  'editor.disableHighlighting': 'large',
+  'search.narrowStyle': 'strip',
+  'search.persist.options': false,
+  'search.persist.scope': false,
+  'search.persist.sort': false,
+  'search.persist.typeFilter': false,
+  'search.saved.options': defaultSearchOptions,
+  'search.saved.scope': defaultSearchScope,
+  'search.saved.sort': defaultSearchSort,
+  'search.saved.typeFilter': [],
 };
 
 function loadGlobalSettings(): Settings {
@@ -53,17 +64,46 @@ function loadGameConfig(gameId: string | undefined): GameConfig {
   return { filteredPaths: [], locks: [] };
 }
 
+function createInitialSearchState(settings: Settings): StoreData['viewState']['search'] {
+  // Opted-in slices start from what was saved last time; the rest start from defaults
+  const pick = <T>(persist: boolean, saved: T, fallback: T): T => (persist ? saved : fallback);
+  return {
+    query: '',
+    options: pick(
+      settings['search.persist.options'],
+      settings['search.saved.options'],
+      defaultSearchOptions,
+    ),
+    scope: pick(
+      settings['search.persist.scope'],
+      settings['search.saved.scope'],
+      defaultSearchScope,
+    ),
+    sort: pick(settings['search.persist.sort'], settings['search.saved.sort'], defaultSearchSort),
+    typeFilter: pick(
+      settings['search.persist.typeFilter'],
+      settings['search.saved.typeFilter'],
+      [],
+    ),
+    tagFilter: [],
+    view: 'both',
+    collapsed: { state: false, passage: false },
+  };
+}
+
+const initialSettings = loadGlobalSettings();
+
 export const [store, setStore] = createStore<StoreData>({
   connectionState: 'loading-meta',
   candidateIframes: [],
   gameMeta: null,
   gameConfig: { filteredPaths: [], locks: [] },
-  settings: loadGlobalSettings(),
+  settings: initialSettings,
   viewState: {
     activeTab: 'state',
     state: { historyRef: 'latest', path: [] },
     passages: { selected: null },
-    search: { query: '', resultTab: 'state' },
+    search: createInitialSearchState(initialSettings),
   },
 });
 
