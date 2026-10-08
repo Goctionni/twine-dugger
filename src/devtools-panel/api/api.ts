@@ -1,3 +1,4 @@
+import { toWireValue } from '@/shared/json-safe';
 import type { FormatPassage, Lock, Path } from '@/shared/shared-types';
 
 import { executeCode, injectContentScript } from './remote-execute';
@@ -20,7 +21,7 @@ export async function getUpdates(full = false) {
 
 export async function setState(path: Array<string | number>, value: unknown) {
   await injectContentScript();
-  return execDuggerFunction('setState', [[...path], value]);
+  return execDuggerFunction('setState', [[...path], toWireValue(value)]);
 }
 
 export async function goToPassage(passageName: string) {

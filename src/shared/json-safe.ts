@@ -82,3 +82,30 @@ export function containsFunction(value: JSONSafeValue): boolean {
 export function getKeyLabel(type: ContainerType, key: string | number) {
   return type === 'set' && typeof key === 'number' ? key - 1 : key;
 }
+
+/** Encodes a panel value for the executeCode wire, mirroring pretransform shapes. */
+export function toWireValue(value: unknown): JSONSafeValue {
+  if (value === null || value === undefined) return value;
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+    return value;
+  if (value instanceof Map) {
+    const out: JSONSafeObject = { [TYPE_KEY]: 'Map' };
+    for (const [k, v] of value) {
+      if (typeof k === 'number') out[TYPE_KEY] = 'NumberMap';
+      out[String(k)] = toWireValue(v);
+    }
+    return out;
+  }
+  if (value instanceof Set) {
+    const out: JSONSafeArray = [SET_MARKER];
+    for (const v of value) out.push(toWireValue(v));
+    return out;
+  }
+  if (Array.isArray(value)) return value.map(toWireValue);
+  if (typeof value === 'object') {
+    const out: JSONSafeObject = {};
+    for (const [k, v] of Object.entries(value)) out[k] = toWireValue(v);
+    return out;
+  }
+  return value as JSONSafeValue;
+}
