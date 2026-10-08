@@ -7,6 +7,7 @@ import snowmanHelpers from './format-helpers/snowman';
 import sugarcubeHelpers from './format-helpers/sugarcube';
 import type { FormatHelpers } from './format-helpers/type';
 import { createLockEnforcer } from './util/locks';
+import { posttransformValue } from './util/post-transform';
 import { createUpdateTracker } from './util/update-tracker';
 
 const formatHelpers: FormatHelpers[] = [
@@ -37,7 +38,7 @@ function init() {
       const reverts = lockEnforcer.enforce();
       return { type: 'update', passage, delta: tracker.getDelta(), reverts };
     },
-    setState: formatHelper.setState,
+    setState: (path, value) => formatHelper.setState(path, posttransformValue(value as never)),
     deleteFromState: formatHelper.deleteFromState,
     duplicateStateProperty: formatHelper.duplicateStateProperty,
     setStatePropertyLocks: lockEnforcer.setLocks,
