@@ -4,7 +4,11 @@ import { fromJson } from '@/shared/from-json';
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
 import type { GameMetaData, Page, Path } from '@/shared/shared-types';
 
-import { createDefaultOptions, createDefaultScope, createDefaultSort } from '../search/core/types';
+import {
+  createDefaultOptions,
+  createDefaultScope,
+  createDefaultSort,
+} from '../views/GlobalSearch/types';
 import {
   gameConfigSchema,
   settingsSchema,

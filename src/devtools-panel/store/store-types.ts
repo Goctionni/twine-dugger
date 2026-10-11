@@ -12,7 +12,7 @@ import {
   type ValueType,
 } from '@/shared/shared-types';
 
-import type { SearchScope, SearchSort } from '../search/core/types';
+import type { SearchScope, SearchSort } from '../views/GlobalSearch/types';
 
 export interface StoreData {
   connectionState: ConnectionState;
