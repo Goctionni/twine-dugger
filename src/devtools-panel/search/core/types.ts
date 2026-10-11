@@ -51,6 +51,10 @@ export const createDefaultScope = (): SearchScope => ({
 
 export const createDefaultSort = (): SearchSort => ({ state: 'source', passage: 'match' });
 
+/** Whether two scopes (or the options of one) have the same parts switched on */
+export const sameFlags = <T extends object>(a: T, b: T) =>
+  (Object.keys(a) as Array<keyof T>).every((key) => a[key] === b[key]);
+
 /** Plain data: no reference to the passage, so a hit is cheap to keep and to compare by key */
 export interface PassageHit {
   /** Passage id */

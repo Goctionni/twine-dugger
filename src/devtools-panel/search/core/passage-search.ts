@@ -1,6 +1,13 @@
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import type { Matcher, PassageHit, PassageScope, PassageSearchResult, Range } from './types';
+import {
+  sameFlags,
+  type Matcher,
+  type PassageHit,
+  type PassageScope,
+  type PassageSearchResult,
+  type Range,
+} from './types';
 
 const NO_RANGES: Range[] = [];
 
@@ -8,7 +15,7 @@ const NO_RANGES: Range[] = [];
  * `passages` can be everything, or what a broader search matched: this does not know the difference.
  * The names and tags are checked first, the content (the expensive part) only for the rest.
  */
-export function searchPassages(
+function naiveSearchPassages(
   passages: readonly ParsedPassageData[],
   matcher: Matcher,
   scope: PassageScope,
@@ -53,6 +60,45 @@ export function searchPassages(
   // same order as a new one
   const found = new Set(hits.map((hit) => hit.key));
   return { hits, passages: passages.filter((passage) => found.has(passage.id)) };
+}
+
+/** What a passage search found, and what it looked at: the next search can start from it */
+export interface PassageSearch extends PassageSearchResult {
+  /** Null when there was nothing to search for: nothing is found then */
+  matcher: Matcher | null;
+  scope: PassageScope;
+  source: readonly ParsedPassageData[];
+}
+
+/** Whether what the `previous` search found is enough to search in: it looked at the same passages in the same way, and the new search is a narrower one */
+function canNarrowFrom(
+  previous: PassageSearch | undefined,
+  source: readonly ParsedPassageData[],
+  matcher: Matcher,
+  scope: PassageScope,
+): previous is PassageSearch & { matcher: Matcher } {
+  return (
+    !!previous?.matcher &&
+    previous.source === source &&
+    sameFlags(previous.scope, scope) &&
+    matcher.canNarrowFrom(previous.matcher)
+  );
+}
+
+/**
+ * Searches the passages, starting from the passages the `previous` search found when that is
+ * enough: what matches a longer search also matches a shorter one.
+ */
+export function searchPassages(
+  previous: PassageSearch | undefined,
+  source: readonly ParsedPassageData[],
+  matcher: Matcher | null,
+  scope: PassageScope,
+): PassageSearch {
+  if (!matcher) return { hits: [], passages: [], matcher, scope, source };
+  const passages = canNarrowFrom(previous, source, matcher, scope) ? previous.passages : source;
+  const result = naiveSearchPassages(passages, matcher, scope);
+  return { ...result, matcher, scope, source };
 }
 
 /** Everywhere the search was found in a passage: name, tags and content. Counting the content is real work */

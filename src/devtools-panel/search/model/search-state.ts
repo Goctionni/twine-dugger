@@ -11,7 +11,6 @@ import {
   type SearchSort,
   type StateSort,
 } from '../core/types';
-import type { SearchInput } from '../types';
 
 /**
  * What the search is told, and what it is told to show of what it found. It lives in the store, so
@@ -25,14 +24,6 @@ export const getScope = (): SearchScope => params().scope;
 export const getSort = (): SearchSort => params().sort;
 export const getTypeFilter = (): readonly ValueType[] => params().typeFilter;
 export const getTagFilter = (): readonly string[] => params().tagFilter;
-
-/** The store as the input of `createSearch` */
-export const searchInput: SearchInput = {
-  scope: getScope,
-  sort: getSort,
-  typeFilter: getTypeFilter,
-  tagFilter: getTagFilter,
-};
 
 export function toggleStateScope(part: keyof SearchScope['state']) {
   setStore((draft) => {

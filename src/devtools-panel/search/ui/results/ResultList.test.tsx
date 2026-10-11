@@ -1,21 +1,23 @@
 import { render } from '@solidjs/web';
-import { createRoot, createSignal, flush } from 'solid-js';
+import { createMemo, createProjection, createRoot, createSignal, flush } from 'solid-js';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 import { getMarkedText, installFakeHighlights } from '@/devtools-panel/ui/util/test-highlights';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { setStore } from '../../../store/store';
+import { searchPassages } from '../../core/passage-search';
 import {
   createDefaultOptions,
   createDefaultScope,
   createDefaultSort,
   type Matcher,
+  type PassageHit,
 } from '../../core/types';
 import { SearchContext, SelectionContext } from '../../model/context';
-import { createSearch } from '../../model/create-search';
-import { searchInput, toggleTag } from '../../model/search-state';
+import { getTagFilter, toggleTag } from '../../model/search-state';
 import { createSelection } from '../../model/selection';
+import type { SearchModel } from '../../types';
 import { createMatcher } from '../SearchBar/matcher';
 import { PassageRow } from './PassageRow';
 import { ResultList } from './ResultList';
@@ -43,7 +45,7 @@ beforeAll(() => {
 
 let host: HTMLElement;
 let dispose: () => void;
-let model: ReturnType<typeof createSearch>;
+let model: SearchModel;
 let selection: ReturnType<typeof createSelection>;
 let setMatcher: (matcher: Matcher | null) => void;
 
@@ -63,16 +65,29 @@ beforeEach(() => {
   dispose = createRoot((disposeRoot) => {
     const [getMatcher, setCurrentMatcher] = createSignal<Matcher | null>(null);
     setMatcher = setCurrentMatcher;
-    model = createSearch(
-      {
-        passages: () => passages,
-        stateVersion: () => 0,
-        getState: () => ({}),
-        getLastChange: () => 0,
-      },
-      searchInput,
-      getMatcher,
-    );
+    // What the page does to find, filter by tag and keep the hits that stay as the same objects
+    const sortedPassageHits = createMemo<PassageHit[]>(() => {
+      const matcher = getMatcher();
+      if (!matcher) return [];
+      const { hits } = searchPassages(undefined, passages, matcher, createDefaultScope().passage);
+      const tags = getTagFilter();
+      if (!tags.length) return hits;
+      return hits.filter((hit) => passages[hit.key - 1]!.tags.some((tag) => tags.includes(tag)));
+    });
+    const passageHits = createProjection<PassageHit[]>(() => sortedPassageHits(), [], {
+      key: 'key',
+    });
+    // Only what the rows read
+    const rowModel: Pick<
+      SearchModel,
+      'passageHits' | 'sortedPassageHits' | 'getPassage' | 'countMatches'
+    > = {
+      passageHits,
+      sortedPassageHits,
+      getPassage: (id) => passages.find((passage) => passage.id === id),
+      countMatches: (text) => getMatcher()?.count(text) ?? 0,
+    };
+    model = rowModel as SearchModel;
     selection = createSelection();
     const stop = render(
       () => (
