@@ -95,10 +95,12 @@ export function searchPassages(
   matcher: Matcher | null,
   scope: PassageScope,
 ): PassageSearch {
-  if (!matcher) return { hits: [], passages: [], matcher, scope, source };
+  // A copy: the scope can be a store that changes, and the next search compares with what this one saw
+  const searched = { ...scope };
+  if (!matcher) return { hits: [], passages: [], matcher, scope: searched, source };
   const passages = canNarrowFrom(previous, source, matcher, scope) ? previous.passages : source;
   const result = naiveSearchPassages(passages, matcher, scope);
-  return { ...result, matcher, scope, source };
+  return { ...result, matcher, scope: searched, source };
 }
 
 /** Everywhere the search was found in a passage: name, tags and content. Counting the content is real work */

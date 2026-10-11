@@ -2,10 +2,11 @@ import clsx from 'clsx';
 import { createMemo, For, Show, type Accessor } from 'solid-js';
 
 import { getTagColor } from '@/devtools-panel/ui/display/Tag';
+import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { snippetAround } from '../../core/snippet';
 import type { PassageHit, Range } from '../../core/types';
-import { useSearch, useSelection } from '../../model/context';
+import { useSelection } from '../../model/context';
 import { Highlight } from './Highlight';
 
 const MAX_TAGS = 3;
@@ -14,15 +15,17 @@ const PREVIEW_LENGTH = 120;
 
 interface Props {
   hit: Accessor<PassageHit>;
+  getPassage: (id: number) => ParsedPassageData | undefined;
+  /** How often the search text is found in a text */
+  countMatches: (text: string) => number;
 }
 
 const sameNumbers = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((value, index) => value === b[index]);
 
 export function PassageRow(props: Props) {
-  const { getPassage, countMatches } = useSearch();
   const selection = useSelection();
-  const passage = createMemo(() => getPassage(props.hit().key));
+  const passage = createMemo(() => props.getPassage(props.hit().key));
   const name = () => passage()?.name ?? '';
   const tags = () => passage()?.tags ?? [];
 
@@ -51,7 +54,7 @@ export function PassageRow(props: Props) {
 
   // How often it matches in the content: counted here, for the rows that are shown, not for every hit
   const contentMatches = createMemo(() =>
-    props.hit().firstContentRange ? countMatches(passage()?.content ?? '') : 0,
+    props.hit().firstContentRange ? props.countMatches(passage()?.content ?? '') : 0,
   );
 
   // Clicking the selected result again closes it

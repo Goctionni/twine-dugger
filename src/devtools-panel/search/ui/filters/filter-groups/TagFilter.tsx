@@ -1,23 +1,26 @@
-import { createMemo, createSignal, For, Show } from 'solid-js';
+import { createMemo, createSignal, For, Show, type Accessor } from 'solid-js';
 
 import { getTagColor } from '@/devtools-panel/ui/display/Tag';
 
-import { useSearch } from '../../../model/context';
 import { clearTags, getTagFilter, toggleTag } from '../../../model/search-state';
 import { CheckRow } from './CheckRow';
 
 /** The tags are the game's own, and there can be thousands: only the first are listed */
 const MAX_LISTED = 100;
 
-export function TagFilter() {
-  const { tagCounts } = useSearch();
+interface Props {
+  /** How many of what was found have each tag */
+  tagCounts: Accessor<Map<string, number>>;
+}
+
+export function TagFilter(props: Props) {
   const [find, setFind] = createSignal('');
 
   // Chosen tags first, then the most common. Not a sort of everything with a rich comparison: there
   // can be thousands of tags, and this runs for every change of the results
   const matching = createMemo(() => {
     const staticNeedle = find().trim().toLowerCase();
-    const counts = tagCounts();
+    const counts = props.tagCounts();
     const chosen = getTagFilter();
     const fits = (tag: string) => !staticNeedle || tag.toLowerCase().includes(staticNeedle);
     const others: string[] = [];
@@ -50,7 +53,7 @@ export function TagFilter() {
           <CheckRow
             checked={getTagFilter().includes(tag)}
             onChange={() => toggleTag(tag)}
-            count={tagCounts().get(tag) ?? 0}
+            count={props.tagCounts().get(tag) ?? 0}
           >
             <span
               class="tag-chip truncate rounded-sm px-1.5 text-xs text-white"

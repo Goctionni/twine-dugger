@@ -14,10 +14,9 @@ import {
   type Matcher,
   type PassageHit,
 } from '../../core/types';
-import { SearchContext, SelectionContext } from '../../model/context';
+import { SelectionContext } from '../../model/context';
 import { getTagFilter, toggleTag } from '../../model/search-state';
 import { createSelection } from '../../model/selection';
-import type { SearchModel } from '../../types';
 import { createMatcher } from '../SearchBar/matcher';
 import { PassageRow } from './PassageRow';
 import { ResultList } from './ResultList';
@@ -45,7 +44,6 @@ beforeAll(() => {
 
 let host: HTMLElement;
 let dispose: () => void;
-let model: SearchModel;
 let selection: ReturnType<typeof createSelection>;
 let setMatcher: (matcher: Matcher | null) => void;
 
@@ -77,27 +75,16 @@ beforeEach(() => {
     const passageHits = createProjection<PassageHit[]>(() => sortedPassageHits(), [], {
       key: 'key',
     });
-    // Only what the rows read
-    const rowModel: Pick<
-      SearchModel,
-      'passageHits' | 'sortedPassageHits' | 'getPassage' | 'countMatches'
-    > = {
-      passageHits,
-      sortedPassageHits,
-      getPassage: (id) => passages.find((passage) => passage.id === id),
-      countMatches: (text) => getMatcher()?.count(text) ?? 0,
-    };
-    model = rowModel as SearchModel;
+    const getPassage = (id: number) => passages.find((passage) => passage.id === id);
+    const countMatches = (text: string) => getMatcher()?.count(text) ?? 0;
     selection = createSelection();
     const stop = render(
       () => (
-        <SearchContext value={model}>
-          <SelectionContext value={selection}>
-            <ResultList items={model.passageHits} order={model.sortedPassageHits} rowHeight={54}>
-              {(hit) => <PassageRow hit={hit} />}
-            </ResultList>
-          </SelectionContext>
-        </SearchContext>
+        <SelectionContext value={selection}>
+          <ResultList items={passageHits} order={sortedPassageHits} rowHeight={54}>
+            {(hit) => <PassageRow hit={hit} getPassage={getPassage} countMatches={countMatches} />}
+          </ResultList>
+        </SelectionContext>
       ),
       host,
     );

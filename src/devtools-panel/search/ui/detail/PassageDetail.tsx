@@ -8,7 +8,7 @@ import { Tag } from '@/devtools-panel/ui/display/Tag';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { useSearch } from '../../model/context';
+import type { Range } from '../../core/types';
 import { getScope } from '../../model/search-state';
 
 /** More than this many marks in an editor is no use to anyone */
@@ -16,12 +16,13 @@ const MAX_MATCHES = 2000;
 
 interface Props {
   passage: ParsedPassageData;
+  /** Where the search text is found in a text */
+  findRanges: (text: string, max?: number) => Range[];
 }
 
 export function PassageDetail(props: Props) {
-  const { findRanges } = useSearch();
   const matches = createMemo(() =>
-    getScope().passage.content ? findRanges(props.passage.content, MAX_MATCHES) : undefined,
+    getScope().passage.content ? props.findRanges(props.passage.content, MAX_MATCHES) : undefined,
   );
 
   const openInPassages = () => {

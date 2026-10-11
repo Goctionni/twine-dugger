@@ -1,17 +1,20 @@
-import { createMemo, For, Show } from 'solid-js';
+import { createMemo, For, Show, type Accessor } from 'solid-js';
 
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import type { ValueType } from '@/shared/shared-types';
 
-import { useSearch } from '../../../model/context';
 import { clearTypes, getTypeFilter, toggleType } from '../../../model/search-state';
 import { CheckRow } from './CheckRow';
 
 /** The types of the results, most common first; a chosen type stays in the list when it has none */
-export function TypeFilter() {
-  const { typeCounts } = useSearch();
+interface Props {
+  /** How many of what was found have each type */
+  typeCounts: Accessor<Partial<Record<ValueType, number>>>;
+}
+
+export function TypeFilter(props: Props) {
   const types = createMemo(() => {
-    const counts = typeCounts();
+    const counts = props.typeCounts();
     const all = new Set<ValueType>([...(Object.keys(counts) as ValueType[]), ...getTypeFilter()]);
     return [...all].toSorted((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0) || a.localeCompare(b));
   });
@@ -32,7 +35,7 @@ export function TypeFilter() {
           <CheckRow
             checked={getTypeFilter().includes(type)}
             onChange={() => toggleType(type)}
-            count={typeCounts()[type] ?? 0}
+            count={props.typeCounts()[type] ?? 0}
           >
             <TypeIcon type={type} /> {type}
           </CheckRow>

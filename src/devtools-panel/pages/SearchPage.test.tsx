@@ -10,6 +10,7 @@ import { createDefaultScope, createDefaultSort } from '../search/core/types';
 import { gameData } from '../search/model/game-data';
 import {
   clearTags,
+  resetFilters,
   setPassageSort,
   setStateSort,
   togglePassageScope,
@@ -218,6 +219,19 @@ describe('what is searched again', () => {
     await settle();
     expect(passageRuns()).toBe(2);
     expect(stateRuns()).toBe(2);
+  });
+
+  it('does not search again when the filters are reset and the scope did not change', async () => {
+    await type('girl');
+    setPassageSort('name-asc');
+    toggleTag('intro');
+    await settle();
+    expect([passageRuns(), stateRuns()]).toEqual([1, 1]);
+
+    // Makes a new scope, with the same flags
+    resetFilters();
+    await settle();
+    expect([passageRuns(), stateRuns()]).toEqual([1, 1]);
   });
 });
 

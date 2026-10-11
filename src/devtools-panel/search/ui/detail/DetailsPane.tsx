@@ -1,6 +1,9 @@
-import { createMemo, Match, Show, Switch } from 'solid-js';
+import { createMemo, Match, Show, Switch, type Accessor } from 'solid-js';
 
-import { useSearch, useSelection } from '../../model/context';
+import type { ParsedPassageData } from '@/shared/shared-types';
+
+import type { Range, StateHit } from '../../core/types';
+import { useSelection } from '../../model/context';
 import type { DetailMode } from '../../types';
 import { PassageDetail } from './PassageDetail';
 import { StateDetail } from './StateDetail';
@@ -8,21 +11,25 @@ import { StateDetail } from './StateDetail';
 interface Props {
   /** A column beside the results, or a sheet over them */
   mode: DetailMode;
+  getPassage: (id: number) => ParsedPassageData | undefined;
+  /** What was found in the state: the selected result is one of these */
+  sortedStateHits: Accessor<readonly StateHit[]>;
+  /** Where the search text is found in a text */
+  findRanges: (text: string, max?: number) => Range[];
 }
 
 /** The selected result. When there is none: a column says so, and a sheet isn't there at all */
 export function DetailsPane(props: Props) {
-  const { getPassage, sortedStateHits } = useSearch();
   const selection = useSelection();
 
   const passage = createMemo(() => {
     const current = selection.selected();
-    return current?.section === 'passage' ? getPassage(current.key as number) : undefined;
+    return current?.section === 'passage' ? props.getPassage(current.key as number) : undefined;
   });
   const stateHit = createMemo(() => {
     const current = selection.selected();
     return current?.section === 'state'
-      ? sortedStateHits().find((hit) => hit.key === current.key)
+      ? props.sortedStateHits().find((hit) => hit.key === current.key)
       : undefined;
   });
   const hasDetail = () => !!(passage() ?? stateHit());
@@ -52,7 +59,7 @@ export function DetailsPane(props: Props) {
         <Switch fallback={<p class="p-3 text-sm text-slate-400">Select a result to preview it</p>}>
           {/* Matched on the id: saving a passage makes a new object, which must not replace the editor; another passage does */}
           <Match when={passage()?.id} keyed>
-            {() => <PassageDetail passage={passage()!} />}
+            {() => <PassageDetail passage={passage()!} findRanges={props.findRanges} />}
           </Match>
           <Match when={stateHit()?.key} keyed>
             {() => <StateDetail hit={stateHit()!} />}

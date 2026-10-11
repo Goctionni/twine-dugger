@@ -1,18 +1,22 @@
 import clsx from 'clsx';
 import { For } from 'solid-js';
 
-import { useSearch } from '../../model/context';
 import { getView, setView, type ResultsView } from './results-view';
 
+interface Props {
+  hasQuery: boolean;
+  stateTotal: number;
+  passageTotal: number;
+}
+
 /** Both sections, or only one of them */
-export function ViewSwitch() {
-  const search = useSearch();
+export function ViewSwitch(props: Props) {
   const options: Array<{ view: ResultsView; label: () => string }> = [
     { view: 'both', label: () => 'Both' },
-    { view: 'state', label: () => `State · ${search.hasQuery() ? search.stateTotal() : '–'}` },
+    { view: 'state', label: () => `State · ${props.hasQuery ? props.stateTotal : '–'}` },
     {
       view: 'passage',
-      label: () => `Passages · ${search.hasQuery() ? search.passageTotal() : '–'}`,
+      label: () => `Passages · ${props.hasQuery ? props.passageTotal : '–'}`,
     },
   ];
 

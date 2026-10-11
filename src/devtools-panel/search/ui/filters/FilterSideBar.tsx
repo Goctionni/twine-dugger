@@ -2,32 +2,33 @@ import { For, Match, Show, Switch } from 'solid-js';
 
 import { hasActiveFilters, resetFilters } from '../../model/search-state';
 import type { FilterLayout } from '../../types';
-import { filterGroups } from './filter-groups';
+import { createFilterGroups, type FilterCounts, type FilterGroup } from './filter-groups';
 import { LayoutToggle } from './LayoutToggle';
 import { Popover } from './Popover';
 
-interface Props {
+interface Props extends FilterCounts {
   layout: FilterLayout;
 }
 
 export function FilterSideBar(props: Props) {
+  const groups = createFilterGroups(props);
   return (
     <Switch>
       <Match when={props.layout === 'icon-sidebar'}>
-        <IconSideBar />
+        <IconSideBar groups={groups} />
       </Match>
       <Match when={props.layout === 'full-sidebar'}>
-        <FullSideBar />
+        <FullSideBar groups={groups} />
       </Match>
     </Switch>
   );
 }
 
 /** All the filters, one under the other, for when there is room */
-function FullSideBar() {
+function FullSideBar(props: { groups: FilterGroup[] }) {
   return (
     <aside class="flex h-full w-56 shrink-0 flex-col gap-3 overflow-auto border-r border-slate-700 p-1.5">
-      <For each={filterGroups}>
+      <For each={props.groups}>
         {(group) => (
           <section>
             <h3 class="mb-1 px-1 text-xs font-semibold tracking-wide text-slate-300 uppercase">
@@ -54,7 +55,7 @@ function FullSideBar() {
 }
 
 /** A narrow column of icons, each opening one group beside it */
-function IconSideBar() {
+function IconSideBar(props: { groups: FilterGroup[] }) {
   return (
     <nav class="box-content flex h-full w-12 shrink-0 flex-col items-center border-r border-slate-700">
       {/* As high as the search bar, which is beside it, so that the button lines up with it */}
@@ -62,7 +63,7 @@ function IconSideBar() {
         <LayoutToggle />
       </div>
       <div class="flex flex-col items-center gap-1.5 py-1.5">
-        <For each={filterGroups}>
+        <For each={props.groups}>
           {(group) => (
             <Popover
               side="right"

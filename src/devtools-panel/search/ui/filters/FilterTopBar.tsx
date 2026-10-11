@@ -1,13 +1,14 @@
 import { For, Show } from 'solid-js';
 
-import { filterGroups } from './filter-groups';
+import { createFilterGroups, type FilterCounts } from './filter-groups';
 import { Popover } from './Popover';
 
 /** A row of buttons under the search bar, each opening one group below it */
-export function FilterTopBar() {
+export function FilterTopBar(props: FilterCounts) {
+  const groups = createFilterGroups(props);
   return (
     <div class="flex flex-wrap items-center gap-1.5 border-b border-slate-700 p-1.5">
-      <For each={filterGroups}>
+      <For each={groups}>
         {(group) => (
           <Popover
             side="below"
