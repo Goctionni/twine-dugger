@@ -1,4 +1,4 @@
-import type { QueryMatcher, Range, SearchQuery } from '../types';
+import type { QueryMatcher, Range, SearchOptions } from '../types';
 
 export type CreateMatcherResult =
   | { ok: true; queryMatcher: QueryMatcher }
@@ -14,8 +14,10 @@ const escapeRegex = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'
  * that is looked at, and gives positions for highlighting. `searchText` must not be empty: with
  * nothing to search for there is nothing to make.
  */
-export function createQueryMatcher(query: SearchQuery): CreateMatcherResult {
-  const { searchText, options } = query;
+export function createQueryMatcher(
+  searchText: string,
+  options: SearchOptions,
+): CreateMatcherResult {
   const body = options.regex ? searchText : escapeRegex(searchText);
   const source = options.wholeWord ? `(?<!\\w)(?:${body})(?!\\w)` : body;
   const flags = options.caseSensitive ? '' : 'i';
@@ -48,8 +50,9 @@ export function createQueryMatcher(query: SearchQuery): CreateMatcherResult {
   return {
     ok: true,
     queryMatcher: {
-      query,
-      canNarrowFrom({ query: previous }) {
+      searchText,
+      options,
+      canNarrowFrom(previous) {
         if (previous.options.regex || options.regex) return false;
         if (previous.options.wholeWord || options.wholeWord) return false;
         if (previous.options.caseSensitive && !options.caseSensitive) return false;

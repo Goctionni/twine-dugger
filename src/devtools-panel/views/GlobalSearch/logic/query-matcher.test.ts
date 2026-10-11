@@ -5,10 +5,7 @@ import { createDefaultOptions } from '../utils/search-defaults';
 import { createQueryMatcher } from './query-matcher';
 
 const queryMatcherFor = (searchText: string, options: Partial<SearchOptions> = {}) => {
-  const result = createQueryMatcher({
-    searchText,
-    options: { ...createDefaultOptions(), ...options },
-  });
+  const result = createQueryMatcher(searchText, { ...createDefaultOptions(), ...options });
   if (!result.ok) throw new Error('expected a valid search');
   return result.queryMatcher;
 };
@@ -54,10 +51,7 @@ describe('createQueryMatcher', () => {
   });
 
   it('reports an invalid regex instead of throwing', () => {
-    const result = createQueryMatcher({
-      searchText: '(',
-      options: { ...createDefaultOptions(), regex: true },
-    });
+    const result = createQueryMatcher('(', { ...createDefaultOptions(), regex: true });
     expect(result).toMatchObject({ ok: false });
     expect(result.ok ? '' : result.error).toBeTruthy();
   });

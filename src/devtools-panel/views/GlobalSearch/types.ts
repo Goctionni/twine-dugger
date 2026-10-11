@@ -9,12 +9,6 @@ export interface SearchOptions {
   regex: boolean;
 }
 
-/** What is searched for: the text and how to read it */
-export interface SearchQuery {
-  searchText: string;
-  options: SearchOptions;
-}
-
 /** What is searched in. A part that is switched off finds nothing */
 export interface StateScope {
   path: boolean;
@@ -67,7 +61,8 @@ export interface StateMatcherHit {
 /** Finds the matches of a search text in a text. Made by `createQueryMatcher` */
 export interface QueryMatcher {
   /** What this was made from */
-  readonly query: SearchQuery;
+  readonly searchText: string;
+  readonly options: SearchOptions;
   /** Whether the new search needs to search in all state/passages, or only previous results  */
   canNarrowFrom(previous: QueryMatcher): boolean;
   /** Whether `text` has at least one (non-empty) match */

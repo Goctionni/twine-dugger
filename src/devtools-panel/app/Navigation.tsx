@@ -4,7 +4,7 @@ import { For, onCleanup } from 'solid-js';
 import type { Page } from '@/shared/shared-types';
 
 import { getNavigationPage, setNavigationPage } from '../store/store';
-import { requestSearchFocus } from '../views/GlobalSearch/subcomponents/SearchBar/SearchBar';
+import { requestSearchFocus } from '../views/GlobalSearch/store-helpers/search-focus';
 
 interface NavItem {
   id: Page;

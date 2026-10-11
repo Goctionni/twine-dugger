@@ -1,4 +1,4 @@
-import { createStore, Show } from 'solid-js';
+import { Show } from 'solid-js';
 
 import type { ParsedPassageData } from '@/shared/shared-types';
 
@@ -36,13 +36,6 @@ export function ResultsPane(props: Props) {
   const showPassages = () => getView() !== 'state';
   const both = () => getView() === 'both';
 
-  // Which sections are folded away: forgotten when the page is left
-  const [collapsed, setCollapsed] = createStore({ state: false, passage: false });
-  const toggleCollapsed = (section: 'state' | 'passage') =>
-    setCollapsed((draft) => {
-      draft[section] = !draft[section];
-    });
-
   return (
     <div class="flex h-full min-h-0 flex-col">
       <ViewSwitch
@@ -64,9 +57,6 @@ export function ResultsPane(props: Props) {
                 shown={props.sortedStateHits.length}
                 total={props.stateTotal}
                 collapsible={both()}
-                collapsed={both() && collapsed.state}
-                onToggle={() => toggleCollapsed('state')}
-                empty="No results"
               >
                 <ResultList order={props.sortedStateHits} rowHeight={STATE_ROW_HEIGHT}>
                   {(hit) => (
@@ -87,9 +77,6 @@ export function ResultsPane(props: Props) {
                 shown={props.sortedPassageHits.length}
                 total={props.passageTotal}
                 collapsible={both()}
-                collapsed={both() && collapsed.passage}
-                onToggle={() => toggleCollapsed('passage')}
-                empty="No results"
               >
                 <ResultList order={props.sortedPassageHits} rowHeight={PASSAGE_ROW_HEIGHT}>
                   {(hit) => (

@@ -241,14 +241,15 @@ describe('identity', () => {
     expect(stopObserving()).toHaveLength(0);
   });
 
-  it('keeps the row of a hit that is left when a filter takes another away', async () => {
+  it('keeps the rows of the hits that are left when a filter takes another away', async () => {
     await type('girl');
-    const girlTalk = rows()[0];
+    const [girlTalk, , bath] = rows();
     toggleTag('dialogue');
     await settle();
 
+    // Bath moves up to a place the list did not have before the filter
     expect(titles()).toEqual(['Girl Talk', 'Bath']);
-    expect(rows()[0]).toBe(girlTalk);
+    expect(rows()).toEqual([girlTalk, bath]);
   });
 
   it('keeps the rows when only the order changes', async () => {

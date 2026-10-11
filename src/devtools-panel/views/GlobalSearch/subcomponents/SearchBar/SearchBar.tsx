@@ -1,6 +1,7 @@
 import { createEffect, createSignal, onSettled, Show } from 'solid-js';
 
 import { createQueryMatcher } from '../../logic/query-matcher';
+import { getFocusRequests } from '../../store-helpers/search-focus';
 import {
   getSearchOptions,
   getSearchText,
@@ -11,10 +12,6 @@ import type { FilterLayout, QueryMatcher, SearchOptions } from '../../types';
 import { LayoutToggle } from '../Filters/LayoutToggle';
 import { ToggleCaseSensitive, ToggleRegex, ToggleWholeWord } from './OptionToggles';
 import { whenIdle } from './when-idle';
-
-const [getFocusRequests, setFocusRequests] = createSignal(0);
-
-export const requestSearchFocus = () => setFocusRequests((count) => count + 1);
 
 interface Props {
   layout: FilterLayout;
@@ -31,14 +28,14 @@ export function SearchBar(props: Props) {
   // Why the search text can't be searched for (an invalid regex), if so
   const [getError, setError] = createSignal<string | null>(null);
 
-  /** Gives the queryMatcher for what is searched for, and says why there is none when it is not valid */
+  /** Gives the query matcher for what is searched for, and says why there is none when it is not valid */
   function search(searchText: string, options: SearchOptions) {
-    const result = searchText ? createQueryMatcher({ searchText, options }) : null;
+    const result = searchText ? createQueryMatcher(searchText, options) : null;
     setError(result && !result.ok ? result.error : null);
     props.setQueryMatcher(result?.ok ? result.queryMatcher : null);
   }
 
-  // The page starts without a queryMatcher, and what was searched for is still here after leaving it
+  // The page starts without a query matcher, and what was searched for is still here after leaving it
   onSettled(() => search(getSearchText(), getSearchOptions()));
 
   const toggleOption = (option: keyof SearchOptions) => {

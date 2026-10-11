@@ -11,6 +11,8 @@ import { Highlight } from './Highlight';
 const MAX_TAGS = 3;
 const NO_RANGES: Range[] = [];
 const PREVIEW_LENGTH = 120;
+const CHARS_BEFORE_MATCH = 38;
+const CHARS_AFTER_MATCH = 80;
 
 interface Snippet {
   text: string;
@@ -100,13 +102,9 @@ export function PassageRow(props: Props) {
   );
 }
 
-export function snippetAround(
-  content: string,
-  [start, end]: Range,
-  { before = 38, after = 80 } = {},
-): Snippet {
-  const from = Math.max(0, start - before);
-  const to = Math.min(content.length, end + after);
+export function snippetAround(content: string, [start, end]: Range): Snippet {
+  const from = Math.max(0, start - CHARS_BEFORE_MATCH);
+  const to = Math.min(content.length, end + CHARS_AFTER_MATCH);
   const lead = from > 0 ? '…' : '';
   const text =
     lead + content.slice(from, to).replace(/\s/g, ' ') + (to < content.length ? '…' : '');

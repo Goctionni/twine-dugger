@@ -43,7 +43,11 @@ export function ResultList<T extends { key: string | number }>(props: Props<T>) 
       <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
         <For each={virtualizer.getVirtualItems()}>
           {(virtualItem) => {
-            const hit = createMemo(() => items[virtualItem.index]);
+            // The list shrinks before the virtual items follow: until then this row's position can be
+            // past the end, and the row must not be thrown away and made again for that
+            const hit = createMemo<T | undefined>(
+              (previous) => items[virtualItem.index] ?? previous,
+            );
             return (
               <Show when={hit()}>
                 {(current) => (

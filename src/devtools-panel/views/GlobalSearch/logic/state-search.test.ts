@@ -9,10 +9,7 @@ import { createQueryMatcher } from './query-matcher';
 import { countTypes, searchState } from './state-search';
 
 const q = (searchText: string, options: Partial<SearchOptions> = {}): QueryMatcher => {
-  const result = createQueryMatcher({
-    searchText,
-    options: { ...createDefaultOptions(), ...options },
-  });
+  const result = createQueryMatcher(searchText, { ...createDefaultOptions(), ...options });
   if (!result.ok) throw new Error('expected a valid search');
   return result.queryMatcher;
 };

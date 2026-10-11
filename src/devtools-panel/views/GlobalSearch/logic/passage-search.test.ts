@@ -23,7 +23,7 @@ const passages = [
 ];
 
 const q = (searchText: string): QueryMatcher => {
-  const result = createQueryMatcher({ searchText, options: createDefaultOptions() });
+  const result = createQueryMatcher(searchText, createDefaultOptions());
   if (!result.ok) throw new Error('expected a valid search');
   return result.queryMatcher;
 };
@@ -133,13 +133,10 @@ describe('countPassageMatches', () => {
 });
 
 describe('searchPassages, after another search', () => {
-  // The name is the only thing that is looked at, so the queryMatcher is asked once per passage that is searched
+  // The name is the only thing that is looked at, so the query matcher is asked once per passage that is searched
   const nameOnly = scope({ tags: false, content: false });
   const counted = (searchText: string, options: Partial<SearchOptions> = {}) => {
-    const result = createQueryMatcher({
-      searchText,
-      options: { ...createDefaultOptions(), ...options },
-    });
+    const result = createQueryMatcher(searchText, { ...createDefaultOptions(), ...options });
     if (!result.ok) throw new Error('expected a valid search');
     const searched = { count: 0 };
     const queryMatcher: QueryMatcher = {

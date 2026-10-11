@@ -109,9 +109,7 @@ afterEach(() => {
 
 const rowElements = () => [...host.querySelectorAll('li')];
 const type = async (text: string) => {
-  const result = text
-    ? createQueryMatcher({ searchText: text, options: createDefaultOptions() })
-    : null;
+  const result = text ? createQueryMatcher(text, createDefaultOptions()) : null;
   setQueryMatcher(result?.ok ? result.queryMatcher : null);
   flush();
   await Promise.resolve();

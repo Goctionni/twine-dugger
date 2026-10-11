@@ -68,7 +68,7 @@ describe('typing', () => {
 
     becomeIdle();
     expect(setQueryMatcher).toHaveBeenCalledOnce();
-    expect(lastMatcher()?.query.searchText).toBe('girl');
+    expect(lastMatcher()?.searchText).toBe('girl');
     expect(lastMatcher()?.test('the girl')).toBe(true);
   });
 
@@ -82,7 +82,7 @@ describe('typing', () => {
   it('can be used again afterwards', () => {
     type('x');
     type('xy');
-    expect(lastMatcher()?.query.searchText).toBe('xy');
+    expect(lastMatcher()?.searchText).toBe('xy');
   });
 
   it('gives no queryMatcher for no text, and when the text is cleared', () => {
