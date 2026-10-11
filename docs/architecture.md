@@ -37,7 +37,7 @@ DevTools Panel  ──► (chrome.scripting.executeScript) ──►  Content Sc
 ### Project Layout (selected)
 
 - `src/create-panel/` — registers the DevTools panel (`create-panel.ts`).
-- `src/devtools-panel/` — SolidJS UI, views, store, and `api/` (page bridge).
+- `src/devtools-panel/` — SolidJS UI: `pages/` (routes), `views/<Feature>/` (the code of each feature), `ui/` (shared components), `store/`, `utils/` and `api/` (page bridge).
 - `src/content-script/` — Twine detection, delta tracking, locks, and safe state ops.
 - `src/shared/` — cross-bundle utilities and **type definitions** used by both sides.
 - `dist/` — built artifacts and `manifest.json`.

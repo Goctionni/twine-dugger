@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1204 654" width="1204" height="654" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#e9ecef"/></marker></defs>
+<rect width="100%" height="100%" fill="#121212"/>
+<rect x="30" y="255" width="200" height="80" rx="10" fill="#1c3d5a" stroke="#ced4da" stroke-width="2"/>
+<text x="130" y="286.5" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">SearchBar</text>
+<text x="130" y="309" font-size="18" text-anchor="middle" fill="#e9ecef">text + options</text>
+<rect x="290" y="255" width="210" height="80" rx="10" fill="#1f4a2e" stroke="#ced4da" stroke-width="2"/>
+<text x="395" y="286.5" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">Query matcher</text>
+<text x="395" y="309" font-size="18" text-anchor="middle" fill="#e9ecef">one regex</text>
+<rect x="290" y="60" width="210" height="80" rx="10" fill="#1c3d5a" stroke="#ced4da" stroke-width="2"/>
+<text x="395" y="91.5" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">Passages store</text>
+<text x="395" y="114" font-size="18" text-anchor="middle" fill="#e9ecef">loaded once</text>
+<rect x="290" y="450" width="210" height="80" rx="10" fill="#1c3d5a" stroke="#ced4da" stroke-width="2"/>
+<text x="395" y="481.5" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">Game state store</text>
+<text x="395" y="504" font-size="18" text-anchor="middle" fill="#e9ecef">polled, patched</text>
+<rect x="600" y="255" width="270" height="80" rx="10" fill="#1c3d5a" stroke="#ced4da" stroke-width="2"/>
+<text x="735" y="286.5" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">Scope, sort, filters</text>
+<text x="735" y="309" font-size="18" text-anchor="middle" fill="#e9ecef">store (in memory)</text>
+<rect x="600" y="45" width="270" height="110" rx="10" fill="#1f4a2e" stroke="#ced4da" stroke-width="2"/>
+<text x="735" y="69" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">Passage search</text>
+<text x="735" y="91.5" font-size="18" text-anchor="middle" fill="#e9ecef">1 Run query matcher</text>
+<text x="735" y="114" font-size="18" text-anchor="middle" fill="#e9ecef">2 Filter by tag</text>
+<text x="735" y="136.5" font-size="18" text-anchor="middle" fill="#e9ecef">3 Sort</text>
+<rect x="600" y="435" width="270" height="110" rx="10" fill="#1f4a2e" stroke="#ced4da" stroke-width="2"/>
+<text x="735" y="459" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">State search</text>
+<text x="735" y="481.5" font-size="18" text-anchor="middle" fill="#e9ecef">1 Run query matcher</text>
+<text x="735" y="504" font-size="18" text-anchor="middle" fill="#e9ecef">2 Filter by type</text>
+<text x="735" y="526.5" font-size="18" text-anchor="middle" fill="#e9ecef">3 Sort</text>
+<rect x="960" y="60" width="220" height="80" rx="10" fill="#5a4a14" stroke="#ced4da" stroke-width="2"/>
+<text x="1070" y="91.5" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">Passage rows</text>
+<text x="1070" y="114" font-size="18" text-anchor="middle" fill="#e9ecef">+ tag counts</text>
+<rect x="960" y="450" width="220" height="80" rx="10" fill="#5a4a14" stroke="#ced4da" stroke-width="2"/>
+<text x="1070" y="481.5" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">State rows</text>
+<text x="1070" y="504" font-size="18" text-anchor="middle" fill="#e9ecef">+ type counts</text>
+<rect x="960" y="255" width="220" height="80" rx="10" fill="#5a4a14" stroke="#ced4da" stroke-width="2"/>
+<text x="1070" y="286.5" font-size="18" font-weight="bold" text-anchor="middle" fill="#e9ecef">DetailsPane</text>
+<text x="1070" y="309" font-size="18" text-anchor="middle" fill="#e9ecef">selected result</text>
+<polyline points="230,295 290,295" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="500,295 550,295 550,125 600,125" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="500,295 550,295 550,465 600,465" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="500,75 600,75" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="500,515 600,515" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="735,255 735,155" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="735,335 735,435" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="870,100 960,100" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="870,490 960,490" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="1070,140 1070,255" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<polyline points="1070,450 1070,335" fill="none" stroke="#ced4da" stroke-width="2" stroke-linejoin="round" marker-end="url(#head)"/>
+<text x="30" y="602" font-size="16" fill="#adb5bd">The query matcher runs again when the text or options change, the scope when its flags change,</text>
+<text x="30" y="622" font-size="16" fill="#adb5bd">and the source when the passages or the state change. Filtering and sorting only work on what was found.</text>
+</svg>
