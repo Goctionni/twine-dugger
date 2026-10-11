@@ -3,13 +3,11 @@ import { createMemo, untrack, type Accessor } from 'solid-js';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { searchPassages } from '../core/passage-search';
-import { canNarrow } from '../core/query';
 import { searchState } from '../core/state-search';
 import type {
   Matcher,
   PassageScope,
   PassageSearchResult,
-  SearchQuery,
   StateHit,
   StateScope,
 } from '../core/types';
@@ -26,8 +24,6 @@ const createStableScope = <T extends object>(read: Accessor<T>) =>
   createMemo<T>(() => ({ ...read() }), { equals: sameFlags });
 
 interface StageInput<TScope> {
-  /** The search as it was when `matcher` was made: what a narrower search compares with */
-  query: Accessor<SearchQuery>;
   /** Null when there is nothing to search for, or the search is not valid */
   matcher: Accessor<Matcher | null>;
   scope: Accessor<TScope>;
@@ -39,7 +35,6 @@ interface StageInput<TScope> {
  */
 export function createPassageStage({
   passages,
-  query,
   matcher,
   scope,
 }: StageInput<PassageScope> & { passages: Accessor<readonly ParsedPassageData[]> }) {
@@ -48,7 +43,7 @@ export function createPassageStage({
   // What the previous search looked at and found, to know if it can be searched again
   let previous:
     | {
-        query: SearchQuery;
+        matcher: Matcher;
         scope: PassageScope;
         source: readonly ParsedPassageData[];
         found: readonly ParsedPassageData[];
@@ -57,7 +52,6 @@ export function createPassageStage({
 
   return createMemo<PassageSearchResult>(() => {
     const current = matcher();
-    const currentQuery = query();
     const currentScope = stableScope();
     const source = passages();
     if (!current) {
@@ -70,13 +64,13 @@ export function createPassageStage({
       previous &&
       previous.source === source &&
       sameFlags(previous.scope, currentScope) &&
-      canNarrow(previous.query, currentQuery);
+      current.canNarrowFrom(previous.matcher);
     const result = searchPassages(
       canStartFromPrevious ? previous!.found : source,
       current,
       currentScope,
     );
-    previous = { query: currentQuery, scope: currentScope, source, found: result.passages };
+    previous = { matcher: current, scope: currentScope, source, found: result.passages };
     return result;
   });
 }

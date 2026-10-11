@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { createMatcher } from './matcher';
+import { createMatcher } from '../ui/SearchBar/matcher';
 import { countPassageMatches, countTags, searchPassages } from './passage-search';
 import { createDefaultOptions, type Matcher, type PassageScope } from './types';
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vite-plus/test';
 import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
 import type { JSONSafeObject } from '@/shared/shared-types';
 
-import { createMatcher } from './matcher';
+import { createMatcher } from '../ui/SearchBar/matcher';
 import { countTypes, searchState } from './state-search';
 import { createDefaultOptions, type Matcher, type SearchOptions, type StateScope } from './types';
 

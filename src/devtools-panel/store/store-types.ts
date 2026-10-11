@@ -12,7 +12,7 @@ import {
   type ValueType,
 } from '@/shared/shared-types';
 
-import type { SearchQuery, SearchScope, SearchSort } from '../search/core/types';
+import type { SearchScope, SearchSort } from '../search/core/types';
 
 export interface StoreData {
   connectionState: ConnectionState;
@@ -31,7 +31,6 @@ export interface StoreData {
     };
     /** What the search is told; see `search/types.ts` */
     search: {
-      query: SearchQuery;
       scope: SearchScope;
       sort: SearchSort;
       /** Value types to show in state results; empty = all */

@@ -1,5 +1,6 @@
-import { Show } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 
+import type { Matcher } from '../search/core/types';
 import { SearchContext, SelectionContext } from '../search/model/context';
 import { createGetBreakpoint } from '../search/model/create-get-breakpoint';
 import { createSearch } from '../search/model/create-search';
@@ -12,11 +13,12 @@ import { ActiveChips } from '../search/ui/filters/ActiveChips';
 import { FilterSideBar } from '../search/ui/filters/FilterSideBar';
 import { FilterTopBar } from '../search/ui/filters/FilterTopBar';
 import { ResultsPane } from '../search/ui/results/ResultsPane';
-import { SearchBar } from '../search/ui/SearchBar';
+import { SearchBar } from '../search/ui/SearchBar/SearchBar';
 import { getSettings } from '../store/store';
 
 export function SearchPage() {
-  const model = createSearch(gameData, searchInput);
+  const [getMatcher, setMatcher] = createSignal<Matcher | null>(null);
+  const model = createSearch(gameData, searchInput, getMatcher);
   const selection = createSelection();
   createSearchPersistence();
 
@@ -32,7 +34,7 @@ export function SearchPage() {
         <div class="relative flex h-full w-full overflow-hidden">
           <FilterSideBar layout={getFilterLayout()} />
           <main class="flex min-w-0 flex-1 flex-col">
-            <SearchBar layout={getFilterLayout()} />
+            <SearchBar layout={getFilterLayout()} setMatcher={setMatcher} />
             <Show when={getFilterLayout() === 'top-bar'}>
               <FilterTopBar />
             </Show>

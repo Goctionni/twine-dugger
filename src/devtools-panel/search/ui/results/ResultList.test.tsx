@@ -1,16 +1,22 @@
 import { render } from '@solidjs/web';
-import { createRoot, flush } from 'solid-js';
+import { createRoot, createSignal, flush } from 'solid-js';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 import { getMarkedText, installFakeHighlights } from '@/devtools-panel/ui/util/test-highlights';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { setStore } from '../../../store/store';
-import { createDefaultOptions, createDefaultScope, createDefaultSort } from '../../core/types';
+import {
+  createDefaultOptions,
+  createDefaultScope,
+  createDefaultSort,
+  type Matcher,
+} from '../../core/types';
 import { SearchContext, SelectionContext } from '../../model/context';
 import { createSearch } from '../../model/create-search';
-import { searchInput, setSearchText, toggleTag } from '../../model/search-state';
+import { searchInput, toggleTag } from '../../model/search-state';
 import { createSelection } from '../../model/selection';
+import { createMatcher } from '../SearchBar/matcher';
 import { PassageRow } from './PassageRow';
 import { ResultList } from './ResultList';
 
@@ -39,11 +45,11 @@ let host: HTMLElement;
 let dispose: () => void;
 let model: ReturnType<typeof createSearch>;
 let selection: ReturnType<typeof createSelection>;
+let setMatcher: (matcher: Matcher | null) => void;
 
 beforeEach(() => {
   setStore((draft) => {
     draft.viewState.search = {
-      query: { searchText: '', options: createDefaultOptions() },
       scope: createDefaultScope(),
       sort: createDefaultSort(),
       typeFilter: [],
@@ -55,6 +61,8 @@ beforeEach(() => {
   host = document.createElement('div');
   document.body.append(host);
   dispose = createRoot((disposeRoot) => {
+    const [getMatcher, setCurrentMatcher] = createSignal<Matcher | null>(null);
+    setMatcher = setCurrentMatcher;
     model = createSearch(
       {
         passages: () => passages,
@@ -63,6 +71,7 @@ beforeEach(() => {
         getLastChange: () => 0,
       },
       searchInput,
+      getMatcher,
     );
     selection = createSelection();
     const stop = render(
@@ -88,7 +97,8 @@ afterEach(() => {
 
 const rowElements = () => [...host.querySelectorAll('li')];
 const type = async (text: string) => {
-  setSearchText(text);
+  const result = text ? createMatcher({ searchText: text, options: createDefaultOptions() }) : null;
+  setMatcher(result?.ok ? result.matcher : null);
   flush();
   await Promise.resolve();
 };

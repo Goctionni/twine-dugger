@@ -1,4 +1,6 @@
-import type { MatcherResult, Range, SearchQuery } from './types';
+import type { Matcher, Range, SearchQuery } from '../../core/types';
+
+export type MatcherResult = { ok: true; matcher: Matcher } | { ok: false; error: string };
 
 /** Ranges kept per text; matches beyond it are still counted by `count` */
 const MAX_RANGES = 50;
@@ -10,7 +12,8 @@ const escapeRegex = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'
  * that is looked at, and gives positions for highlighting. `searchText` must not be empty: with
  * nothing to search for there is nothing to make.
  */
-export function createMatcher({ searchText, options }: SearchQuery): MatcherResult {
+export function createMatcher(query: SearchQuery): MatcherResult {
+  const { searchText, options } = query;
   const body = options.regex ? searchText : escapeRegex(searchText);
   const source = options.wholeWord ? `(?<!\\w)(?:${body})(?!\\w)` : body;
   const flags = options.caseSensitive ? '' : 'i';
@@ -43,6 +46,15 @@ export function createMatcher({ searchText, options }: SearchQuery): MatcherResu
   return {
     ok: true,
     matcher: {
+      query,
+      canNarrowFrom({ query: previous }) {
+        if (previous.options.regex || options.regex) return false;
+        if (previous.options.wholeWord || options.wholeWord) return false;
+        if (previous.options.caseSensitive && !options.caseSensitive) return false;
+        return previous.options.caseSensitive
+          ? searchText.includes(previous.searchText)
+          : searchText.toLowerCase().includes(previous.searchText.toLowerCase());
+      },
       // A literal search is never empty, so the cheaper test says the same as a search for matches
       test: options.regex ? (text) => first(text) !== null : (text) => find.test(text),
       first,

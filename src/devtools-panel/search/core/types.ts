@@ -80,6 +80,10 @@ export interface StateHit {
 
 /** Finds the matches of a search text in a text. Made by `createMatcher` */
 export interface Matcher {
+  /** What this matcher was made from */
+  readonly query: SearchQuery;
+  /** Whether the new search needs to search in all state/passages, or only previous results  */
+  canNarrowFrom(previous: Matcher): boolean;
   /** Whether `text` has at least one (non-empty) match */
   test(text: string): boolean;
   /** The first match */
@@ -89,8 +93,6 @@ export interface Matcher {
   /** The number of matches */
   count(text: string): number;
 }
-
-export type MatcherResult = { ok: true; matcher: Matcher } | { ok: false; error: string };
 
 export interface PassageSearchResult {
   /** Best match first: matches in the name or tags, then the ones that only match in the content */

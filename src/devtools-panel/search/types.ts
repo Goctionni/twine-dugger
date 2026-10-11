@@ -2,7 +2,7 @@ import type { Accessor } from 'solid-js';
 
 import type { JSONSafeObject, ParsedPassageData, ValueType } from '@/shared/shared-types';
 
-import type { SearchQuery, SearchScope, SearchSort } from './core/types';
+import type { SearchScope, SearchSort } from './core/types';
 import type { createSearch } from './model/create-search';
 
 /** Note that these are not tailwind breakpoints */
@@ -22,12 +22,11 @@ export interface SearchData {
 }
 
 /**
- * What the search is told. The query and the scope decide what is found: when they change, it is
- * searched again. The rest works on what was found: it only changes which of it is shown, and in
- * what order.
+ * What the search is told besides what to search for (the matcher). The scope decides what is
+ * found: when it changes, it is searched again. The rest works on what was found: it only changes
+ * which of it is shown, and in what order.
  */
 export interface SearchInput {
-  query: Accessor<SearchQuery>;
   scope: Accessor<SearchScope>;
   /** Value types to show in the state results; empty = all */
   typeFilter: Accessor<readonly ValueType[]>;

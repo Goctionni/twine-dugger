@@ -6,16 +6,22 @@ import type { JSONSafeObject, ParsedPassageData } from '@/shared/shared-types';
 import { setStore } from '../../store/store';
 import * as passageSearch from '../core/passage-search';
 import * as stateSearch from '../core/state-search';
-import { createDefaultOptions, createDefaultScope, createDefaultSort } from '../core/types';
+import {
+  createDefaultOptions,
+  createDefaultScope,
+  createDefaultSort,
+  type Matcher,
+  type SearchOptions,
+  type SearchQuery,
+} from '../core/types';
 import type { SearchData } from '../types';
+import { createMatcher } from '../ui/SearchBar/matcher';
 import { createSearch } from './create-search';
 import {
   clearTags,
   searchInput,
   setPassageSort,
-  setSearchText,
   setStateSort,
-  toggleOption,
   togglePassageScope,
   toggleStateScope,
   toggleTag,
@@ -42,7 +48,14 @@ const passages = [
 
 const state: JSONSafeObject = { girl: 'Anna', girlAge: 20, cat: 'Tom', nested: { girl: true } };
 
+// What the search bar does: turn what is searched for into a matcher, or none
+let query: SearchQuery;
+let setMatcher: (matcher: Matcher | null) => void;
+
 function setup() {
+  query = { searchText: '', options: createDefaultOptions() };
+  const [getMatcher, setCurrentMatcher] = createSignal<Matcher | null>(null);
+  setMatcher = setCurrentMatcher;
   const [getPassages, setPassages] = createSignal<readonly ParsedPassageData[]>(passages);
   const [version, setVersion] = createSignal(0);
   let current: JSONSafeObject = state;
@@ -55,7 +68,7 @@ function setup() {
   const dispose = vi.fn();
   const search = createRoot((d) => {
     dispose.mockImplementation(d);
-    return createSearch(data, searchInput);
+    return createSearch(data, searchInput, getMatcher);
   }, {});
   return {
     search,
@@ -65,7 +78,15 @@ function setup() {
   };
 }
 
-const type = (text: string) => (setSearchText(text), flush());
+const searchFor = (next: SearchQuery) => {
+  query = next;
+  const result = next.searchText ? createMatcher(next) : null;
+  setMatcher(result?.ok ? result.matcher : null);
+  flush();
+};
+const type = (searchText: string) => searchFor({ ...query, searchText });
+const toggleOption = (option: keyof SearchOptions) =>
+  searchFor({ ...query, options: { ...query.options, [option]: !query.options[option] } });
 const keys = (list: readonly { key: unknown }[]) => list.map((hit) => hit.key);
 const calls = (spy: unknown) => (spy as { mock: { calls: unknown[][] } }).mock.calls;
 
@@ -73,7 +94,6 @@ let fixture: ReturnType<typeof setup>;
 beforeEach(() => {
   setStore((draft) => {
     draft.viewState.search = {
-      query: { searchText: '', options: createDefaultOptions() },
       scope: createDefaultScope(),
       sort: createDefaultSort(),
       typeFilter: [],
@@ -113,17 +133,6 @@ describe('createSearch', () => {
     expect(fixture.search.passageHits).toHaveLength(0);
     expect(fixture.search.stateHits).toHaveLength(0);
   });
-
-  it('reports an invalid regex and shows nothing', () => {
-    toggleOption('regex');
-    type('(');
-    expect(fixture.search.error()).toBeTruthy();
-    expect(fixture.search.hasQuery()).toBe(false);
-    expect(fixture.search.passageHits).toHaveLength(0);
-    type('g(i)rl');
-    expect(fixture.search.error()).toBeNull();
-    expect(fixture.search.passageHits.length).toBeGreaterThan(0);
-  });
 });
 
 describe('what is searched again', () => {
@@ -156,15 +165,6 @@ describe('what is searched again', () => {
     flush();
     expect(passageRuns()).toBe(2);
     expect(stateRuns()).toBe(2);
-  });
-
-  it('does not search again for options that are switched and switched back', () => {
-    type('girl');
-    toggleOption('caseSensitive');
-    toggleOption('caseSensitive');
-    flush();
-    expect(passageRuns()).toBe(1);
-    expect(stateRuns()).toBe(1);
   });
 
   it('searches inside the previous hits when the query grows', () => {
@@ -202,9 +202,6 @@ describe('what is searched again', () => {
     type('gir');
     const narrowed = keys(fixture.search.passageHits);
     fixture.dispose();
-    setStore((draft) => {
-      draft.viewState.search.query.searchText = '';
-    });
     fixture = setup();
     type('gir');
     expect(keys(fixture.search.passageHits)).toEqual(narrowed);
@@ -310,7 +307,12 @@ describe('filters and sorting', () => {
 
 describe('input', () => {
   it('takes what it is told as an argument: the store is only one way to provide it', () => {
-    const [searchText, setText] = createSignal('girl');
+    const [getMatcher, setMatcher] = createSignal<Matcher | null>(null);
+    const matcherFor = (searchText: string) => {
+      const result = createMatcher({ searchText, options: createDefaultOptions() });
+      return result.ok ? result.matcher : null;
+    };
+    setMatcher(matcherFor('girl'));
     const data: SearchData = {
       passages: () => passages,
       stateVersion: () => 0,
@@ -319,19 +321,22 @@ describe('input', () => {
     };
     const { search, dispose } = createRoot((d) => ({
       dispose: d,
-      search: createSearch(data, {
-        query: () => ({ searchText: searchText(), options: createDefaultOptions() }),
-        scope: createDefaultScope,
-        sort: createDefaultSort,
-        typeFilter: () => [],
-        tagFilter: () => ['dialogue'],
-      }),
+      search: createSearch(
+        data,
+        {
+          scope: createDefaultScope,
+          sort: createDefaultSort,
+          typeFilter: () => [],
+          tagFilter: () => ['dialogue'],
+        },
+        getMatcher,
+      ),
     }));
     flush();
     expect(keys(search.passageHits)).toEqual([2, 3]);
     expect(search.countMatches('girl girl')).toBe(2);
 
-    setText('cat');
+    setMatcher(matcherFor('cat'));
     flush();
     expect(keys(search.passageHits)).toEqual([3]);
     dispose();

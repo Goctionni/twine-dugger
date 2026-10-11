@@ -12,9 +12,7 @@ import {
   hasActiveFilters,
   resetFilters,
   setPassageSort,
-  setSearchText,
   setStateSort,
-  toggleOption,
   togglePassageScope,
   toggleStateScope,
   toggleTag,
@@ -24,7 +22,6 @@ import {
 let dispose: () => void;
 beforeEach(() => {
   setStore((draft) => {
-    draft.viewState.search.query = { searchText: '', options: createDefaultOptions() };
     draft.viewState.search.scope = createDefaultScope();
     draft.viewState.search.sort = createDefaultSort();
     draft.viewState.search.typeFilter = [];
@@ -48,14 +45,12 @@ afterEach(() => dispose());
 
 describe('what the search is told', () => {
   it('toggles options, scopes, types and tags', () => {
-    toggleOption('regex');
     toggleStateScope('path');
     togglePassageScope('content');
     toggleType('number');
     toggleTag('room');
     flush();
     const search = store.viewState.search;
-    expect(search.query.options.regex).toBe(true);
     expect(search.scope.state.path).toBe(false);
     expect(search.scope.passage.content).toBe(false);
     expect(search.typeFilter).toEqual(['number']);
@@ -68,9 +63,7 @@ describe('what the search is told', () => {
     expect(store.viewState.search.tagFilter).toEqual([]);
   });
 
-  it('resets scope, sort and filters but keeps the search text and its options', () => {
-    setSearchText('abc');
-    toggleOption('wholeWord');
+  it('resets scope, sort and filters', () => {
     toggleStateScope('path');
     setPassageSort('name-asc');
     toggleType('string');
@@ -79,8 +72,6 @@ describe('what the search is told', () => {
     resetFilters();
     flush();
     const search = store.viewState.search;
-    expect(search.query.searchText).toBe('abc');
-    expect(search.query.options.wholeWord).toBe(true);
     expect(search.scope).toEqual(createDefaultScope());
     expect(search.sort).toEqual(createDefaultSort());
     expect(search.typeFilter).toEqual([]);
@@ -88,10 +79,8 @@ describe('what the search is told', () => {
   });
 
   it('does not change the defaults it started from', () => {
-    toggleOption('regex');
     toggleStateScope('value');
     flush();
-    expect(createDefaultOptions().regex).toBe(false);
     expect(createDefaultScope().state.value).toBe(true);
   });
 });
@@ -138,22 +127,17 @@ describe('active filters', () => {
 
 describe('persistence', () => {
   it('saves nothing unless the setting is on', () => {
-    toggleOption('regex');
     setStateSort('type');
     flush();
-    expect(store.settings['search.saved.options']).toEqual(createDefaultOptions());
     expect(store.settings['search.saved.sort']).toEqual(createDefaultSort());
   });
 
   it('saves the parts that are switched on, as they change', () => {
-    setSetting('search.persist.options', true);
     setSetting('search.persist.typeFilter', true);
     flush();
-    toggleOption('caseSensitive');
     toggleType('boolean');
     setStateSort('type');
     flush();
-    expect(store.settings['search.saved.options']).toMatchObject({ caseSensitive: true });
     expect(store.settings['search.saved.typeFilter']).toEqual(['boolean']);
     expect(store.settings['search.saved.sort']).toEqual(createDefaultSort());
   });
@@ -167,12 +151,9 @@ describe('persistence', () => {
     expect(store.settings['search.saved.scope'].state).toEqual({ path: true, value: true });
   });
 
-  it('never saves the search text or the tag filter', () => {
-    setSetting('search.persist.options', true);
-    setSearchText('secret');
+  it('never saves the tag filter', () => {
     toggleTag('room');
     flush();
-    expect(JSON.stringify(store.settings)).not.toContain('secret');
     expect(JSON.stringify(store.settings)).not.toContain('room');
   });
 });

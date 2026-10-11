@@ -7,8 +7,6 @@ import {
   createDefaultScope,
   createDefaultSort,
   type PassageSort,
-  type SearchOptions,
-  type SearchQuery,
   type SearchScope,
   type SearchSort,
   type StateSort,
@@ -23,9 +21,6 @@ import type { SearchInput } from '../types';
  */
 const params = () => store.viewState.search;
 
-export const getQuery = (): SearchQuery => params().query;
-export const getSearchText = () => params().query.searchText;
-export const getOptions = (): SearchOptions => params().query.options;
 export const getScope = (): SearchScope => params().scope;
 export const getSort = (): SearchSort => params().sort;
 export const getTypeFilter = (): readonly ValueType[] => params().typeFilter;
@@ -33,25 +28,11 @@ export const getTagFilter = (): readonly string[] => params().tagFilter;
 
 /** The store as the input of `createSearch` */
 export const searchInput: SearchInput = {
-  query: getQuery,
   scope: getScope,
   sort: getSort,
   typeFilter: getTypeFilter,
   tagFilter: getTagFilter,
 };
-
-export function setSearchText(searchText: string) {
-  setStore((draft) => {
-    draft.viewState.search.query.searchText = searchText;
-  });
-}
-
-export function toggleOption(option: keyof SearchOptions) {
-  setStore((draft) => {
-    const { options } = draft.viewState.search.query;
-    options[option] = !options[option];
-  });
-}
 
 export function toggleStateScope(part: keyof SearchScope['state']) {
   setStore((draft) => {
@@ -137,13 +118,11 @@ export const hasActiveFilters = () => {
 
 /**
  * Keeps the settings' copy of the parts the user asked to remember up to date. The search text and
- * the tag filter are never saved: what is worth filtering by depends on the game.
+ * the tag filter are never saved: what is worth filtering by depends on the game. (The options of
+ * the search text are kept up to date by the search bar, which has them.)
  */
 export function createSearchPersistence() {
-  const remember = <K extends 'options' | 'scope' | 'sort' | 'typeFilter'>(
-    part: K,
-    read: () => unknown,
-  ) =>
+  const remember = <K extends 'scope' | 'sort' | 'typeFilter'>(part: K, read: () => unknown) =>
     createEffect(
       () => (store.settings[`search.persist.${part}`] ? snapshot(deep(read())) : undefined),
       (value) => {
@@ -151,7 +130,6 @@ export function createSearchPersistence() {
       },
     );
 
-  remember('options', getOptions);
   remember('scope', getScope);
   remember('sort', getSort);
   remember('typeFilter', getTypeFilter);

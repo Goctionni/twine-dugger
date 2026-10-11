@@ -70,14 +70,6 @@ function createInitialSearchState(settings: Settings): StoreData['viewState']['s
   const pick = <T>(persist: boolean, saved: T, fallback: () => T): T =>
     persist ? structuredClone(saved) : fallback();
   return {
-    query: {
-      searchText: '',
-      options: pick(
-        settings['search.persist.options'],
-        settings['search.saved.options'],
-        createDefaultOptions,
-      ),
-    },
     scope: pick(
       settings['search.persist.scope'],
       settings['search.saved.scope'],
