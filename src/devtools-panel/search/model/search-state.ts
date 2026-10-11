@@ -1,66 +1,69 @@
-import { createEffect, createSignal, deep, snapshot } from 'solid-js';
+import { createEffect, deep, snapshot } from 'solid-js';
 
 import type { ValueType } from '@/shared/shared-types';
 
 import { setSetting, setStore, store } from '../../store/store';
 import {
-  defaultSearchScope,
-  defaultSearchSort,
+  createDefaultScope,
+  createDefaultSort,
   type PassageSort,
   type SearchOptions,
+  type SearchQuery,
   type SearchScope,
-  type SearchView,
+  type SearchSort,
   type StateSort,
 } from '../core/types';
+import type { SearchInput } from '../types';
 
 /**
- * What the search page remembers while DevTools is open. It lives in the store, so it is still
- * there after visiting another page. Which parts also survive a restart is up to the settings.
+ * What the search is told, and what it is told to show of what it found. It lives in the store, so
+ * it is still there after visiting another page. Which parts also survive a restart is up to the
+ * settings. What only one part of the page cares about (which sections are open, which result is
+ * selected) is not here but with that part.
  */
-const session = () => store.viewState.search;
+const params = () => store.viewState.search;
 
-export const getQuery = () => session().query;
-export const getOptions = (): SearchOptions => session().options;
-export const getScope = (): SearchScope => session().scope;
-export const getSort = () => session().sort;
-export const getTypeFilter = () => session().typeFilter;
-export const getTagFilter = () => session().tagFilter;
-export const getView = () => session().view;
-export const getCollapsed = () => session().collapsed;
+export const getQuery = (): SearchQuery => params().query;
+export const getSearchText = () => params().query.searchText;
+export const getOptions = (): SearchOptions => params().query.options;
+export const getScope = (): SearchScope => params().scope;
+export const getSort = (): SearchSort => params().sort;
+export const getTypeFilter = (): readonly ValueType[] => params().typeFilter;
+export const getTagFilter = (): readonly string[] => params().tagFilter;
 
-export function setQuery(query: string) {
+/** The store as the input of `createSearch` */
+export const searchInput: SearchInput = {
+  query: getQuery,
+  scope: getScope,
+  sort: getSort,
+  typeFilter: getTypeFilter,
+  tagFilter: getTagFilter,
+};
+
+export function setSearchText(searchText: string) {
   setStore((draft) => {
-    draft.viewState.search.query = query;
+    draft.viewState.search.query.searchText = searchText;
   });
-}
-
-let isQueryScheduled = false;
-
-/** The longest a search waits for idle time: the user is waiting for the results */
-const SEARCH_IDLE_TIMEOUT_MS = 50;
-
-/** Searches for what `read` returns when the browser is idle, not inside the key press that caused it. */
-export function setQueryWhenIdle(read: () => string) {
-  if (isQueryScheduled) return;
-  isQueryScheduled = true;
-  requestIdleCallback(
-    () => {
-      isQueryScheduled = false;
-      setQuery(read());
-    },
-    { timeout: SEARCH_IDLE_TIMEOUT_MS },
-  );
 }
 
 export function toggleOption(option: keyof SearchOptions) {
   setStore((draft) => {
-    draft.viewState.search.options[option] = !draft.viewState.search.options[option];
+    const { options } = draft.viewState.search.query;
+    options[option] = !options[option];
   });
 }
 
-export function toggleScope(scope: keyof SearchScope) {
+export function toggleStateScope(part: keyof SearchScope['state']) {
   setStore((draft) => {
-    draft.viewState.search.scope[scope] = !draft.viewState.search.scope[scope];
+    const state = draft.viewState.search.scope.state;
+    state[part] = !state[part];
+  });
+}
+
+export function togglePassageScope(part: keyof SearchScope['passage']) {
+  setStore((draft) => {
+    const { passage } = draft.viewState.search.scope;
+    passage[part] = !passage[part];
   });
 }
 
@@ -101,52 +104,55 @@ export function clearTags() {
   });
 }
 
-export function setView(view: SearchView) {
-  setStore((draft) => {
-    draft.viewState.search.view = view;
-  });
-}
-
-export function toggleCollapsed(section: 'state' | 'passage') {
-  setStore((draft) => {
-    draft.viewState.search.collapsed[section] = !draft.viewState.search.collapsed[section];
-  });
-}
-
-/** Back to what nothing has been filtered or sorted; the query and its options are kept */
+/** Back to where nothing is filtered or sorted; the search text and its options are kept */
 export function resetFilters() {
   setStore((draft) => {
     const search = draft.viewState.search;
-    search.scope = { ...defaultSearchScope };
-    search.sort = { ...defaultSearchSort };
+    search.scope = createDefaultScope();
+    search.sort = createDefaultSort();
     search.typeFilter = [];
     search.tagFilter = [];
   });
 }
 
+// How many things are not how they start out in each group of filters: for the badges
+export const getScopeFilterCount = () => {
+  const { state, passage } = getScope();
+  return [...Object.values(state), ...Object.values(passage)].filter((isOn) => !isOn).length;
+};
+export const getSortFilterCount = () => {
+  const sort = getSort();
+  const defaultSort = createDefaultSort();
+  return Number(sort.state !== defaultSort.state) + Number(sort.passage !== defaultSort.passage);
+};
+export const getTypeFilterCount = () => getTypeFilter().length;
+export const getTagFilterCount = () => getTagFilter().length;
+
+/** Whether anything is not how it starts out */
+export const hasActiveFilters = () => {
+  return Boolean(
+    getScopeFilterCount() || getSortFilterCount() || getTypeFilterCount() || getTagFilterCount(),
+  );
+};
+
 /**
- * Keeps the settings' copy of the slices the user asked to remember up to date. The query and the
- * tag filter are never saved: what is worth filtering by depends on the game.
+ * Keeps the settings' copy of the parts the user asked to remember up to date. The search text and
+ * the tag filter are never saved: what is worth filtering by depends on the game.
  */
 export function createSearchPersistence() {
   const remember = <K extends 'options' | 'scope' | 'sort' | 'typeFilter'>(
-    slice: K,
-    read: () => (typeof store.viewState.search)[K],
+    part: K,
+    read: () => unknown,
   ) =>
     createEffect(
-      () => (store.settings[`search.persist.${slice}`] ? snapshot(deep(read())) : undefined),
+      () => (store.settings[`search.persist.${part}`] ? snapshot(deep(read())) : undefined),
       (value) => {
-        if (value !== undefined) setSetting(`search.saved.${slice}`, value as never);
+        if (value !== undefined) setSetting(`search.saved.${part}`, value as never);
       },
     );
 
-  remember('options', () => session().options);
-  remember('scope', () => session().scope);
-  remember('sort', () => session().sort);
-  remember('typeFilter', () => session().typeFilter);
+  remember('options', getOptions);
+  remember('scope', getScope);
+  remember('sort', getSort);
+  remember('typeFilter', getTypeFilter);
 }
-
-export const [getFocusRequests, setFocusRequests] = createSignal(0);
-
-/** Asks the query input to take the focus: when it is on the page now, or as soon as it is */
-export const requestQueryFocus = () => setFocusRequests((count) => count + 1);

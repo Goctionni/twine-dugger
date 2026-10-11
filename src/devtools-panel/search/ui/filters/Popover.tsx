@@ -22,21 +22,14 @@ export function Popover(props: Props) {
   createEffect(open, (isOpen) => {
     if (!isOpen) return;
     const listeners = new AbortController();
-    const { signal } = listeners;
     document.addEventListener(
       'pointerdown',
-      (event) => {
-        if (!root?.contains(event.target as Node)) setOpen(false);
-      },
-      { signal },
+      (event) => !root?.contains(event.target as Node) && setOpen(false),
+      { signal: listeners.signal },
     );
-    document.addEventListener(
-      'keydown',
-      (event) => {
-        if (event.key === 'Escape') setOpen(false);
-      },
-      { signal },
-    );
+    document.addEventListener('keydown', (event) => event.key === 'Escape' && setOpen(false), {
+      signal: listeners.signal,
+    });
     return () => listeners.abort();
   });
 

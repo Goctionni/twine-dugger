@@ -2,14 +2,9 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { searchPassages } from './passage-search';
-import { compileQuery } from './query';
-import {
-  defaultSearchOptions,
-  defaultSearchScope,
-  type CompiledQuery,
-  type SearchScope,
-} from './types';
+import { createMatcher } from './matcher';
+import { countPassageMatches, countTags, searchPassages } from './passage-search';
+import { createDefaultOptions, type Matcher, type PassageScope } from './types';
 
 const passage = (
   id: number,
@@ -26,9 +21,15 @@ const passages = [
   passage(5, 'Shed', 'tools', ['cat-free']),
 ];
 
-const q = (text: string) => compileQuery(text, defaultSearchOptions) as CompiledQuery;
-const scope = (overrides: Partial<SearchScope> = {}): SearchScope => ({
-  ...defaultSearchScope,
+const q = (searchText: string): Matcher => {
+  const result = createMatcher({ searchText, options: createDefaultOptions() });
+  if (!result.ok) throw new Error('expected a valid search');
+  return result.matcher;
+};
+const scope = (overrides: Partial<PassageScope> = {}): PassageScope => ({
+  name: true,
+  tags: true,
+  content: true,
   ...overrides,
 });
 
@@ -40,33 +41,38 @@ describe('searchPassages', () => {
 
   it('records where it matched', () => {
     const { hits } = searchPassages(passages, q('cat'), scope());
-    expect(hits[0]).toMatchObject({ key: 3, name: [[0, 3]], tags: [[]], content: null });
-    expect(hits[1]).toMatchObject({ key: 5, name: [], tags: [[[0, 3]]] });
+    expect(hits[0]).toMatchObject({
+      key: 3,
+      nameRanges: [[0, 3]],
+      tagRanges: [[]],
+      firstContentRange: null,
+    });
+    expect(hits[1]).toMatchObject({ key: 5, nameRanges: [], tagRanges: [[[0, 3]]] });
   });
 
   it('gives the content details for a name match too', () => {
     const { hits } = searchPassages([passage(1, 'cat', 'a cat, a cat')], q('cat'), scope());
-    expect(hits[0]).toMatchObject({ name: [[0, 3]], content: [2, 5] });
+    expect(hits[0]).toMatchObject({ nameRanges: [[0, 3]], firstContentRange: [2, 5] });
   });
 
   it('keeps the first match in the content', () => {
     const { hits } = searchPassages(passages, q('cat'), scope());
-    expect(hits.find((hit) => hit.key === 2)).toMatchObject({ content: [4, 7] });
+    expect(hits.find((hit) => hit.key === 2)).toMatchObject({ firstContentRange: [4, 7] });
   });
 
   it('only searches what the scope allows', () => {
-    const keys = (s: Partial<SearchScope>) =>
+    const keys = (s: Partial<PassageScope>) =>
       searchPassages(passages, q('cat'), scope(s)).hits.map((hit) => hit.key);
-    const none = { passageName: false, passageTags: false, passageContent: false };
-    expect(keys({ ...none, passageName: true })).toEqual([3]);
-    expect(keys({ ...none, passageTags: true })).toEqual([5]);
-    expect(keys({ ...none, passageContent: true })).toEqual([2, 4]);
+    const none = { name: false, tags: false, content: false };
+    expect(keys({ ...none, name: true })).toEqual([3]);
+    expect(keys({ ...none, tags: true })).toEqual([5]);
+    expect(keys({ ...none, content: true })).toEqual([2, 4]);
     expect(keys(none)).toEqual([]);
   });
 
   it('counts the tags of the passages found, once per passage', () => {
-    const { tagCounts } = searchPassages(passages, q('cat'), scope());
-    expect(Object.fromEntries(tagCounts)).toEqual({
+    const { passages: found } = searchPassages(passages, q('cat'), scope());
+    expect(Object.fromEntries(countTags(found))).toEqual({
       'room': 2,
       'indoor': 1,
       'outdoor': 1,
@@ -91,5 +97,27 @@ describe('searchPassages', () => {
   it('copes with passages that have no tags field', () => {
     const odd = { ...passage(9, 'x', 'y'), tags: undefined as unknown as string[] };
     expect(searchPassages([odd], q('x'), scope()).hits).toHaveLength(1);
+  });
+});
+
+describe('countPassageMatches', () => {
+  const kitchen = passages[1]!;
+  const countFor = (searchText: string, onlyScope: Partial<PassageScope> = {}) => {
+    const matcher = q(searchText);
+    const hit = searchPassages([kitchen], matcher, scope()).hits[0]!;
+    return countPassageMatches(hit, kitchen.content, matcher, scope(onlyScope));
+  };
+
+  it('counts the matches in the name, the tags and the content', () => {
+    // 'room' is one of the tags
+    expect(countFor('room')).toBe(1);
+    // Twice in the content
+    expect(countFor('cat')).toBe(2);
+    // 'k' is in the name (Kitchen) and once in the content (wakes)
+    expect(countFor('k')).toBe(2);
+  });
+
+  it('leaves the content out when it is not searched', () => {
+    expect(countFor('cat', { content: false })).toBe(0);
   });
 });

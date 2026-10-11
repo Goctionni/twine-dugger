@@ -3,7 +3,7 @@ import { For, onCleanup } from 'solid-js';
 
 import type { Page } from '@/shared/shared-types';
 
-import { requestQueryFocus } from '../search/model/search-state';
+import { requestSearchFocus } from '../search/ui/SearchBar';
 import { getNavigationPage, setNavigationPage } from '../store/store';
 
 interface NavItem {
@@ -40,7 +40,7 @@ export function Navigation() {
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key.toLowerCase() === 'f' && e.ctrlKey && e.shiftKey) {
       setNavigationPage('search');
-      requestQueryFocus();
+      requestSearchFocus();
       e.preventDefault();
       e.stopPropagation();
       return false;

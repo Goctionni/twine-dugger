@@ -1,12 +1,10 @@
 import { For } from 'solid-js';
 
-import { createGetSetting, setSetting } from '@/devtools-panel/store/store';
+import { getSettings, setSetting } from '@/devtools-panel/store/store';
 import { describeLimit, highlightingLimits } from '@/devtools-panel/ui/code/highlighting-limits';
 import type { HighlightingLimit } from '@/devtools-panel/ui/code/highlighting-limits';
 
 import { SettingControl } from './SettingControl';
-
-const getDisableHighlighting = createGetSetting('editor.disableHighlighting');
 
 export function EditorSettings() {
   return (
@@ -15,7 +13,7 @@ export function EditorSettings() {
         <select
           id={id}
           class="w-64 cursor-pointer rounded-sm border border-slate-600 bg-slate-900 px-2 py-1"
-          value={getDisableHighlighting()}
+          value={getSettings.editor.disableHighlighting()}
           onChange={(event) =>
             setSetting('editor.disableHighlighting', event.currentTarget.value as HighlightingLimit)
           }

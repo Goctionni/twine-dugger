@@ -1,17 +1,19 @@
 import { createMemo, Match, Show, Switch } from 'solid-js';
 
-import { useSearch } from '../../model/context';
+import { useSearch, useSelection } from '../../model/context';
+import type { DetailMode } from '../../types';
 import { PassageDetail } from './PassageDetail';
 import { StateDetail } from './StateDetail';
 
 interface Props {
   /** A column beside the results, or a sheet over them */
-  mode: 'column' | 'sheet';
+  mode: DetailMode;
 }
 
 /** The selected result. When there is none: a column says so, and a sheet isn't there at all */
-export function DetailPane(props: Props) {
-  const { selection, getPassage, stateOrder } = useSearch();
+export function DetailsPane(props: Props) {
+  const { getPassage, sortedStateHits } = useSearch();
+  const selection = useSelection();
 
   const passage = createMemo(() => {
     const current = selection.selected();
@@ -20,7 +22,7 @@ export function DetailPane(props: Props) {
   const stateHit = createMemo(() => {
     const current = selection.selected();
     return current?.section === 'state'
-      ? stateOrder().find((hit) => hit.key === current.key)
+      ? sortedStateHits().find((hit) => hit.key === current.key)
       : undefined;
   });
   const hasDetail = () => !!(passage() ?? stateHit());
@@ -29,7 +31,7 @@ export function DetailPane(props: Props) {
     <aside
       class={
         props.mode === 'column'
-          ? 'flex h-full w-[40%] max-w-[44rem] min-w-80 shrink-0 flex-col border-l border-slate-700'
+          ? 'flex h-full w-[40%] max-w-176 min-w-80 shrink-0 flex-col border-l border-slate-700'
           : 'absolute inset-0 z-20 flex flex-col bg-slate-900'
       }
       hidden={props.mode === 'sheet' && !hasDetail()}

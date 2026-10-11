@@ -2,114 +2,55 @@ import { createMemo, createProjection, untrack } from 'solid-js';
 
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { searchPassages } from '../core/passage-search';
-import { canNarrow, compileQuery, queryKey } from '../core/query';
+import { createMatcher } from '../core/matcher';
+import { countPassageMatches, countTags } from '../core/passage-search';
+import { queryKey } from '../core/query';
 import { rankNames, sortPassageHits, sortStateHits } from '../core/sort';
-import { searchState } from '../core/state-search';
-import type {
-  CompiledQuery,
-  PassageHit,
-  PassageScope,
-  PassageSearchResult,
-  StateHit,
-  StateScope,
-  StateSearchResult,
-} from '../core/types';
-import type { SearchData } from '../types';
-import {
-  getOptions,
-  getQuery,
-  getScope,
-  getSort,
-  getTagFilter,
-  getTypeFilter,
-} from './search-state';
-import { createSelection } from './selection';
-
-interface PassageStage extends PassageSearchResult {
-  query: CompiledQuery | null;
-  scope: PassageScope;
-  /** What was searched, to know if what was found can be searched again */
-  source: readonly ParsedPassageData[];
-}
-
-const NO_PASSAGES: PassageStage = {
-  hits: [],
-  passages: [],
-  tagCounts: new Map(),
-  query: null,
-  scope: { passageName: false, passageTags: false, passageContent: false },
-  source: [],
-};
-const NO_STATE: StateSearchResult = { hits: [], typeCounts: {} };
-
-const sameFlags = <T extends Record<string, boolean>>(a: T, b: T) =>
-  Object.keys(a).every((key) => a[key] === b[key]);
+import { countTypes } from '../core/state-search';
+import type { PassageHit, Range, SearchQuery, StateHit } from '../core/types';
+import type { SearchData, SearchInput } from '../types';
+import { createPassageStage, createStateStage } from './stages';
 
 /**
  * The search results, as a pipeline of steps that each only look at what they depend on:
  *
- *   query + options ─► compiled ─┬─► passages found ─► filtered + sorted ─► passageList
- *                                └─► state found    ─► filtered + sorted ─► stateList
+ *   query ─► matcher ─┬─► passages found ─► filtered + sorted ─► passageHits
+ *                     └─► state found    ─► filtered + sorted ─► stateHits
  *
  * Passages are only searched again when the query, the passage scope or the passages change, and the
  * state only when the query, the state scope or the state change. Filtering and sorting work on what
- * was found. The lists keep a hit that is still there as the same object, so its row stays as it is.
+ * was found. The hit lists keep a hit that is still there as the same object, so its row stays as it is.
  */
-export function createSearch(data: SearchData) {
+export function createSearch(data: SearchData, input: SearchInput) {
   // The key is the same for the same search, so what depends on it doesn't run for nothing
-  const key = createMemo(() => queryKey(getQuery(), getOptions()));
-  const compiled = createMemo(() => {
+  const key = createMemo(() => queryKey(input.query()));
+  // A copy: what was searched for must not change when the input does, before the key says so
+  const query = createMemo<SearchQuery>(() => {
     key();
-    return untrack(() => compileQuery(getQuery(), { ...getOptions() }));
+    return untrack(() => {
+      const { searchText, options } = input.query();
+      return { searchText, options: { ...options } };
+    });
   });
-  const query = createMemo(() => {
-    const current = compiled();
-    return current?.ok ? current : null;
+  const matcherResult = createMemo(() => (query().searchText ? createMatcher(query()) : null));
+  const matcher = createMemo(() => {
+    const result = matcherResult();
+    return result?.ok ? result.matcher : null;
   });
   const error = createMemo(() => {
-    const current = compiled();
-    return current && !current.ok ? current.error : null;
+    const result = matcherResult();
+    return result && !result.ok ? result.error : null;
   });
 
-  const passageScope = createMemo<PassageScope>(
-    () => {
-      const { passageName, passageTags, passageContent } = getScope();
-      return { passageName, passageTags, passageContent };
-    },
-    { equals: sameFlags },
-  );
-  const stateScope = createMemo<StateScope>(
-    () => {
-      const { statePath, stateValue } = getScope();
-      return { statePath, stateValue };
-    },
-    { equals: sameFlags },
-  );
-
-  const passageStage = createMemo<PassageStage>((previous) => {
-    const current = query();
-    const scope = passageScope();
-    const source = data.passages();
-    if (!current) return NO_PASSAGES;
-
-    // What matches a longer query also matches a shorter one, so the previous hits are enough
-    const narrowing =
-      previous?.query &&
-      previous.source === source &&
-      sameFlags(previous.scope, scope) &&
-      canNarrow(previous.query, current);
-    const result = searchPassages(narrowing ? previous.passages : source, current, scope);
-    return { ...result, query: current, scope, source };
+  const passageScope = () => input.scope().passage;
+  const stateScope = () => input.scope().state;
+  const passageStage = createPassageStage({
+    passages: data.passages,
+    query,
+    matcher,
+    scope: passageScope,
   });
-
-  const stateStage = createMemo<StateSearchResult>(() => {
-    const current = query();
-    const scope = stateScope();
-    data.stateVersion();
-    if (!current) return NO_STATE;
-    return searchState(untrack(data.getState), current, scope);
-  });
+  const stateStage = createStateStage({ data, matcher, scope: stateScope });
 
   const passageById = createMemo(() => new Map(data.passages().map((p) => [p.id, p])));
 
@@ -121,58 +62,63 @@ export function createSearch(data: SearchData) {
     return nameRanks.ranks.get(id) ?? 0;
   };
 
-  // The order is a plain array that is new every time the results change. The lists below keep
-  // the hits that are still there as the same objects, and the order tells a virtual list that the
-  // keys at its positions may have changed
-  const passageOrder = createMemo<PassageHit[]>(() => {
+  // The sorted hits are a plain array that is new every time the results change. The hits lists
+  // below keep the hits that are still there as the same objects, and the array tells a virtual list
+  // that the keys at its positions may have changed
+  const sortedPassageHits = createMemo<PassageHit[]>(() => {
     const hits = passageStage().hits;
-    const tags = getTagFilter();
+    const tags = input.tagFilter();
     const byId = passageById();
     const filtered = tags.length
       ? hits.filter((hit) => byId.get(hit.key)?.tags?.some((tag) => tags.includes(tag)))
       : hits;
-    return sortPassageHits(filtered, getSort().passage, {
+    return sortPassageHits(filtered, input.sort().passage, {
       getNameRank,
       // Only asked for when sorting by matches: counting every match in every passage is real work
       getMatchCount: (hit) => {
-        const content = passageScope().passageContent ? byId.get(hit.key)?.content : undefined;
-        const inContent = content && query() ? query()!.count(content) : 0;
-        return (
-          hit.name.length + hit.tags.reduce((sum, ranges) => sum + ranges.length, 0) + inContent
-        );
+        const current = matcher();
+        const content = byId.get(hit.key)?.content;
+        return current ? countPassageMatches(hit, content, current, passageScope()) : 0;
       },
     });
   });
-  const passageList = createProjection<PassageHit[]>(() => passageOrder(), [], { key: 'key' });
+  const passageHits = createProjection<PassageHit[]>(() => sortedPassageHits(), [], { key: 'key' });
 
-  const stateOrder = createMemo<StateHit[]>(() => {
-    const hits = stateStage().hits;
-    const types = getTypeFilter();
+  const sortedStateHits = createMemo<StateHit[]>(() => {
+    const hits = stateStage();
+    const types = input.typeFilter();
     const filtered = types.length ? hits.filter((hit) => types.includes(hit.type)) : hits;
     // The state is searched again whenever it changes, so this doesn't need to track the changes
-    const sort = getSort().state;
+    const sort = input.sort().state;
     return untrack(() => sortStateHits(filtered, sort, data.getLastChange));
   });
-  const stateList = createProjection<StateHit[]>(() => stateOrder(), [], { key: 'key' });
+  const stateHits = createProjection<StateHit[]>(() => sortedStateHits(), [], { key: 'key' });
+
+  // Counted when a filter that shows them is on the page, not for every search
+  const tagCounts = createMemo(() => countTags(passageStage().passages));
+  const typeCounts = createMemo(() => countTypes(stateStage()));
 
   return {
-    /** Why the query can't be searched for (an invalid regex), if so */
+    /** Why the search text can't be searched for (an invalid regex), if so */
     error,
     /** Whether there is something to search for */
-    hasQuery: () => query() !== null,
-    query,
-    passageList,
-    passageOrder,
-    stateList,
-    stateOrder,
-    /** Found, before the filters. The lists have what is left of it */
+    hasQuery: () => matcher() !== null,
+    /** What was found and is shown: the same object for a hit that stays, so this is what rows read */
+    passageHits,
+    stateHits,
+    /** The same hits, as a plain array that is new whenever they change: this tells the keys apart */
+    sortedPassageHits,
+    sortedStateHits,
+    /** Found, before the filters. The hits have what is left of it */
     passageTotal: () => passageStage().hits.length,
-    stateTotal: () => stateStage().hits.length,
+    stateTotal: () => stateStage().length,
     /** How many of what was found have each tag, and each type: for the filters */
-    tagCounts: () => passageStage().tagCounts,
-    typeCounts: () => stateStage().typeCounts,
+    tagCounts,
+    typeCounts,
     /** Looks up a passage by id: for the parts that show more than the hit has */
     getPassage: (id: number) => passageById().get(id),
-    selection: createSelection(),
+    /** Where the search text is found in `text`, and how often: for marking it and for counting */
+    findRanges: (text: string, max?: number): Range[] => matcher()?.ranges(text, max) ?? [],
+    countMatches: (text: string) => matcher()?.count(text) ?? 0,
   };
 }

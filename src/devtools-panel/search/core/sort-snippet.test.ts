@@ -6,9 +6,9 @@ import type { PassageHit, StateHit } from './types';
 
 const passageHit = (key: number): PassageHit => ({
   key,
-  name: [],
-  tags: [],
-  content: null,
+  nameRanges: [],
+  tagRanges: [],
+  firstContentRange: null,
 });
 const stateHit = (pathText: string, type: StateHit['type'] = 'string'): StateHit => ({
   key: pathText,
@@ -16,8 +16,8 @@ const stateHit = (pathText: string, type: StateHit['type'] = 'string'): StateHit
   pathText,
   type,
   value: undefined,
-  pathMatch: [],
-  valueMatch: [],
+  pathRanges: [],
+  valueRanges: [],
 });
 
 describe('sortPassageHits', () => {

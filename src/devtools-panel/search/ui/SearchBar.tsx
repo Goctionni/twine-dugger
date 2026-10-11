@@ -1,18 +1,38 @@
 import type { JSX } from '@solidjs/web';
 import clsx from 'clsx';
-import { createEffect, For, Show } from 'solid-js';
+import { createEffect, createSignal, For, Show } from 'solid-js';
 
 import type { SearchOptions } from '../core/types';
 import { useSearch } from '../model/context';
-import {
-  getFocusRequests,
-  getOptions,
-  getQuery,
-  setQuery,
-  setQueryWhenIdle,
-  toggleOption,
-} from '../model/search-state';
+import { getOptions, getSearchText, setSearchText, toggleOption } from '../model/search-state';
+import type { FilterLayout } from '../types';
 import { LayoutToggle } from './filters/LayoutToggle';
+
+const [getFocusRequests, setFocusRequests] = createSignal(0);
+
+/** Asks the search input to take the focus: when it is on the page now, or as soon as it is */
+export const requestSearchFocus = () => setFocusRequests((count) => count + 1);
+
+/** The longest a search waits for idle time: the user is waiting for the results */
+const SEARCH_IDLE_TIMEOUT_MS = 50;
+
+let isSearchScheduled = false;
+
+/**
+ * Searches for what `read` returns when the browser is idle, not inside the key press that caused
+ * it. Keys typed in the meantime are one search, for what the input has by then.
+ */
+export function setSearchTextWhenIdle(read: () => string) {
+  if (isSearchScheduled) return;
+  isSearchScheduled = true;
+  requestIdleCallback(
+    () => {
+      isSearchScheduled = false;
+      setSearchText(read());
+    },
+    { timeout: SEARCH_IDLE_TIMEOUT_MS },
+  );
+}
 
 /** "ab" with a bracket under it, as the whole word button looks in VS Code */
 const WholeWordIcon = () => (
@@ -29,11 +49,11 @@ const toggles: Array<{ option: keyof SearchOptions; label: () => JSX.Element; ti
 ];
 
 interface Props {
-  /** Whether the filters are a bar: the button to change how they show is then here, not in the strip */
-  showLayoutToggle: boolean;
+  layout: FilterLayout;
 }
 
-export function QueryBar(props: Props) {
+/** The search text and how to read it. With the filters along the top, the button for the layout of the filters is here */
+export function SearchBar(props: Props) {
   const { error } = useSearch();
   let input: HTMLInputElement | undefined;
 
@@ -44,28 +64,29 @@ export function QueryBar(props: Props) {
   });
 
   return (
-    <div class="border-b border-slate-700 p-2">
-      <div class="flex items-center gap-2">
-        <Show when={props.showLayoutToggle}>
+    <div>
+      {/* As high as the top of the icon sidebar, which can be beside it, so that the two line up */}
+      <div class="flex h-12 items-center gap-1.5 border-b border-slate-700 px-1.5">
+        <Show when={props.layout === 'top-bar'}>
           <LayoutToggle />
         </Show>
-        <div class="flex min-w-0 flex-1 items-center gap-1 rounded-md border border-slate-600 bg-slate-900 px-2 focus-within:border-sky-500">
+        <div class="flex h-9 min-w-0 flex-1 items-center gap-1 rounded-md border border-slate-600 bg-slate-900 px-2 focus-within:border-sky-500">
           <input
             type="text"
-            class="min-w-0 flex-1 bg-transparent py-1.5 text-sm outline-none"
+            class="min-w-0 flex-1 bg-transparent text-sm outline-none"
             placeholder="Search state and passages…"
             spellcheck="false"
             autocomplete="off"
             ref={input}
-            value={getQuery()}
-            onInput={() => setQueryWhenIdle(() => input?.value ?? '')}
+            value={getSearchText()}
+            onInput={() => setSearchTextWhenIdle(() => input?.value ?? '')}
           />
-          <Show when={getQuery()}>
+          <Show when={getSearchText()}>
             <button
               type="button"
               class="cursor-pointer px-1 text-slate-400 hover:text-white"
               title="Clear"
-              onClick={() => setQuery('')}
+              onClick={() => setSearchText('')}
             >
               ✕
             </button>
@@ -91,7 +112,7 @@ export function QueryBar(props: Props) {
         </div>
       </div>
       <Show when={error()}>
-        <p class="mt-1 px-1 text-xs text-red-400">⚠ {error()}</p>
+        <p class="border-b border-slate-700 px-3 py-1 text-xs text-red-400">⚠ {error()}</p>
       </Show>
     </div>
   );

@@ -1,14 +1,13 @@
 import clsx from 'clsx';
 import { For } from 'solid-js';
 
-import type { SearchView } from '../core/types';
-import { useSearch } from '../model/context';
-import { getView, setView } from '../model/search-state';
+import { useSearch } from '../../model/context';
+import { getView, setView, type ResultsView } from './results-view';
 
 /** Both sections, or only one of them */
 export function ViewSwitch() {
   const search = useSearch();
-  const options: Array<{ view: SearchView; label: () => string }> = [
+  const options: Array<{ view: ResultsView; label: () => string }> = [
     { view: 'both', label: () => 'Both' },
     { view: 'state', label: () => `State · ${search.hasQuery() ? search.stateTotal() : '–'}` },
     {
@@ -18,7 +17,7 @@ export function ViewSwitch() {
   ];
 
   return (
-    <div class="flex gap-px border-b border-slate-700 px-2 py-1" role="group" aria-label="Show">
+    <div class="flex gap-px border-b border-slate-700 p-1.5" role="group" aria-label="Show">
       <For each={options}>
         {(option) => (
           <button

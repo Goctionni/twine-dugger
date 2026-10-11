@@ -6,16 +6,18 @@ import type { JSONSafeObject, ParsedPassageData } from '@/shared/shared-types';
 import { setStore } from '../../store/store';
 import * as passageSearch from '../core/passage-search';
 import * as stateSearch from '../core/state-search';
-import { defaultSearchOptions, defaultSearchScope, defaultSearchSort } from '../core/types';
+import { createDefaultOptions, createDefaultScope, createDefaultSort } from '../core/types';
 import type { SearchData } from '../types';
 import { createSearch } from './create-search';
 import {
   clearTags,
-  setQuery,
+  searchInput,
   setPassageSort,
+  setSearchText,
   setStateSort,
   toggleOption,
-  toggleScope,
+  togglePassageScope,
+  toggleStateScope,
   toggleTag,
   toggleType,
 } from './search-state';
@@ -53,7 +55,7 @@ function setup() {
   const dispose = vi.fn();
   const search = createRoot((d) => {
     dispose.mockImplementation(d);
-    return createSearch(data);
+    return createSearch(data, searchInput);
   }, {});
   return {
     search,
@@ -63,7 +65,7 @@ function setup() {
   };
 }
 
-const type = (text: string) => (setQuery(text), flush());
+const type = (text: string) => (setSearchText(text), flush());
 const keys = (list: readonly { key: unknown }[]) => list.map((hit) => hit.key);
 const calls = (spy: unknown) => (spy as { mock: { calls: unknown[][] } }).mock.calls;
 
@@ -71,14 +73,11 @@ let fixture: ReturnType<typeof setup>;
 beforeEach(() => {
   setStore((draft) => {
     draft.viewState.search = {
-      query: '',
-      options: { ...defaultSearchOptions },
-      scope: { ...defaultSearchScope },
-      sort: { ...defaultSearchSort },
+      query: { searchText: '', options: createDefaultOptions() },
+      scope: createDefaultScope(),
+      sort: createDefaultSort(),
       typeFilter: [],
       tagFilter: [],
-      view: 'both',
-      collapsed: { state: false, passage: false },
     };
   });
   flush();
@@ -92,15 +91,15 @@ describe('createSearch', () => {
   it('has no results without a query', () => {
     const { search } = fixture;
     expect(search.hasQuery()).toBe(false);
-    expect(search.passageList).toHaveLength(0);
-    expect(search.stateList).toHaveLength(0);
+    expect(search.passageHits).toHaveLength(0);
+    expect(search.stateHits).toHaveLength(0);
     expect(passageSearch.searchPassages).not.toHaveBeenCalled();
   });
 
   it('finds passages and state, passages by name first', () => {
     type('girl');
-    expect(keys(fixture.search.passageList)).toEqual([2, 1, 3]);
-    expect(keys(fixture.search.stateList)).toEqual([
+    expect(keys(fixture.search.passageHits)).toEqual([2, 1, 3]);
+    expect(keys(fixture.search.stateHits)).toEqual([
       '["girl"]',
       '["girlAge"]',
       '["nested","girl"]',
@@ -111,8 +110,8 @@ describe('createSearch', () => {
   it('empties the results when the query is cleared', () => {
     type('girl');
     type('');
-    expect(fixture.search.passageList).toHaveLength(0);
-    expect(fixture.search.stateList).toHaveLength(0);
+    expect(fixture.search.passageHits).toHaveLength(0);
+    expect(fixture.search.stateHits).toHaveLength(0);
   });
 
   it('reports an invalid regex and shows nothing', () => {
@@ -120,10 +119,10 @@ describe('createSearch', () => {
     type('(');
     expect(fixture.search.error()).toBeTruthy();
     expect(fixture.search.hasQuery()).toBe(false);
-    expect(fixture.search.passageList).toHaveLength(0);
+    expect(fixture.search.passageHits).toHaveLength(0);
     type('g(i)rl');
     expect(fixture.search.error()).toBeNull();
-    expect(fixture.search.passageList.length).toBeGreaterThan(0);
+    expect(fixture.search.passageHits.length).toBeGreaterThan(0);
   });
 });
 
@@ -148,12 +147,12 @@ describe('what is searched again', () => {
     toggleType('string');
     setPassageSort('name-asc');
     setStateSort('path-desc');
-    toggleScope('stateValue');
+    toggleStateScope('value');
     flush();
     expect(passageRuns()).toBe(1);
     // The state scope changed, so that one does search again
     expect(stateRuns()).toBe(2);
-    toggleScope('passageContent');
+    togglePassageScope('content');
     flush();
     expect(passageRuns()).toBe(2);
     expect(stateRuns()).toBe(2);
@@ -201,51 +200,51 @@ describe('what is searched again', () => {
   it('gives the same results narrowed as searched from scratch', () => {
     type('g');
     type('gir');
-    const narrowed = keys(fixture.search.passageList);
+    const narrowed = keys(fixture.search.passageHits);
     fixture.dispose();
     setStore((draft) => {
-      draft.viewState.search.query = '';
+      draft.viewState.search.query.searchText = '';
     });
     fixture = setup();
     type('gir');
-    expect(keys(fixture.search.passageList)).toEqual(narrowed);
+    expect(keys(fixture.search.passageHits)).toEqual(narrowed);
   });
 });
 
 describe('identity', () => {
   it('keeps a hit that is still there as the same object', () => {
     type('girl');
-    const before = new Map(fixture.search.passageList.map((hit) => [hit.key, hit]));
+    const before = new Map(fixture.search.passageHits.map((hit) => [hit.key, hit]));
     type('girl ');
-    const after = fixture.search.passageList;
+    const after = fixture.search.passageHits;
     expect(after.length).toBeGreaterThan(0);
     for (const hit of after) expect(hit).toBe(before.get(hit.key));
   });
 
   it('keeps a hit when only its matches move (a longer query)', () => {
     type('the');
-    const bath = fixture.search.passageList.find((hit) => hit.key === 3);
+    const bath = fixture.search.passageHits.find((hit) => hit.key === 3);
     type('the girl');
-    expect(fixture.search.passageList.find((hit) => hit.key === 3)).toBe(bath);
+    expect(fixture.search.passageHits.find((hit) => hit.key === 3)).toBe(bath);
   });
 
   it('keeps the hits when only the order changes', () => {
     type('girl');
-    const before = new Map(fixture.search.passageList.map((hit) => [hit.key, hit]));
+    const before = new Map(fixture.search.passageHits.map((hit) => [hit.key, hit]));
     setPassageSort('name-asc');
     flush();
-    expect(keys(fixture.search.passageList)).toEqual([3, 2, 1]);
-    for (const hit of fixture.search.passageList) expect(hit).toBe(before.get(hit.key));
+    expect(keys(fixture.search.passageHits)).toEqual([3, 2, 1]);
+    for (const hit of fixture.search.passageHits) expect(hit).toBe(before.get(hit.key));
   });
 
   it('keeps hits when a filter is taken away again', () => {
     type('girl');
-    const before = new Map(fixture.search.passageList.map((hit) => [hit.key, hit]));
+    const before = new Map(fixture.search.passageHits.map((hit) => [hit.key, hit]));
     toggleTag('intro');
     flush();
     toggleTag('intro');
     flush();
-    for (const hit of fixture.search.passageList) expect(hit).toBe(before.get(hit.key));
+    for (const hit of fixture.search.passageHits) expect(hit).toBe(before.get(hit.key));
   });
 });
 
@@ -254,20 +253,20 @@ describe('filters and sorting', () => {
     type('girl');
     toggleTag('dialogue');
     flush();
-    expect(keys(fixture.search.passageList)).toEqual([2, 3]);
+    expect(keys(fixture.search.passageHits)).toEqual([2, 3]);
     toggleTag('intro');
     flush();
-    expect(keys(fixture.search.passageList)).toEqual([2, 1, 3]);
+    expect(keys(fixture.search.passageHits)).toEqual([2, 1, 3]);
     clearTags();
     flush();
-    expect(fixture.search.passageList).toHaveLength(3);
+    expect(fixture.search.passageHits).toHaveLength(3);
   });
 
   it('filters state by type', () => {
     type('girl');
     toggleType('number');
     flush();
-    expect(keys(fixture.search.stateList)).toEqual(['["girlAge"]']);
+    expect(keys(fixture.search.stateHits)).toEqual(['["girlAge"]']);
   });
 
   it('leaves the totals and the counts as the search found them', () => {
@@ -288,20 +287,20 @@ describe('filters and sorting', () => {
     type('girl');
     setPassageSort('name-asc');
     flush();
-    expect(keys(fixture.search.passageList)).toEqual([3, 2, 1]);
+    expect(keys(fixture.search.passageHits)).toEqual([3, 2, 1]);
     setPassageSort('name-desc');
     flush();
-    expect(keys(fixture.search.passageList)).toEqual([1, 2, 3]);
+    expect(keys(fixture.search.passageHits)).toEqual([1, 2, 3]);
     setPassageSort('match');
     flush();
-    expect(keys(fixture.search.passageList)).toEqual([2, 1, 3]);
+    expect(keys(fixture.search.passageHits)).toEqual([2, 1, 3]);
   });
 
   it('sorts state by path', () => {
     type('girl');
     setStateSort('path-desc');
     flush();
-    expect(fixture.search.stateList.map((hit) => hit.pathText)).toEqual([
+    expect(fixture.search.stateHits.map((hit) => hit.pathText)).toEqual([
       'nested.girl',
       'girlAge',
       'girl',
@@ -309,23 +308,32 @@ describe('filters and sorting', () => {
   });
 });
 
-describe('selection', () => {
-  it('marks one result as selected, and only that one', () => {
-    const { selection } = fixture.search;
-    selection.select({ section: 'passage', key: 1 });
+describe('input', () => {
+  it('takes what it is told as an argument: the store is only one way to provide it', () => {
+    const [searchText, setText] = createSignal('girl');
+    const data: SearchData = {
+      passages: () => passages,
+      stateVersion: () => 0,
+      getState: () => state,
+      getLastChange: () => 0,
+    };
+    const { search, dispose } = createRoot((d) => ({
+      dispose: d,
+      search: createSearch(data, {
+        query: () => ({ searchText: searchText(), options: createDefaultOptions() }),
+        scope: createDefaultScope,
+        sort: createDefaultSort,
+        typeFilter: () => [],
+        tagFilter: () => ['dialogue'],
+      }),
+    }));
     flush();
-    expect(selection.isSelected('passage', 1)).toBe(true);
-    expect(selection.isSelected('passage', 2)).toBe(false);
-    expect(selection.isSelected('state', 1)).toBe(false);
+    expect(keys(search.passageHits)).toEqual([2, 3]);
+    expect(search.countMatches('girl girl')).toBe(2);
 
-    selection.select({ section: 'passage', key: 2 });
+    setText('cat');
     flush();
-    expect(selection.isSelected('passage', 1)).toBe(false);
-    expect(selection.isSelected('passage', 2)).toBe(true);
-
-    selection.select(null);
-    flush();
-    expect(selection.isSelected('passage', 2)).toBe(false);
-    expect(selection.selected()).toBeNull();
+    expect(keys(search.passageHits)).toEqual([3]);
+    dispose();
   });
 });

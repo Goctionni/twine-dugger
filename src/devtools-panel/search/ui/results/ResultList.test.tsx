@@ -6,10 +6,11 @@ import { getMarkedText, installFakeHighlights } from '@/devtools-panel/ui/util/t
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { setStore } from '../../../store/store';
-import { defaultSearchOptions, defaultSearchScope, defaultSearchSort } from '../../core/types';
-import { SearchContext } from '../../model/context';
+import { createDefaultOptions, createDefaultScope, createDefaultSort } from '../../core/types';
+import { SearchContext, SelectionContext } from '../../model/context';
 import { createSearch } from '../../model/create-search';
-import { setQuery, toggleTag } from '../../model/search-state';
+import { searchInput, setSearchText, toggleTag } from '../../model/search-state';
+import { createSelection } from '../../model/selection';
 import { PassageRow } from './PassageRow';
 import { ResultList } from './ResultList';
 
@@ -37,18 +38,16 @@ beforeAll(() => {
 let host: HTMLElement;
 let dispose: () => void;
 let model: ReturnType<typeof createSearch>;
+let selection: ReturnType<typeof createSelection>;
 
 beforeEach(() => {
   setStore((draft) => {
     draft.viewState.search = {
-      query: '',
-      options: { ...defaultSearchOptions },
-      scope: { ...defaultSearchScope },
-      sort: { ...defaultSearchSort },
+      query: { searchText: '', options: createDefaultOptions() },
+      scope: createDefaultScope(),
+      sort: createDefaultSort(),
       typeFilter: [],
       tagFilter: [],
-      view: 'both',
-      collapsed: { state: false, passage: false },
     };
   });
   flush();
@@ -56,18 +55,24 @@ beforeEach(() => {
   host = document.createElement('div');
   document.body.append(host);
   dispose = createRoot((disposeRoot) => {
-    model = createSearch({
-      passages: () => passages,
-      stateVersion: () => 0,
-      getState: () => ({}),
-      getLastChange: () => 0,
-    });
+    model = createSearch(
+      {
+        passages: () => passages,
+        stateVersion: () => 0,
+        getState: () => ({}),
+        getLastChange: () => 0,
+      },
+      searchInput,
+    );
+    selection = createSelection();
     const stop = render(
       () => (
         <SearchContext value={model}>
-          <ResultList items={model.passageList} order={model.passageOrder} rowHeight={54}>
-            {(hit) => <PassageRow hit={hit} />}
-          </ResultList>
+          <SelectionContext value={selection}>
+            <ResultList items={model.passageHits} order={model.sortedPassageHits} rowHeight={54}>
+              {(hit) => <PassageRow hit={hit} />}
+            </ResultList>
+          </SelectionContext>
         </SearchContext>
       ),
       host,
@@ -83,7 +88,7 @@ afterEach(() => {
 
 const rowElements = () => [...host.querySelectorAll('li')];
 const type = async (text: string) => {
-  setQuery(text);
+  setSearchText(text);
   flush();
   await Promise.resolve();
 };
@@ -137,9 +142,9 @@ describe('ResultList', () => {
     const button = () => host.querySelector('li button') as HTMLButtonElement;
     button().click();
     flush();
-    expect(model.selection.selected()).toEqual({ section: 'passage', key: 1 });
+    expect(selection.selected()).toEqual({ section: 'passage', key: 1 });
     button().click();
     flush();
-    expect(model.selection.selected()).toBeNull();
+    expect(selection.selected()).toBeNull();
   });
 });

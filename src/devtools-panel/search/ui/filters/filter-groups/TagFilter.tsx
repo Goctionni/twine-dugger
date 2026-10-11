@@ -2,8 +2,8 @@ import { createMemo, createSignal, For, Show } from 'solid-js';
 
 import { getTagColor } from '@/devtools-panel/ui/display/Tag';
 
-import { useSearch } from '../../model/context';
-import { clearTags, getTagFilter, toggleTag } from '../../model/search-state';
+import { useSearch } from '../../../model/context';
+import { clearTags, getTagFilter, toggleTag } from '../../../model/search-state';
 import { CheckRow } from './CheckRow';
 
 /** The tags are the game's own, and there can be thousands: only the first are listed */
@@ -53,7 +53,7 @@ export function TagFilter() {
             count={tagCounts().get(tag) ?? 0}
           >
             <span
-              class="truncate rounded-sm px-1.5 text-xs text-white"
+              class="tag-chip truncate rounded-sm px-1.5 text-xs text-white"
               style={{ 'background-color': getTagColor(tag) }}
             >
               {tag}

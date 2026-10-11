@@ -9,17 +9,26 @@ export interface SearchOptions {
   regex: boolean;
 }
 
-export interface SearchScope {
-  statePath: boolean;
-  stateValue: boolean;
-  passageName: boolean;
-  passageTags: boolean;
-  passageContent: boolean;
+/** What is searched for: the text and how to read it */
+export interface SearchQuery {
+  searchText: string;
+  options: SearchOptions;
 }
 
-/** The parts of the scope that decide what is searched in passages / in the state */
-export type PassageScope = Pick<SearchScope, 'passageName' | 'passageTags' | 'passageContent'>;
-export type StateScope = Pick<SearchScope, 'statePath' | 'stateValue'>;
+/** What is searched in. A part that is switched off finds nothing */
+export interface StateScope {
+  path: boolean;
+  value: boolean;
+}
+export interface PassageScope {
+  name: boolean;
+  tags: boolean;
+  content: boolean;
+}
+export interface SearchScope {
+  state: StateScope;
+  passage: PassageScope;
+}
 
 export type PassageSort = 'match' | 'most-matches' | 'name-asc' | 'name-desc';
 export type StateSort = 'source' | 'path-asc' | 'path-desc' | 'type' | 'recent';
@@ -28,35 +37,30 @@ export interface SearchSort {
   passage: PassageSort;
 }
 
-export type SearchView = 'both' | 'state' | 'passage';
-export type NarrowStyle = 'strip' | 'bar';
-
-export const defaultSearchOptions: SearchOptions = {
+// Functions, not constants: the store changes what it is given, and the defaults must stay as they are
+export const createDefaultOptions = (): SearchOptions => ({
   caseSensitive: false,
   wholeWord: false,
   regex: false,
-};
+});
 
-export const defaultSearchScope: SearchScope = {
-  statePath: true,
-  stateValue: true,
-  passageName: true,
-  passageTags: true,
-  passageContent: true,
-};
+export const createDefaultScope = (): SearchScope => ({
+  state: { path: true, value: true },
+  passage: { name: true, tags: true, content: true },
+});
 
-export const defaultSearchSort: SearchSort = { state: 'source', passage: 'match' };
+export const createDefaultSort = (): SearchSort => ({ state: 'source', passage: 'match' });
 
 /** Plain data: no reference to the passage, so a hit is cheap to keep and to compare by key */
 export interface PassageHit {
   /** Passage id */
   key: number;
   /** Matches in the name; empty = none */
-  name: Range[];
+  nameRanges: Range[];
   /** Per tag (same index as `passage.tags`); an empty array = no match in that tag */
-  tags: Range[][];
-  /** First match in the content (snippet anchor); null = none. Counting all of them is left to who needs them */
-  content: Range | null;
+  tagRanges: Range[][];
+  /** The first match in the content (where a snippet starts); null = none. The others are left to who needs them */
+  firstContentRange: Range | null;
 }
 
 export interface StateHit {
@@ -68,16 +72,14 @@ export interface StateHit {
   type: ValueType;
   /** Value at search time; containers have none */
   value: string | number | boolean | null | undefined;
-  pathMatch: Range[];
-  valueMatch: Range[];
+  /** Matches in `pathText` */
+  pathRanges: Range[];
+  /** Matches in the value written as text */
+  valueRanges: Range[];
 }
 
-export interface CompiledQuery {
-  readonly ok: true;
-  readonly text: string;
-  readonly options: SearchOptions;
-  /** Identifies text + options; equal keys always give equal results */
-  readonly key: string;
+/** Finds the matches of a search text in a text. Made by `createMatcher` */
+export interface Matcher {
   /** Whether `text` has at least one (non-empty) match */
   test(text: string): boolean;
   /** The first match */
@@ -88,25 +90,13 @@ export interface CompiledQuery {
   count(text: string): number;
 }
 
-export interface InvalidQuery {
-  readonly ok: false;
-  readonly error: string;
-}
+export type MatcherResult = { ok: true; matcher: Matcher } | { ok: false; error: string };
 
 export interface PassageSearchResult {
   /** Best match first: matches in the name or tags, then the ones that only match in the content */
   hits: PassageHit[];
   /** The passages the hits are about, in the order they were given. This is what a narrower search starts from */
   passages: ParsedPassageData[];
-  /** How many hits have each tag */
-  tagCounts: Map<string, number>;
-}
-
-export interface StateSearchResult {
-  /** In the order the values are in the state */
-  hits: StateHit[];
-  /** How many hits there are of each type */
-  typeCounts: Partial<Record<ValueType, number>>;
 }
 
 export interface Snippet {

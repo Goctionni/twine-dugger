@@ -3,20 +3,18 @@ import { describe, expect, it } from 'vite-plus/test';
 import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
 import type { JSONSafeObject } from '@/shared/shared-types';
 
-import { compileQuery } from './query';
-import { searchState } from './state-search';
-import {
-  defaultSearchOptions,
-  defaultSearchScope,
-  type CompiledQuery,
-  type SearchOptions,
-  type SearchScope,
-} from './types';
+import { createMatcher } from './matcher';
+import { countTypes, searchState } from './state-search';
+import { createDefaultOptions, type Matcher, type SearchOptions, type StateScope } from './types';
 
-const q = (text: string, options: Partial<SearchOptions> = {}) =>
-  compileQuery(text, { ...defaultSearchOptions, ...options }) as CompiledQuery;
-const scope = (overrides: Partial<SearchScope> = {}): SearchScope => ({
-  ...defaultSearchScope,
+const q = (searchText: string, options: Partial<SearchOptions> = {}): Matcher => {
+  const result = createMatcher({ searchText, options: { ...createDefaultOptions(), ...options } });
+  if (!result.ok) throw new Error('expected a valid search');
+  return result.matcher;
+};
+const scope = (overrides: Partial<StateScope> = {}): StateScope => ({
+  path: true,
+  value: true,
   ...overrides,
 });
 
@@ -30,10 +28,10 @@ const state: JSONSafeObject = {
   today: { [TYPE_KEY]: 'Date', value: '2020-01-01' },
 };
 
-const run = (text: string, s: Partial<SearchScope> = {}, options: Partial<SearchOptions> = {}) =>
+const run = (text: string, s: Partial<StateScope> = {}, options: Partial<SearchOptions> = {}) =>
   searchState(state, q(text, options), scope(s));
-const paths = (text: string, s: Partial<SearchScope> = {}) =>
-  run(text, s).hits.map((hit) => hit.pathText);
+const paths = (text: string, s: Partial<StateScope> = {}) =>
+  run(text, s).map((hit) => hit.pathText);
 
 describe('searchState', () => {
   it('matches keys of objects, and the value of strings, numbers and booleans', () => {
@@ -44,12 +42,12 @@ describe('searchState', () => {
   });
 
   it('finds containers by their key', () => {
-    const { hits } = run('inventory');
+    const hits = run('inventory');
     expect(hits).toMatchObject([{ pathText: 'inventory', type: 'array', value: undefined }]);
   });
 
   it('does not match array indexes or the position in a set', () => {
-    expect(searchState({ list: ['x', 'y'] }, q('1'), scope()).hits).toEqual([]);
+    expect(searchState({ list: ['x', 'y'] }, q('1'), scope())).toEqual([]);
     expect(paths('cave')).toEqual(['seen[0]']);
   });
 
@@ -72,35 +70,35 @@ describe('searchState', () => {
   });
 
   it('gives the path as a path, and the key as how it is found again', () => {
-    const [hit] = run('home').hits;
+    const [hit] = run('home');
     expect(hit).toMatchObject({ path: ['visits', 'home'], key: '["visits","home"]', value: 4 });
   });
 
   it('puts ranges where the text is shown', () => {
-    const [hit] = run('gold').hits;
-    expect(hit?.pathMatch).toEqual([[7, 11]]);
+    const [hit] = run('gold');
+    expect(hit?.pathRanges).toEqual([[7, 11]]);
     expect(hit?.pathText.slice(7, 11)).toBe('gold');
 
-    const [spare] = run('spare').hits;
-    expect(spare?.pathText.slice(...(spare!.pathMatch[0] as [number, number]))).toBe('spare');
+    const [spare] = run('spare');
+    expect(spare?.pathText.slice(...(spare!.pathRanges[0] as [number, number]))).toBe('spare');
 
-    const [value] = run('lic').hits;
-    expect(value?.valueMatch).toEqual([[1, 4]]);
+    const [value] = run('lic');
+    expect(value?.valueRanges).toEqual([[1, 4]]);
 
-    const [mapKey] = run('far').hits;
-    expect(mapKey?.pathText.slice(...(mapKey!.pathMatch[0] as [number, number]))).toBe('far');
+    const [mapKey] = run('far');
+    expect(mapKey?.pathText.slice(...(mapKey!.pathRanges[0] as [number, number]))).toBe('far');
   });
 
   it('can match a key and a value of the same node', () => {
-    const { hits } = searchState({ gold: 'gold' }, q('gold'), scope());
-    expect(hits).toMatchObject([{ pathMatch: [[0, 4]], valueMatch: [[0, 4]] }]);
+    const hits = searchState({ gold: 'gold' }, q('gold'), scope());
+    expect(hits).toMatchObject([{ pathRanges: [[0, 4]], valueRanges: [[0, 4]] }]);
   });
 
   it('only searches what the scope allows', () => {
-    expect(paths('gold', { statePath: false })).toEqual([]);
-    expect(paths('alice', { stateValue: false })).toEqual([]);
-    expect(paths('alice', { statePath: false })).toEqual(['player.name']);
-    expect(paths('alice', { statePath: false, stateValue: false })).toEqual([]);
+    expect(paths('gold', { path: false })).toEqual([]);
+    expect(paths('alice', { value: false })).toEqual([]);
+    expect(paths('alice', { path: false })).toEqual(['player.name']);
+    expect(paths('alice', { path: false, value: false })).toEqual([]);
   });
 
   it('keeps the order of the state', () => {
@@ -113,13 +111,13 @@ describe('searchState', () => {
   });
 
   it('counts the hits per type', () => {
-    expect(run('a').typeCounts).toMatchObject({ string: expect.any(Number) });
-    expect(run('gold').typeCounts).toEqual({ number: 1 });
+    expect(countTypes(run('a'))).toMatchObject({ string: expect.any(Number) });
+    expect(countTypes(run('gold'))).toEqual({ number: 1 });
   });
 
   it('applies whole word and case sensitivity', () => {
-    expect(run('alice', {}, { caseSensitive: true }).hits).toEqual([]);
-    expect(run('Alic', {}, { wholeWord: true }).hits).toEqual([]);
-    expect(run('Alice', {}, { wholeWord: true }).hits).toHaveLength(1);
+    expect(run('alice', {}, { caseSensitive: true })).toEqual([]);
+    expect(run('Alic', {}, { wholeWord: true })).toEqual([]);
+    expect(run('Alice', {}, { wholeWord: true })).toHaveLength(1);
   });
 });

@@ -2,19 +2,19 @@ import clsx from 'clsx';
 import { createMemo, For, Show } from 'solid-js';
 
 import { isFrameTainted } from '@/devtools-panel/store/game-state';
-import { createGetSetting, setNavigationPage, setViewState } from '@/devtools-panel/store/store';
+import { getSettings, setNavigationPage, setViewState } from '@/devtools-panel/store/store';
 
 import { BlockedWriteItem, DiffItem, ReloadedItem } from './Diff';
 import type { StateDiff } from './diff-types';
 import { getVisibleEntries } from './frame-entries';
 import { RelativeTime } from './RelativeTime';
 
+const getFontSize = getSettings.diffLog.fontSize;
+
 interface Props {
   first?: boolean;
   frame: StateDiff;
 }
-
-const getFontSize = createGetSetting('diffLog.fontSize');
 
 export function DiffFrame(props: Props) {
   const entries = createMemo(() => getVisibleEntries(props.frame));

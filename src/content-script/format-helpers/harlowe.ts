@@ -67,7 +67,7 @@ function getPassageData(): PassageData[] {
     pid: `${index}`,
     content: map.get('source')!,
     name: map.get('name')!,
-    tags: (map.get('tags') as unknown as string[]).join(', '),
+    tags: (map.get('tags') as unknown as string[]).join(' '),
     position: '',
     size: '',
   }));

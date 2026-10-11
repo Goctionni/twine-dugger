@@ -1,6 +1,11 @@
 import { createSignal, createStore } from 'solid-js';
 
-import type { Section, SelectedHit } from '../types';
+export type Section = 'state' | 'passage';
+
+export interface SelectedHit {
+  section: Section;
+  key: string | number;
+}
 
 const flagKey = (section: Section, key: string | number) => `${section}:${key}`;
 
@@ -27,3 +32,5 @@ export function createSelection() {
     isSelected: (section: Section, key: string | number) => !!flags[flagKey(section, key)],
   };
 }
+
+export type Selection = ReturnType<typeof createSelection>;

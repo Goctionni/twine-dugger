@@ -11,10 +11,10 @@ interface Props {
 /** A line of a filter list: a box, a label and optionally how many results it has */
 export function CheckRow(props: Props) {
   return (
-    <label class="flex cursor-pointer items-center gap-2 rounded-sm px-1 py-0.5 text-sm hover:bg-slate-700">
+    <label class="flex cursor-pointer items-center gap-2 rounded-sm px-1 py-0.75 text-sm hover:bg-slate-700">
       <input
         type="checkbox"
-        class="size-3.5 cursor-pointer accent-sky-500"
+        class="size-3.5 check-box cursor-pointer"
         checked={props.checked}
         onChange={() => props.onChange()}
       />

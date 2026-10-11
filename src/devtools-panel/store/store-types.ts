@@ -12,7 +12,7 @@ import {
   type ValueType,
 } from '@/shared/shared-types';
 
-import type { SearchOptions, SearchScope, SearchSort, SearchView } from '../search/core/types';
+import type { SearchQuery, SearchScope, SearchSort } from '../search/core/types';
 
 export interface StoreData {
   connectionState: ConnectionState;
@@ -29,17 +29,15 @@ export interface StoreData {
     passages: {
       selected: string | null;
     };
+    /** What the search is told; see `search/types.ts` */
     search: {
-      query: string;
-      options: SearchOptions;
+      query: SearchQuery;
       scope: SearchScope;
       sort: SearchSort;
       /** Value types to show in state results; empty = all */
       typeFilter: ValueType[];
       /** Passage tags to require; empty = all. Game specific, never persisted */
       tagFilter: string[];
-      view: SearchView;
-      collapsed: { state: boolean; passage: boolean };
     };
   };
 }
@@ -59,8 +57,8 @@ export const settingsSchema = type({
   'state.propertyOrderDesc': 'boolean',
   'state.filters': valueTypeSchema.or("'filtered'").array(),
   'editor.disableHighlighting': "'never' | 'very-large' | 'large' | 'normal' | 'always'",
-  'search.narrowStyle': "'strip' | 'bar'",
-  // Which search options are remembered between sessions (the query and tag filter never are)
+  'search.smFilterLayout': "'icon-sidebar' | 'top-bar'",
+  // Which parts of the search are remembered between sessions (the search text and tag filter never are)
   'search.persist.options': 'boolean',
   'search.persist.scope': 'boolean',
   'search.persist.sort': 'boolean',
@@ -71,11 +69,8 @@ export const settingsSchema = type({
     regex: 'boolean',
   },
   'search.saved.scope': {
-    statePath: 'boolean',
-    stateValue: 'boolean',
-    passageName: 'boolean',
-    passageTags: 'boolean',
-    passageContent: 'boolean',
+    state: { path: 'boolean', value: 'boolean' },
+    passage: { name: 'boolean', tags: 'boolean', content: 'boolean' },
   },
   'search.saved.sort': {
     state: "'source' | 'path-asc' | 'path-desc' | 'type' | 'recent'",

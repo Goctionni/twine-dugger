@@ -7,9 +7,9 @@ import { getActiveState } from '@/devtools-panel/store/game-state';
 import { getLockedPaths, isPathLockable, setPathLock } from '@/devtools-panel/store/locks';
 import {
   addFilteredPath,
-  createGetSetting,
   createGetViewState,
   createSetSetting,
+  getSettings,
   isPathFiltered,
   setViewState,
 } from '@/devtools-panel/store/store';
@@ -40,9 +40,12 @@ import { isPathEditable } from './editable';
 import { getLockStatus } from './lock-helper';
 import { createSorter } from './property-sorter';
 
-const getGlobalFilters = createGetSetting('state.filters');
-const getGlobalPropertyOrder = createGetSetting('state.propertyOrder');
-const getGlobalPropertyOrderDesc = createGetSetting('state.propertyOrderDesc');
+const {
+  filters: getGlobalFilters,
+  propertyOrder: getGlobalPropertyOrder,
+  propertyOrderDesc: getGlobalPropertyOrderDesc,
+} = getSettings.state;
+
 const setGlobalFilters = createSetSetting('state.filters');
 const setGlobalPropertyOrder = createSetSetting('state.propertyOrder');
 const setGlobalPropertyOrderDesc = createSetSetting('state.propertyOrderDesc');

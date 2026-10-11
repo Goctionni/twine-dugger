@@ -4,9 +4,7 @@ import { getPassageData, getUpdates } from '../api/api';
 import { applyUpdate, restartGameState, startGameState } from './game-state';
 import { syncLocks } from './locks';
 import { parsePassage, setPassageData } from './passages';
-import { createGetSetting, setConnectionState } from './store';
-
-const getPollingInterval = createGetSetting('diffLog.pollingInterval');
+import { getSettings, setConnectionState } from './store';
 
 async function load({ state, passage }: InitUpdate, isReload: boolean) {
   const passageData = await getPassageData();
@@ -40,7 +38,7 @@ export async function startTrackingFrames() {
         return;
       }
       const elapsed = Date.now() - started;
-      const delay = Math.max(0, getPollingInterval() - elapsed);
+      const delay = Math.max(0, getSettings.diffLog.pollingInterval() - elapsed);
       timeout = setTimeout(poll, delay);
     };
     poll();

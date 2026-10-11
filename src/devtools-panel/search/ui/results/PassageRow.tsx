@@ -5,7 +5,7 @@ import { getTagColor } from '@/devtools-panel/ui/display/Tag';
 
 import { snippetAround } from '../../core/snippet';
 import type { PassageHit, Range } from '../../core/types';
-import { useSearch } from '../../model/context';
+import { useSearch, useSelection } from '../../model/context';
 import { Highlight } from './Highlight';
 
 const MAX_TAGS = 3;
@@ -20,7 +20,8 @@ const sameNumbers = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((value, index) => value === b[index]);
 
 export function PassageRow(props: Props) {
-  const { selection, getPassage, query } = useSearch();
+  const { getPassage, countMatches } = useSearch();
+  const selection = useSelection();
   const passage = createMemo(() => getPassage(props.hit().key));
   const name = () => passage()?.name ?? '';
   const tags = () => passage()?.tags ?? [];
@@ -28,7 +29,7 @@ export function PassageRow(props: Props) {
   // The tags that are shown, as positions in the passage's tags: the ones that matched first
   const shownTags = createMemo(
     () => {
-      const matched = props.hit().tags;
+      const matched = props.hit().tagRanges;
       const positions = tags().map((_, position) => position);
       const first = positions.filter((position) => matched[position]?.length);
       const rest = positions.filter((position) => !matched[position]?.length);
@@ -41,7 +42,7 @@ export function PassageRow(props: Props) {
   const snippet = createMemo(
     () => {
       const content = passage()?.content ?? '';
-      const match = props.hit().content;
+      const match = props.hit().firstContentRange;
       if (match) return snippetAround(content, match);
       return { text: content.slice(0, PREVIEW_LENGTH).replace(/\s/g, ' '), ranges: NO_RANGES };
     },
@@ -50,7 +51,7 @@ export function PassageRow(props: Props) {
 
   // How often it matches in the content: counted here, for the rows that are shown, not for every hit
   const contentMatches = createMemo(() =>
-    props.hit().content ? (query()?.count(passage()?.content ?? '') ?? 0) : 0,
+    props.hit().firstContentRange ? countMatches(passage()?.content ?? '') : 0,
   );
 
   // Clicking the selected result again closes it
@@ -69,17 +70,17 @@ export function PassageRow(props: Props) {
     >
       <span class="flex min-w-0 items-center gap-2">
         <span class="min-w-0 flex-1 truncate font-mono text-sm" title={name()}>
-          <Highlight text={name()} ranges={props.hit().name} />
+          <Highlight text={name()} ranges={props.hit().nameRanges} />
         </span>
         <For each={shownTags()} keyed={false}>
           {(position) => (
             <span
-              class="shrink-0 rounded-sm px-1.5 text-xs text-white"
+              class="tag-chip shrink-0 rounded-sm px-1.5 text-xs text-white"
               style={{ 'background-color': getTagColor(tags()[position()] ?? '') }}
             >
               <Highlight
                 text={tags()[position()] ?? ''}
-                ranges={props.hit().tags[position()] ?? NO_RANGES}
+                ranges={props.hit().tagRanges[position()] ?? NO_RANGES}
               />
             </span>
           )}

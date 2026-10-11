@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { createEffect, createMemo, createSignal, Show } from 'solid-js';
 import type { IRawGrammar } from 'vscode-textmate';
 
-import { createGetSetting } from '@/devtools-panel/store/store';
+import { getSettings } from '@/devtools-panel/store/store';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 
 import { highlightRanges, createTextRanges, type CharRange } from '../util/range-highlight';
@@ -24,8 +24,6 @@ const formatDict: Record<string, string> = {
   snowman: snowmanLangDef.scopeName,
 };
 
-const getDisableHighlighting = createGetSetting('editor.disableHighlighting');
-
 interface PassageCodeProps {
   code: string;
   format?: string;
@@ -43,7 +41,8 @@ export function Code(props: PassageCodeProps) {
 
   // Decided by the length it was opened with: it should not switch while someone is typing
   const [forceHighlighting, setForceHighlighting] = createSignal(false);
-  const isHeldBack = () => props.code.length >= getHighlightingLength(getDisableHighlighting());
+  const isHeldBack = () =>
+    props.code.length >= getHighlightingLength(getSettings.editor.disableHighlighting());
   const highlighting = () => !isHeldBack() || forceHighlighting();
 
   let textareaRef!: HTMLTextAreaElement;

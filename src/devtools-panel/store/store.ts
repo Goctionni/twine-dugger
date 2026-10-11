@@ -4,7 +4,7 @@ import { fromJson } from '@/shared/from-json';
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
 import type { GameMetaData, Page, Path } from '@/shared/shared-types';
 
-import { defaultSearchOptions, defaultSearchScope, defaultSearchSort } from '../search/core/types';
+import { createDefaultOptions, createDefaultScope, createDefaultSort } from '../search/core/types';
 import {
   gameConfigSchema,
   settingsSchema,
@@ -33,14 +33,14 @@ const defaultSettings: Settings = {
   'state.propertyOrderDesc': false,
   'state.filters': [],
   'editor.disableHighlighting': 'large',
-  'search.narrowStyle': 'strip',
+  'search.smFilterLayout': 'icon-sidebar',
   'search.persist.options': false,
   'search.persist.scope': false,
   'search.persist.sort': false,
   'search.persist.typeFilter': false,
-  'search.saved.options': defaultSearchOptions,
-  'search.saved.scope': defaultSearchScope,
-  'search.saved.sort': defaultSearchSort,
+  'search.saved.options': createDefaultOptions(),
+  'search.saved.scope': createDefaultScope(),
+  'search.saved.sort': createDefaultSort(),
   'search.saved.typeFilter': [],
 };
 
@@ -65,29 +65,31 @@ function loadGameConfig(gameId: string | undefined): GameConfig {
 }
 
 function createInitialSearchState(settings: Settings): StoreData['viewState']['search'] {
-  // Opted-in slices start from what was saved last time; the rest start from defaults
-  const pick = <T>(persist: boolean, saved: T, fallback: T): T => (persist ? saved : fallback);
+  // The parts that are remembered start from what was saved last time; the rest from the defaults.
+  // A copy either way: the store changes what it is given, and the settings keep their own
+  const pick = <T>(persist: boolean, saved: T, fallback: () => T): T =>
+    persist ? structuredClone(saved) : fallback();
   return {
-    query: '',
-    options: pick(
-      settings['search.persist.options'],
-      settings['search.saved.options'],
-      defaultSearchOptions,
-    ),
+    query: {
+      searchText: '',
+      options: pick(
+        settings['search.persist.options'],
+        settings['search.saved.options'],
+        createDefaultOptions,
+      ),
+    },
     scope: pick(
       settings['search.persist.scope'],
       settings['search.saved.scope'],
-      defaultSearchScope,
+      createDefaultScope,
     ),
-    sort: pick(settings['search.persist.sort'], settings['search.saved.sort'], defaultSearchSort),
+    sort: pick(settings['search.persist.sort'], settings['search.saved.sort'], createDefaultSort),
     typeFilter: pick(
       settings['search.persist.typeFilter'],
       settings['search.saved.typeFilter'],
-      [],
+      () => [],
     ),
     tagFilter: [],
-    view: 'both',
-    collapsed: { state: false, passage: false },
   };
 }
 
@@ -176,10 +178,6 @@ export function setViewState<TView extends ViewName, TProperty extends keyof Vie
   });
 }
 
-export function createGetSetting<T extends keyof Settings>(setting: T) {
-  return (): Settings[T] => store.settings[setting];
-}
-
 export function setSetting<T extends keyof Settings>(setting: T, value: Settings[T]) {
   setStore((draft) => {
     draft.settings[setting] = value;
@@ -216,3 +214,35 @@ export function clearFilteredPaths() {
     draft.gameConfig.filteredPaths = [];
   });
 }
+
+export const getSettings = {
+  diffLog: {
+    fontSize: () => store.settings['diffLog.fontSize'],
+    pollingInterval: () => store.settings['diffLog.pollingInterval'],
+    maxHistorySlices: () => store.settings['diffLog.maxHistorySlices'],
+    headingStyle: () => store.settings['diffLog.headingStyle'],
+  },
+  state: {
+    propertyOrder: () => store.settings['state.propertyOrder'],
+    propertyOrderDesc: () => store.settings['state.propertyOrderDesc'],
+    filters: () => store.settings['state.filters'],
+  },
+  editor: {
+    disableHighlighting: () => store.settings['editor.disableHighlighting'],
+  },
+  search: {
+    smFilterLayout: () => store.settings['search.smFilterLayout'],
+    persist: {
+      options: () => store.settings['search.persist.options'],
+      scope: () => store.settings['search.persist.scope'],
+      sort: () => store.settings['search.persist.sort'],
+      typeFilter: () => store.settings['search.persist.typeFilter'],
+    },
+    saved: {
+      options: () => store.settings['search.saved.options'],
+      scope: () => store.settings['search.saved.scope'],
+      sort: () => store.settings['search.saved.sort'],
+      typeFilter: () => store.settings['search.saved.typeFilter'],
+    },
+  },
+};

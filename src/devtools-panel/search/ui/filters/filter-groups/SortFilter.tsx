@@ -1,7 +1,7 @@
 import { For } from 'solid-js';
 
-import type { PassageSort, StateSort } from '../../core/types';
-import { getSort, setPassageSort, setStateSort } from '../../model/search-state';
+import type { PassageSort, StateSort } from '../../../core/types';
+import { getSort, setPassageSort, setStateSort } from '../../../model/search-state';
 
 const stateSorts: Array<[StateSort, string]> = [
   ['source', 'Source order'],
@@ -18,7 +18,7 @@ const passageSorts: Array<[PassageSort, string]> = [
 ];
 
 const selectClass =
-  'w-full cursor-pointer rounded-sm border border-slate-600 bg-slate-900 px-1.5 py-1 text-sm';
+  'select-arrow w-full cursor-pointer rounded-sm border border-slate-600 bg-slate-900 py-1 pl-1.5 text-sm';
 const titleClass = 'px-1 text-xs font-semibold text-slate-400 uppercase';
 
 export function SortFilter() {

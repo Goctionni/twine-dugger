@@ -1,20 +1,21 @@
-import { createGetSetting, createSetSetting } from '../../../store/store';
+import { getSettings, setSetting } from '../../../store/store';
 
-const getNarrowStyle = createGetSetting('search.narrowStyle');
-const setNarrowStyle = createSetSetting('search.narrowStyle');
-
-/** Switches the filters between a strip of icons and a bar, for when there is no room for a rail */
+/** Switches the filters between an icon sidebar and a bar along the top, for when there is no room for the full sidebar */
 export function LayoutToggle() {
+  const isSidebar = () => getSettings.search.smFilterLayout() === 'icon-sidebar';
+  const toggle = () => {
+    const newValue = isSidebar() ? 'top-bar' : 'icon-sidebar';
+    setSetting('search.smFilterLayout', newValue);
+  };
+
   return (
     <button
       type="button"
-      class="cursor-pointer rounded-sm px-2 py-1 text-sm hover:bg-slate-700"
-      title={
-        getNarrowStyle() === 'strip' ? 'Show the filters as a bar' : 'Show the filters as a strip'
-      }
-      onClick={() => setNarrowStyle(getNarrowStyle() === 'strip' ? 'bar' : 'strip')}
+      class="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-sm hover:bg-slate-700"
+      title={isSidebar() ? 'Show the filters along the top' : 'Show the filters in a sidebar'}
+      onClick={toggle}
     >
-      {getNarrowStyle() === 'strip' ? '▤' : '▥'}
+      {isSidebar() ? '▤' : '▥'}
     </button>
   );
 }

@@ -5,7 +5,7 @@ import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 
 import type { StateHit } from '../../core/types';
-import { useSearch } from '../../model/context';
+import { useSelection } from '../../model/context';
 import { Highlight } from './Highlight';
 
 /** A long text is cut: a row shows one line and the detail has the rest */
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export function StateRow(props: Props) {
-  const { selection } = useSearch();
+  const selection = useSelection();
   const valueText = () => {
     const { value } = props.hit();
     return value === undefined ? '' : String(value).slice(0, MAX_TEXT);
@@ -38,11 +38,11 @@ export function StateRow(props: Props) {
     >
       <TypeIcon type={props.hit().type} />
       <span class="max-w-[60%] min-w-0 shrink-0 truncate" title={props.hit().pathText}>
-        <PrettyPath path={props.hit().path} ranges={props.hit().pathMatch} />
+        <PrettyPath path={props.hit().path} ranges={props.hit().pathRanges} />
       </span>
       <span class="min-w-0 flex-1 truncate text-orange-200">
         {quote()}
-        <Highlight text={valueText()} ranges={props.hit().valueMatch} />
+        <Highlight text={valueText()} ranges={props.hit().valueRanges} />
         {quote()}
       </span>
     </button>

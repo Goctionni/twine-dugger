@@ -1,15 +1,15 @@
 import { For } from 'solid-js';
 
-import { createGetSetting, setSetting } from '@/devtools-panel/store/store';
+import { getSettings, setSetting } from '@/devtools-panel/store/store';
 import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
 
 import { SettingControl } from './SettingControl';
 
 const remembered = [
-  { setting: 'search.persist.options', label: 'Remember match case, whole word and regex' },
-  { setting: 'search.persist.scope', label: 'Remember what is searched in' },
-  { setting: 'search.persist.sort', label: 'Remember the sort order' },
-  { setting: 'search.persist.typeFilter', label: 'Remember the state type filter' },
+  { setting: 'options', label: 'Remember match case, whole word and regex' },
+  { setting: 'scope', label: 'Remember what is searched in' },
+  { setting: 'sort', label: 'Remember the sort order' },
+  { setting: 'typeFilter', label: 'Remember the state type filter' },
 ] as const;
 
 export function SearchSettings() {
@@ -19,8 +19,8 @@ export function SearchSettings() {
         <SettingControl label={item.label} noLabel>
           {(id) => (
             <BooleanInput
-              value={createGetSetting(item.setting)()}
-              onChange={(value) => setSetting(item.setting, value)}
+              value={getSettings.search.persist[item.setting]()}
+              onChange={(value) => setSetting(`search.persist.${item.setting}`, value)}
               id={id}
             />
           )}

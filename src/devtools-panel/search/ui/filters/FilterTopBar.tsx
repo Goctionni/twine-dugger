@@ -3,10 +3,10 @@ import { For, Show } from 'solid-js';
 import { filterGroups } from './filter-groups';
 import { Popover } from './Popover';
 
-/** A row of buttons under the query, each opening one group below it */
-export function FilterBar() {
+/** A row of buttons under the search bar, each opening one group below it */
+export function FilterTopBar() {
   return (
-    <div class="flex flex-wrap items-center gap-1 border-b border-slate-700 px-2 py-1">
+    <div class="flex flex-wrap items-center gap-1.5 border-b border-slate-700 p-1.5">
       <For each={filterGroups}>
         {(group) => (
           <Popover

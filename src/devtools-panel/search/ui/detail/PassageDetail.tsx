@@ -19,9 +19,9 @@ interface Props {
 }
 
 export function PassageDetail(props: Props) {
-  const { query } = useSearch();
+  const { findRanges } = useSearch();
   const matches = createMemo(() =>
-    getScope().passageContent ? query()?.ranges(props.passage.content, MAX_MATCHES) : undefined,
+    getScope().passage.content ? findRanges(props.passage.content, MAX_MATCHES) : undefined,
   );
 
   const openInPassages = () => {

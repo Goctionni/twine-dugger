@@ -3,8 +3,8 @@ import { createMemo, For, Show } from 'solid-js';
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import type { ValueType } from '@/shared/shared-types';
 
-import { useSearch } from '../../model/context';
-import { clearTypes, getTypeFilter, toggleType } from '../../model/search-state';
+import { useSearch } from '../../../model/context';
+import { clearTypes, getTypeFilter, toggleType } from '../../../model/search-state';
 import { CheckRow } from './CheckRow';
 
 /** The types of the results, most common first; a chosen type stays in the list when it has none */

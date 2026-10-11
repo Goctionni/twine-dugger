@@ -1,10 +1,14 @@
-import type { JSX } from '@solidjs/web';
 import type { Accessor } from 'solid-js';
 
-import type { JSONSafeObject, ParsedPassageData } from '@/shared/shared-types';
+import type { JSONSafeObject, ParsedPassageData, ValueType } from '@/shared/shared-types';
 
-import type { NarrowStyle } from './core/types';
+import type { SearchQuery, SearchScope, SearchSort } from './core/types';
 import type { createSearch } from './model/create-search';
+
+/** Note that these are not tailwind breakpoints */
+export type Breakpoint = 'sm' | 'md' | 'lg';
+export type FilterLayout = 'full-sidebar' | 'icon-sidebar' | 'top-bar';
+export type DetailMode = 'column' | 'sheet';
 
 /** Where the search reads from; `gameData` is the game that is being inspected */
 export interface SearchData {
@@ -17,32 +21,19 @@ export interface SearchData {
   getLastChange: (key: string) => number;
 }
 
+/**
+ * What the search is told. The query and the scope decide what is found: when they change, it is
+ * searched again. The rest works on what was found: it only changes which of it is shown, and in
+ * what order.
+ */
+export interface SearchInput {
+  query: Accessor<SearchQuery>;
+  scope: Accessor<SearchScope>;
+  /** Value types to show in the state results; empty = all */
+  typeFilter: Accessor<readonly ValueType[]>;
+  /** Passage tags to require; empty = all */
+  tagFilter: Accessor<readonly string[]>;
+  sort: Accessor<SearchSort>;
+}
+
 export type SearchModel = ReturnType<typeof createSearch>;
-
-export type Section = 'state' | 'passage';
-
-export interface SelectedHit {
-  section: Section;
-  key: string | number;
-}
-
-export interface ActiveFilter {
-  /** Unique among the active filters */
-  id: string;
-  label: string;
-  remove: () => void;
-}
-
-export type FilterMode = 'rail' | NarrowStyle;
-
-export type DetailMode = 'column' | 'sheet';
-
-export interface FilterGroup {
-  id: 'scope' | 'sort' | 'types' | 'tags';
-  title: string;
-  /** A short mark for where there is no room for the title */
-  icon: string;
-  /** How many things are set in the group */
-  count: () => number;
-  Body: () => JSX.Element;
-}
