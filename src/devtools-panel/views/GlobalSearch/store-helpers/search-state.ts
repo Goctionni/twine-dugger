@@ -3,14 +3,9 @@ import { createEffect, deep, snapshot } from 'solid-js';
 import type { ValueType } from '@/shared/shared-types';
 
 import { setSetting, setStore, store } from '../../../store/store';
-import {
-  createDefaultScope,
-  createDefaultSort,
-  type PassageSort,
-  type SearchScope,
-  type SearchSort,
-  type StateSort,
-} from '../types';
+import { type PassageSort, type SearchScope, type SearchSort, type StateSort } from '../types';
+import { createDefaultScope, createDefaultSort } from '../utils/search-defaults';
+import { getSearchOptions } from './search-input';
 
 /**
  * What the search is told, and what it is told to show of what it found. It lives in the store, so
@@ -109,11 +104,13 @@ export const hasActiveFilters = () => {
 
 /**
  * Keeps the settings' copy of the parts the user asked to remember up to date. The search text and
- * the tag filter are never saved: what is worth filtering by depends on the game. (The options of
- * the search text are kept up to date by the search bar, which has them.)
+ * the tag filter are never saved: what is worth filtering by depends on the game.
  */
 export function createSearchPersistence() {
-  const remember = <K extends 'scope' | 'sort' | 'typeFilter'>(part: K, read: () => unknown) =>
+  const remember = <K extends 'options' | 'scope' | 'sort' | 'typeFilter'>(
+    part: K,
+    read: () => unknown,
+  ) =>
     createEffect(
       () => (store.settings[`search.persist.${part}`] ? snapshot(deep(read())) : undefined),
       (value) => {
@@ -121,6 +118,7 @@ export function createSearchPersistence() {
       },
     );
 
+  remember('options', getSearchOptions);
   remember('scope', getScope);
   remember('sort', getSort);
   remember('typeFilter', getTypeFilter);

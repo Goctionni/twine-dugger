@@ -2,7 +2,6 @@ import { render } from '@solidjs/web';
 import { flush } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { setSetting, store } from '../../../../store/store';
 import type { QueryMatcher } from '../../types';
 import { SearchBar } from './SearchBar';
 
@@ -114,22 +113,5 @@ describe('options', () => {
     expect(lastMatcher()?.test('girl')).toBe(true);
     expect(host.textContent).not.toContain('⚠');
     setToggle('Regular expression', false);
-  });
-
-  it('keeps the options in the settings only when asked to', () => {
-    setSetting('search.persist.options', false);
-    setToggle('Match case', false);
-    flush();
-    setToggle('Match case', true);
-    flush();
-    expect(store.settings['search.saved.options'].caseSensitive).toBe(false);
-
-    setSetting('search.persist.options', true);
-    flush();
-    expect(store.settings['search.saved.options'].caseSensitive).toBe(true);
-    setToggle('Match case', false);
-    flush();
-    expect(store.settings['search.saved.options'].caseSensitive).toBe(false);
-    setSetting('search.persist.options', false);
   });
 });

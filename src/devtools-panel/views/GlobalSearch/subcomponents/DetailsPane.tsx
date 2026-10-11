@@ -2,9 +2,7 @@ import { createMemo, Match, Show, Switch } from 'solid-js';
 
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { useSelection } from '../selection';
-import type { Range, StateMatcherHit } from '../types';
-import type { DetailMode } from '../types';
+import type { DetailMode, QueryMatcher, Selected } from '../types';
 import { PassageDetail } from './PassageDetail';
 import { StateDetail } from './StateDetail';
 
@@ -12,26 +10,19 @@ interface Props {
   /** A column beside the results, or a sheet over them */
   mode: DetailMode;
   getPassage: (id: number) => ParsedPassageData | undefined;
-  /** What was found in the state: the selected result is one of these */
-  sortedStateHits: readonly StateMatcherHit[];
-  /** Where the search text is found in a text */
-  findRanges: (text: string, max?: number) => Range[];
+  selected: Selected | null;
+  onClose: () => void;
+  queryMatcher: QueryMatcher | null;
+  /** Whether the content of passages is searched: it is marked in the editor when it is */
+  searchesContent: boolean;
 }
 
 /** The selected result. When there is none: a column says so, and a sheet isn't there at all */
 export function DetailsPane(props: Props) {
-  const selection = useSelection();
-
-  const passage = createMemo(() => {
-    const current = selection.selected();
-    return current?.section === 'passage' ? props.getPassage(current.key as number) : undefined;
-  });
-  const stateHit = createMemo(() => {
-    const current = selection.selected();
-    return current?.section === 'state'
-      ? props.sortedStateHits.find((hit) => hit.key === current.key)
-      : undefined;
-  });
+  const passage = createMemo(() =>
+    props.selected?.section === 'passage' ? props.getPassage(props.selected.key) : undefined,
+  );
+  const stateHit = () => (props.selected?.section === 'state' ? props.selected.hit : undefined);
   const hasDetail = () => !!(passage() ?? stateHit());
 
   return (
@@ -49,7 +40,7 @@ export function DetailsPane(props: Props) {
           <button
             type="button"
             class="cursor-pointer rounded-sm px-2 py-0.5 text-sm hover:bg-slate-700"
-            onClick={() => selection.select(null)}
+            onClick={() => props.onClose()}
           >
             ✕ Close
           </button>
@@ -59,7 +50,13 @@ export function DetailsPane(props: Props) {
         <Switch fallback={<p class="p-3 text-sm text-slate-400">Select a result to preview it</p>}>
           {/* Matched on the id: saving a passage makes a new object, which must not replace the editor; another passage does */}
           <Match when={passage()?.id} keyed>
-            {() => <PassageDetail passage={passage()!} findRanges={props.findRanges} />}
+            {() => (
+              <PassageDetail
+                passage={passage()!}
+                queryMatcher={props.queryMatcher}
+                searchesContent={props.searchesContent}
+              />
+            )}
           </Match>
           <Match when={stateHit()?.key} keyed>
             {() => <StateDetail hit={stateHit()!} />}

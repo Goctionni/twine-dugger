@@ -8,7 +8,7 @@ import {
   createDefaultOptions,
   createDefaultScope,
   createDefaultSort,
-} from '../views/GlobalSearch/types';
+} from '../views/GlobalSearch/utils/search-defaults';
 import {
   gameConfigSchema,
   settingsSchema,

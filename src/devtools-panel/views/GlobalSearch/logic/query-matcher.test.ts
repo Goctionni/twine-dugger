@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 
-import { createDefaultOptions, type SearchOptions } from '../types';
+import { type SearchOptions } from '../types';
+import { createDefaultOptions } from '../utils/search-defaults';
 import { createQueryMatcher } from './query-matcher';
 
 const queryMatcherFor = (searchText: string, options: Partial<SearchOptions> = {}) => {

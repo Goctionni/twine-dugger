@@ -1,12 +1,10 @@
 import type { JSX } from '@solidjs/web';
-import { createMemo, For, Show, type Accessor } from 'solid-js';
+import { createMemo, createProjection, For, Show, type Accessor } from 'solid-js';
 
 import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
 
 interface Props<T extends { key: string | number }> {
-  /** What was found, with the same object for a hit that stays; this is what the rows read */
-  items: readonly T[];
-  /** The same hits, as a plain array that is new whenever they change; this tells the keys apart */
+  /** The hits in the order they are shown: a new array whenever they change */
   order: readonly T[];
   rowHeight: number;
   children: (hit: Accessor<T>) => JSX.Element;
@@ -18,6 +16,9 @@ interface Props<T extends { key: string | number }> {
  */
 export function ResultList<T extends { key: string | number }>(props: Props<T>) {
   let scrollElement: HTMLDivElement | undefined;
+
+  // The rows read these: a hit that is still there is the same object, so its row is left alone
+  const items = createProjection<T[]>(() => props.order as T[], [], { key: 'key' });
 
   const virtualizer = createVirtualizer({
     getScrollElement: () => scrollElement ?? null,
@@ -42,7 +43,7 @@ export function ResultList<T extends { key: string | number }>(props: Props<T>) 
       <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
         <For each={virtualizer.getVirtualItems()}>
           {(virtualItem) => {
-            const hit = createMemo(() => props.items[virtualItem.index]);
+            const hit = createMemo(() => items[virtualItem.index]);
             return (
               <Show when={hit()}>
                 {(current) => (

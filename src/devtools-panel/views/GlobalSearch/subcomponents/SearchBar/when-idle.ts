@@ -1,22 +1,3 @@
-import { createSignal, untrack } from 'solid-js';
-
-import { getSettings } from '../../../../store/store';
-import { createDefaultOptions, type SearchOptions } from '../../types';
-
-// What is searched for is here and not in the component so that it is still there after visiting
-// another page
-
-export const [getSearchText, setSearchText] = createSignal('');
-
-/** Starts as the settings remember it. A new object for every change */
-export const [getSearchOptions, setSearchOptions] = createSignal<SearchOptions>(
-  untrack(() =>
-    getSettings.search.persist.options()
-      ? { ...getSettings.search.saved.options() }
-      : createDefaultOptions(),
-  ),
-);
-
 /** The longest `whenIdle` waits for idle time: the user is waiting for the results */
 const IDLE_TIMEOUT_MS = 50;
 

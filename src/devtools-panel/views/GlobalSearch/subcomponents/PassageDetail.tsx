@@ -8,21 +8,22 @@ import { Tag } from '@/devtools-panel/ui/display/Tag';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { getScope } from '../store-helpers/search-state';
-import type { Range } from '../types';
+import type { QueryMatcher } from '../types';
 
 /** More than this many marks in an editor is no use to anyone */
 const MAX_MATCHES = 2000;
 
 interface Props {
   passage: ParsedPassageData;
-  /** Where the search text is found in a text */
-  findRanges: (text: string, max?: number) => Range[];
+  queryMatcher: QueryMatcher | null;
+  searchesContent: boolean;
 }
 
 export function PassageDetail(props: Props) {
   const matches = createMemo(() =>
-    getScope().passage.content ? props.findRanges(props.passage.content, MAX_MATCHES) : undefined,
+    props.searchesContent
+      ? (props.queryMatcher?.ranges(props.passage.content, MAX_MATCHES) ?? [])
+      : undefined,
   );
 
   const openInPassages = () => {

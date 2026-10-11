@@ -1,18 +1,16 @@
 import { createEffect, createSignal, onSettled, Show } from 'solid-js';
 
-import { getSettings, setSetting } from '../../../../store/store';
 import { createQueryMatcher } from '../../logic/query-matcher';
-import { LayoutToggle } from '../../subcomponents/Filters/LayoutToggle';
-import type { QueryMatcher, SearchOptions } from '../../types';
-import type { FilterLayout } from '../../types';
-import { ToggleCaseSensitive, ToggleRegex, ToggleWholeWord } from './OptionToggles';
 import {
   getSearchOptions,
   getSearchText,
   setSearchOptions,
   setSearchText,
-  whenIdle,
-} from './search-query';
+} from '../../store-helpers/search-input';
+import type { FilterLayout, QueryMatcher, SearchOptions } from '../../types';
+import { LayoutToggle } from '../Filters/LayoutToggle';
+import { ToggleCaseSensitive, ToggleRegex, ToggleWholeWord } from './OptionToggles';
+import { whenIdle } from './when-idle';
 
 const [getFocusRequests, setFocusRequests] = createSignal(0);
 
@@ -42,14 +40,6 @@ export function SearchBar(props: Props) {
 
   // The page starts without a queryMatcher, and what was searched for is still here after leaving it
   onSettled(() => search(getSearchText(), getSearchOptions()));
-
-  // When SearchOptions changes, store them (if the user wants them stored)
-  createEffect(
-    () => (getSettings.search.persist.options() ? getSearchOptions() : undefined),
-    (options) => {
-      if (options) setSetting('search.saved.options', { ...options });
-    },
-  );
 
   const toggleOption = (option: keyof SearchOptions) => {
     search(

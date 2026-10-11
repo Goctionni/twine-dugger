@@ -3,7 +3,6 @@ import clsx from 'clsx';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 
-import { useSelection } from '../selection';
 import type { StateMatcherHit } from '../types';
 import { Highlight } from './Highlight';
 
@@ -12,28 +11,25 @@ const MAX_TEXT = 300;
 
 interface Props {
   hit: StateMatcherHit;
+  isSelected: boolean;
+  onClick: () => void;
 }
 
 export function StateRow(props: Props) {
-  const selection = useSelection();
   const valueText = () => {
     const { value } = props.hit;
     return value === undefined ? '' : String(value).slice(0, MAX_TEXT);
   };
   const quote = () => (props.hit.type === 'string' ? '"' : '');
 
-  // Clicking the selected result again closes it
-  const toggleSelected = (key: string) =>
-    selection.select(selection.isSelected('state', key) ? null : { section: 'state', key });
-
   return (
     <button
       type="button"
       class={clsx(
         'flex h-full w-full cursor-pointer items-center gap-2 border-t border-slate-700 px-3 text-left font-mono text-sm hover:bg-slate-700',
-        selection.isSelected('state', props.hit.key) && 'bg-sky-900 shadow-[inset_2px_0_#38bdf8]',
+        props.isSelected && 'bg-sky-900 shadow-[inset_2px_0_#38bdf8]',
       )}
-      onClick={() => toggleSelected(props.hit.key)}
+      onClick={() => props.onClick()}
     >
       <TypeIcon type={props.hit.type} />
       <span class="max-w-[60%] min-w-0 shrink-0 truncate" title={props.hit.pathText}>

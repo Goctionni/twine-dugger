@@ -15,7 +15,7 @@ import {
   toggleTag,
   toggleType,
 } from '../../store-helpers/search-state';
-import { createDefaultSort } from '../../types';
+import { createDefaultSort } from '../../utils/search-defaults';
 
 const defaultSort = createDefaultSort();
 

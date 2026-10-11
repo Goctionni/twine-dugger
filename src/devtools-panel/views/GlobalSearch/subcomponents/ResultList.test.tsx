@@ -1,5 +1,5 @@
 import { render } from '@solidjs/web';
-import { createMemo, createProjection, createRoot, createSignal, flush } from 'solid-js';
+import { createMemo, createRoot, createSignal, flush } from 'solid-js';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 import { getMarkedText, installFakeHighlights } from '@/devtools-panel/ui/util/test-highlights';
@@ -8,16 +8,13 @@ import type { ParsedPassageData } from '@/shared/shared-types';
 import { setStore } from '../../../store/store';
 import { searchPassages } from '../logic/passage-search';
 import { createQueryMatcher } from '../logic/query-matcher';
-import { SelectionContext } from '../selection';
-import { createSelection } from '../selection';
 import { getTagFilter, toggleTag } from '../store-helpers/search-state';
+import type { PassageMatcherHit, QueryMatcher, Selected } from '../types';
 import {
   createDefaultOptions,
   createDefaultScope,
   createDefaultSort,
-  type QueryMatcher,
-  type PassageMatcherHit,
-} from '../types';
+} from '../utils/search-defaults';
 import { PassageRow } from './PassageRow';
 import { ResultList } from './ResultList';
 
@@ -44,7 +41,7 @@ beforeAll(() => {
 
 let host: HTMLElement;
 let dispose: () => void;
-let selection: ReturnType<typeof createSelection>;
+let getSelected: () => Selected | null;
 let setQueryMatcher: (queryMatcher: QueryMatcher | null) => void;
 
 beforeEach(() => {
@@ -77,21 +74,27 @@ beforeEach(() => {
       if (!tags.length) return hits;
       return hits.filter((hit) => passages[hit.key - 1]!.tags.some((tag) => tags.includes(tag)));
     });
-    const passageHits = createProjection<PassageMatcherHit[]>(() => sortedPassageHits(), [], {
-      key: 'key',
-    });
     const getPassage = (id: number) => passages.find((passage) => passage.id === id);
-    const countMatches = (text: string) => getQueryMatcher()?.count(text) ?? 0;
-    selection = createSelection();
+    const [selected, setSelected] = createSignal<Selected | null>(null);
+    getSelected = selected;
     const stop = render(
       () => (
-        <SelectionContext value={selection}>
-          <ResultList items={passageHits} order={sortedPassageHits()} rowHeight={54}>
-            {(hit) => (
-              <PassageRow hit={hit()} getPassage={getPassage} countMatches={countMatches} />
-            )}
-          </ResultList>
-        </SelectionContext>
+        <ResultList order={sortedPassageHits()} rowHeight={54}>
+          {(hit) => (
+            <PassageRow
+              hit={hit()}
+              isSelected={(() => {
+                const current = selected();
+                return current?.section === 'passage' && current.key === hit().key;
+              })()}
+              onClick={() =>
+                setSelected((current) => (current ? null : { section: 'passage', key: hit().key }))
+              }
+              getPassage={getPassage}
+              queryMatcher={getQueryMatcher()}
+            />
+          )}
+        </ResultList>
       ),
       host,
     );
@@ -163,9 +166,9 @@ describe('ResultList', () => {
     const button = () => host.querySelector('li button') as HTMLButtonElement;
     button().click();
     flush();
-    expect(selection.selected()).toEqual({ section: 'passage', key: 1 });
+    expect(getSelected()).toEqual({ section: 'passage', key: 1 });
     button().click();
     flush();
-    expect(selection.selected()).toBeNull();
+    expect(getSelected()).toBeNull();
   });
 });

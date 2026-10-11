@@ -37,24 +37,6 @@ export interface SearchSort {
   passage: PassageSort;
 }
 
-// Functions, not constants: the store changes what it is given, and the defaults must stay as they are
-export const createDefaultOptions = (): SearchOptions => ({
-  caseSensitive: false,
-  wholeWord: false,
-  regex: false,
-});
-
-export const createDefaultScope = (): SearchScope => ({
-  state: { path: true, value: true },
-  passage: { name: true, tags: true, content: true },
-});
-
-export const createDefaultSort = (): SearchSort => ({ state: 'source', passage: 'match' });
-
-/** Whether two scopes (or the options of one) have the same parts switched on */
-export const sameFlags = <T extends object>(a: T, b: T) =>
-  (Object.keys(a) as Array<keyof T>).every((key) => a[key] === b[key]);
-
 /** Plain data: no reference to the passage, so a hit is cheap to keep and to compare by key */
 export interface PassageMatcherHit {
   /** Passage id */
@@ -84,7 +66,7 @@ export interface StateMatcherHit {
 
 /** Finds the matches of a search text in a text. Made by `createQueryMatcher` */
 export interface QueryMatcher {
-  /** What this queryMatcher was made from */
+  /** What this was made from */
   readonly query: SearchQuery;
   /** Whether the new search needs to search in all state/passages, or only previous results  */
   canNarrowFrom(previous: QueryMatcher): boolean;
@@ -98,19 +80,22 @@ export interface QueryMatcher {
   count(text: string): number;
 }
 
-export interface PassageSearchResult {
+/** What a passage search found, and what it looked at: the next search can start from it */
+export interface PassageSearch {
   /** Best match first: matches in the name or tags, then the ones that only match in the content */
   hits: PassageMatcherHit[];
   /** The passages the hits are about, in the order they were given. This is what a narrower search starts from */
   passages: ParsedPassageData[];
+  /** Null when there was nothing to search for: nothing is found then */
+  queryMatcher: QueryMatcher | null;
+  scope: PassageScope;
+  source: readonly ParsedPassageData[];
 }
 
-export interface Snippet {
-  text: string;
-  ranges: Range[];
-}
+/** The result that is open in the details pane */
+export type Selected =
+  | { section: 'passage'; key: number }
+  | { section: 'state'; hit: StateMatcherHit };
 
-/** Note that these are not tailwind breakpoints */
-export type Breakpoint = 'sm' | 'md' | 'lg';
 export type FilterLayout = 'full-sidebar' | 'icon-sidebar' | 'top-bar';
 export type DetailMode = 'column' | 'sheet';

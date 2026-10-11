@@ -2,7 +2,12 @@ import { createRoot, flush } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 import { setSetting, setStore, store } from '../../../store/store';
-import { createDefaultOptions, createDefaultScope, createDefaultSort } from '../types';
+import {
+  createDefaultOptions,
+  createDefaultScope,
+  createDefaultSort,
+} from '../utils/search-defaults';
+import { setSearchOptions } from './search-input';
 import {
   createSearchPersistence,
   getScopeFilterCount,
@@ -149,6 +154,21 @@ describe('persistence', () => {
     flush();
     expect(store.settings['search.saved.scope'].passage.tags).toBe(false);
     expect(store.settings['search.saved.scope'].state).toEqual({ path: true, value: true });
+  });
+
+  it('saves the options of the search text, when asked to', () => {
+    setSearchOptions(() => createDefaultOptions());
+    flush();
+    setSearchOptions((prev) => ({ ...prev, caseSensitive: true }));
+    flush();
+    expect(store.settings['search.saved.options'].caseSensitive).toBe(false);
+
+    setSetting('search.persist.options', true);
+    flush();
+    expect(store.settings['search.saved.options'].caseSensitive).toBe(true);
+    setSearchOptions(() => createDefaultOptions());
+    flush();
+    expect(store.settings['search.saved.options']).toEqual(createDefaultOptions());
   });
 
   it('never saves the tag filter', () => {

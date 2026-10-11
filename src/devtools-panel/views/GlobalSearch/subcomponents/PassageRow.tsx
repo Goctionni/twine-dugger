@@ -2,28 +2,30 @@ import clsx from 'clsx';
 import { createMemo, For, Show } from 'solid-js';
 
 import { getTagColor } from '@/devtools-panel/ui/display/Tag';
+import { sameItems } from '@/devtools-panel/utils/same-items';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import { useSelection } from '../selection';
-import type { PassageMatcherHit, Range, Snippet } from '../types';
+import type { PassageMatcherHit, QueryMatcher, Range } from '../types';
 import { Highlight } from './Highlight';
 
 const MAX_TAGS = 3;
 const NO_RANGES: Range[] = [];
 const PREVIEW_LENGTH = 120;
 
-interface Props {
-  hit: PassageMatcherHit;
-  getPassage: (id: number) => ParsedPassageData | undefined;
-  /** How often the search text is found in a text */
-  countMatches: (text: string) => number;
+interface Snippet {
+  text: string;
+  ranges: Range[];
 }
 
-const sameNumbers = (a: readonly number[], b: readonly number[]) =>
-  a.length === b.length && a.every((value, index) => value === b[index]);
+interface Props {
+  hit: PassageMatcherHit;
+  isSelected: boolean;
+  onClick: () => void;
+  getPassage: (id: number) => ParsedPassageData | undefined;
+  queryMatcher: QueryMatcher | null;
+}
 
 export function PassageRow(props: Props) {
-  const selection = useSelection();
   const passage = createMemo(() => props.getPassage(props.hit.key));
   const name = () => passage()?.name ?? '';
   const tags = () => passage()?.tags ?? [];
@@ -37,7 +39,7 @@ export function PassageRow(props: Props) {
       const rest = positions.filter((position) => !matched[position]?.length);
       return [...first, ...rest].slice(0, MAX_TAGS);
     },
-    { equals: sameNumbers },
+    { equals: sameItems },
   );
 
   // Around the first match, or the start of the passage when it only matched in the name or tags
@@ -53,21 +55,17 @@ export function PassageRow(props: Props) {
 
   // How often it matches in the content: counted here, for the rows that are shown, not for every hit
   const contentMatches = createMemo(() =>
-    props.hit.firstContentRange ? props.countMatches(passage()?.content ?? '') : 0,
+    props.hit.firstContentRange ? (props.queryMatcher?.count(passage()?.content ?? '') ?? 0) : 0,
   );
-
-  // Clicking the selected result again closes it
-  const toggleSelected = (key: number) =>
-    selection.select(selection.isSelected('passage', key) ? null : { section: 'passage', key });
 
   return (
     <button
       type="button"
       class={clsx(
         'flex h-full w-full cursor-pointer flex-col justify-center gap-0.5 border-t border-slate-700 px-3 text-left hover:bg-slate-700',
-        selection.isSelected('passage', props.hit.key) && 'bg-sky-900 shadow-[inset_2px_0_#38bdf8]',
+        props.isSelected && 'bg-sky-900 shadow-[inset_2px_0_#38bdf8]',
       )}
-      onClick={() => toggleSelected(props.hit.key)}
+      onClick={() => props.onClick()}
     >
       <span class="flex min-w-0 items-center gap-2">
         <span class="min-w-0 flex-1 truncate font-mono text-sm" title={name()}>

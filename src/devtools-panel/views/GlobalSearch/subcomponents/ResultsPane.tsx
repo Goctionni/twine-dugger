@@ -2,7 +2,7 @@ import { createStore, Show } from 'solid-js';
 
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import type { PassageMatcherHit, StateMatcherHit } from '../types';
+import type { PassageMatcherHit, QueryMatcher, Selected, StateMatcherHit } from '../types';
 import { PassageRow } from './PassageRow';
 import { ResultList } from './ResultList';
 import { getView } from './results-view';
@@ -16,10 +16,7 @@ const PASSAGE_ROW_HEIGHT = 54;
 interface Props {
   /** Whether there is something to search for */
   hasQuery: boolean;
-  /** What was found and is shown: the same object for a hit that stays, so this is what rows read */
-  stateHits: readonly StateMatcherHit[];
-  passageHits: readonly PassageMatcherHit[];
-  /** The same hits, as a plain array that is new whenever they change: this tells the keys apart */
+  /** What was found and is shown, in the order it is shown in */
   sortedStateHits: readonly StateMatcherHit[];
   sortedPassageHits: readonly PassageMatcherHit[];
   /** Found, before the filters. The hits have what is left of it */
@@ -27,7 +24,10 @@ interface Props {
   passageTotal: number;
   /** What a passage row shows besides what the hit has */
   getPassage: (id: number) => ParsedPassageData | undefined;
-  countMatches: (text: string) => number;
+  queryMatcher: QueryMatcher | null;
+  selected: Selected | null;
+  /** Selects the result, or closes it when it is the selected one */
+  onToggleSelected: (selected: Selected) => void;
 }
 
 /** The switch for what is shown, and the results of the search: a section for the state and one for the passages */
@@ -61,42 +61,46 @@ export function ResultsPane(props: Props) {
             <Show when={showState()}>
               <ResultSection
                 title="State"
-                shown={props.stateHits.length}
+                shown={props.sortedStateHits.length}
                 total={props.stateTotal}
                 collapsible={both()}
                 collapsed={both() && collapsed.state}
                 onToggle={() => toggleCollapsed('state')}
                 empty="No results"
               >
-                <ResultList
-                  items={props.stateHits}
-                  order={props.sortedStateHits}
-                  rowHeight={STATE_ROW_HEIGHT}
-                >
-                  {(hit) => <StateRow hit={hit()} />}
+                <ResultList order={props.sortedStateHits} rowHeight={STATE_ROW_HEIGHT}>
+                  {(hit) => (
+                    <StateRow
+                      hit={hit()}
+                      isSelected={
+                        props.selected?.section === 'state' && props.selected.hit.key === hit().key
+                      }
+                      onClick={() => props.onToggleSelected({ section: 'state', hit: hit() })}
+                    />
+                  )}
                 </ResultList>
               </ResultSection>
             </Show>
             <Show when={showPassages()}>
               <ResultSection
                 title="Passages"
-                shown={props.passageHits.length}
+                shown={props.sortedPassageHits.length}
                 total={props.passageTotal}
                 collapsible={both()}
                 collapsed={both() && collapsed.passage}
                 onToggle={() => toggleCollapsed('passage')}
                 empty="No results"
               >
-                <ResultList
-                  items={props.passageHits}
-                  order={props.sortedPassageHits}
-                  rowHeight={PASSAGE_ROW_HEIGHT}
-                >
+                <ResultList order={props.sortedPassageHits} rowHeight={PASSAGE_ROW_HEIGHT}>
                   {(hit) => (
                     <PassageRow
                       hit={hit()}
+                      isSelected={
+                        props.selected?.section === 'passage' && props.selected.key === hit().key
+                      }
+                      onClick={() => props.onToggleSelected({ section: 'passage', key: hit().key })}
                       getPassage={props.getPassage}
-                      countMatches={props.countMatches}
+                      queryMatcher={props.queryMatcher}
                     />
                   )}
                 </ResultList>

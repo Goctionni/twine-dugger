@@ -2,12 +2,8 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import {
-  createDefaultOptions,
-  type QueryMatcher,
-  type PassageScope,
-  type SearchOptions,
-} from '../types';
+import { type QueryMatcher, type PassageScope, type SearchOptions } from '../types';
+import { createDefaultOptions } from '../utils/search-defaults';
 import { countPassageMatches, countTags, searchPassages } from './passage-search';
 import { createQueryMatcher } from './query-matcher';
 

@@ -4,11 +4,12 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 
 import type { JSONSafeObject, ParsedPassageData } from '@/shared/shared-types';
 
+import { restartGameState, startGameState } from '../../store/game-state';
+import { setPassageData } from '../../store/passages';
 import { setStore } from '../../store/store';
 import { GlobalSearchView } from './GlobalSearchView';
 import * as passageSearch from './logic/passage-search';
 import * as stateSearch from './logic/state-search';
-import * as gameData from './store-helpers/game-data';
 import {
   clearTags,
   resetFilters,
@@ -20,7 +21,7 @@ import {
   toggleType,
 } from './store-helpers/search-state';
 import { setView, type ResultsView } from './subcomponents/results-view';
-import { createDefaultScope, createDefaultSort } from './types';
+import { createDefaultScope, createDefaultSort } from './utils/search-defaults';
 
 // The detail pane reaches the extension api when it is imported; this page never calls it
 vi.hoisted(() => {
@@ -29,34 +30,12 @@ vi.hoisted(() => {
 
 vi.mock('./logic/passage-search', { spy: true });
 vi.mock('./logic/state-search', { spy: true });
-// The game that is being inspected: the test changes it through the controls it is given
-vi.mock('./store-helpers/game-data', async () => {
-  const { createSignal } = await import('solid-js');
-  const [passages, setPassages] = createSignal<readonly unknown[]>([]);
-  const [version, setVersion] = createSignal(0);
-  let state: unknown = {};
-  return {
-    getPassages: passages,
-    getStateVersion: version,
-    getUntrackedState: () => state,
-    getLastChange: () => 0,
-    controls: {
-      setPassages,
-      changeState(next: unknown) {
-        state = next;
-        setVersion((current) => current + 1);
-      },
-    },
-  };
-});
-const controls = (
-  gameData as unknown as {
-    controls: {
-      setPassages(passages: readonly ParsedPassageData[]): void;
-      changeState(state: JSONSafeObject): void;
-    };
-  }
-).controls;
+
+// The game that is being inspected is the real store, which the test fills and changes
+const controls = {
+  setPassages: (list: ParsedPassageData[]) => setPassageData(list),
+  changeState: (next: JSONSafeObject) => restartGameState(structuredClone(next), 'test'),
+};
 
 const passage = (
   id: number,
@@ -131,7 +110,7 @@ beforeEach(async () => {
     };
   });
   controls.setPassages(passages);
-  controls.changeState(state);
+  startGameState(structuredClone(state));
   setView('passage');
   flush();
 

@@ -1,13 +1,7 @@
+import { sameFlags } from '@/devtools-panel/utils/same-flags';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
-import {
-  sameFlags,
-  type QueryMatcher,
-  type PassageMatcherHit,
-  type PassageScope,
-  type PassageSearchResult,
-  type Range,
-} from '../types';
+import type { PassageMatcherHit, PassageScope, PassageSearch, QueryMatcher, Range } from '../types';
 
 const NO_RANGES: Range[] = [];
 
@@ -19,7 +13,7 @@ function naiveSearchPassages(
   passages: readonly ParsedPassageData[],
   queryMatcher: QueryMatcher,
   scope: PassageScope,
-): PassageSearchResult {
+): Pick<PassageSearch, 'hits' | 'passages'> {
   const firstInContent = (passage: ParsedPassageData) =>
     scope.content ? queryMatcher.first(passage.content) : null;
 
@@ -60,14 +54,6 @@ function naiveSearchPassages(
   // same order as a new one
   const found = new Set(hits.map((hit) => hit.key));
   return { hits, passages: passages.filter((passage) => found.has(passage.id)) };
-}
-
-/** What a passage search found, and what it looked at: the next search can start from it */
-export interface PassageSearch extends PassageSearchResult {
-  /** Null when there was nothing to search for: nothing is found then */
-  queryMatcher: QueryMatcher | null;
-  scope: PassageScope;
-  source: readonly ParsedPassageData[];
 }
 
 /** Whether what the `previous` search found is enough to search in: it looked at the same passages in the same way, and the new search is a narrower one */

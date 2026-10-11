@@ -1,6 +1,7 @@
 import { createMemo, createSignal, onCleanup } from 'solid-js';
 
-import type { Breakpoint } from './types';
+/** Note that these are not tailwind breakpoints */
+export type Breakpoint = 'sm' | 'md' | 'lg';
 
 /** The width of the window as it changes. Where DevTools is docked decides the shape of the page */
 function createGetWindowWidth() {
