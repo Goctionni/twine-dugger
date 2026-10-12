@@ -1,4 +1,4 @@
-import { createGetSetting, setSetting } from '@/devtools-panel/store/store';
+import { getSettings, setSetting } from '@/devtools-panel/store/store';
 import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
 import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
 
@@ -10,27 +10,18 @@ import {
 import { SettingControl } from './SettingControl';
 
 export function DiffLogSettings() {
-  const getDiffLogFontSize = createGetSetting('diffLog.fontSize');
-  const getDiffLogPollingInterval = createGetSetting('diffLog.pollingInterval');
-  const getDiffLogMaxHistorySlices = createGetSetting('diffLog.maxHistorySlices');
-  const getDiffLogHeadingStyle = createGetSetting('diffLog.headingStyle');
+  const { fontSize, pollingInterval, maxHistorySlices, headingStyle } = getSettings.diffLog;
 
   return (
     <>
       <SettingControl label="Font size">
-        {(id) => (
-          <NumberInput
-            inputProps={{ id }}
-            value={getDiffLogFontSize()}
-            onChange={onFontSizeChange}
-          />
-        )}
+        {(id) => <NumberInput inputProps={{ id }} value={fontSize()} onChange={onFontSizeChange} />}
       </SettingControl>
       <SettingControl label="Polling interval">
         {(id) => (
           <NumberInput
             inputProps={{ id }}
-            value={getDiffLogPollingInterval()}
+            value={pollingInterval()}
             onChange={onPollingIntervalChange}
           />
         )}
@@ -39,7 +30,7 @@ export function DiffLogSettings() {
         {(id) => (
           <NumberInput
             inputProps={{ id }}
-            value={getDiffLogMaxHistorySlices()}
+            value={maxHistorySlices()}
             onChange={onMaxHistorySlicesChange}
           />
         )}
@@ -47,7 +38,7 @@ export function DiffLogSettings() {
       <SettingControl label="Heading Emphasis" noLabel>
         {(id) => (
           <BooleanInput
-            value={getDiffLogHeadingStyle() === 'distinct'}
+            value={headingStyle() === 'distinct'}
             onChange={(value) => setSetting('diffLog.headingStyle', value ? 'distinct' : 'default')}
             id={id}
           />

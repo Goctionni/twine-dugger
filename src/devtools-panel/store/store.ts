@@ -5,6 +5,11 @@ import { pathEquals, pathStartsWith } from '@/shared/path-equals';
 import type { GameMetaData, Page, Path } from '@/shared/shared-types';
 
 import {
+  createDefaultOptions,
+  createDefaultScope,
+  createDefaultSort,
+} from '../views/GlobalSearch/utils/search-defaults';
+import {
   gameConfigSchema,
   settingsSchema,
   type GameConfig,
@@ -31,6 +36,16 @@ const defaultSettings: Settings = {
   'state.propertyOrder': 'type',
   'state.propertyOrderDesc': false,
   'state.filters': [],
+  'editor.disableHighlighting': 'large',
+  'search.smFilterLayout': 'icon-sidebar',
+  'search.persist.options': false,
+  'search.persist.scope': false,
+  'search.persist.sort': false,
+  'search.persist.typeFilter': false,
+  'search.saved.options': createDefaultOptions(),
+  'search.saved.scope': createDefaultScope(),
+  'search.saved.sort': createDefaultSort(),
+  'search.saved.typeFilter': [],
 };
 
 function loadGlobalSettings(): Settings {
@@ -53,17 +68,40 @@ function loadGameConfig(gameId: string | undefined): GameConfig {
   return { filteredPaths: [], locks: [] };
 }
 
+function createInitialSearchState(settings: Settings): StoreData['viewState']['search'] {
+  // The parts that are remembered start from what was saved last time; the rest from the defaults.
+  // A copy either way: the store changes what it is given, and the settings keep their own
+  const pick = <T>(persist: boolean, saved: T, fallback: () => T): T =>
+    persist ? structuredClone(saved) : fallback();
+  return {
+    scope: pick(
+      settings['search.persist.scope'],
+      settings['search.saved.scope'],
+      createDefaultScope,
+    ),
+    sort: pick(settings['search.persist.sort'], settings['search.saved.sort'], createDefaultSort),
+    typeFilter: pick(
+      settings['search.persist.typeFilter'],
+      settings['search.saved.typeFilter'],
+      () => [],
+    ),
+    tagFilter: [],
+  };
+}
+
+const initialSettings = loadGlobalSettings();
+
 export const [store, setStore] = createStore<StoreData>({
   connectionState: 'loading-meta',
   candidateIframes: [],
   gameMeta: null,
   gameConfig: { filteredPaths: [], locks: [] },
-  settings: loadGlobalSettings(),
+  settings: initialSettings,
   viewState: {
     activeTab: 'state',
     state: { historyRef: 'latest', path: [] },
     passages: { selected: null },
-    search: { query: '', resultTab: 'state' },
+    search: createInitialSearchState(initialSettings),
   },
 });
 
@@ -136,10 +174,6 @@ export function setViewState<TView extends ViewName, TProperty extends keyof Vie
   });
 }
 
-export function createGetSetting<T extends keyof Settings>(setting: T) {
-  return (): Settings[T] => store.settings[setting];
-}
-
 export function setSetting<T extends keyof Settings>(setting: T, value: Settings[T]) {
   setStore((draft) => {
     draft.settings[setting] = value;
@@ -176,3 +210,35 @@ export function clearFilteredPaths() {
     draft.gameConfig.filteredPaths = [];
   });
 }
+
+export const getSettings = {
+  diffLog: {
+    fontSize: () => store.settings['diffLog.fontSize'],
+    pollingInterval: () => store.settings['diffLog.pollingInterval'],
+    maxHistorySlices: () => store.settings['diffLog.maxHistorySlices'],
+    headingStyle: () => store.settings['diffLog.headingStyle'],
+  },
+  state: {
+    propertyOrder: () => store.settings['state.propertyOrder'],
+    propertyOrderDesc: () => store.settings['state.propertyOrderDesc'],
+    filters: () => store.settings['state.filters'],
+  },
+  editor: {
+    disableHighlighting: () => store.settings['editor.disableHighlighting'],
+  },
+  search: {
+    smFilterLayout: () => store.settings['search.smFilterLayout'],
+    persist: {
+      options: () => store.settings['search.persist.options'],
+      scope: () => store.settings['search.persist.scope'],
+      sort: () => store.settings['search.persist.sort'],
+      typeFilter: () => store.settings['search.persist.typeFilter'],
+    },
+    saved: {
+      options: () => store.settings['search.saved.options'],
+      scope: () => store.settings['search.saved.scope'],
+      sort: () => store.settings['search.saved.sort'],
+      typeFilter: () => store.settings['search.saved.typeFilter'],
+    },
+  },
+};

@@ -1,0 +1,71 @@
+import type { JSX } from '@solidjs/web';
+import { createMemo, createProjection, For, Show, type Accessor } from 'solid-js';
+
+import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
+
+interface Props<T extends { key: string | number }> {
+  /** The hits in the order they are shown: a new array whenever they change */
+  order: readonly T[];
+  rowHeight: number;
+  children: (hit: Accessor<T>) => JSX.Element;
+}
+
+/**
+ * Only the rows that are in view exist. A row belongs to a hit, not to a position: when a hit moves
+ * or the results are replaced, the rows of the hits that are still there stay as they are.
+ */
+export function ResultList<T extends { key: string | number }>(props: Props<T>) {
+  let scrollElement: HTMLDivElement | undefined;
+
+  // The rows read these: a hit that is still there is the same object, so its row is left alone
+  const items = createProjection<T[]>(() => props.order as T[], [], { key: 'key' });
+
+  const virtualizer = createVirtualizer({
+    getScrollElement: () => scrollElement ?? null,
+    get count() {
+      return props.order.length;
+    },
+    // Looked at again when the results change: that is when the order does
+    get getItemKey() {
+      const staticOrder = props.order;
+      return (index: number) => staticOrder[index]!.key;
+    },
+    get estimateSize() {
+      const staticHeight = props.rowHeight;
+      return () => staticHeight;
+    },
+    reconcileBy: 'key',
+    overscan: 6,
+  });
+
+  return (
+    <div class="h-full overflow-auto" ref={scrollElement}>
+      <ul class="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
+        <For each={virtualizer.getVirtualItems()}>
+          {(virtualItem) => {
+            // The list shrinks before the virtual items follow: until then this row's position can be
+            // past the end, and the row must not be thrown away and made again for that
+            const hit = createMemo<T | undefined>(
+              (previous) => items[virtualItem.index] ?? previous,
+            );
+            return (
+              <Show when={hit()}>
+                {(current) => (
+                  <li
+                    class="absolute top-0 left-0 w-full"
+                    style={{
+                      height: `${virtualItem.size}px`,
+                      transform: `translateY(${virtualItem.start}px)`,
+                    }}
+                  >
+                    {props.children(current)}
+                  </li>
+                )}
+              </Show>
+            );
+          }}
+        </For>
+      </ul>
+    </div>
+  );
+}

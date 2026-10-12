@@ -25,7 +25,8 @@ const getMaxFrames = () => untrack(() => store.settings['diffLog.maxHistorySlice
 
 export const getLatestId = latestId;
 export const getLatestState = () => gameState;
-export const getLastChangeId = (path: Path) => lastChanged[pathKey(path)] ?? 0;
+export const getLastChangeIdByKey = (key: string) => lastChanged[key] ?? 0;
+export const getLastChangeId = (path: Path) => getLastChangeIdByKey(pathKey(path));
 
 function resetView() {
   setLastChanged(() => ({}));

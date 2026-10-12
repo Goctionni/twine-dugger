@@ -18,3 +18,58 @@ input[type='search'] {
     mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M4 4 L20 20 M20 4 L4 20' stroke='black' stroke-width='3' stroke-linecap='square'/></svg>");
   }
 }
+
+/* Search matches that are marked without changing the markup (see ui/util/range-highlight.ts) */
+::highlight(search-match) {
+  background-color: rgb(250 204 21 / 0.4);
+  color: inherit;
+}
+
+/* A select whose arrow is drawn here instead of by the browser, so that it can be moved in from the edge */
+@utility select-arrow {
+  appearance: none;
+  padding-right: calc(var(--spacing) * 7);
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23cbd5e1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right calc(var(--spacing) * 2) center;
+  background-size: 12px;
+}
+
+/* A checkbox that is darker than the page when it is empty (the browser's is white), and sky blue with a tick when it is checked */
+@utility check-box {
+  appearance: none;
+  flex-shrink: 0;
+  border: 1px solid var(--color-slate-500);
+  border-radius: var(--radius-xs);
+  background-color: var(--color-slate-950);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
+
+  &:checked {
+    border-color: var(--color-sky-500);
+    background-color: var(--color-sky-500);
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path d='M3.5 7.5 6 10l4.5-5.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-sky-400);
+    outline-offset: 1px;
+  }
+}
+
+/*
+ * A tag: 16px high, with the text centered on the height of a lowercase letter. Where it is
+ * supported, the empty space above the x-height and below the baseline is trimmed from the line of
+ * text, and the padding is what is left of the 16px: the same above and below what is seen.
+ * Elsewhere the text is centered in a line that is 16px high.
+ */
+@utility tag-chip {
+  height: 16px;
+  line-height: 16px;
+
+  @supports (text-box: trim-start ex alphabetic) {
+    text-box: trim-start ex alphabetic;
+    padding-block: calc((16px - 1ex) / 2);
+  }
+}

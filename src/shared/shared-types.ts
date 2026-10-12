@@ -140,16 +140,6 @@ export interface GameMetaData {
   incompatible?: string[];
 }
 
-export interface SearchResultState {
-  path: Path;
-  value: Value;
-}
-
-export interface SearchResultsCombined {
-  state: SearchResultState[];
-  passage: ParsedPassageData[];
-}
-
 export type Placement =
   | 'top'
   | 'bottom'

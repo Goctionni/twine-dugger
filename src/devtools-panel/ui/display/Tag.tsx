@@ -6,8 +6,7 @@ const lightness = 0.45;
 const chroma = 0.18;
 
 export function Tag(props: TagProps) {
-  const hue = () => hashToHue(props.tag.toLowerCase());
-  const bg = () => `oklch(${lightness} ${chroma} ${hue()}deg)`;
+  const bg = () => getTagColor(props.tag);
 
   return (
     <span
@@ -18,6 +17,10 @@ export function Tag(props: TagProps) {
     </span>
   );
 }
+
+/** The background of a tag: the same tag always has the same color */
+export const getTagColor = (tag: string) =>
+  `oklch(${lightness} ${chroma} ${hashToHue(tag.toLowerCase())}deg)`;
 
 function hashToHue(str: string) {
   let h = 0;

@@ -4,6 +4,7 @@ import { For, onCleanup } from 'solid-js';
 import type { Page } from '@/shared/shared-types';
 
 import { getNavigationPage, setNavigationPage } from '../store/store';
+import { requestSearchFocus } from '../views/GlobalSearch/store-helpers/search-focus';
 
 interface NavItem {
   id: Page;
@@ -37,8 +38,9 @@ const navItems = [
 export function Navigation() {
   const isCurrentNavItem = (item: NavItem) => getNavigationPage() === item.id;
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'f' && e.ctrlKey) {
+    if (e.key.toLowerCase() === 'f' && e.ctrlKey && e.shiftKey) {
       setNavigationPage('search');
+      requestSearchFocus();
       e.preventDefault();
       e.stopPropagation();
       return false;

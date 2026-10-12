@@ -2,7 +2,7 @@ import { createSignal } from 'solid-js';
 
 import type { ParsedPassageData, PassageData } from '@/shared/shared-types';
 
-import { getPassageData as fetchPassageData } from '../api/api';
+import { getPassageData as fetchPassageData, setPassage } from '../api/api';
 import { store } from './store';
 
 export const [getPassageData, setPassageData] = createSignal<ParsedPassageData[]>([]);
@@ -32,3 +32,11 @@ export const reloadPassagesData = async () => {
   const passageData = await fetchPassageData();
   setPassageData(passageData.map(parsePassage));
 };
+
+/** Writes the new content to the game, and to the passages that are known here */
+export function savePassage(passage: ParsedPassageData, content: string) {
+  setPassage({ name: passage.name, source: content });
+  setPassageData((current) =>
+    current.map((known) => (known.id === passage.id ? { ...known, content } : known)),
+  );
+}

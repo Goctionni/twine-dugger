@@ -16,7 +16,13 @@ export default defineConfig({
   staged: { '*': 'vp check --fix' },
   resolve: { alias: { '@': resolve(import.meta.dirname, './src') } },
   build: { minify: false, sourcemap: true },
-  plugins: [solidPlugin() as PluginOption, tailwindcss(), htmlInsertFontPlugin, mockApiPlugin()],
+  plugins: [
+    solidPlugin() as PluginOption,
+    // Its CSS optimizer doesn't know ::highlight() yet and warns; the output is not minified anyway
+    tailwindcss({ optimize: false }),
+    htmlInsertFontPlugin,
+    mockApiPlugin(),
+  ],
   lint: (await import('./oxlint.config.ts')).default,
   fmt: (await import('./oxfmt.config.ts')).default,
   environments: {},

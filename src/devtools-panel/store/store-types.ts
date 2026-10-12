@@ -9,7 +9,10 @@ import {
   type GameMetaData,
   type Page,
   type Path,
+  type ValueType,
 } from '@/shared/shared-types';
+
+import type { SearchScope, SearchSort } from '../views/GlobalSearch/types';
 
 export interface StoreData {
   connectionState: ConnectionState;
@@ -26,9 +29,14 @@ export interface StoreData {
     passages: {
       selected: string | null;
     };
+    /** What the search is told; see `search/types.ts` */
     search: {
-      query: string;
-      resultTab: 'state' | 'passage';
+      scope: SearchScope;
+      sort: SearchSort;
+      /** Value types to show in state results; empty = all */
+      typeFilter: ValueType[];
+      /** Passage tags to require; empty = all. Game specific, never persisted */
+      tagFilter: string[];
     };
   };
 }
@@ -47,5 +55,26 @@ export const settingsSchema = type({
   'state.propertyOrder': propertyOrderSchema,
   'state.propertyOrderDesc': 'boolean',
   'state.filters': valueTypeSchema.or("'filtered'").array(),
+  'editor.disableHighlighting': "'never' | 'very-large' | 'large' | 'normal' | 'always'",
+  'search.smFilterLayout': "'icon-sidebar' | 'top-bar'",
+  // Which parts of the search are remembered between sessions (the search text and tag filter never are)
+  'search.persist.options': 'boolean',
+  'search.persist.scope': 'boolean',
+  'search.persist.sort': 'boolean',
+  'search.persist.typeFilter': 'boolean',
+  'search.saved.options': {
+    caseSensitive: 'boolean',
+    wholeWord: 'boolean',
+    regex: 'boolean',
+  },
+  'search.saved.scope': {
+    state: { path: 'boolean', value: 'boolean' },
+    passage: { name: 'boolean', tags: 'boolean', content: 'boolean' },
+  },
+  'search.saved.sort': {
+    state: "'source' | 'path-asc' | 'path-desc' | 'type' | 'recent'",
+    passage: "'match' | 'most-matches' | 'name-asc' | 'name-desc'",
+  },
+  'search.saved.typeFilter': valueTypeSchema.array(),
 });
 export type Settings = typeof settingsSchema.infer;

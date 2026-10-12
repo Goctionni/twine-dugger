@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@shikijs/langs": "4.5.0",
-    "@solid-primitives/scheduled": "2.0.0-next.2",
     "@solidjs/web": "2.0.0-rc.13",
     "@tanstack/virtual-core": "3.17.11",
     "arktype": "2.2.7",

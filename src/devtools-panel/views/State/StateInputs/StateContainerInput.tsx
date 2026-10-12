@@ -1,6 +1,6 @@
 import { createMemo, For, Match, Show, Switch, untrack } from 'solid-js';
 
-import { createGetSetting } from '@/devtools-panel/store/store';
+import { getSettings } from '@/devtools-panel/store/store';
 import type { ContainerType } from '@/shared/json-safe';
 import { getContainerKeys, getJsonType, getKeyLabel, isContainerType } from '@/shared/json-safe';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
@@ -13,8 +13,6 @@ import { createSorter } from '../property-sorter';
 import { StateBooleanInput } from './StateBooleanInput';
 import { StateNumberInput } from './StateNumberInput';
 import { StateStringInput } from './StateStringInput';
-
-const getPropertyOrder = createGetSetting('state.propertyOrder');
 
 const ROW_HEIGHT = 36;
 
@@ -34,7 +32,12 @@ export function StateContainerInput(props: StateContainerInputProps) {
       const value = props.getValue();
       const type = props.getType();
       const keys = getContainerKeys(value, type);
-      const sorted = createSorter(value, getPropertyOrder(), false, props.path)(keys);
+      const sorted = createSorter(
+        value,
+        getSettings.state.propertyOrder(),
+        false,
+        props.path,
+      )(keys);
 
       const children = value as Record<string | number, unknown>;
       return untrack(() => sorted.filter((key) => !isContainerType(getJsonType(children[key]))));
