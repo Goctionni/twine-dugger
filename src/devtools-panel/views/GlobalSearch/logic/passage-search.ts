@@ -81,13 +81,14 @@ export function searchPassages(
   queryMatcher: QueryMatcher | null,
   scope: PassageScope,
 ): PassageSearch {
-  // A copy: the scope can be a store that changes, and the next search compares with what this one saw
+  // A copy: the scope can be a store that changes, the next search compares with what this one saw,
+  // and reading a store for every passage is slower than reading an object
   const searched = { ...scope };
   if (!queryMatcher) return { hits: [], passages: [], queryMatcher, scope: searched, source };
-  const passages = canNarrowFrom(previous, source, queryMatcher, scope)
+  const passages = canNarrowFrom(previous, source, queryMatcher, searched)
     ? previous.passages
     : source;
-  const result = naiveSearchPassages(passages, queryMatcher, scope);
+  const result = naiveSearchPassages(passages, queryMatcher, searched);
   return { ...result, queryMatcher, scope: searched, source };
 }
 

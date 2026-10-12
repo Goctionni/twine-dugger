@@ -19,15 +19,17 @@ export function searchState(
   scope: StateScope,
 ): StateMatcherHit[] {
   const hits: StateMatcherHit[] = [];
-  if (!scope.path && !scope.value) return hits;
+  // Read once: the scope can be a store, and this runs for every entry of the state
+  const { path: searchesPath, value: searchesValue } = scope;
+  if (!searchesPath && !searchesValue) return hits;
 
   walkState(root, (entry) => {
     let pathRanges = NO_RANGES;
-    if (scope.path && entry.isName) {
+    if (searchesPath && entry.isName) {
       pathRanges = shift(queryMatcher.ranges(String(entry.key)), entry.keyOffset);
     }
     let valueRanges = NO_RANGES;
-    if (scope.value && entry.primitive !== undefined) {
+    if (searchesValue && entry.primitive !== undefined) {
       valueRanges = queryMatcher.ranges(String(entry.primitive));
     }
     if (!pathRanges.length && !valueRanges.length) return;
