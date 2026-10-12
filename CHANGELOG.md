@@ -8,7 +8,8 @@
 
 ### Patch Changes
 
-- 9a0c86a: Get rid of webextension polyfill, fix non-cdp inject for xlowe
+- 9a0c86a: Get rid of webextension polyfill
+- 41314a1: Bugfix: Several fallbacks added when reading metadata from Harlowe/XLowe
 
 ## 1.7.1
 
