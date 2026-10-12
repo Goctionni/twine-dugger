@@ -31,6 +31,18 @@ export function posttransformValue(value: JSONSafeValue): unknown {
   }
 }
 
+const restoredTypes = new Set(['Map', 'NumberMap', 'Date']);
+
+export function restoreMarkedJsonValue(value: JSONSafeValue): unknown {
+  if (value === null || typeof value !== 'object') return value;
+  if (Array.isArray(value)) {
+    return value[0] !== SET_MARKER ? value : posttransformValue(value);
+  }
+  if (!(TYPE_KEY in value)) return value;
+  if (!restoredTypes.has(value[TYPE_KEY])) return value;
+  return posttransformValue(value);
+}
+
 function posttransformObject(object: JSONSafeObject) {
   return Object.fromEntries(
     Object.entries(object).map(([key, item]) => [key, posttransformValue(item)]),

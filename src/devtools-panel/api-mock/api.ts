@@ -1,4 +1,4 @@
-import type { FormatPassage, Lock, Path } from '@/shared/shared-types';
+import type { FormatPassage, JSONSafeValue, Lock, Path } from '@/shared/shared-types';
 
 import type * as T from '../api/api';
 
@@ -49,7 +49,10 @@ export async function getUpdates(full = false): Return<'getUpdates'> {
   return Promise.resolve({ type: 'update', passage: '', delta: undefined, reverts: [] });
 }
 
-export async function setState(_path: Array<string | number>, _value: unknown): Return<'setState'> {
+export async function setState(
+  _path: Array<string | number>,
+  _value: JSONSafeValue,
+): Return<'setState'> {
   return Promise.resolve();
 }
 

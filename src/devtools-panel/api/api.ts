@@ -1,4 +1,4 @@
-import type { FormatPassage, Lock, Path } from '@/shared/shared-types';
+import type { FormatPassage, JSONSafeValue, Lock, Path } from '@/shared/shared-types';
 
 import { executeCode, injectContentScript } from './remote-execute';
 import { getGameMetaFn } from './remote-functions/getMetaData';
@@ -18,7 +18,7 @@ export async function getUpdates(full = false) {
   );
 }
 
-export async function setState(path: Array<string | number>, value: unknown) {
+export async function setState(path: Array<string | number>, value: JSONSafeValue) {
   await injectContentScript();
   return execDuggerFunction('setState', [[...path], value]);
 }

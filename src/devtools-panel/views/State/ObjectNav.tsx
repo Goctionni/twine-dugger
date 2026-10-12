@@ -21,6 +21,7 @@ import { showPromptDialog } from '@/devtools-panel/ui/util/Prompt';
 import { createVirtualizer } from '@/devtools-panel/utils/create-virtualizer';
 import { getContainerKeys, getJsonType, getKeyLabel, isContainerType } from '@/shared/json-safe';
 import type {
+  JSONSafeValue,
   LockStatus,
   OrderConfig,
   Path,
@@ -181,7 +182,7 @@ export function ObjectNav(props: Props) {
   };
 
   const onAdd = async () => {
-    const result = await showPromptDialog<{ name: string; value: unknown }>(
+    const result = await showPromptDialog<{ name: string; value: JSONSafeValue }>(
       'Add new',
       (resolve) => (
         <AddPropertyDialog

@@ -2,6 +2,8 @@ import { cleanup, render, screen } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
+
 import { getActiveState } from '../../../store/game-state';
 import { AddPropertyDialog } from './AddPropertyDialog';
 
@@ -73,7 +75,7 @@ describe('AddPropertyDialog', () => {
     expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', []);
   });
 
-  it('creates empty map for map type', async () => {
+  it('creates the marked form of an empty map for map type', async () => {
     const onConfirm = vi.fn<(name: string, value: unknown) => void>();
     const user = userEvent.setup();
 
@@ -82,10 +84,10 @@ describe('AddPropertyDialog', () => {
     await user.selectOptions(screen.getByRole('combobox'), 'map');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', new Map());
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', { [TYPE_KEY]: 'Map' });
   });
 
-  it('creates empty set for set type', async () => {
+  it('creates the marked form of an empty set for set type', async () => {
     const onConfirm = vi.fn<(name: string, value: unknown) => void>();
     const user = userEvent.setup();
 
@@ -94,7 +96,7 @@ describe('AddPropertyDialog', () => {
     await user.selectOptions(screen.getByRole('combobox'), 'set');
     await user.click(screen.getByRole('button', { name: 'Add Property' }));
 
-    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', new Set());
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith('', [SET_MARKER]);
   });
 
   it('uses property name when container is object', async () => {

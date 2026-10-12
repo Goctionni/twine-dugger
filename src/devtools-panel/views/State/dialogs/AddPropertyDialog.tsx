@@ -2,8 +2,15 @@ import clsx from 'clsx';
 import { createMemo, createSignal, Show } from 'solid-js';
 
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
-import { getContainerKeys, getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
-import type { Path } from '@/shared/shared-types';
+import {
+  getContainerKeys,
+  getJsonType,
+  getPathValue,
+  isContainerType,
+  SET_MARKER,
+  TYPE_KEY,
+} from '@/shared/json-safe';
+import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { getActiveState } from '../../../store/game-state';
 
@@ -13,7 +20,7 @@ const inputClasses =
 type NewValueType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'map' | 'set';
 
 export function AddPropertyDialog(props: {
-  onConfirm: (name: string, value: unknown) => void;
+  onConfirm: (name: string, value: JSONSafeValue) => void;
   path: Path;
 }) {
   const [name, setName] = createSignal('');
@@ -35,7 +42,7 @@ export function AddPropertyDialog(props: {
   function getValueFromType(
     type: NewValueType,
     primitiveValue: string | number | boolean,
-  ): unknown {
+  ): JSONSafeValue {
     switch (type) {
       case 'string':
         return String(primitiveValue ?? '');
@@ -48,9 +55,9 @@ export function AddPropertyDialog(props: {
       case 'array':
         return [];
       case 'map':
-        return new Map();
+        return { [TYPE_KEY]: 'Map' };
       case 'set':
-        return new Set();
+        return [SET_MARKER];
     }
   }
 

@@ -26,7 +26,7 @@ declare global {
     TwineDugger: {
       getPassageData: () => PassageData[];
       getUpdates: (full?: boolean) => UpdateResult;
-      setState: (path: Path, value: unknown) => void;
+      setState: (path: Path, value: JSONSafeValue) => void;
       deleteFromState: (path: Path) => void;
       duplicateStateProperty: (
         parentPath: Path,
@@ -40,5 +40,12 @@ declare global {
   }
   interface ErrorConstructor {
     isError(value: unknown): value is Error;
+  }
+
+  interface Set<T> {
+    has(value: unknown): boolean;
+  }
+  interface ReadonlySet<T> {
+    has(value: unknown): boolean;
   }
 }
