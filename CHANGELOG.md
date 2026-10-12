@@ -1,5 +1,17 @@
 # twine-dugger
 
+## 1.9.0
+
+### Minor Changes
+
+- 6805916: Rebuild search: More features and much better performance. You can now set 'match case', 'whole word' and 'regex' for the search string, choose where to search, what to include and how to order the results. The new layout is designed to work whether the extension is docked below, to the side or undocked on a second monitor. Settings were added allowing you to choose which search settings you want the extension to remember.
+- a67e196: Breaking: The keyboard shortcut for global search is now `Ctrl`+`Shift`+`F`.
+- a67e196: Update: Syntax highlighting is disabled for very large passages, with a button to turn it back on and settings to control when immediate highlighting is stopped
+
+### Patch Changes
+
+- a67e196: Bugfix: "Add property" now works with values of type Map and Set
+
 ## 1.8.0
 
 ### Minor Changes
