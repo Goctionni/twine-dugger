@@ -25,8 +25,8 @@ async function evalWrapper<T>(code: string): Promise<T> {
     | [T, undefined]
     | [undefined, EvaluationExceptionInfo];
 
-  if (result) return result;
-  throw exceptionInfo;
+  if (exceptionInfo) throw exceptionInfo;
+  return result;
 }
 
 export async function executeCode<T, TArgs extends unknown[] = unknown[]>(
@@ -35,11 +35,11 @@ export async function executeCode<T, TArgs extends unknown[] = unknown[]>(
 ) {
   const evalCode = `(${callback.toString()}).apply(null, ${JSON.stringify(args ?? [])})`;
   try {
-    return evalWrapper<T>(evalCode);
+    return await evalWrapper<T>(evalCode);
   } catch (ex) {
     const exceptionInfo = ex as EvaluationExceptionInfo;
     const msg = `[executeCode]: ${exceptionInfo?.isError ? 'Error occured before code could execute' : 'Error occured executing code'}`;
-    console.error(msg, { ...exceptionInfo, codeDescription });
+    console.error(msg, { ...exceptionInfo, codeDescription, evalCode });
     return null;
   }
 }
