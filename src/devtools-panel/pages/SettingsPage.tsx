@@ -1,6 +1,7 @@
 import { DiffLogSettings } from '../views/Settings/DiffLogSettings';
 import { EditorSettings } from '../views/Settings/EditorSettings';
 import { FilteredPathsSettings } from '../views/Settings/FilteredPathsSettings';
+import { LayoutSettings } from '../views/Settings/LayoutSettings';
 import { LockSettings } from '../views/Settings/LockSettings';
 import { SearchSettings } from '../views/Settings/SearchSettings';
 
@@ -13,6 +14,13 @@ export function SettingsPage() {
           <legend class="text-lg font-bold">Diff Log</legend>
           <div class="grid grid-cols-[auto_1fr] gap-4">
             <DiffLogSettings />
+          </div>
+        </fieldset>
+
+        <fieldset class="mt-5 text-base">
+          <legend class="text-lg font-bold">Layout</legend>
+          <div class="grid grid-cols-[auto_1fr] gap-4">
+            <LayoutSettings />
           </div>
         </fieldset>
 

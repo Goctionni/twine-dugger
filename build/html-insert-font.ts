@@ -26,6 +26,7 @@ export const htmlInsertFontPlugin: Plugin = {
         'search',
         'settings',
         'sort',
+        'splitscreen_left',
         'warning',
       ]),
     );

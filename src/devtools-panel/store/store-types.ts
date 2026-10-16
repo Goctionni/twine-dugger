@@ -55,6 +55,8 @@ export const settingsSchema = type({
   'state.propertyOrder': propertyOrderSchema,
   'state.propertyOrderDesc': 'boolean',
   'state.filters': valueTypeSchema.or("'filtered'").array(),
+  'state.splitDirection': "'auto' | 'vertical' | 'horizontal'",
+  'passages.splitDirection': "'auto' | 'vertical' | 'horizontal'",
   'editor.disableHighlighting': "'never' | 'very-large' | 'large' | 'normal' | 'always'",
   'search.smFilterLayout': "'icon-sidebar' | 'top-bar'",
   // Which parts of the search are remembered between sessions (the search text and tag filter never are)

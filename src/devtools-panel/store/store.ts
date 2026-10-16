@@ -36,6 +36,8 @@ const defaultSettings: Settings = {
   'state.propertyOrder': 'type',
   'state.propertyOrderDesc': false,
   'state.filters': [],
+  'state.splitDirection': 'auto',
+  'passages.splitDirection': 'auto',
   'editor.disableHighlighting': 'large',
   'search.smFilterLayout': 'icon-sidebar',
   'search.persist.options': false,
@@ -222,6 +224,10 @@ export const getSettings = {
     propertyOrder: () => store.settings['state.propertyOrder'],
     propertyOrderDesc: () => store.settings['state.propertyOrderDesc'],
     filters: () => store.settings['state.filters'],
+    splitDirection: () => store.settings['state.splitDirection'],
+  },
+  passages: {
+    splitDirection: () => store.settings['passages.splitDirection'],
   },
   editor: {
     disableHighlighting: () => store.settings['editor.disableHighlighting'],

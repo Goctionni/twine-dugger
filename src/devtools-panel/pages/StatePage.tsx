@@ -1,4 +1,5 @@
-import { MovableSplit } from '../ui/util/MovableSplit';
+import { getSettings, setSetting } from '../store/store';
+import { MovableSplit } from '../ui/util/movable-split/MovableSplit';
 import { DiffLog } from '../views/DiffLog';
 import { HistoryNav } from '../views/State/HistoryNav';
 import { StateView } from '../views/State/StateView';
@@ -7,8 +8,12 @@ export function StatePage() {
   return (
     <MovableSplit
       splitKey="state-page"
-      leftContent={<DiffLog />}
-      rightContent={
+      direction={getSettings.state.splitDirection()}
+      onDirectionChange={(direction) => setSetting('state.splitDirection', direction)}
+      firstLabel="Diff Log"
+      secondLabel="State"
+      firstContent={<DiffLog />}
+      secondContent={
         <>
           <HistoryNav />
           <StateView />

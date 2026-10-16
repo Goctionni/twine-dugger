@@ -1,8 +1,8 @@
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import { getPassageData, getSelectedPassage } from '../store/passages';
-import { getGameMetaData, setViewState } from '../store/store';
-import { MovableSplit } from '../ui/util/MovableSplit';
+import { getGameMetaData, getSettings, setSetting, setViewState } from '../store/store';
+import { MovableSplit } from '../ui/util/movable-split/MovableSplit';
 import { PassageList } from '../views/Passage/PassageList';
 import { PassageView } from '../views/Passage/PassageView';
 
@@ -11,15 +11,19 @@ export function PassagesPage() {
   return (
     <MovableSplit
       splitKey="passages-page"
-      initialLeftWidthPercent={35}
-      leftContent={
+      direction={getSettings.passages.splitDirection()}
+      onDirectionChange={(direction) => setSetting('passages.splitDirection', direction)}
+      initialFirstSizePercent={35}
+      firstLabel="Passages"
+      secondLabel="Passage"
+      firstContent={
         <PassageList
           onPassageClick={setSelectedPassage}
           passages={getPassageData()}
           selectedPassage={getSelectedPassage()}
         />
       }
-      rightContent={<PassageView language={format()?.name ?? ''} passage={getSelectedPassage()} />}
+      secondContent={<PassageView language={format()?.name ?? ''} passage={getSelectedPassage()} />}
     />
   );
 }
