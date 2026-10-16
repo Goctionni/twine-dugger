@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "prepare": "vp config"
+    "prepare": "vp config",
+    "package": "node build/package-release.ts"
   },
   "dependencies": {
     "@shikijs/langs": "4.5.0",
@@ -27,9 +28,11 @@
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/user-event": "14.6.7",
+    "@types/archiver": "8.0.0",
     "@types/chrome": "0.3.4",
     "@types/firefox-webext-browser": "143.0.1",
     "@types/node": "24.13.3",
+    "archiver": "8.0.0",
     "eslint-plugin-solid": "0.18.0",
     "eslint-plugin-testing-library": "7.16.2",
     "globals": "17.13.0",
