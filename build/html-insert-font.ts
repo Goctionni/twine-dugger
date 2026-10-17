@@ -9,6 +9,7 @@ export const htmlInsertFontPlugin: Plugin = {
       '<!--head-->',
       await getFontHtml([
         'abc',
+        'account_tree',
         'add',
         'arrow_downward',
         'arrow_upward',
@@ -20,6 +21,7 @@ export const htmlInsertFontPlugin: Plugin = {
         'content_copy',
         'data_object',
         'filter_alt',
+        'grid_view',
         'history',
         'open_in_browser',
         'refresh',
@@ -27,6 +29,7 @@ export const htmlInsertFontPlugin: Plugin = {
         'settings',
         'sort',
         'splitscreen_left',
+        'view_column',
         'warning',
       ]),
     );
