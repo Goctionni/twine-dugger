@@ -1,6 +1,7 @@
-import { For, Show, createMemo } from 'solid-js';
+import { For, Show, createEffect, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
+import { getRevealCount } from '@/devtools-panel/store/state-location';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import {
   getContainerKeys,
@@ -24,6 +25,7 @@ import { NavRow } from './NavRow';
 interface Props {
   depth: number;
   path: Path;
+  trail: Path;
   onSelect: (path: Path) => void;
 }
 
@@ -42,21 +44,27 @@ export function MillerColumn(props: Props) {
 
   const getSelectedKey = createMemo(() => props.path[props.depth]);
   const isSelectionHere = () => props.depth === props.path.length - 1;
+  const getTrailKey = createMemo(() => props.trail[props.depth]);
+
+  // Also when the column is made: coming back to the page shows what was selected
+  let column: HTMLDivElement | undefined;
+  createEffect(getRevealCount, () => {
+    column
+      ?.querySelector('[data-state="selected"], [data-state="on-path"]')
+      ?.scrollIntoView({ block: 'nearest' });
+  });
 
   const getKeys = createMemo(
     () => {
       const type = getContainerType();
       if (!type) return [];
       const sort = getSort();
-      const hiddenTypes = getHiddenTypes();
       const getTypeOf = (key: string | number) => getJsonType(getChild(getContainer(), key));
 
       const keys = filterKeysByType(
         sort === 'name' ? getKeysByName(getContainer()) : getContainerKeys(getContainer(), type),
         getTypeOf,
-        hiddenTypes,
-        // Only when it can make a difference: it would sort again with every selection
-        hiddenTypes.length ? getSelectedKey() : undefined,
+        getHiddenTypes(),
       );
       // The position is the name of an item of an array or a set
       if (type === 'array' || type === 'set' || sort === 'name') return keys;
@@ -76,7 +84,10 @@ export function MillerColumn(props: Props) {
   };
 
   return (
-    <div class="min-w-57.5 flex-1 basis-57.5 overflow-y-auto border-r border-gray-700 p-1 not-last:max-w-86.25 last:border-r-0">
+    <div
+      ref={column}
+      class="min-w-57.5 flex-1 basis-57.5 overflow-y-auto border-r border-gray-700 p-1 not-last:max-w-86.25 last:border-r-0"
+    >
       <div class="sticky top-0 truncate bg-gray-900 px-2 py-1 font-mono text-xs text-gray-400">
         {getTitle()}
         <Show when={getHiddenCount() > 0}>
@@ -87,12 +98,11 @@ export function MillerColumn(props: Props) {
         {(key) => {
           const getValue = () => getChild(getContainer(), key);
           const getType = createMemo(() => getJsonType(getValue()));
-          const getHiddenChildren = () =>
-            countHiddenKeys(
-              getValue(),
-              getHiddenTypes(),
-              getSelectedKey() === key ? props.path[props.depth + 1] : undefined,
-            );
+          const getRowState = () => {
+            if (getSelectedKey() === key) return isSelectionHere() ? 'selected' : 'on-path';
+            return getTrailKey() === key ? 'trail' : 'normal';
+          };
+          const getHiddenChildren = () => countHiddenKeys(getValue(), getHiddenTypes());
           const getChildCount = () => {
             const value = getValue();
             return isContainer(value) ? getContainerSize(value) - getHiddenChildren() : undefined;
@@ -105,10 +115,12 @@ export function MillerColumn(props: Props) {
               preview={getPreview(getValue(), getType())}
               childCount={getChildCount()}
               hiddenCount={getHiddenChildren()}
-              state={
-                getSelectedKey() !== key ? 'normal' : isSelectionHere() ? 'selected' : 'on-path'
+              state={getRowState()}
+              onClick={() =>
+                props.onSelect(
+                  getRowState() === 'selected' ? getColumnPath() : [...getColumnPath(), key],
+                )
               }
-              onClick={() => props.onSelect([...getColumnPath(), key])}
             />
           );
         }}

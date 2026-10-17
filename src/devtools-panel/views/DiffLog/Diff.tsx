@@ -3,7 +3,8 @@ import { Match, Switch } from 'solid-js';
 
 import type { Path } from '@/shared/shared-types';
 
-import { addFilteredPath, setViewState } from '../../store/store';
+import { showInStateView } from '../../store/state-location';
+import { addFilteredPath } from '../../store/store';
 import type { BlockedWrite, DiffChange } from './diff-types';
 import { DiffPath } from './DiffPath';
 import type { Kind } from './MutationBadge';
@@ -21,7 +22,7 @@ interface ChangeLineProps {
 }
 
 function ChangeLine(props: ChangeLineProps) {
-  const goToPath = () => setViewState('state', 'path', [...(props.goTo ?? props.path)]);
+  const goToPath = () => showInStateView([...(props.goTo ?? props.path)]);
 
   return (
     <div class="whitespace-normal">

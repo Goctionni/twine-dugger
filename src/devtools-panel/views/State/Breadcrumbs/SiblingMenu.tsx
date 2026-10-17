@@ -34,7 +34,6 @@ export function SiblingMenu(props: Props) {
               getKeysByName(getParent()),
               (key) => getJsonType((getParent() as JSONSafeObject)[key]),
               getHiddenTypes(),
-              props.currentKey,
             ),
           { equals: sameItems },
         );

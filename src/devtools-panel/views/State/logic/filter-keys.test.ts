@@ -11,21 +11,19 @@ it('files the types that have no type of their own under other', () => {
   ).toEqual(['other', 'other', 'other', 'other', 'string']);
 });
 
-it('hides the keys of the hidden types, but not the selected one', () => {
+it('hides the keys of the hidden types', () => {
   const types: Record<string, ValueType> = { a: 'string', b: 'number', c: 'null', d: 'object' };
   const getType = (key: string) => types[key]!;
   const keys = () => Object.keys(types);
 
   expect(filterKeysByType(keys(), getType, [])).toEqual(['a', 'b', 'c', 'd']);
   expect(filterKeysByType(keys(), getType, ['string', 'other'])).toEqual(['b', 'd']);
-  expect(filterKeysByType(keys(), getType, ['string', 'other'], 'c')).toEqual(['b', 'c', 'd']);
 });
 
 it('counts what the filter hides in a container', () => {
   const container = { a: 'x', b: 1, c: { d: 1 }, e: null };
   expect(countHiddenKeys(container, [])).toBe(0);
   expect(countHiddenKeys(container, ['string', 'object', 'other'])).toBe(3);
-  expect(countHiddenKeys(container, ['string', 'object', 'other'], 'c')).toBe(2);
   expect(countHiddenKeys('text', ['string'])).toBe(0);
 });
 

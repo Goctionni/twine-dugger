@@ -1,15 +1,28 @@
 import { getContainerSize, isContainer } from '@/shared/json-safe';
-import type { JSONSafeObject, JSONSafeValue, Path } from '@/shared/shared-types';
+import type { JSONSafeObject, JSONSafeValue, Path, ValueType } from '@/shared/shared-types';
+
+import { countHiddenKeys } from './filter-keys';
 
 /**
- * One column for the root and for every non-empty container below it on the path, and one for the
- * selected container: a value that is not a container has no column. Only reads the containers and
- * the keys on the path, so it is cheap to read in a memo.
+ * One column for the root and for every container below it on the path that has something to show,
+ * and one for the selected container: a value that is not a container has no column, and neither has
+ * a container that is empty or whose values are all hidden by the filter. Only reads the containers
+ * and the keys on the path (and the types of their values, when something is hidden), so it is
+ * cheap to read in a memo.
  */
-export function countColumns(state: JSONSafeValue, path: Path): number {
+export function countColumns(
+  state: JSONSafeValue,
+  path: Path,
+  hiddenTypes: readonly ValueType[],
+): number {
   let value = state;
   for (let depth = 0; ; depth++) {
-    if (!isContainer(value) || getContainerSize(value) === 0) return depth;
+    if (
+      !isContainer(value) ||
+      getContainerSize(value) - countHiddenKeys(value, hiddenTypes) === 0
+    ) {
+      return depth;
+    }
     if (depth === path.length) return depth + 1;
     value = (value as JSONSafeObject)[path[depth]!];
   }

@@ -1,5 +1,6 @@
 import { getLatestState } from '@/devtools-panel/store/game-state';
-import { setNavigationPage, setViewState } from '@/devtools-panel/store/store';
+import { showInStateView } from '@/devtools-panel/store/state-location';
+import { setNavigationPage } from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
@@ -17,7 +18,7 @@ interface Props {
 export function StateDetail(props: Props) {
   const showInState = () => {
     setNavigationPage('state');
-    setViewState('state', 'path', [...props.hit.path]);
+    showInStateView([...props.hit.path]);
   };
 
   return (
