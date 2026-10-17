@@ -51,6 +51,17 @@ export function getContainerKeys(value: unknown, type: ContainerType): Array<str
   return type === 'map' ? keys.filter((key) => key !== TYPE_KEY) : keys;
 }
 
+export function isContainer(value: JSONSafeValue): value is JSONSafeArray | JSONSafeObject {
+  return isContainerType(getJsonType(value));
+}
+
+/** `getContainerKeys(value, type).length` without making the list: arrays can be large */
+export function getContainerSize(value: JSONSafeArray | JSONSafeObject): number {
+  if (Array.isArray(value)) return value[0] === SET_MARKER ? value.length - 1 : value.length;
+  const size = Object.keys(value).length;
+  return value[TYPE_KEY] === 'Map' || value[TYPE_KEY] === 'NumberMap' ? size - 1 : size;
+}
+
 export function getPathValue(
   root: JSONSafeValue,
   path: ReadonlyArray<string | number>,

@@ -1,3 +1,5 @@
+import type { Path } from '@/shared/shared-types';
+
 const mockSiblings = [
   ['character', 'inventory', 'settings', 'flags'],
   ['stats', 'skills', 'traits'],
@@ -5,6 +7,6 @@ const mockSiblings = [
 ];
 
 /** Mock: the names next to the crumb at `index` of `path` (without the root), itself included */
-export function getSiblings(_path: string[], index: number): string[] {
+export function getSiblings(_path: Path, index: number): string[] {
   return mockSiblings[index % mockSiblings.length]!;
 }

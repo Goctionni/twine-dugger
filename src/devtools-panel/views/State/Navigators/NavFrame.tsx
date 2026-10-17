@@ -1,12 +1,14 @@
 import type { JSX } from '@solidjs/web';
 
+import type { Path } from '@/shared/shared-types';
+
 import { Breadcrumbs } from '../Breadcrumbs/Breadcrumbs';
 import { Inspector } from '../Inspector/Inspector';
 import type { SelectionKind } from '../types';
 
 interface Props {
   /** The path the breadcrumbs show */
-  path: string[];
+  path: Path;
   selectionKind: SelectionKind;
   children: JSX.Element;
 }

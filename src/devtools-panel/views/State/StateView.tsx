@@ -1,12 +1,14 @@
-import { createSignal } from 'solid-js';
+import { createMemo, createSignal } from 'solid-js';
 
+import { getLatestState } from '@/devtools-panel/store/game-state';
+import { setViewState, store } from '@/devtools-panel/store/store';
+import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import type { ValueType } from '@/shared/shared-types';
 
 import { StateNav } from './Navigators/StateNav';
 import { Toolbar } from './Toolbar/Toolbar';
-import type { Navigator, Sort } from './types';
+import type { Navigator, SelectionKind, Sort } from './types';
 
-const mockPath = ['character', 'stats', 'fitness'];
 const mockTypes: ValueType[] = [
   'string',
   'number',
@@ -19,11 +21,16 @@ const mockTypes: ValueType[] = [
 ];
 
 export function StateView() {
-  const [getPath, setPath] = createSignal(mockPath);
   const [getNavigator, setNavigator] = createSignal<Navigator>('miller');
   const [getSearchText, setSearchText] = createSignal('');
   const [getHiddenTypes, setHiddenTypes] = createSignal<ValueType[]>([]);
   const [getSort, setSort] = createSignal<Sort>('type');
+
+  const getSelectionKind = createMemo<SelectionKind>(() =>
+    isContainerType(getJsonType(getPathValue(getLatestState(), store.viewState.state.path)))
+      ? 'container'
+      : 'primitive',
+  );
 
   return (
     <div class="flex h-full flex-col">
@@ -41,9 +48,9 @@ export function StateView() {
       <div class="min-h-0 flex-1">
         <StateNav
           navigator={getNavigator()}
-          path={getPath()}
-          selectionKind="container"
-          onSelect={setPath}
+          path={store.viewState.state.path}
+          selectionKind={getSelectionKind()}
+          onSelect={(path) => setViewState('state', 'path', path)}
         />
       </div>
     </div>
