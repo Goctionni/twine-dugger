@@ -29,6 +29,7 @@ export const htmlInsertFontPlugin: Plugin = {
         'settings',
         'sort',
         'splitscreen_left',
+        'swap_vert',
         'view_column',
         'warning',
       ]),

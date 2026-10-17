@@ -62,6 +62,14 @@ export function TypeIcon(props: Props) {
           ø
         </span>
       </Match>
+      <Match when={props.type === 'other'}>
+        <span
+          title={props.type}
+          class="material-symbols-outlined inline-flex h-4.5 w-5 items-center justify-center rounded-xs bg-fuchsia-900 text-xs leading-none text-white"
+        >
+          asterisk
+        </span>
+      </Match>
       <Match when={props.type === 'undefined'}>
         <span title={props.type} class={`${baseIconClasses} bg-gray-400 text-gray-800`}>
           ?

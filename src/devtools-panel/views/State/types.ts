@@ -1,5 +1,6 @@
 export type Navigator = 'miller' | 'tree' | 'tiles';
 export type SelectionKind = 'container' | 'primitive';
+export type Sort = 'name' | 'type' | 'changed';
 
 export interface NavProps {
   /** The path of the selected value, without the root */
