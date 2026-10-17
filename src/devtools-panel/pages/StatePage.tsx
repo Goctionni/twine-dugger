@@ -1,7 +1,6 @@
 import { getSettings, setSetting } from '../store/store';
 import { MovableSplit } from '../ui/util/movable-split/MovableSplit';
 import { DiffLog } from '../views/DiffLog';
-import { HistoryNav } from '../views/State/HistoryNav';
 import { StateView } from '../views/State/StateView';
 
 export function StatePage() {
@@ -13,12 +12,7 @@ export function StatePage() {
       firstLabel="Diff Log"
       secondLabel="State"
       firstContent={<DiffLog />}
-      secondContent={
-        <>
-          <HistoryNav />
-          <StateView />
-        </>
-      }
+      secondContent={<StateView />}
     />
   );
 }

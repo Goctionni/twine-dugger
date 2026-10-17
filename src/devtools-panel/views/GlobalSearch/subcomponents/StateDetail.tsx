@@ -1,12 +1,11 @@
-import { Match, Switch } from 'solid-js';
-
+import { getLatestState } from '@/devtools-panel/store/game-state';
 import { setNavigationPage, setViewState } from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
-import { StateBooleanInput } from '@/devtools-panel/views/State/StateInputs/StateBooleanInput';
-import { StateNumberInput } from '@/devtools-panel/views/State/StateInputs/StateNumberInput';
-import { StateStringInput } from '@/devtools-panel/views/State/StateInputs/StateStringInput';
+import { RenderValue } from '@/devtools-panel/views/DiffLog/RenderValue';
+import { getPathValue } from '@/shared/json-safe';
+import type { JSONSafeValue } from '@/shared/shared-types';
 
 import type { StateMatcherHit } from '../types';
 
@@ -28,17 +27,10 @@ export function StateDetail(props: Props) {
         <span class="text-sm font-semibold">{props.hit.type}</span>
       </div>
       <PrettyPath class="font-mono text-sm font-bold break-all" path={props.hit.path} statePrefix />
-      <Switch>
-        <Match when={props.hit.type === 'string'}>
-          <StateStringInput path={props.hit.path} />
-        </Match>
-        <Match when={props.hit.type === 'number'}>
-          <StateNumberInput path={props.hit.path} />
-        </Match>
-        <Match when={props.hit.type === 'boolean'}>
-          <StateBooleanInput path={props.hit.path} />
-        </Match>
-      </Switch>
+      <div class="font-mono text-sm break-all">
+        {/* TODO: Add input back */}
+        <RenderValue value={getPathValue(getLatestState(), props.hit.path) as JSONSafeValue} />
+      </div>
       <div>
         <button type="button" class={btnClass('contained')} onClick={showInState}>
           Show in State view
