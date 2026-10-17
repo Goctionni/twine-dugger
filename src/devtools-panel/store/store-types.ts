@@ -54,6 +54,7 @@ export const settingsSchema = type({
   'state.propertyOrder': propertyOrderSchema,
   'state.propertyOrderDesc': 'boolean',
   'state.filters': valueTypeSchema.or("'filtered'").array(),
+  'state.navigator': "'miller' | 'tree' | 'tiles'",
   'state.splitDirection': "'auto' | 'vertical' | 'horizontal'",
   'passages.splitDirection': "'auto' | 'vertical' | 'horizontal'",
   'editor.disableHighlighting': "'never' | 'very-large' | 'large' | 'normal' | 'always'",

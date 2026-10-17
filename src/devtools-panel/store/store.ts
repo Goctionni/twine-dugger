@@ -36,6 +36,7 @@ const defaultSettings: Settings = {
   'state.propertyOrder': 'type',
   'state.propertyOrderDesc': false,
   'state.filters': [],
+  'state.navigator': 'miller',
   'state.splitDirection': 'auto',
   'passages.splitDirection': 'auto',
   'editor.disableHighlighting': 'large',
@@ -224,6 +225,7 @@ export const getSettings = {
     propertyOrder: () => store.settings['state.propertyOrder'],
     propertyOrderDesc: () => store.settings['state.propertyOrderDesc'],
     filters: () => store.settings['state.filters'],
+    navigator: () => store.settings['state.navigator'],
     splitDirection: () => store.settings['state.splitDirection'],
   },
   passages: {

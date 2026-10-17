@@ -3,18 +3,21 @@ import { createMemo, createSignal } from 'solid-js';
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { setViewState, store } from '@/devtools-panel/store/store';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
-import type { ValueType } from '@/shared/shared-types';
 
-import { TYPE_ORDER } from './logic/sort-keys';
 import { StateNav } from './Navigators/StateNav';
+import {
+  getHiddenTypes,
+  getNavigator,
+  getSort,
+  setHiddenTypes,
+  setNavigator,
+  setSort,
+} from './store-helpers/view-prefs';
 import { Toolbar } from './Toolbar/Toolbar';
-import type { Navigator, SelectionKind, Sort } from './types';
+import type { SelectionKind } from './types';
 
 export function StateView() {
-  const [getNavigator, setNavigator] = createSignal<Navigator>('miller');
   const [getSearchText, setSearchText] = createSignal('');
-  const [getHiddenTypes, setHiddenTypes] = createSignal<ValueType[]>([]);
-  const [getSort, setSort] = createSignal<Sort>('type');
 
   const getSelectionKind = createMemo<SelectionKind>(() =>
     isContainerType(getJsonType(getPathValue(getLatestState(), store.viewState.state.path)))
@@ -29,7 +32,7 @@ export function StateView() {
         onNavigatorChange={setNavigator}
         searchText={getSearchText()}
         onSearchTextChange={setSearchText}
-        types={TYPE_ORDER}
+        path={store.viewState.state.path}
         hiddenTypes={getHiddenTypes()}
         onHiddenTypesChange={setHiddenTypes}
         sort={getSort()}

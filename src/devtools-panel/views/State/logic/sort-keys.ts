@@ -20,10 +20,22 @@ export const TYPE_ORDER: ValueType[] = [
   'other',
 ];
 
-const getTypeRank = (type: ValueType) => {
-  const rank = TYPE_ORDER.indexOf(type);
-  return rank === -1 ? TYPE_ORDER.length - 1 : rank;
-};
+/** The type of the filter and the sort that a type belongs to */
+export const toFilterType = (type: ValueType): ValueType =>
+  TYPE_ORDER.includes(type) ? type : 'other';
+
+const getTypeRank = (type: ValueType) => TYPE_ORDER.indexOf(toFilterType(type));
+
+/** The ones that changed last first; the ones that did not change in the known history by name */
+export function sortKeysByChanged<K extends string | number>(
+  keys: readonly K[],
+  getLastChange: (key: K) => number,
+): K[] {
+  const changes = new Map(keys.map((key) => [key, getLastChange(key)]));
+  return keys.toSorted(
+    (a, b) => changes.get(b)! - changes.get(a)! || collator.compare(String(a), String(b)),
+  );
+}
 
 /** Containers first, then the primitives, anything else last; by name within a type */
 export function sortKeysByType<K extends string | number>(

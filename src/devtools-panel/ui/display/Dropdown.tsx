@@ -30,7 +30,8 @@ export function Dropdown(props: Props) {
         ref={menu}
         id={id}
         popover
-        onBeforeToggle={(event) => setOpen(event.newState === 'open')}
+        onBeforeToggle={(event) => event.newState === 'open' && setOpen(true)}
+        onToggle={(event) => event.newState === 'closed' && setOpen(false)}
         class={[
           'inset-auto max-h-64 min-w-40 overflow-auto rounded-b-md border border-gray-700 bg-gray-800 p-1 text-gray-200 shadow-lg [position-try-fallbacks:flip-block,flip-inline]',
           props.align === 'end'

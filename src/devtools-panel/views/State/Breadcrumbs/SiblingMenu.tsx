@@ -4,9 +4,11 @@ import { getLatestState } from '@/devtools-panel/store/game-state';
 import { Dropdown } from '@/devtools-panel/ui/display/Dropdown';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getJsonType, getKeyLabel, getPathValue, isContainerType } from '@/shared/json-safe';
-import type { Path } from '@/shared/shared-types';
+import type { JSONSafeObject, Path } from '@/shared/shared-types';
 
+import { filterKeysByType } from '../logic/filter-keys';
 import { getKeysByName } from '../logic/sort-keys';
+import { getHiddenTypes } from '../store-helpers/view-prefs';
 
 interface Props {
   parentPath: Path;
@@ -26,7 +28,16 @@ export function SiblingMenu(props: Props) {
     >
       {(close) => {
         const getParent = () => getPathValue(getLatestState(), props.parentPath);
-        const getKeys = createMemo(() => getKeysByName(getParent()), { equals: sameItems });
+        const getKeys = createMemo(
+          () =>
+            filterKeysByType(
+              getKeysByName(getParent()),
+              (key) => getJsonType((getParent() as JSONSafeObject)[key]),
+              getHiddenTypes(),
+              props.currentKey,
+            ),
+          { equals: sameItems },
+        );
         const getLabel = (key: string | number) => {
           const type = getJsonType(getParent());
           return String(isContainerType(type) ? getKeyLabel(type, key) : key);
