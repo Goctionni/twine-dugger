@@ -13,13 +13,17 @@ export function StateNav(props: Props) {
   return (
     <Switch>
       <Match when={props.navigator === 'miller'}>
-        <MillerNav path={props.path} selectionKind={props.selectionKind} />
+        <MillerNav
+          path={props.path}
+          selectionKind={props.selectionKind}
+          onSelect={props.onSelect}
+        />
       </Match>
       <Match when={props.navigator === 'tree'}>
-        <TreeNav path={props.path} selectionKind={props.selectionKind} />
+        <TreeNav path={props.path} selectionKind={props.selectionKind} onSelect={props.onSelect} />
       </Match>
       <Match when={props.navigator === 'tiles'}>
-        <TilesNav path={props.path} selectionKind={props.selectionKind} />
+        <TilesNav path={props.path} selectionKind={props.selectionKind} onSelect={props.onSelect} />
       </Match>
     </Switch>
   );

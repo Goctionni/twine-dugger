@@ -19,6 +19,7 @@ const mockTypes: ValueType[] = [
 ];
 
 export function StateView() {
+  const [getPath, setPath] = createSignal(mockPath);
   const [getNavigator, setNavigator] = createSignal<Navigator>('miller');
   const [getSearchText, setSearchText] = createSignal('');
   const [getHiddenTypes, setHiddenTypes] = createSignal<ValueType[]>([]);
@@ -38,7 +39,12 @@ export function StateView() {
         onSortChange={setSort}
       />
       <div class="min-h-0 flex-1">
-        <StateNav navigator={getNavigator()} path={mockPath} selectionKind="container" />
+        <StateNav
+          navigator={getNavigator()}
+          path={getPath()}
+          selectionKind="container"
+          onSelect={setPath}
+        />
       </div>
     </div>
   );

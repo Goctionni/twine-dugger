@@ -6,4 +6,5 @@ export interface NavProps {
   /** The path of the selected value, without the root */
   path: string[];
   selectionKind: SelectionKind;
+  onSelect: (path: string[]) => void;
 }
