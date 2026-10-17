@@ -101,7 +101,7 @@ export const [store, setStore] = createStore<StoreData>({
   settings: initialSettings,
   viewState: {
     activeTab: 'state',
-    state: { historyRef: 'latest', path: [] },
+    state: { path: [] },
     passages: { selected: null },
     search: createInitialSearchState(initialSettings),
   },

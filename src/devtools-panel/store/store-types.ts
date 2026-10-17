@@ -23,7 +23,6 @@ export interface StoreData {
   viewState: {
     activeTab: Page;
     state: {
-      historyRef: number | 'latest';
       path: Path;
     };
     passages: {

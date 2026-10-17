@@ -6,15 +6,14 @@ import { pretransformState } from '@/content-script/util/pre-transform';
 import { getDiffFromDelta } from './diff-from-delta';
 import {
   applyUpdate,
-  createHistoryEffects,
-  getActiveState,
+  createFrameLimitEffect,
   getDiffFrames,
-  getHistoryIds,
+  getLatestState,
   isFrameTainted,
   restartGameState,
   startGameState,
 } from './game-state';
-import { setSetting, setViewState } from './store';
+import { setSetting } from './store';
 import { createGame } from './test-game';
 
 vi.mock('../api/api', () => ({
@@ -24,7 +23,7 @@ vi.mock('../api/api', () => ({
 
 type Game = ReturnType<typeof createGame>;
 
-const state = () => getActiveState() as any;
+const state = () => getLatestState() as any;
 
 function play(game: Game, mutate: (live: any) => void) {
   mutate(game.live);
@@ -74,19 +73,6 @@ describe('game state', () => {
       ['chg:inv.1.item'],
       ['chg:hp'],
     ]);
-
-    setViewState('state', 'historyRef', 5);
-    flush();
-    expect(state().hp).toBe(9);
-
-    setViewState('state', 'historyRef', 0);
-    flush();
-    expect(state().hp).toBe(10);
-    expect(state().inv).toHaveLength(2);
-
-    setViewState('state', 'historyRef', 'latest');
-    flush();
-    expect(getHistoryIds()).toEqual([6, 5, 4, 3, 2, 1, 0]);
   });
 
   it('only notifies readers of the properties that changed', () => {
@@ -138,13 +124,12 @@ describe('game state', () => {
     expect(state().list[0]).toBe(before);
   });
 
-  it('keeps the log across a reload, but only lets you travel to what came after it', () => {
+  it('keeps the log across a reload, and marks what is before it as tainted', () => {
     const game = createGame({ hp: 10 });
     startGameState(game.state());
     flush();
     play(game, (s) => (s.hp = 9));
     play(game, (s) => (s.hp = 8));
-    expect(getHistoryIds()).toEqual([2, 1, 0]);
 
     game.live.hp = 100;
     const reloaded = createGame(game.live);
@@ -156,17 +141,12 @@ describe('game state', () => {
     expect(frames.map((frame) => frame.id)).toEqual([4, 3, 2, 1]);
     expect(frames[1]!.reloaded).toBe(true);
     expect(frames.map((frame) => isFrameTainted(frame))).toEqual([false, false, true, true]);
-
-    expect(getHistoryIds()).toEqual([4, 3]);
-    setViewState('state', 'historyRef', 3);
-    flush();
-    expect(state().hp).toBe(100);
   });
 
-  describe('createHistoryEffects', () => {
+  describe('createFrameLimitEffect', () => {
     const setup = () => {
       createRoot((dispose) => {
-        createHistoryEffects();
+        createFrameLimitEffect();
         onTestFinished(dispose);
       });
       onTestFinished(() => setSetting('diffLog.maxHistorySlices', 30));
@@ -175,20 +155,6 @@ describe('game state', () => {
       flush();
       return game;
     };
-
-    it('goes back to the latest state when the slice that is looked at is gone', () => {
-      const game = setup();
-      for (let hp = 9; hp > 5; hp--) play(game, (s) => (s.hp = hp));
-
-      setViewState('state', 'historyRef', 1);
-      flush();
-      expect(state().hp).toBe(9);
-
-      setSetting('diffLog.maxHistorySlices', 2);
-      flush();
-      expect(getHistoryIds()).toEqual([4, 3, 2]);
-      expect(getActiveState().hp).toBe(6);
-    });
 
     it('keeps no more frames than the setting allows', () => {
       const game = setup();

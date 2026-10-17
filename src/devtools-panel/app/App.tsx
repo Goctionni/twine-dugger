@@ -5,7 +5,7 @@ import { PassagesPage } from '../pages/PassagesPage';
 import { SearchPage } from '../pages/SearchPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { StatePage } from '../pages/StatePage';
-import { createHistoryEffects } from '../store/game-state';
+import { createFrameLimitEffect } from '../store/game-state';
 import {
   createPersistenceEffects,
   getConnectionState,
@@ -23,7 +23,7 @@ import { Layout } from './Layout';
 initMeta();
 
 export function App() {
-  createHistoryEffects();
+  createFrameLimitEffect();
   createPersistenceEffects();
   const state = () => getConnectionState();
 

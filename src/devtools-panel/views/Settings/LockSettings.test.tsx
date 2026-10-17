@@ -15,7 +15,7 @@ vi.mock('@/devtools-panel/store/locks', () => ({
   clearLocks: vi.fn(),
 }));
 vi.mock('@/devtools-panel/store/game-state', () => ({
-  getActiveState: vi.fn(() => ({
+  getLatestState: vi.fn(() => ({
     state: { a: { name: 'test', inventory: [] }, z: { score: 10 } },
   })),
 }));

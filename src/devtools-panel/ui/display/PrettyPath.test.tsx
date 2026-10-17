@@ -22,7 +22,7 @@ vi.mock('@/devtools-panel/store/game-state', async () => {
       Object.assign(draft, initialState());
     });
   };
-  return { getActiveState: () => state, setMockState: setState, resetMockState };
+  return { getLatestState: () => state, setMockState: setState, resetMockState };
 });
 
 const { setMockState, resetMockState } = gameState as unknown as {
