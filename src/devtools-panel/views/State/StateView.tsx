@@ -5,20 +5,10 @@ import { setViewState, store } from '@/devtools-panel/store/store';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import type { ValueType } from '@/shared/shared-types';
 
+import { TYPE_ORDER } from './logic/sort-keys';
 import { StateNav } from './Navigators/StateNav';
 import { Toolbar } from './Toolbar/Toolbar';
 import type { Navigator, SelectionKind, Sort } from './types';
-
-const mockTypes: ValueType[] = [
-  'string',
-  'number',
-  'boolean',
-  'object',
-  'map',
-  'array',
-  'set',
-  'other',
-];
 
 export function StateView() {
   const [getNavigator, setNavigator] = createSignal<Navigator>('miller');
@@ -39,7 +29,7 @@ export function StateView() {
         onNavigatorChange={setNavigator}
         searchText={getSearchText()}
         onSearchTextChange={setSearchText}
-        types={mockTypes}
+        types={TYPE_ORDER}
         hiddenTypes={getHiddenTypes()}
         onHiddenTypesChange={setHiddenTypes}
         sort={getSort()}

@@ -10,6 +10,7 @@ interface Props {
   /** The path the breadcrumbs show */
   path: Path;
   selectionKind: SelectionKind;
+  onSelect: (path: Path) => void;
   children: JSX.Element;
 }
 
@@ -17,7 +18,7 @@ interface Props {
 export function NavFrame(props: Props) {
   return (
     <div class="flex h-full flex-col">
-      <Breadcrumbs path={props.path} />
+      <Breadcrumbs path={props.path} onSelect={props.onSelect} />
       <div class="flex min-h-0 flex-1">
         <div class="min-w-0 flex-1 overflow-auto">{props.children}</div>
         <Inspector selectionKind={props.selectionKind} />

@@ -11,7 +11,7 @@ export function MillerNav(props: NavProps) {
   const getColumnCount = createMemo(() => countColumns(getLatestState(), props.path));
 
   return (
-    <NavFrame path={props.path} selectionKind={props.selectionKind}>
+    <NavFrame path={props.path} selectionKind={props.selectionKind} onSelect={props.onSelect}>
       <div class="flex h-full overflow-x-auto">
         <Repeat count={getColumnCount()}>
           {(depth) => <MillerColumn depth={depth} path={props.path} onSelect={props.onSelect} />}

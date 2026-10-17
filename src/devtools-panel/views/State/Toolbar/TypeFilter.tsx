@@ -49,27 +49,29 @@ interface TypeChipsProps {
 
 function TypeChips(props: TypeChipsProps) {
   return (
-    <div role="group" aria-label="Types" class="flex shrink-0 gap-1">
+    <fieldset class="flex shrink-0 gap-1">
+      <legend class="sr-only">Types</legend>
       <For each={props.types}>
         {(type) => (
-          <button
-            type="button"
+          <label
+            title={type}
             class={[
               toolbarControl,
-              'inline-flex cursor-pointer items-center px-1.5',
-              props.isShown(type)
-                ? 'border-sky-600 bg-sky-950'
-                : 'border-gray-600 opacity-50 hover:opacity-80',
+              'inline-flex cursor-pointer items-center border-gray-600 px-1.5 not-has-checked:opacity-50 not-has-checked:hover:opacity-80 has-checked:border-sky-600 has-checked:bg-sky-950 has-focus-visible:outline-2 has-focus-visible:outline-sky-300',
             ]}
-            title={type}
-            aria-pressed={props.isShown(type) ? 'true' : 'false'}
-            onClick={() => props.onToggle(type)}
           >
+            <input
+              type="checkbox"
+              class="sr-only"
+              checked={props.isShown(type)}
+              onChange={() => props.onToggle(type)}
+            />
             <TypeIcon type={type} />
-          </button>
+            <span class="sr-only">{type}</span>
+          </label>
         )}
       </For>
-    </div>
+    </fieldset>
   );
 }
 
@@ -112,24 +114,29 @@ function TypeDropdown(props: TypeDropdownProps) {
     >
       {() => (
         <>
-          <For each={props.types}>
-            {(type) => (
-              <button
-                type="button"
-                class="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-gray-700"
-                onClick={() => props.onToggle(type)}
-              >
-                <TypeIcon type={type} />
-                <span class="flex-1 capitalize">{type}</span>
-                <span
-                  aria-hidden="true"
-                  class="material-symbols-outlined w-4 text-base leading-none"
-                >
-                  {props.isShown(type) ? 'check' : ''}
-                </span>
-              </button>
-            )}
-          </For>
+          <fieldset>
+            <legend class="sr-only">Types</legend>
+            <For each={props.types}>
+              {(type) => (
+                <label class="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-gray-700 has-focus-visible:bg-gray-700">
+                  <input
+                    type="checkbox"
+                    class="peer sr-only"
+                    checked={props.isShown(type)}
+                    onChange={() => props.onToggle(type)}
+                  />
+                  <TypeIcon type={type} />
+                  <span class="flex-1 capitalize">{type}</span>
+                  <span
+                    aria-hidden="true"
+                    class="material-symbols-outlined w-4 text-base leading-none opacity-0 peer-checked:opacity-100"
+                  >
+                    check
+                  </span>
+                </label>
+              )}
+            </For>
+          </fieldset>
           <Show when={props.hiddenCount > 0}>
             <button
               type="button"

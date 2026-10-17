@@ -1,5 +1,3 @@
-import { Show } from 'solid-js';
-
 import type { Navigator } from '../types';
 import { toolbarControl } from './toolbarControl';
 
@@ -12,66 +10,68 @@ interface Props {
 }
 
 export function NavigatorSwitch(props: Props) {
+  const name = `navigator-${crypto.randomUUID()}`;
   const showLabels = () => props.variant === 'labels';
 
   return (
-    <div
-      role="group"
-      aria-label="Navigator"
-      class={[toolbarControl, 'inline-flex shrink-0 overflow-hidden']}
-    >
-      <SwitchButton
+    <fieldset class={[toolbarControl, 'inline-flex shrink-0 overflow-hidden']}>
+      <legend class="sr-only">Navigator</legend>
+      <SwitchOption
+        name={name}
         icon="view_column"
         label="Miller"
         showLabel={showLabels()}
-        isActive={props.navigator === 'miller'}
-        onClick={() => props.onChange('miller')}
+        isChecked={props.navigator === 'miller'}
+        onSelect={() => props.onChange('miller')}
       />
-      <SwitchButton
+      <SwitchOption
+        name={name}
         icon="account_tree"
         label="Tree"
         showLabel={showLabels()}
-        isActive={props.navigator === 'tree'}
-        onClick={() => props.onChange('tree')}
+        isChecked={props.navigator === 'tree'}
+        onSelect={() => props.onChange('tree')}
       />
-      <SwitchButton
+      <SwitchOption
+        name={name}
         icon="grid_view"
         label="Tiles"
         showLabel={showLabels()}
-        isActive={props.navigator === 'tiles'}
-        onClick={() => props.onChange('tiles')}
+        isChecked={props.navigator === 'tiles'}
+        onSelect={() => props.onChange('tiles')}
       />
-    </div>
+    </fieldset>
   );
 }
 
-interface SwitchButtonProps {
+interface SwitchOptionProps {
+  name: string;
   icon: string;
   label: string;
   showLabel: boolean;
-  isActive: boolean;
-  onClick: () => void;
+  isChecked: boolean;
+  onSelect: () => void;
 }
 
-function SwitchButton(props: SwitchButtonProps) {
+function SwitchOption(props: SwitchOptionProps) {
   return (
-    <button
-      type="button"
-      class={[
-        'inline-flex cursor-pointer items-center gap-1 px-2',
-        props.isActive ? 'bg-sky-700 text-white' : 'text-gray-300 hover:bg-gray-700',
-      ]}
+    <label
       title={props.label}
-      aria-label={props.label}
-      aria-pressed={props.isActive ? 'true' : 'false'}
-      onClick={() => props.onClick()}
+      class="inline-flex cursor-pointer items-center gap-1 px-2 text-gray-300 not-has-checked:hover:bg-gray-700 has-checked:bg-sky-700 has-checked:text-white has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-sky-300"
     >
+      <input
+        type="radio"
+        name={props.name}
+        class="sr-only"
+        checked={props.isChecked}
+        onChange={() => props.onSelect()}
+      />
       <span aria-hidden="true" class="material-symbols-outlined text-lg leading-none">
         {props.icon}
       </span>
-      <Show when={props.showLabel}>
-        <span class="[text-box:trim-both_ex_alphabetic]">{props.label}</span>
-      </Show>
-    </button>
+      <span class={props.showLabel ? '[text-box:trim-both_ex_alphabetic]' : 'sr-only'}>
+        {props.label}
+      </span>
+    </label>
   );
 }

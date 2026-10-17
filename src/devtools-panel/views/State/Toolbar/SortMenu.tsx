@@ -15,10 +15,7 @@ interface Props {
 }
 
 export function SortMenu(props: Props) {
-  const select = (sort: Sort, close: () => void) => {
-    props.onChange(sort);
-    close();
-  };
+  const name = `sort-${crypto.randomUUID()}`;
 
   return (
     <Dropdown
@@ -41,39 +38,66 @@ export function SortMenu(props: Props) {
       }
     >
       {(close) => (
-        <>
-          <SortOption isActive={props.sort === 'name'} onClick={() => select('name', close)}>
+        <fieldset>
+          <legend class="sr-only">Sort by</legend>
+          <SortOption
+            name={name}
+            isChecked={props.sort === 'name'}
+            onSelect={() => props.onChange('name')}
+            close={close}
+          >
             Name
           </SortOption>
-          <SortOption isActive={props.sort === 'type'} onClick={() => select('type', close)}>
+          <SortOption
+            name={name}
+            isChecked={props.sort === 'type'}
+            onSelect={() => props.onChange('type')}
+            close={close}
+          >
             Type
           </SortOption>
-          <SortOption isActive={props.sort === 'changed'} onClick={() => select('changed', close)}>
+          <SortOption
+            name={name}
+            isChecked={props.sort === 'changed'}
+            onSelect={() => props.onChange('changed')}
+            close={close}
+          >
             Recently changed
           </SortOption>
-        </>
+        </fieldset>
       )}
     </Dropdown>
   );
 }
 
 interface SortOptionProps {
-  isActive: boolean;
-  onClick: () => void;
+  name: string;
+  isChecked: boolean;
+  onSelect: () => void;
+  close: () => void;
   children: JSX.Element;
 }
 
 function SortOption(props: SortOptionProps) {
   return (
-    <button
-      type="button"
-      class="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-gray-700"
-      onClick={() => props.onClick()}
-    >
-      <span aria-hidden="true" class="material-symbols-outlined w-4 text-base leading-none">
-        {props.isActive ? 'check' : ''}
+    <label class="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-gray-700 has-focus-visible:bg-gray-700">
+      <input
+        type="radio"
+        name={props.name}
+        class="peer sr-only"
+        checked={props.isChecked}
+        onChange={() => props.onSelect()}
+        // Also for the option that is already chosen. The arrow keys click as well, and those keep
+        // the menu open (a click of the pointer has a detail, one of the keyboard has none)
+        onClick={(event) => event.detail && props.close()}
+      />
+      <span
+        aria-hidden="true"
+        class="material-symbols-outlined w-4 text-base leading-none opacity-0 peer-checked:opacity-100"
+      >
+        check
       </span>
       {props.children}
-    </button>
+    </label>
   );
 }

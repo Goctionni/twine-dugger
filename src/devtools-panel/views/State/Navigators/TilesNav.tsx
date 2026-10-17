@@ -8,7 +8,7 @@ export function TilesNav(props: NavProps) {
   const [getTilesPath] = createSignal(() => props.path.slice(0, -1));
 
   return (
-    <NavFrame path={getTilesPath()} selectionKind={props.selectionKind}>
+    <NavFrame path={getTilesPath()} selectionKind={props.selectionKind} onSelect={props.onSelect}>
       <div class="p-3 text-gray-400">Tiles</div>
     </NavFrame>
   );

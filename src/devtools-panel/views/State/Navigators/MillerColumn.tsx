@@ -12,7 +12,7 @@ import {
   isContainerType,
 } from '@/shared/json-safe';
 import { pathEquals } from '@/shared/path-equals';
-import type { JSONSafeValue, Path } from '@/shared/shared-types';
+import type { JSONSafeObject, JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { getPathLabels } from '../logic/path-labels';
 import { getPreview } from '../logic/preview';
@@ -26,7 +26,7 @@ interface Props {
 }
 
 const getChild = (container: JSONSafeValue, key: string | number) =>
-  (container as Record<string | number, JSONSafeValue>)[key];
+  (container as JSONSafeObject)[key];
 
 export function MillerColumn(props: Props) {
   // Each of these only notifies when its own result changes, so a new selection leaves the columns

@@ -69,7 +69,7 @@ export function getPathValue(
   let value = root;
   for (const key of path) {
     if (value === null || typeof value !== 'object') return undefined;
-    value = (value as Record<string | number, JSONSafeValue>)[key];
+    value = (value as JSONSafeObject)[key];
   }
   return value;
 }

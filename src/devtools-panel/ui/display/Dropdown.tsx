@@ -1,4 +1,5 @@
 import type { JSX } from '@solidjs/web';
+import { Show, createSignal } from 'solid-js';
 
 interface Props {
   trigger: JSX.Element;
@@ -12,6 +13,7 @@ interface Props {
 export function Dropdown(props: Props) {
   let menu: HTMLDivElement | undefined;
   const id = `dropdown-${crypto.randomUUID()}`;
+  const [isOpen, setOpen] = createSignal(false);
 
   return (
     <>
@@ -28,6 +30,7 @@ export function Dropdown(props: Props) {
         ref={menu}
         id={id}
         popover
+        onBeforeToggle={(event) => setOpen(event.newState === 'open')}
         class={[
           'inset-auto max-h-64 min-w-40 overflow-auto rounded-b-md border border-gray-700 bg-gray-800 p-1 text-gray-200 shadow-lg [position-try-fallbacks:flip-block,flip-inline]',
           props.align === 'end'
@@ -36,7 +39,7 @@ export function Dropdown(props: Props) {
           props.menuClass,
         ]}
       >
-        {props.children(() => menu?.hidePopover())}
+        <Show when={isOpen()}>{props.children(() => menu?.hidePopover())}</Show>
       </div>
     </>
   );
