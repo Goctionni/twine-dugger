@@ -13,7 +13,7 @@ import {
   restartGameState,
   startGameState,
 } from './game-state';
-import { setSetting } from './store';
+import { setSetting, setViewState, store } from './store';
 import { createGame } from './test-game';
 
 vi.mock('../api/api', () => ({
@@ -106,6 +106,35 @@ describe('game state', () => {
 
     play(game, (s) => s.list.push({ n: 4 }));
     expect(runs).toEqual({ ...before, b: before.b + 1, n1: before.n1 + 1, len: before.len + 1 });
+  });
+
+  it('trims the path of the State view to the part that is still in the state', () => {
+    const game = createGame({ a: { b: { c: 1 }, keep: 1 }, list: [1, 2] });
+    startGameState(game.state());
+    flush();
+    const selectPath = (path: (string | number)[]) => {
+      setViewState('state', 'path', path);
+      flush();
+    };
+
+    selectPath(['a', 'b', 'c']);
+    play(game, (s) => (s.a.keep = 2));
+    expect([...store.viewState.state.path]).toEqual(['a', 'b', 'c']);
+
+    play(game, (s) => delete s.a.b.c);
+    expect([...store.viewState.state.path]).toEqual(['a', 'b']);
+
+    play(game, (s) => delete s.a.b);
+    expect([...store.viewState.state.path]).toEqual(['a']);
+
+    selectPath(['list', 1]);
+    play(game, (s) => s.list.pop());
+    expect([...store.viewState.state.path]).toEqual(['list']);
+
+    selectPath(['a', 'keep']);
+    restartGameState(structuredClone({ a: {} }) as any, 'start');
+    flush();
+    expect([...store.viewState.state.path]).toEqual(['a']);
   });
 
   it('keeps the same proxies for array items that only moved', () => {

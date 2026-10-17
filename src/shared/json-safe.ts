@@ -1,4 +1,4 @@
-import type { JSONSafeArray, JSONSafeObject, JSONSafeValue, ValueType } from './shared-types';
+import type { JSONSafeArray, JSONSafeObject, JSONSafeValue, Path, ValueType } from './shared-types';
 
 /** Marks objects that stand in for a non-JSON value (Map, function, Date) */
 export const TYPE_KEY = '__twinedugger-type' as const;
@@ -72,6 +72,16 @@ export function getPathValue(
     value = (value as Record<string | number, JSONSafeValue>)[key];
   }
   return value;
+}
+
+/** The longest start of `path` that is still in `root` */
+export function trimToExistingPath(root: JSONSafeObject | JSONSafeArray, path: Path): Path {
+  let value: JSONSafeValue = root;
+  for (let depth = 0; depth < path.length; depth++) {
+    if (!isContainer(value) || !Object.hasOwn(value, path[depth]!)) return path.slice(0, depth);
+    value = (value as JSONSafeObject)[path[depth]!];
+  }
+  return path;
 }
 
 export function jsonEqual(a: JSONSafeValue, b: JSONSafeValue): boolean {

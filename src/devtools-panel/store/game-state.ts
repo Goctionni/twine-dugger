@@ -2,13 +2,14 @@ import type { Delta } from 'jsondiffpatch';
 import { patch } from 'jsondiffpatch';
 import { createEffect, createMemo, createSignal, createStore, snapshot, untrack } from 'solid-js';
 
+import { trimToExistingPath } from '@/shared/json-safe';
 import { pathEquals, pathKey } from '@/shared/path-equals';
 import type { DeltaUpdate, JSONSafeObject, LockRevert, Path } from '@/shared/shared-types';
 
 import { sameItems } from '../utils/same-items';
 import type { BlockedWrite, StateDiff } from '../views/DiffLog/diff-types';
 import { getDiffFromDelta } from './diff-from-delta';
-import { store } from './store';
+import { setViewState, store } from './store';
 
 // The state of the game is patched with the deltas that the content script sends, so that only the
 // properties that actually changed notify their readers.
@@ -32,8 +33,17 @@ function resetView() {
   setLastChanged(() => ({}));
 }
 
+const getViewPath = () => untrack(() => store.viewState.state.path);
+
+// The game can remove the value that the State view has selected: the view keeps what is left
+function trimViewPath(path: Path, trimmed: Path) {
+  if (trimmed.length < path.length) setViewState('state', 'path', trimmed);
+}
+
 export function startGameState(state: JSONSafeObject) {
+  const path = getViewPath();
   setGameState(() => state);
+  trimViewPath(path, trimToExistingPath(state, path));
   setFrames([]);
   setLatestId(0);
   setLogStartId(0);
@@ -46,7 +56,9 @@ export function startGameState(state: JSONSafeObject) {
  * "tainted".
  */
 export function restartGameState(state: JSONSafeObject, passage: string) {
+  const path = getViewPath();
   setGameState(() => state);
+  trimViewPath(path, trimToExistingPath(state, path));
   resetView();
   addFrame({ timestamp: Date.now(), passage, blocked: [], reloaded: true });
 }
@@ -56,9 +68,14 @@ export function applyUpdate({ passage, delta, reverts }: DeltaUpdate, timestamp 
   if (!delta && !blocked.length) return;
 
   if (delta) {
+    const path = getViewPath();
+    let trimmed = path;
+    // Staged writes: the patched state is only to be seen from inside the setter
     setGameState((draft) => {
       patch(draft, delta);
+      trimmed = trimToExistingPath(draft, path);
     });
+    trimViewPath(path, trimmed);
   }
   addFrame({ timestamp, passage, delta, blocked });
 }
