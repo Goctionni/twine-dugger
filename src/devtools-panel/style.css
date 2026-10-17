@@ -25,6 +25,13 @@ input[type='search'] {
   color: inherit;
 }
 
+/*
+ * Where the inspector of the State view goes depends on the size of the whole view (a size
+ * container named "frame", see StateView): beside the navigator, below it, or over it.
+ */
+@custom-variant inspector-sheet (@container frame (max-width: 700px) and (min-height: 481px));
+@custom-variant inspector-overlay (@container frame (max-width: 700px) and (max-height: 480px));
+
 /* A select whose arrow is drawn here instead of by the browser, so that it can be moved in from the edge */
 @utility select-arrow {
   appearance: none;

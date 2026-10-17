@@ -1,16 +1,10 @@
 import type { JSX } from '@solidjs/web';
 
-import type { Path } from '@/shared/shared-types';
-
 import { Breadcrumbs } from '../Breadcrumbs/Breadcrumbs';
 import { Inspector } from '../Inspector/Inspector';
-import type { SelectionKind } from '../types';
+import type { NavProps } from '../types';
 
-interface Props {
-  /** The path the breadcrumbs show */
-  path: Path;
-  selectionKind: SelectionKind;
-  onSelect: (path: Path) => void;
+interface Props extends NavProps {
   children: JSX.Element;
 }
 
@@ -19,9 +13,13 @@ export function NavFrame(props: Props) {
   return (
     <div class="flex h-full flex-col">
       <Breadcrumbs path={props.path} onSelect={props.onSelect} />
-      <div class="flex min-h-0 flex-1">
-        <div class="min-w-0 flex-1 overflow-auto">{props.children}</div>
-        <Inspector selectionKind={props.selectionKind} />
+      <div class="relative flex min-h-0 flex-1 inspector-sheet:flex-col">
+        <div class="min-h-0 min-w-0 flex-1 overflow-auto">{props.children}</div>
+        <Inspector
+          selectionKind={props.selectionKind}
+          isOverlayOpen={props.isOverlayOpen}
+          onClose={props.onCloseOverlay}
+        />
       </div>
     </div>
   );

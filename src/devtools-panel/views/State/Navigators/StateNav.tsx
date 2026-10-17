@@ -1,4 +1,4 @@
-import { Match, Switch } from 'solid-js';
+import { Match, Switch, omit } from 'solid-js';
 
 import type { NavProps, Navigator } from '../types';
 import { MillerNav } from './MillerNav';
@@ -10,20 +10,18 @@ interface Props extends NavProps {
 }
 
 export function StateNav(props: Props) {
+  const navProps = omit(props, 'navigator');
+
   return (
     <Switch>
       <Match when={props.navigator === 'miller'}>
-        <MillerNav
-          path={props.path}
-          selectionKind={props.selectionKind}
-          onSelect={props.onSelect}
-        />
+        <MillerNav {...navProps} />
       </Match>
       <Match when={props.navigator === 'tree'}>
-        <TreeNav path={props.path} selectionKind={props.selectionKind} onSelect={props.onSelect} />
+        <TreeNav {...navProps} />
       </Match>
       <Match when={props.navigator === 'tiles'}>
-        <TilesNav path={props.path} selectionKind={props.selectionKind} onSelect={props.onSelect} />
+        <TilesNav {...navProps} />
       </Match>
     </Switch>
   );

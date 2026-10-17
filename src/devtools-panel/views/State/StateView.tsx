@@ -3,6 +3,7 @@ import { createMemo, createSignal } from 'solid-js';
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { setViewState, store } from '@/devtools-panel/store/store';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
+import { pathKey } from '@/shared/path-equals';
 
 import { StateNav } from './Navigators/StateNav';
 import {
@@ -25,8 +26,15 @@ export function StateView() {
       : 'primitive',
   );
 
+  // Only for a narrow and short view, where the inspector covers the navigator. It does not open for
+  // a container: that one is opened to look into it, and is edited in a larger view
+  const [getClosedPathKey, setClosedPathKey] = createSignal<string>();
+  const isOverlayOpen = () =>
+    getSelectionKind() === 'primitive' &&
+    getClosedPathKey() !== pathKey(store.viewState.state.path);
+
   return (
-    <div class="flex h-full flex-col">
+    <div class="flex h-full flex-col [container:frame/size]">
       <Toolbar
         navigator={getNavigator()}
         onNavigatorChange={setNavigator}
@@ -43,7 +51,12 @@ export function StateView() {
           navigator={getNavigator()}
           path={store.viewState.state.path}
           selectionKind={getSelectionKind()}
-          onSelect={(path) => setViewState('state', 'path', path)}
+          onSelect={(path) => {
+            setClosedPathKey(undefined);
+            setViewState('state', 'path', path);
+          }}
+          isOverlayOpen={isOverlayOpen()}
+          onCloseOverlay={() => setClosedPathKey(pathKey(store.viewState.state.path))}
         />
       </div>
     </div>
