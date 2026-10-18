@@ -33,12 +33,13 @@ function setup(path: Path) {
     group: { on: true },
     flags: new Set([true]),
     n: 3,
+    nothing: null,
   });
   startGameState(game.state());
   applyUpdate(game.update());
   flush();
 
-  const view = render(() => <PrimitiveEditor path={path} />);
+  const view = render(() => <PrimitiveEditor path={path} onSelect={() => {}} />);
   const radios = () => view.getAllByRole<HTMLInputElement>('radio');
   const checked = () => radios().map((radio) => radio.checked);
   const lockButton = () => view.queryByRole('button', { name: 'Lock' });
@@ -150,7 +151,8 @@ it('cannot be changed in a set', () => {
 });
 
 it('shows the value of a type that has no editor yet', () => {
-  const { queryAllByRole, getByText } = setup(['n']);
+  const { queryAllByRole, getByText } = setup(['nothing']);
   expect(queryAllByRole('radio')).toHaveLength(0);
-  expect(getByText('3')).toBeTruthy();
+  expect(queryAllByRole('textbox')).toHaveLength(0);
+  expect(getByText('null')).toBeTruthy();
 });

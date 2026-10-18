@@ -8,6 +8,8 @@ import { PrimitiveEditor } from './PrimitiveEditor/PrimitiveEditor';
 
 interface Props {
   path: Path;
+  /** Selects another path: the navigator shows it, and the breadcrumbs */
+  onSelect: (path: Path) => void;
   selectionKind: SelectionKind;
   isOverlayOpen: boolean;
   onClose: () => void;
@@ -36,7 +38,7 @@ export function Inspector(props: Props) {
           <ContainerEditor />
         </Match>
         <Match when={props.selectionKind === 'primitive'}>
-          <PrimitiveEditor path={props.path} />
+          <PrimitiveEditor path={props.path} onSelect={props.onSelect} />
         </Match>
       </Switch>
     </aside>

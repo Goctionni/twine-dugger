@@ -15,6 +15,13 @@ export function getLockStatus(path: Path, lockedPaths: readonly Path[]): LockSta
   return 'unlocked';
 }
 
+/** The locked path that holds the lock on this path: itself, or else the nearest parent */
+export function getLockingPath(path: Path, lockedPaths: readonly Path[]): Path | undefined {
+  return lockedPaths
+    .filter((locked) => pathStartsWith(path, locked))
+    .sort((a, b) => b.length - a.length)[0];
+}
+
 /** The items of a set have no name to write to: nothing in a set can be set */
 export function isInsideSet(state: JSONSafeContainer, path: Path): boolean {
   let value: JSONSafeValue = state;

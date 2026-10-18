@@ -1,11 +1,9 @@
-import { getLatestState } from '@/devtools-panel/store/game-state';
-import { getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
 import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import type { Path } from '@/shared/shared-types';
 
 import { createEditableValue } from '../createEditableValue';
-import { getLockStatus, isInsideSet } from '../logic/edit-status';
+import { createEditStatus } from '../createEditStatus';
 
 interface Props {
   path: Path;
@@ -15,8 +13,7 @@ interface Props {
 export function BooleanEditor(props: Props) {
   const [getValue, setValue, isWaiting] = createEditableValue<boolean>(() => props.path);
 
-  const getStatus = () => getLockStatus(props.path, getLockedPaths());
-  const toggleLock = () => setPathLock(props.path, getStatus() === 'unlocked');
+  const { getStatus, isDisabled, toggleLock } = createEditStatus(() => props.path);
 
   return (
     <div
@@ -32,7 +29,7 @@ export function BooleanEditor(props: Props) {
         value={getValue()}
         onChange={(value) => void setValue(value)}
         readOnly={getStatus() === 'locked' || isWaiting()}
-        disabled={getStatus() === 'ancestor-lock' || isInsideSet(getLatestState(), props.path)}
+        disabled={isDisabled()}
       />
       <LockButton status={getStatus()} onToggle={() => void toggleLock()} />
     </div>
