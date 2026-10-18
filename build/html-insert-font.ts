@@ -23,6 +23,8 @@ export const htmlInsertFontPlugin: Plugin = {
         'filter_alt',
         'grid_view',
         'history',
+        'lock',
+        'lock_open',
         'open_in_browser',
         'refresh',
         'search',

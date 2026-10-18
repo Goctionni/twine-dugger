@@ -41,6 +41,7 @@ export function DiffLogSettings() {
             value={headingStyle() === 'distinct'}
             onChange={(value) => setSetting('diffLog.headingStyle', value ? 'distinct' : 'default')}
             id={id}
+            label="Heading Emphasis"
           />
         )}
       </SettingControl>

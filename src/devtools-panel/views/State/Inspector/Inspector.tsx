@@ -1,10 +1,13 @@
 import { Match, Switch } from 'solid-js';
 
+import type { Path } from '@/shared/shared-types';
+
 import type { SelectionKind } from '../types';
 import { ContainerEditor } from './ContainerEditor/ContainerEditor';
 import { PrimitiveEditor } from './PrimitiveEditor/PrimitiveEditor';
 
 interface Props {
+  path: Path;
   selectionKind: SelectionKind;
   isOverlayOpen: boolean;
   onClose: () => void;
@@ -28,19 +31,12 @@ export function Inspector(props: Props) {
       >
         ✕ Close
       </button>
-      {/* Temporary: something to focus, to check the Tab order out of the Miller view */}
-      <button
-        type="button"
-        class="m-2 cursor-pointer rounded-md border border-gray-500 px-2 py-0.5 text-sm hover:bg-gray-700"
-      >
-        Focus test
-      </button>
       <Switch>
         <Match when={props.selectionKind === 'container'}>
           <ContainerEditor />
         </Match>
         <Match when={props.selectionKind === 'primitive'}>
-          <PrimitiveEditor />
+          <PrimitiveEditor path={props.path} />
         </Match>
       </Switch>
     </aside>

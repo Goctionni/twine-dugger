@@ -22,6 +22,7 @@ export function SearchSettings() {
               value={getSettings.search.persist[item.setting]()}
               onChange={(value) => setSetting(`search.persist.${item.setting}`, value)}
               id={id}
+              label={item.label}
             />
           )}
         </SettingControl>

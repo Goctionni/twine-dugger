@@ -1,4 +1,4 @@
-import { cleanup, render } from '@solidjs/testing-library';
+import { cleanup, render, within } from '@solidjs/testing-library';
 import { flush } from 'solid-js';
 import { afterEach, expect, it, vi } from 'vite-plus/test';
 
@@ -22,7 +22,7 @@ it('selects the crumb that is clicked and asks for the selection to be revealed'
   flush();
 
   const onSelect = vi.fn();
-  const { getByText } = render(() => (
+  const { getByRole } = render(() => (
     <NavFrame
       path={['stats', 'str']}
       selectionKind="primitive"
@@ -35,7 +35,9 @@ it('selects the crumb that is clicked and asks for the selection to be revealed'
   ));
   const before = getRevealCount();
 
-  getByText('stats').click();
+  within(getByRole('navigation', { name: 'Path' }))
+    .getByText('stats')
+    .click();
   flush();
 
   expect(onSelect).toHaveBeenCalledWith(['stats']);

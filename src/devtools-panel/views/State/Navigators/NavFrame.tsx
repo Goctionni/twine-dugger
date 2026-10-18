@@ -24,6 +24,7 @@ export function NavFrame(props: Props) {
       <div class="relative flex min-h-0 flex-1 inspector-sheet:flex-col">
         <div class="min-h-0 min-w-0 flex-1 overflow-auto">{props.children}</div>
         <Inspector
+          path={props.path}
           selectionKind={props.selectionKind}
           isOverlayOpen={props.isOverlayOpen}
           onClose={props.onCloseOverlay}
