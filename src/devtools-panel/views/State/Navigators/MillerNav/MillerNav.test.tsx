@@ -14,8 +14,23 @@ vi.mock('@/devtools-panel/api/api', () => ({
 }));
 
 Element.prototype.scrollIntoView = vi.fn();
+// jsdom has no layout: the width of the pane is what a test says (0 is not measured yet)
+let paneWidth = 0;
+vi.stubGlobal(
+  'ResizeObserver',
+  class {
+    observe() {}
+    disconnect() {}
+  },
+);
+vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+  () => ({ width: paneWidth }) as DOMRect,
+);
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  paneWidth = 0;
+});
 
 it('shows where the path came from after going up, and forgets it for another branch', () => {
   const game = createGame({ stats: { str: 1, nested: { a: 1 } }, skills: { cook: 1 } });
@@ -135,4 +150,53 @@ it('is one Tab stop: the columns are not, and a column that gets the focus passe
 
   columns[0]!.focus();
   expect(document.activeElement).toBe(tree);
+});
+
+function renderStrips(path: Path, width: number) {
+  const game = createGame({ stats: { str: 1, nested: { a: 1 } }, skills: { cook: 1 } });
+  startGameState(game.state());
+  flush();
+
+  paneWidth = width;
+  const onSelect = vi.fn();
+  const view = render(() => (
+    <MillerNav
+      path={path}
+      selectionKind="container"
+      onSelect={onSelect}
+      isOverlayOpen={false}
+      onCloseOverlay={() => {}}
+    />
+  ));
+  const strips = () => [
+    ...view.container.querySelectorAll<HTMLElement>('[role="treeitem"][aria-label]'),
+  ];
+  return { ...view, strips, onSelect };
+}
+
+it('collapses the columns that do not fit into strips, from the left', () => {
+  // Three columns need 690 px; at 400 px two are strips (2 x 30 + 230 = 290)
+  const { strips, getAllByRole, onSelect } = renderStrips(['stats', 'nested'], 400);
+
+  expect(strips().map((strip) => strip.getAttribute('aria-label'))).toEqual(['State', 'stats']);
+  expect(strips().map((strip) => strip.title)).toEqual(['State', 'State › stats']);
+  expect(getAllByRole('group')).toHaveLength(1);
+
+  strips()[1]!.click();
+  expect(onSelect).toHaveBeenCalledWith(['stats']);
+  strips()[0]!.click();
+  expect(onSelect).toHaveBeenLastCalledWith([]);
+});
+
+it('collapses nothing while the columns fit, or before the pane is measured', () => {
+  expect(renderStrips(['stats', 'nested'], 700).strips()).toHaveLength(0);
+  cleanup();
+  expect(renderStrips(['stats', 'nested'], 0).strips()).toHaveLength(0);
+});
+
+it('names the strip as the active one when the selected row is in a column that is a strip', () => {
+  const { getByRole, strips } = renderStrips(['stats'], 300);
+
+  expect(strips()).toHaveLength(1);
+  expect(getByRole('tree').getAttribute('aria-activedescendant')).toBe(strips()[0]!.id);
 });

@@ -1,6 +1,7 @@
 import type { Accessor } from 'solid-js';
-import { createMemo, createSignal, onSettled } from 'solid-js';
+import { createMemo } from 'solid-js';
 
+import { createElementWidth } from '@/devtools-panel/utils/create-element-width';
 import { mapObject } from '@/devtools-panel/utils/map-object';
 
 type Config = Record<string, Record<string, number>>;
@@ -23,15 +24,7 @@ export function createResolveBreakpoints<C extends Config>(
   config: C,
   getContainer: () => HTMLElement | undefined,
 ) {
-  const [getWidth, setWidth] = createSignal(0);
-
-  onSettled(() => {
-    const container = getContainer()!;
-    setWidth(container.getBoundingClientRect().width);
-    const observer = new ResizeObserver(([entry]) => setWidth(entry!.contentRect.width));
-    observer.observe(container);
-    return () => observer.disconnect();
-  });
+  const getWidth = createElementWidth(getContainer);
 
   const sorted = mapObject(config, sortBreakpoints);
 
