@@ -1,12 +1,11 @@
-import { createMemo } from 'solid-js';
-
 import { setState } from '@/devtools-panel/api/api';
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { getSettings } from '@/devtools-panel/store/store';
 import { createOptimisticWithTimeout } from '@/devtools-panel/utils/create-optimistic-with-timeout';
 import { getPathValue } from '@/shared/json-safe';
-import { pathEquals } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
+
+import { createStablePath } from './createStablePath';
 
 /**
  * The value at a path, for an editor to show and set. What is set shows at once, and stays until
@@ -17,7 +16,7 @@ import type { Path } from '@/shared/shared-types';
  */
 export function createEditableValue<T extends boolean | number | string>(getPath: () => Path) {
   // Setting the same path again reads nothing new, so it does not end the wait
-  const getStablePath = createMemo(() => getPath().slice(), { equals: pathEquals });
+  const getStablePath = createStablePath(getPath);
 
   return createOptimisticWithTimeout<T>(
     () => getPathValue(getLatestState(), getStablePath()) as T,

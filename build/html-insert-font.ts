@@ -27,6 +27,7 @@ export const htmlInsertFontPlugin: Plugin = {
         'lock_open',
         'open_in_browser',
         'refresh',
+        'save',
         'search',
         'settings',
         'sort',

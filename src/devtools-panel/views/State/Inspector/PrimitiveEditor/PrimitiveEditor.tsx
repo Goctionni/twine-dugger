@@ -9,6 +9,7 @@ import type { Path } from '@/shared/shared-types';
 
 import { getPathLabels } from '../../logic/path-labels';
 import { BooleanEditor } from './BooleanEditor';
+import { StringEditor } from './StringEditor';
 
 interface Props {
   path: Path;
@@ -36,7 +37,10 @@ export function PrimitiveEditor(props: Props) {
         <Match when={getType() === 'boolean'}>
           <BooleanEditor path={props.path} label={getTitle()} />
         </Match>
-        <Match when={getType() !== 'boolean'}>
+        <Match when={getType() === 'string'}>
+          <StringEditor path={props.path} label={getTitle()} />
+        </Match>
+        <Match when={getType() !== 'boolean' && getType() !== 'string'}>
           <RenderValue value={getValue()} />
         </Match>
       </Switch>
