@@ -37,7 +37,7 @@ function setup(path: (string | number)[] = [], depth = 0, trail = path) {
 
   const onSelect = vi.fn();
   const { container } = render(() => (
-    <MillerColumn depth={depth} path={path} trail={trail} onSelect={onSelect} />
+    <MillerColumn treeId="tree" depth={depth} path={path} trail={trail} onSelect={onSelect} />
   ));
   const records: MutationRecord[] = [];
   const observer = new MutationObserver((batch) => records.push(...batch));
@@ -48,7 +48,7 @@ function setup(path: (string | number)[] = [], depth = 0, trail = path) {
     attributes: true,
   });
 
-  const rows = () => [...container.querySelectorAll('button')];
+  const rows = () => [...container.querySelectorAll<HTMLElement>('[role="treeitem"]')];
   const names = () => rows().map((row) => row.querySelector('span.shrink-0.truncate')!.textContent);
   const play = (mutate: (live: any) => void) => {
     mutate(game.live);

@@ -1,4 +1,11 @@
-import type { JSONSafeArray, JSONSafeObject, JSONSafeValue, Path, ValueType } from './shared-types';
+import type {
+  JSONSafeArray,
+  JSONSafeContainer,
+  JSONSafeObject,
+  JSONSafeValue,
+  Path,
+  ValueType,
+} from './shared-types';
 
 /** Marks objects that stand in for a non-JSON value (Map, function, Date) */
 export const TYPE_KEY = '__twinedugger-type' as const;
@@ -51,22 +58,22 @@ export function getContainerKeys(value: unknown, type: ContainerType): Array<str
   return type === 'map' ? keys.filter((key) => key !== TYPE_KEY) : keys;
 }
 
-export function isContainer(value: JSONSafeValue): value is JSONSafeArray | JSONSafeObject {
+export function isContainer(value: JSONSafeValue): value is JSONSafeContainer {
   return isContainerType(getJsonType(value));
 }
 
 /** `getContainerKeys(value, type).length` without making the list: arrays can be large */
-export function getContainerSize(value: JSONSafeArray | JSONSafeObject): number {
+export function getContainerSize(value: JSONSafeContainer): number {
   if (Array.isArray(value)) return value[0] === SET_MARKER ? value.length - 1 : value.length;
   const size = Object.keys(value).length;
   return value[TYPE_KEY] === 'Map' || value[TYPE_KEY] === 'NumberMap' ? size - 1 : size;
 }
 
 export function getPathValue(
-  root: JSONSafeValue,
+  root: JSONSafeContainer,
   path: ReadonlyArray<string | number>,
 ): JSONSafeValue {
-  let value = root;
+  let value: JSONSafeValue = root;
   for (const key of path) {
     if (value === null || typeof value !== 'object') return undefined;
     value = (value as JSONSafeObject)[key];
@@ -75,7 +82,7 @@ export function getPathValue(
 }
 
 /** The longest start of `path` that is still in `root` */
-export function trimToExistingPath(root: JSONSafeObject | JSONSafeArray, path: Path): Path {
+export function trimToExistingPath(root: JSONSafeContainer, path: Path): Path {
   let value: JSONSafeValue = root;
   for (let depth = 0; depth < path.length; depth++) {
     if (!isContainer(value) || !Object.hasOwn(value, path[depth]!)) return path.slice(0, depth);
@@ -102,4 +109,10 @@ export function containsFunction(value: JSONSafeValue): boolean {
 
 export function getKeyLabel(type: ContainerType, key: string | number) {
   return type === 'set' && typeof key === 'number' ? key - 1 : key;
+}
+
+export function getContainerKeyLabel(container: JSONSafeContainer, key: string | number) {
+  if (typeof key === 'string') return key;
+  const isSet = Array.isArray(container) && container[0] === SET_MARKER;
+  return String(isSet ? key - 1 : key);
 }

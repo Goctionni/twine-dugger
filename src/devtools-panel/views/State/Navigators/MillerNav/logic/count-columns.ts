@@ -1,7 +1,13 @@
 import { getContainerSize, isContainer } from '@/shared/json-safe';
-import type { JSONSafeObject, JSONSafeValue, Path, ValueType } from '@/shared/shared-types';
+import type {
+  JSONSafeContainer,
+  JSONSafeObject,
+  JSONSafeValue,
+  Path,
+  ValueType,
+} from '@/shared/shared-types';
 
-import { countHiddenKeys } from './filter-keys';
+import { countHiddenKeys } from '../../../logic/filter-keys';
 
 /**
  * One column for the root and for every container below it on the path that has something to show,
@@ -11,11 +17,11 @@ import { countHiddenKeys } from './filter-keys';
  * cheap to read in a memo.
  */
 export function countColumns(
-  state: JSONSafeValue,
+  state: JSONSafeContainer,
   path: Path,
   hiddenTypes: readonly ValueType[],
 ): number {
-  let value = state;
+  let value: JSONSafeValue = state;
   for (let depth = 0; ; depth++) {
     if (
       !isContainer(value) ||

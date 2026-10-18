@@ -1,11 +1,11 @@
 import { getContainerKeys, getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
-import type { JSONSafeObject, JSONSafeValue, Path, ValueType } from '@/shared/shared-types';
+import type { JSONSafeContainer, JSONSafeObject, Path, ValueType } from '@/shared/shared-types';
 
+import { TYPE_ORDER, toFilterType } from '../../../logic/sort-keys';
 import { countColumns } from './count-columns';
-import { TYPE_ORDER, toFilterType } from './sort-keys';
 
 /** The types of the values in the Miller columns that the path shows, in the order of the types */
-export function getTypesInColumns(state: JSONSafeValue, path: Path): ValueType[] {
+export function getTypesInColumns(state: JSONSafeContainer, path: Path): ValueType[] {
   const found = new Set<ValueType>();
   // A column that the filter removes holds only hidden types, and those are listed anyway
   const columns = countColumns(state, path, []);

@@ -3,7 +3,7 @@ import { For, createMemo } from 'solid-js';
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { Dropdown } from '@/devtools-panel/ui/display/Dropdown';
 import { sameItems } from '@/devtools-panel/utils/same-items';
-import { getJsonType, getKeyLabel, getPathValue, isContainerType } from '@/shared/json-safe';
+import { getContainerKeyLabel, getJsonType, getPathValue, isContainer } from '@/shared/json-safe';
 import type { JSONSafeObject, Path } from '@/shared/shared-types';
 
 import { filterKeysByType } from '../logic/filter-keys';
@@ -38,8 +38,8 @@ export function SiblingMenu(props: Props) {
           { equals: sameItems },
         );
         const getLabel = (key: string | number) => {
-          const type = getJsonType(getParent());
-          return String(isContainerType(type) ? getKeyLabel(type, key) : key);
+          const parent = getParent();
+          return isContainer(parent) ? getContainerKeyLabel(parent, key) : String(key);
         };
 
         return (

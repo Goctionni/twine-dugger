@@ -17,6 +17,7 @@ export type Value =
 export type JSONSafeValue = Primitive | JSONSafeValue[] | { [key: string]: JSONSafeValue };
 export type JSONSafeArray = JSONSafeValue[];
 export type JSONSafeObject = { [key: string]: JSONSafeValue };
+export type JSONSafeContainer = JSONSafeArray | JSONSafeObject;
 export type JSONSafeDate = { [TYPE_KEY]: 'Date' } & Record<
   'Y' | 'M' | 'D' | 'h' | 'm' | 's',
   number

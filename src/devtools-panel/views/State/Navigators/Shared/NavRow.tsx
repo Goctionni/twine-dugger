@@ -6,6 +6,9 @@ import type { ValueType } from '@/shared/shared-types';
 import { ChildCount } from './ChildCount';
 
 interface Props {
+  id: string;
+  level: number;
+  isExpanded?: boolean;
   name: string;
   type: ValueType;
   preview?: string;
@@ -15,14 +18,21 @@ interface Props {
   onClick: () => void;
 }
 
+/** Not a button: it is never focused. The tree has the focus, and tells which row is active */
 export function NavRow(props: Props) {
   return (
-    <button
-      type="button"
+    <div
+      id={props.id}
+      role="treeitem"
+      aria-level={props.level}
+      aria-selected={props.state === 'selected' ? 'true' : 'false'}
+      aria-expanded={
+        props.isExpanded === undefined ? undefined : props.isExpanded ? 'true' : 'false'
+      }
       data-state={props.state}
       class={[
         // The margin keeps a row that is scrolled into view from ending up under the sticky header of the column
-        'flex w-full cursor-pointer scroll-mt-8 items-center gap-2 rounded-md border px-2 py-1 text-left text-sm',
+        'flex w-full cursor-pointer scroll-mt-8 items-center gap-2 rounded-md border px-2 py-1 text-left text-sm select-none',
         props.state === 'selected' && 'border-sky-500 bg-sky-950',
         props.state === 'on-path' && 'border-transparent bg-slate-800',
         props.state === 'trail' && 'border-dashed border-sky-500 bg-sky-950/40',
@@ -44,6 +54,6 @@ export function NavRow(props: Props) {
           <span class="min-w-0 truncate font-mono text-xs text-gray-400">{props.preview}</span>
         </Match>
       </Switch>
-    </button>
+    </div>
   );
 }

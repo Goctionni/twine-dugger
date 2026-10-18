@@ -4,25 +4,26 @@ import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-sta
 import { getRevealCount } from '@/devtools-panel/store/state-location';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import {
-  getContainerKeys,
+  getContainerKeyLabel,
   getContainerSize,
   getJsonType,
-  getKeyLabel,
   getPathValue,
   isContainer,
-  isContainerType,
 } from '@/shared/json-safe';
 import { pathEquals } from '@/shared/path-equals';
 import type { JSONSafeObject, JSONSafeValue, Path } from '@/shared/shared-types';
 
-import { countHiddenKeys, filterKeysByType } from '../logic/filter-keys';
-import { getPathLabels } from '../logic/path-labels';
-import { getPreview } from '../logic/preview';
-import { getKeysByName, sortKeysByChanged, sortKeysByType } from '../logic/sort-keys';
-import { getHiddenTypes, getSort } from '../store-helpers/view-prefs';
-import { NavRow } from './NavRow';
+import { countHiddenKeys } from '../../logic/filter-keys';
+import { getPathLabels } from '../../logic/path-labels';
+import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
+import { NavRow } from '../Shared/NavRow';
+import { getPreview } from '../Shared/preview';
+import { getVisibleKeys } from '../Shared/visible-keys';
+import { getRowId } from './logic/row-id';
 
 interface Props {
+  /** The id of the tree that the column is in: the ids of the rows are made from it */
+  treeId: string;
   depth: number;
   path: Path;
   trail: Path;
@@ -37,10 +38,6 @@ export function MillerColumn(props: Props) {
   // before it alone, and a changed value leaves everything but the rows that show it alone
   const getColumnPath = createMemo(() => props.path.slice(0, props.depth), { equals: pathEquals });
   const getContainer = createMemo(() => getPathValue(getLatestState(), getColumnPath()));
-  const getContainerType = createMemo(() => {
-    const type = getJsonType(getContainer());
-    return isContainerType(type) ? type : undefined;
-  });
 
   const getSelectedKey = createMemo(() => props.path[props.depth]);
   const isSelectionHere = () => props.depth === props.path.length - 1;
@@ -55,26 +52,17 @@ export function MillerColumn(props: Props) {
   });
 
   const getKeys = createMemo(
-    () => {
-      const type = getContainerType();
-      if (!type) return [];
-      const sort = getSort();
-      const getTypeOf = (key: string | number) => getJsonType(getChild(getContainer(), key));
-
-      const keys = filterKeysByType(
-        sort === 'name' ? getKeysByName(getContainer()) : getContainerKeys(getContainer(), type),
-        getTypeOf,
-        getHiddenTypes(),
-      );
-      // The position is the name of an item of an array or a set
-      if (type === 'array' || type === 'set' || sort === 'name') return keys;
-      if (sort === 'changed') {
-        return sortKeysByChanged(keys, (key) => getLastChangeId([...getColumnPath(), key]));
-      }
-      return sortKeysByType(keys, getTypeOf);
-    },
+    () =>
+      getVisibleKeys(getContainer(), getSort(), getHiddenTypes(), (key) =>
+        getLastChangeId([...getColumnPath(), key]),
+      ),
     { equals: sameItems },
   );
+
+  const getRowName = (key: string | number) => {
+    const container = getContainer();
+    return isContainer(container) ? getContainerKeyLabel(container, key) : String(key);
+  };
 
   const getTitle = () => getPathLabels(getLatestState(), getColumnPath()).at(-1) ?? 'State';
 
@@ -86,6 +74,9 @@ export function MillerColumn(props: Props) {
   return (
     <div
       ref={column}
+      role="group"
+      aria-label={getTitle()}
+      tabindex="-1"
       class="min-w-57.5 flex-1 basis-57.5 overflow-y-auto border-r border-gray-700 p-1 not-last:max-w-86.25 last:border-r-0"
     >
       <div class="sticky top-0 truncate bg-gray-900 px-2 py-1 font-mono text-xs text-gray-400">
@@ -107,10 +98,18 @@ export function MillerColumn(props: Props) {
             const value = getValue();
             return isContainer(value) ? getContainerSize(value) - getHiddenChildren() : undefined;
           };
+          const getIsExpanded = () => {
+            const count = getChildCount();
+            if (count === undefined) return undefined;
+            return getRowState() === 'on-path' || (getRowState() === 'selected' && count > 0);
+          };
 
           return (
             <NavRow
-              name={String(getKeyLabel(getContainerType()!, key))}
+              id={getRowId(props.treeId, props.depth, key)}
+              level={props.depth + 1}
+              isExpanded={getIsExpanded()}
+              name={getRowName(key)}
               type={getType()}
               preview={getPreview(getValue(), getType())}
               childCount={getChildCount()}

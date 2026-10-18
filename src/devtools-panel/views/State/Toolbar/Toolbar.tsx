@@ -5,7 +5,7 @@ import { sameItems } from '@/devtools-panel/utils/same-items';
 import type { Path, ValueType } from '@/shared/shared-types';
 
 import { TYPE_ORDER } from '../logic/sort-keys';
-import { getTypesInColumns } from '../logic/types-in-columns';
+import { getTypesInColumns } from '../Navigators/MillerNav/logic/types-in-columns';
 import type { Navigator, Sort } from '../types';
 import { createResolveBreakpoints } from './createResolveBreakpoints';
 import { NavigatorSwitch } from './NavigatorSwitch';

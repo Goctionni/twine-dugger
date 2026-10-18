@@ -28,6 +28,13 @@ export function Inspector(props: Props) {
       >
         ✕ Close
       </button>
+      {/* Temporary: something to focus, to check the Tab order out of the Miller view */}
+      <button
+        type="button"
+        class="m-2 cursor-pointer rounded-md border border-gray-500 px-2 py-0.5 text-sm hover:bg-gray-700"
+      >
+        Focus test
+      </button>
       <Switch>
         <Match when={props.selectionKind === 'container'}>
           <ContainerEditor />

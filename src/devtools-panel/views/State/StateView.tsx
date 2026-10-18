@@ -1,7 +1,8 @@
 import { createMemo, createSignal } from 'solid-js';
 
 import { getLatestState } from '@/devtools-panel/store/game-state';
-import { setViewState, store } from '@/devtools-panel/store/store';
+import { setStatePath } from '@/devtools-panel/store/state-location';
+import { store } from '@/devtools-panel/store/store';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import { pathKey } from '@/shared/path-equals';
 
@@ -53,7 +54,7 @@ export function StateView() {
           selectionKind={getSelectionKind()}
           onSelect={(path) => {
             setClosedPathKey(undefined);
-            setViewState('state', 'path', path);
+            setStatePath(path);
           }}
           isOverlayOpen={isOverlayOpen()}
           onCloseOverlay={() => setClosedPathKey(pathKey(store.viewState.state.path))}
