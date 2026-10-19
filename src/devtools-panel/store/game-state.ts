@@ -7,9 +7,9 @@ import { pathEquals, pathKey } from '@/shared/path-equals';
 import type { DeltaUpdate, JSONSafeObject, LockRevert, Path } from '@/shared/shared-types';
 
 import { sameItems } from '../utils/same-items';
-import type { BlockedWrite, StateDiff } from '../views/DiffLog/diff-types';
+import type { BlockedWrite, DiffChange, StateDiff } from '../views/DiffLog/diff-types';
 import { getDiffFromDelta } from './diff-from-delta';
-import { setViewState, store } from './store';
+import { isPathFiltered, setViewState, store } from './store';
 
 // The state of the game is patched with the deltas that the content script sends, so that only the
 // properties that actually changed notify their readers.
@@ -29,8 +29,63 @@ export const getLatestState = () => gameState;
 export const getLastChangeIdByKey = (key: string) => lastChanged[key] ?? 0;
 export const getLastChangeId = (path: Path) => getLastChangeIdByKey(pathKey(path));
 
+export type PathChange = Exclude<DiffChange, { kind: 'mov' }>;
+
+export interface PathRecord {
+  /** Newest first. The changes that are still in the diff log window */
+  changes: { id: number; timestamp: number; change: PathChange }[];
+  /** Including the changes that left the window */
+  count: number;
+  lastId: number;
+  lastTimestamp: number;
+}
+
+// Not reactive: whoever reads it depends on `getLastChangeId` and `getLatestId`. In order of last
+// change, so that the records that are not used anymore are at the front.
+const records = new Map<string, PathRecord>();
+const RECORD_MAX_AGE = 1000;
+
+export const getPathRecord = (path: Path) => records.get(pathKey(path));
+
 function resetView() {
   setLastChanged(() => ({}));
+  records.clear();
+}
+
+function recordChanges(delta: Delta, id: number, timestamp: number) {
+  for (const change of getDiffFromDelta(delta)) {
+    if (change.kind === 'mov' || untrack(() => isPathFiltered(change.path))) continue;
+
+    const key = pathKey(change.path);
+    const record = records.get(key) ?? {
+      changes: [],
+      count: 0,
+      lastId: id,
+      lastTimestamp: timestamp,
+    };
+    record.changes.unshift({ id, timestamp, change });
+    record.count++;
+    record.lastId = id;
+    record.lastTimestamp = timestamp;
+    records.delete(key);
+    records.set(key, record);
+  }
+
+  for (const [key, record] of records) {
+    if (record.lastId >= id - RECORD_MAX_AGE) break;
+    records.delete(key);
+  }
+}
+
+// The frames that left the diff log window, oldest first: their changes leave the records too
+function dropFrames(removed: StateDiff[]) {
+  for (const frame of removed) {
+    for (const change of getDiffFromDelta(frame.delta)) {
+      if (change.kind === 'mov') continue;
+      const { changes } = records.get(pathKey(change.path)) ?? {};
+      if (changes?.at(-1)?.id === frame.id) changes.pop();
+    }
+  }
 }
 
 const getViewPath = () => untrack(() => store.viewState.state.path);
@@ -88,7 +143,13 @@ function toBlockedWrite({ path, attempted }: LockRevert): BlockedWrite[] {
 function addFrame(frame: Omit<StateDiff, 'id'>) {
   const id = untrack(latestId) + 1;
   markChanged(frame.delta, id);
-  setFrames((current) => [{ ...frame, id }, ...current].slice(0, getMaxFrames()));
+  recordChanges(frame.delta, id, frame.timestamp);
+  setFrames((current) => {
+    const frames = [{ ...frame, id }, ...current];
+    const max = getMaxFrames();
+    dropFrames(frames.slice(max).reverse());
+    return frames.slice(0, max);
+  });
   setLatestId(id);
 }
 
@@ -119,7 +180,10 @@ export function createFrameLimitEffect() {
   createEffect(
     () => store.settings['diffLog.maxHistorySlices'],
     (max) => {
-      setFrames((current) => current.slice(0, max));
+      setFrames((current) => {
+        dropFrames(current.slice(max).reverse());
+        return current.slice(0, max);
+      });
     },
   );
 }

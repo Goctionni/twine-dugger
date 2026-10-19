@@ -154,5 +154,6 @@ it('shows the value of a type that has no editor yet', () => {
   const { queryAllByRole, getByText } = setup(['nothing']);
   expect(queryAllByRole('radio')).toHaveLength(0);
   expect(queryAllByRole('textbox')).toHaveLength(0);
-  expect(getByText('null')).toBeTruthy();
+  // The Info tab shows it too, as JSON in a code element
+  expect(getByText('null', { selector: ':not(code)' })).toBeTruthy();
 });

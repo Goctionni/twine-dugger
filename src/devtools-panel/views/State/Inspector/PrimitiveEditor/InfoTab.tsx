@@ -6,6 +6,7 @@ import { getJsonType, getPathValue, isContainer } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { getPathLabels } from '../../logic/path-labels';
+import { createValueHistory } from '../createValueHistory';
 import { getLockingPath } from '../logic/edit-status';
 import {
   describeAge,
@@ -14,6 +15,7 @@ import {
   formatAsJson,
   getPosition,
 } from '../logic/info';
+import { describeChangeCount, describeRange } from '../logic/value-history';
 
 interface Props {
   path: Path;
@@ -22,6 +24,7 @@ interface Props {
 
 export function InfoTab(props: Props) {
   const getValue = () => getPathValue(getLatestState(), props.path);
+  const getHistory = createValueHistory(() => props.path);
   const getType = createMemo(() => getJsonType(getValue()));
 
   const getParentPath = () => props.path.slice(0, -1);
@@ -74,6 +77,18 @@ export function InfoTab(props: Props) {
 
       <dt class="text-gray-400">Last change</dt>
       <dd>{describeAge(getLatestId(), getLastChangeId(props.path))}</dd>
+
+      <dt class="text-gray-400">Changes seen</dt>
+      <dd>{describeChangeCount(getHistory())}</dd>
+
+      <Show when={describeRange(getHistory(), getValue())}>
+        {(range) => (
+          <>
+            <dt class="text-gray-400">Range seen</dt>
+            <dd>{range()}</dd>
+          </>
+        )}
+      </Show>
 
       <dt class="text-gray-400">Locked</dt>
       <dd>{getLockedText()}</dd>

@@ -9,11 +9,12 @@ import {
   createFrameLimitEffect,
   getDiffFrames,
   getLatestState,
+  getPathRecord,
   isFrameTainted,
   restartGameState,
   startGameState,
 } from './game-state';
-import { setSetting, setViewState, store } from './store';
+import { addFilteredPath, removeFilteredPath, setSetting, setViewState, store } from './store';
 import { createGame } from './test-game';
 
 vi.mock('../api/api', () => ({
@@ -170,6 +171,59 @@ describe('game state', () => {
     expect(frames.map((frame) => frame.id)).toEqual([4, 3, 2, 1]);
     expect(frames[1]!.reloaded).toBe(true);
     expect(frames.map((frame) => isFrameTainted(frame))).toEqual([false, false, true, true]);
+  });
+
+  describe('path records', () => {
+    const values = (path: (string | number)[]) =>
+      getPathRecord(path)?.changes.map(({ change }) =>
+        change.kind === 'chg' ? change.newValue : change.kind,
+      );
+
+    it('keeps the changes of each path, newest first, and clears them on a reload', () => {
+      const game = createGame({ hp: 10, other: 1 });
+      startGameState(game.state());
+      flush();
+      play(game, (s) => (s.hp = 9));
+      play(game, (s) => (s.other = 2));
+      play(game, (s) => (s.hp = 8));
+
+      expect(values(['hp'])).toEqual([8, 9]);
+      expect(getPathRecord(['hp'])).toMatchObject({ count: 2, lastId: 3 });
+      expect(values(['other'])).toEqual([2]);
+      expect(getPathRecord(['nothing'])).toBeUndefined();
+
+      restartGameState(game.state(), 'P');
+      flush();
+      expect(getPathRecord(['hp'])).toBeUndefined();
+    });
+
+    it('forgets the changes that leave the window, but keeps counting them', () => {
+      onTestFinished(() => setSetting('diffLog.maxHistorySlices', 30));
+      setSetting('diffLog.maxHistorySlices', 2);
+      const game = createGame({ hp: 10 });
+      startGameState(game.state());
+      flush();
+      for (let hp = 9; hp > 5; hp--) play(game, (s) => (s.hp = hp));
+
+      expect(values(['hp'])).toEqual([6, 7]);
+      expect(getPathRecord(['hp'])?.count).toBe(4);
+    });
+
+    it('does not record paths that are filtered, and deletes records that are old', () => {
+      const game = createGame({ hp: 10, x: 0 });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      flush();
+      onTestFinished(() => removeFilteredPath(['x']));
+
+      play(game, (s) => (s.x = 1));
+      play(game, (s) => (s.hp = 9));
+      expect(getPathRecord(['x'])).toBeUndefined();
+
+      for (let n = 0; n < 1001; n++) play(game, (s) => (s.x = n + 2));
+      expect(getPathRecord(['hp'])).toBeUndefined();
+    });
   });
 
   describe('createFrameLimitEffect', () => {

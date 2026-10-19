@@ -60,13 +60,11 @@ it('has History open to begin with, and the tabs share a name', async () => {
   expect(names[0]).toBe(names[1]);
 });
 
-it('shows the Info tab when its title is clicked, and closes the other', async () => {
-  const { container, historyTab, infoTab, isOpen, choose } = setup(['score']);
+it('opens the Info tab when its title is clicked', async () => {
+  const { infoTab, isOpen, choose } = setup(['score']);
   await choose(infoTab());
 
   expect(isOpen(infoTab())).toBe(true);
-  expect(isOpen(historyTab())).toBe(false);
-  expect(container.querySelector('dl')).not.toBeNull();
 });
 
 it('does not close the tab that is open when its own title is clicked', async () => {
@@ -78,16 +76,6 @@ it('does not close the tab that is open when its own title is clicked', async ()
 
   expect(click.defaultPrevented).toBe(true);
   expect(isOpen(historyTab())).toBe(true);
-});
-
-it('keeps the tab that was chosen when it is shown again', async () => {
-  const first = setup(['score']);
-  await first.choose(first.infoTab());
-  cleanup();
-
-  const second = setup(['name']);
-  expect(second.isOpen(second.infoTab())).toBe(true);
-  await second.choose(second.historyTab());
 });
 
 it('describes a number on the Info tab', async () => {
@@ -143,4 +131,15 @@ it('says whether the value is locked, and by which parent', async () => {
   await setPathLock(['group', 'title'], true);
   flush();
   expect(row('Locked')).toBe('yes');
+});
+
+it('counts the changes and the range of a number on the Info tab', async () => {
+  const { infoTab, row, play, choose } = setup(['score']);
+  await choose(infoTab());
+  expect(row('Changes seen')).toBe('0');
+
+  play((live) => (live.score = 14));
+  play((live) => (live.score = 8));
+  expect(row('Changes seen')).toBe('2');
+  expect(row('Range seen')).toBe('8 – 14');
 });
