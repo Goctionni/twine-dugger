@@ -1,10 +1,10 @@
 import { cleanup, render } from '@solidjs/testing-library';
 import { createSignal, flush } from 'solid-js';
-import { afterEach, expect, it, vi } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { setState } from '@/devtools-panel/api/api';
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
-import { clearLocks, setPathLock } from '@/devtools-panel/store/locks';
+import { clearLocks, getLockRange, setLockRange, setPathLock } from '@/devtools-panel/store/locks';
 import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
 
@@ -35,7 +35,7 @@ function setup(initialPath: Path) {
 
   const [getPath, setPath] = createSignal<Path>(initialPath);
   const view = render(() => <NumberEditor path={getPath()} label="Score" />);
-  const field = () => view.getByRole<HTMLInputElement>('spinbutton');
+  const field = () => view.getByRole<HTMLInputElement>('spinbutton', { name: 'Score' });
   const lockButton = () => view.queryByRole('button', { name: 'Lock' });
   const saveButton = () => view.queryByRole('button', { name: 'Save' });
 
@@ -149,13 +149,15 @@ it('locks and unlocks with Enter when there is nothing to save', () => {
   expect(lockButton()!.getAttribute('aria-pressed')).toBe('false');
 });
 
-it('is read only while it is locked, buttons and arrow keys included', () => {
-  const { field, lockButton, getByRole, press } = setup(['score']);
+it('is read only while it is locked, with the same number as both bounds', () => {
+  const { field, lockButton, queryByRole, getByRole, press } = setup(['score']);
   lockButton()!.click();
   flush();
 
   expect(field().readOnly).toBe(true);
-  expect(getByRole<HTMLButtonElement>('button', { name: 'Increase' }).disabled).toBe(true);
+  expect(queryByRole('button', { name: 'Increase' })).toBeNull();
+  expect(getByRole<HTMLInputElement>('spinbutton', { name: 'Score, minimum' }).value).toBe('10');
+  expect(getByRole<HTMLInputElement>('spinbutton', { name: 'Score, maximum' }).value).toBe('10');
   press('ArrowUp');
   expect(field().value).toBe('10');
 });
@@ -227,4 +229,85 @@ it('cannot be changed when a parent is locked, and says so', async () => {
 it('cannot be changed in a set', () => {
   const { field } = setup(['flags', 1]);
   expect(field().disabled).toBe(true);
+});
+
+describe('locked to a range', () => {
+  const lockWithBounds = async (min: number, max: number) => {
+    const view = setup(['score']);
+    view.lockButton()!.click();
+    flush();
+    await setLockRange(['score'], min, max);
+    flush();
+    const bound = (name: 'minimum' | 'maximum') =>
+      view.getByRole<HTMLInputElement>('spinbutton', { name: `Score, ${name}` });
+    const commit = (name: 'minimum' | 'maximum', text: string) => {
+      bound(name).value = text;
+      bound(name).dispatchEvent(new Event('change', { bubbles: true }));
+      flush();
+    };
+    return { ...view, bound, commit };
+  };
+
+  it('can be changed inside the range, which holds the stepping and the save', async () => {
+    const { field, press, type, saveButton } = await lockWithBounds(5, 12);
+    expect(field().readOnly).toBe(false);
+
+    press('ArrowUp', { shiftKey: true });
+    expect(field().value).toBe('12');
+
+    type('99');
+    press('Enter');
+    expect(setState).toHaveBeenCalledWith(['score'], 12);
+    expect(saveButton()).not.toBeNull();
+  });
+
+  it('writes a bound when it is changed, and pushes the other one along', async () => {
+    const { bound, commit } = await lockWithBounds(5, 12);
+
+    commit('maximum', '20');
+    expect(bound('maximum').value).toBe('20');
+    expect(getLockRange(['score'])).toEqual({ min: 5, max: 20 });
+
+    commit('minimum', '30');
+    expect(getLockRange(['score'])).toEqual({ min: 30, max: 30 });
+    expect(bound('maximum').value).toBe('30');
+  });
+
+  it('steps a bound with the same keys as the number, and writes it when the field is left', async () => {
+    const { bound } = await lockWithBounds(5, 12);
+    const press = (key: string, init: KeyboardEventInit = {}) => {
+      bound('maximum').dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }),
+      );
+      flush();
+    };
+
+    bound('maximum').focus();
+    press('ArrowUp');
+    press('ArrowUp', { shiftKey: true });
+    expect(bound('maximum').value).toBe('23');
+    expect(getLockRange(['score'])).toEqual({ min: 5, max: 12 });
+
+    press('ArrowUp', { ctrlKey: true });
+    expect(bound('maximum').value).toBe('230');
+
+    bound('maximum').blur();
+    flush();
+    expect(getLockRange(['score'])).toEqual({ min: 5, max: 230 });
+  });
+
+  it('keeps the bound when what is typed is not a number', async () => {
+    const { bound, commit } = await lockWithBounds(5, 12);
+    commit('minimum', '');
+    expect(bound('minimum').value).toBe('5');
+    expect(getLockRange(['score'])).toEqual({ min: 5, max: 12 });
+  });
+
+  it('has no bounds again when it is unlocked', async () => {
+    const { lockButton, queryByRole } = await lockWithBounds(5, 12);
+    lockButton()!.click();
+    flush();
+    expect(queryByRole('spinbutton', { name: 'Score, minimum' })).toBeNull();
+    expect(getLockRange(['score'])).toBeUndefined();
+  });
 });

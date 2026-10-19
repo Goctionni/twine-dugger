@@ -3,6 +3,7 @@ import { patch } from 'jsondiffpatch';
 import { createEffect, createMemo, createSignal, createStore, snapshot, untrack } from 'solid-js';
 
 import { trimToExistingPath } from '@/shared/json-safe';
+import { getAllowedValue } from '@/shared/lock-value';
 import { pathEquals, pathKey } from '@/shared/path-equals';
 import type { DeltaUpdate, JSONSafeObject, LockRevert, Path } from '@/shared/shared-types';
 
@@ -137,7 +138,8 @@ export function applyUpdate({ passage, delta, reverts }: DeltaUpdate, timestamp 
 
 function toBlockedWrite({ path, attempted }: LockRevert): BlockedWrite[] {
   const lock = untrack(() => store.gameConfig.locks.find((lock) => pathEquals(lock.path, path)));
-  return lock ? [{ path, attempted, locked: snapshot(lock.value) }] : [];
+  if (!lock) return [];
+  return [{ path, attempted, locked: snapshot(getAllowedValue(attempted, lock)) }];
 }
 
 function addFrame(frame: Omit<StateDiff, 'id'>) {

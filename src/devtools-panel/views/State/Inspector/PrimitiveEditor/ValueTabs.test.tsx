@@ -3,7 +3,7 @@ import { flush } from 'solid-js';
 import { afterEach, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
-import { clearLocks, setPathLock } from '@/devtools-panel/store/locks';
+import { clearLocks, setLockRange, setPathLock } from '@/devtools-panel/store/locks';
 import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
 
@@ -142,4 +142,17 @@ it('counts the changes and the range of a number on the Info tab', async () => {
   play((live) => (live.score = 8));
   expect(row('Changes seen')).toBe('2');
   expect(row('Range seen')).toBe('8 – 14');
+});
+
+it('says what range a number is locked to', async () => {
+  const { infoTab, row, choose } = setup(['score']);
+  await choose(infoTab());
+
+  await setPathLock(['score'], true);
+  flush();
+  expect(row('Locked')).toBe('yes');
+
+  await setLockRange(['score'], 5, 20);
+  flush();
+  expect(row('Locked')).toBe('yes · 5 – 20');
 });

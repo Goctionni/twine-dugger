@@ -1,4 +1,5 @@
 import { jsonEqual } from '@/shared/json-safe';
+import { getAllowedValue } from '@/shared/lock-value';
 import { pathKey } from '@/shared/path-equals';
 import type {
   JSONSafeValue,
@@ -46,13 +47,15 @@ export function createLockEnforcer(
     enforce(): LockRevert[] {
       const reverts: LockRevert[] = [];
 
-      for (const { path, value } of locks) {
+      for (const lock of locks) {
+        const { path } = lock;
         const [found, live] = findLiveValue(getRawState(), path);
         if (!found) continue;
 
         const attempted = pretransformValue(live, new Map(), new Map());
         const id = pathKey(path);
-        if (jsonEqual(attempted, value)) {
+        const allowed = getAllowedValue(attempted, lock);
+        if (jsonEqual(attempted, allowed)) {
           lastBlocked.delete(id);
           continue;
         }
@@ -60,7 +63,7 @@ export function createLockEnforcer(
         if (!lastBlocked.has(id) || !jsonEqual(attempted, lastBlocked.get(id)))
           reverts.push({ path, attempted });
         lastBlocked.set(id, attempted);
-        setState(path, posttransformValue(value));
+        setState(path, posttransformValue(allowed));
       }
 
       return reverts;

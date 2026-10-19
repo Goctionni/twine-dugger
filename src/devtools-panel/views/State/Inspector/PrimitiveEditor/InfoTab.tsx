@@ -1,7 +1,7 @@
 import { Show, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestId, getLatestState } from '@/devtools-panel/store/game-state';
-import { getLockedPaths } from '@/devtools-panel/store/locks';
+import { getLockedPaths, getLockRange } from '@/devtools-panel/store/locks';
 import { getJsonType, getPathValue, isContainer } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
@@ -37,7 +37,10 @@ export function InfoTab(props: Props) {
   const getLockedText = () => {
     const lockingPath = getLockingPath(props.path, getLockedPaths());
     if (!lockingPath) return 'no';
-    if (lockingPath.length === props.path.length) return 'yes';
+    if (lockingPath.length === props.path.length) {
+      const range = getLockRange(props.path);
+      return range && range.min !== range.max ? `yes · ${range.min} – ${range.max}` : 'yes';
+    }
     return `via ${getPathLabels(getLatestState(), lockingPath).at(-1)}`;
   };
 

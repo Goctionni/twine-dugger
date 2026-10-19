@@ -63,6 +63,53 @@ describe('createLockEnforcer', () => {
     expect(state.items).toEqual([1]);
   });
 
+  describe('a number locked to a range', () => {
+    const rangeLock = (path: Array<string | number>, value: number, min: number, max: number) => ({
+      ...lockOf(path, value),
+      min,
+      max,
+    });
+
+    it('lets the game set what is inside the range, and moves the rest to the nearest bound', () => {
+      const { state, setLocks, enforce } = setup({ hp: 5 });
+      setLocks([rangeLock(['hp'], 5, 0, 10)]);
+
+      state.hp = 8;
+      expect(enforce()).toEqual([]);
+      expect(state.hp).toBe(8);
+
+      state.hp = 15;
+      expect(enforce()).toEqual([{ path: ['hp'], attempted: 15 }]);
+      expect(state.hp).toBe(10);
+
+      state.hp = -4;
+      expect(enforce()).toEqual([{ path: ['hp'], attempted: -4 }]);
+      expect(state.hp).toBe(0);
+    });
+
+    it('puts back the locked number for something that is not a number, and for NaN', () => {
+      const { state, setLocks, enforce } = setup({ hp: 5 });
+      setLocks([rangeLock(['hp'], 5, 0, 10)]);
+
+      state.hp = Number.NaN;
+      expect(enforce()).toHaveLength(1);
+      expect(state.hp).toBe(5);
+
+      state.hp = 'dead';
+      expect(enforce()).toEqual([{ path: ['hp'], attempted: 'dead' }]);
+      expect(state.hp).toBe(5);
+    });
+
+    it('is an exact lock when the bounds are the same', () => {
+      const { state, setLocks, enforce } = setup({ hp: 5 });
+      setLocks([rangeLock(['hp'], 5, 5, 5)]);
+
+      state.hp = 6;
+      expect(enforce()).toEqual([{ path: ['hp'], attempted: 6 }]);
+      expect(state.hp).toBe(5);
+    });
+  });
+
   describe('inside a Map', () => {
     it('finds number keys and string keys that look like numbers', () => {
       const { state, setLocks, enforce } = setup({

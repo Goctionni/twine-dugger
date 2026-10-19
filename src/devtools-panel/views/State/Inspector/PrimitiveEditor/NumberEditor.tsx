@@ -1,5 +1,6 @@
-import { Match, Switch } from 'solid-js';
+import { Match, Show, Switch, createMemo } from 'solid-js';
 
+import { getLockRange, setLockRange } from '@/devtools-panel/store/locks';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
 import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
@@ -8,6 +9,9 @@ import type { Path } from '@/shared/shared-types';
 import { createDraft } from '../createDraft';
 import { createEditStatus } from '../createEditStatus';
 import { createStablePath } from '../createStablePath';
+import type { LockRange } from '../logic/lock-range';
+import { changeBound } from '../logic/lock-range';
+import { RangeBound } from './RangeBound';
 
 interface Props {
   path: Path;
@@ -17,8 +21,24 @@ interface Props {
 
 export function NumberEditor(props: Props) {
   const getPath = createStablePath(() => props.path);
-  const { getDraft, setDraft, isDirty, revert, save } = createDraft<number>(getPath);
   const { getStatus, isDisabled, toggleLock } = createEditStatus(getPath);
+  // A locked number has a range, which is the number itself until a bound is changed
+  const getRange = () => (getStatus() === 'locked' ? getLockRange(getPath()) : undefined);
+  // The inputs for the bounds are made once, for as long as it is locked
+  const hasRange = createMemo(() => getRange() !== undefined);
+  const isExactLock = () => {
+    const range = getRange();
+    return range !== undefined && range.min === range.max;
+  };
+  const { getDraft, setDraft, isDirty, revert, save } = createDraft<number>(getPath, (value) =>
+    Math.min(Math.max(value, getRange()?.min ?? -Infinity), getRange()?.max ?? Infinity),
+  );
+  const changeRange = (bound: keyof LockRange, value: number) => {
+    const range = getRange();
+    if (!range) return;
+    const { min, max } = changeBound(range, bound, value);
+    void setLockRange(getPath(), min, max);
+  };
 
   // Enter in the field: save, or lock and unlock when there is nothing to save
   const onKeyDown = (event: KeyboardEvent) => {
@@ -36,15 +56,46 @@ export function NumberEditor(props: Props) {
   return (
     <div class="group relative flex flex-col gap-2">
       <div class="flex items-start gap-2">
-        <NumberInput
-          value={getDraft()}
-          fill
-          onChange={(value) => setDraft(value)}
-          onKeyDown={onKeyDown}
-          disabled={isDisabled()}
-          readOnly={getStatus() === 'locked'}
-          inputProps={{ 'aria-label': props.label }}
-        />
+        <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+          <NumberInput
+            value={getDraft()}
+            fill
+            onChange={(value) => setDraft(value)}
+            onKeyDown={onKeyDown}
+            disabled={isDisabled()}
+            readOnly={isExactLock()}
+            min={getRange()?.min}
+            max={getRange()?.max}
+            before={
+              hasRange() ? (
+                <RangeBound
+                  label={`${props.label}, minimum`}
+                  value={getRange()?.min ?? 0}
+                  class="rounded-l-md"
+                  onCommit={(value) => changeRange('min', value)}
+                />
+              ) : undefined
+            }
+            after={
+              hasRange() ? (
+                <RangeBound
+                  label={`${props.label}, maximum`}
+                  value={getRange()?.max ?? 0}
+                  class="rounded-r-md"
+                  onCommit={(value) => changeRange('max', value)}
+                />
+              ) : undefined
+            }
+            inputProps={{ 'aria-label': props.label }}
+          />
+          <Show when={hasRange()}>
+            <div aria-hidden="true" class="flex text-[10px] leading-none text-gray-400">
+              <span class="w-16 text-center">min</span>
+              <span class="flex-1" />
+              <span class="w-16 text-center">max</span>
+            </div>
+          </Show>
+        </div>
         <Switch>
           <Match when={isDirty()}>
             <SaveButton onClick={() => void save()} />

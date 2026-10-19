@@ -41,7 +41,14 @@ export type PropertyFilterKey = ValueType | 'filtered';
 export const jsonSafeValueSchema = type(
   'string | number | boolean | null | object',
 ).as<JSONSafeValue>();
-export const lockSchema = type({ path: pathSchema, value: jsonSafeValueSchema });
+// A number may be locked to a range: the game can set any value inside it, and anything outside
+// goes to the nearest bound. `value` is what the number was when it was locked.
+export const lockSchema = type({
+  'path': pathSchema,
+  'value': jsonSafeValueSchema,
+  'min?': 'number',
+  'max?': 'number',
+});
 export type Lock = typeof lockSchema.infer;
 
 export interface LockRevert {

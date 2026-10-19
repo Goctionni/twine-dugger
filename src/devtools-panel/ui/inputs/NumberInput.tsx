@@ -1,8 +1,10 @@
 import type { JSX } from '@solidjs/web';
 import clsx from 'clsx';
+import { Match, Switch } from 'solid-js';
 
 import { btnClass } from '../util/btnClass';
 import { baseInputClasses } from '../util/common-classes';
+import { addToNumber, getSteppedNumber } from './step-number';
 
 interface NumberInputProps {
   value: number;
@@ -10,18 +12,17 @@ interface NumberInputProps {
   onKeyDown?: (e: KeyboardEvent) => void;
   disabled?: boolean;
   readOnly?: boolean;
+  /** The buttons and the keys stop here. What is typed is not held to it */
+  min?: number;
+  max?: number;
+  /** Take the place of the − and + buttons */
+  before?: JSX.Element;
+  after?: JSX.Element;
   /** Takes the width that is left in a flex row, instead of a fixed one */
   fill?: boolean;
   className?: string;
   inputProps?: JSX.InputHTMLAttributes<HTMLInputElement>;
 }
-
-/** Without the tail that floating point leaves behind (0.1 + 0.2) */
-const add = (value: number, amount: number) => +(value + amount).toFixed(6);
-
-/** Without the tail that floating point leaves behind (0.3 * 10), and without cutting small numbers */
-const scale = (value: number, direction: 1 | -1) =>
-  Number((direction > 0 ? value * 10 : value / 10).toPrecision(15));
 
 /**
  * The buttons, and the up and down keys, add 1; with Shift they add 10. Ctrl with up and down
@@ -29,54 +30,52 @@ const scale = (value: number, direction: 1 | -1) =>
  */
 export function NumberInput(props: NumberInputProps) {
   const isDisabled = () => props.disabled || props.readOnly;
+  const clamp = (value: number) =>
+    Math.min(Math.max(value, props.min ?? -Infinity), props.max ?? Infinity);
   const safeOnChange = (newValue: number) => {
     if (!isNaN(newValue)) props.onChange(newValue);
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
-    const direction = event.key === 'ArrowUp' ? 1 : event.key === 'ArrowDown' ? -1 : 0;
-    const isScaling = event.ctrlKey && !event.shiftKey;
-    const isStepping = !event.ctrlKey && !event.altKey && !event.metaKey;
-    if (
-      direction &&
-      !props.readOnly &&
-      !event.altKey &&
-      !event.metaKey &&
-      (isScaling || isStepping)
-    ) {
-      event.preventDefault();
-      // What is typed, when it is a number; an empty or half typed field counts as 0
-      const typed = (event.currentTarget as HTMLInputElement).valueAsNumber;
-      const from = Number.isFinite(typed) ? typed : 0;
-      props.onChange(
-        isScaling ? scale(from, direction) : add(from, direction * (event.shiftKey ? 10 : 1)),
-      );
+    const stepped = props.readOnly ? undefined : getSteppedNumber(event);
+    if (stepped === undefined) {
+      props.onKeyDown?.(event);
       return;
     }
-    props.onKeyDown?.(event);
+    event.preventDefault();
+    props.onChange(clamp(stepped));
   };
 
   return (
     <div class={clsx('flex', props.fill && 'min-w-0 flex-1', props.className)}>
-      <button
-        type="button"
-        aria-label="Decrease"
-        title="−1 (Shift: −10)"
-        onClick={(event) => props.onChange(add(props.value, event.shiftKey ? -10 : -1))}
-        disabled={isDisabled()}
-        class={clsx(
-          btnClass(
-            'contained',
-            '[REMOVE]: rounded-md px-4',
-            'clr-gray hover:clr-sky w-7 rounded-l-md px-2 font-mono',
-          ),
-        )}
-      >
-        -
-      </button>
+      <Switch>
+        <Match when={props.before !== undefined}>{props.before}</Match>
+        <Match when={props.before === undefined}>
+          <button
+            type="button"
+            aria-label="Decrease"
+            title="−1 (Shift: −10)"
+            onClick={(event) =>
+              props.onChange(clamp(addToNumber(props.value, event.shiftKey ? -10 : -1)))
+            }
+            disabled={isDisabled()}
+            class={clsx(
+              btnClass(
+                'contained',
+                '[REMOVE]: rounded-md px-4',
+                'clr-gray hover:clr-sky w-7 rounded-l-md px-2 font-mono',
+              ),
+            )}
+          >
+            -
+          </button>
+        </Match>
+      </Switch>
       <input
         type="number"
         step="any"
+        min={props.min}
+        max={props.max}
         value={props.value}
         onInput={(e) => safeOnChange(e.target.valueAsNumber)}
         onKeyDown={onKeyDown}
@@ -90,22 +89,29 @@ export function NumberInput(props: NumberInputProps) {
         )}
         {...props.inputProps}
       />
-      <button
-        type="button"
-        aria-label="Increase"
-        title="+1 (Shift: +10)"
-        onClick={(event) => props.onChange(add(props.value, event.shiftKey ? 10 : 1))}
-        disabled={isDisabled()}
-        class={clsx(
-          btnClass(
-            'contained',
-            '[REMOVE]: rounded-md px-4',
-            'clr-gray hover:clr-sky w-7 rounded-r-md px-2 font-mono',
-          ),
-        )}
-      >
-        +
-      </button>
+      <Switch>
+        <Match when={props.after !== undefined}>{props.after}</Match>
+        <Match when={props.after === undefined}>
+          <button
+            type="button"
+            aria-label="Increase"
+            title="+1 (Shift: +10)"
+            onClick={(event) =>
+              props.onChange(clamp(addToNumber(props.value, event.shiftKey ? 10 : 1)))
+            }
+            disabled={isDisabled()}
+            class={clsx(
+              btnClass(
+                'contained',
+                '[REMOVE]: rounded-md px-4',
+                'clr-gray hover:clr-sky w-7 rounded-r-md px-2 font-mono',
+              ),
+            )}
+          >
+            +
+          </button>
+        </Match>
+      </Switch>
     </div>
   );
 }

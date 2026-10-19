@@ -47,3 +47,22 @@ export function setPathLock(path: Path, lock: boolean) {
 export const clearLocks = () => setLocks([]);
 
 export const syncLocks = () => setStatePropertyLocks(currentLocks());
+
+const findLock = (path: Path) => store.gameConfig.locks.find((lock) => pathEquals(lock.path, path));
+
+/** The bounds of a locked number: the number itself, on both sides, when it has no range */
+export function getLockRange(path: Path): { min: number; max: number } | undefined {
+  const lock = findLock(path);
+  if (typeof lock?.value !== 'number') return undefined;
+  return { min: lock.min ?? lock.value, max: lock.max ?? lock.value };
+}
+
+/** Changes the bounds of the lock of a number. What is outside them is moved in by the game's next poll */
+export function setLockRange(path: Path, min: number, max: number) {
+  if (min > max) throw new Error('The minimum cannot be above the maximum');
+  const locks = currentLocks().map((lock) => {
+    if (!pathEquals(lock.path, path) || typeof lock.value !== 'number') return lock;
+    return { ...lock, value: Math.min(Math.max(lock.value, min), max), min, max };
+  });
+  return setLocks(locks);
+}

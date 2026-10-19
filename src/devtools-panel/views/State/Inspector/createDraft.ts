@@ -11,8 +11,12 @@ import type { Path } from '@/shared/shared-types';
  * value at the path (the game changed it, or the save of the draft arrived). A save that does not get
  * through changes nothing, so the draft stays to try again.
  * The path should only change when it is another path (see `createStablePath`).
+ * `normalize` has the last say on what is saved (a number is held to its range).
  */
-export function createDraft<T extends number | string>(getPath: () => Path) {
+export function createDraft<T extends number | string>(
+  getPath: () => Path,
+  normalize: (value: T) => T = (value) => value,
+) {
   const getStateValue = () => getPathValue(getLatestState(), getPath()) as T;
   const [getDraft, setDraft] = createSignal(() => getStateValue());
 
@@ -22,7 +26,7 @@ export function createDraft<T extends number | string>(getPath: () => Path) {
   const save = async () => {
     if (!isDirty()) return;
     try {
-      await setState(getPath(), getDraft());
+      await setState(getPath(), normalize(getDraft()));
     } catch (error) {
       console.error('Failed to save the value:', error);
     }
