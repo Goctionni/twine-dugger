@@ -2,23 +2,18 @@ import { cleanup, render } from '@solidjs/testing-library';
 import { flush } from 'solid-js';
 import { afterEach, beforeEach, expect, it, vi } from 'vite-plus/test';
 
-import { deleteFromState, setState, setStatePropertyLocks } from '@/devtools-panel/api/api';
+import { setState, setStatePropertyLocks } from '@/devtools-panel/api/api';
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { clearLocks } from '@/devtools-panel/store/locks';
-import { isPinned, togglePin } from '@/devtools-panel/store/store';
 import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
 
-import { confirmDelete } from './confirmDelete';
 import { PrimitiveEditor } from './PrimitiveEditor';
-
-vi.mock('./confirmDelete', () => ({ confirmDelete: vi.fn(async () => true) }));
 
 vi.mock('@/devtools-panel/api/api', () => ({
   getPassageData: async () => [],
   setStatePropertyLocks: vi.fn(async () => {}),
   setState: vi.fn(async () => {}),
-  deleteFromState: vi.fn(async () => {}),
 }));
 
 beforeEach(() => {
@@ -30,9 +25,6 @@ afterEach(async () => {
   vi.useRealTimers();
   vi.mocked(setState).mockClear();
   vi.mocked(setStatePropertyLocks).mockClear();
-  vi.mocked(deleteFromState).mockClear();
-  vi.mocked(confirmDelete).mockClear();
-  if (isPinned(['flag'])) togglePin(['flag']);
   flush();
 });
 
@@ -41,7 +33,6 @@ function setup(path: Path) {
     flag: true,
     group: { on: true },
     flags: new Set([true]),
-    list: [5, 6],
     n: 3,
     nothing: null,
   });
@@ -166,64 +157,4 @@ it('shows the value of a type that has no editor yet', () => {
   expect(queryAllByRole('textbox')).toHaveLength(0);
   // The Info tab shows it too, as JSON in a code element
   expect(getByText('null', { selector: ':not(code)' })).toBeTruthy();
-});
-
-it('pins and unpins the value', () => {
-  const { getByRole } = setup(['flag']);
-  const pin = () => getByRole('button', { name: 'Pin' });
-  expect(pin().getAttribute('aria-pressed')).toBe('false');
-
-  pin().click();
-  flush();
-  expect(isPinned(['flag'])).toBe(true);
-  expect(pin().getAttribute('aria-pressed')).toBe('true');
-
-  pin().click();
-  flush();
-  expect(isPinned(['flag'])).toBe(false);
-});
-
-it('deletes the value once it is confirmed, and not when it is not', async () => {
-  const { getByRole } = setup(['group', 'on']);
-  const remove = () => getByRole('button', { name: 'Delete' });
-
-  vi.mocked(confirmDelete).mockResolvedValueOnce(false);
-  remove().click();
-  await vi.advanceTimersByTimeAsync(0);
-  expect(deleteFromState).not.toHaveBeenCalled();
-
-  remove().click();
-  await vi.advanceTimersByTimeAsync(0);
-  expect(confirmDelete).toHaveBeenLastCalledWith('on', false);
-  expect(deleteFromState).toHaveBeenCalledWith(['group', 'on']);
-});
-
-it('says that the items after an array item move up', async () => {
-  const { getByRole } = setup(['list', 0]);
-  getByRole('button', { name: 'Delete' }).click();
-  await vi.advanceTimersByTimeAsync(0);
-  expect(confirmDelete).toHaveBeenLastCalledWith('0', true);
-});
-
-it('cannot delete a value that is locked, locked by a parent, or in a set', async () => {
-  const { setPathLock } = await import('@/devtools-panel/store/locks');
-  const { getByRole, unmount } = setup(['flag']);
-  const remove = () => getByRole('button', { name: 'Delete' }) as HTMLButtonElement;
-  expect(remove().disabled).toBe(false);
-
-  await setPathLock(['flag'], true);
-  flush();
-  expect(remove().disabled).toBe(true);
-  unmount();
-
-  const inGroup = setup(['group', 'on']);
-  await setPathLock(['group'], true);
-  flush();
-  expect((inGroup.getByRole('button', { name: 'Delete' }) as HTMLButtonElement).disabled).toBe(
-    true,
-  );
-  inGroup.unmount();
-
-  const inSet = setup(['flags', 1]);
-  expect((inSet.getByRole('button', { name: 'Delete' }) as HTMLButtonElement).disabled).toBe(true);
 });

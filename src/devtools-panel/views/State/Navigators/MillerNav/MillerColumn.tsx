@@ -120,6 +120,7 @@ export function MillerColumn(props: Props) {
               preview={getPreview(getValue(), getType())}
               childCount={getChildCount()}
               hiddenCount={getHiddenChildren()}
+              isPinned={isPinned([...getColumnPath(), key])}
               isRecentlyChanged={isRecentlyChanged([...getColumnPath(), key])}
               state={getRowState()}
               onClick={() =>

@@ -14,6 +14,7 @@ interface Props {
   preview?: string;
   childCount?: number;
   hiddenCount?: number;
+  isPinned?: boolean;
   isRecentlyChanged?: boolean;
   state: 'selected' | 'on-path' | 'trail' | 'normal';
   onClick: () => void;
@@ -55,12 +56,22 @@ export function NavRow(props: Props) {
           <span class="min-w-0 truncate font-mono text-xs text-gray-400">{props.preview}</span>
         </Match>
       </Switch>
+      <Show when={props.isPinned}>
+        <span
+          role="img"
+          aria-label="Pinned"
+          title="Pinned"
+          class="shrink-0 text-[11px] text-amber-400"
+        >
+          ★
+        </span>
+      </Show>
       <Show when={props.isRecentlyChanged}>
         <span
           role="img"
           aria-label="Changed recently"
           title="Changed recently"
-          class="ml-auto h-2 w-2 shrink-0 rounded-full bg-amber-400"
+          class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"
         />
       </Show>
     </div>

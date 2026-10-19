@@ -4,7 +4,7 @@ const BROWSER_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 const cssBaseUrl = 'https://fonts.googleapis.com/css2';
-const family = 'Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,-25';
+const family = 'Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,-25';
 
 async function load(
   url: string,

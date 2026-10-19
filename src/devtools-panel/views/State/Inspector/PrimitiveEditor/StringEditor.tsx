@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { Match, Switch, createSignal, untrack } from 'solid-js';
 
+import { KeyHint } from '@/devtools-panel/ui/display/KeyHint';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
 import { StringInput } from '@/devtools-panel/ui/inputs/StringInput';
@@ -99,10 +100,7 @@ export function StringEditor(props: Props) {
         />
         Multiline
       </label>
-      {/* Under the field while it has the focus: it takes no room, so nothing moves */}
-      <p class="pointer-events-none absolute top-full left-0 z-10 mt-1 hidden text-xs text-gray-400 group-focus-within:block">
-        {getHelp()}
-      </p>
+      <KeyHint>{getHelp()}</KeyHint>
     </div>
   );
 }

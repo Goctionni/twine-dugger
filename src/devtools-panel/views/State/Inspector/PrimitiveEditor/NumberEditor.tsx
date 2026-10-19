@@ -1,6 +1,7 @@
 import { Match, Show, Switch, createMemo } from 'solid-js';
 
 import { getLockRange, setLockRange } from '@/devtools-panel/store/locks';
+import { KeyHint } from '@/devtools-panel/ui/display/KeyHint';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
 import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
@@ -105,12 +106,11 @@ export function NumberEditor(props: Props) {
           </Match>
         </Switch>
       </div>
-      {/* Under the field while it has the focus: it takes no room, so nothing moves */}
-      <p class="pointer-events-none absolute top-full left-0 z-10 mt-1 hidden text-xs text-gray-400 group-focus-within:block">
+      <KeyHint>
         {getStatus() === 'locked'
           ? 'Enter unlocks'
           : 'Enter saves, or locks / unlocks · Esc reverts · ↑ ↓ ±1 · Shift+↑ ↓ ±10 · Ctrl+↑ ↓ ×10 ÷10'}
-      </p>
+      </KeyHint>
     </div>
   );
 }

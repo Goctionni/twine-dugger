@@ -35,7 +35,7 @@ export function Inspector(props: Props) {
       </button>
       <Switch>
         <Match when={props.selectionKind === 'container'}>
-          <ContainerEditor />
+          <ContainerEditor path={props.path} />
         </Match>
         <Match when={props.selectionKind === 'primitive'}>
           <PrimitiveEditor path={props.path} onSelect={props.onSelect} />

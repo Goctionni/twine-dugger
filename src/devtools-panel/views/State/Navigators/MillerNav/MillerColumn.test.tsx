@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { showInStateView } from '@/devtools-panel/store/state-location';
-import { setSetting } from '@/devtools-panel/store/store';
+import { setSetting, togglePin } from '@/devtools-panel/store/store';
 import { createGame } from '@/devtools-panel/store/test-game';
 
 import { MillerColumn } from './MillerColumn';
@@ -96,6 +96,28 @@ describe('MillerColumn', () => {
   it('marks the selected row', () => {
     const { rows } = setup(['hp']);
     expect(rows().filter((row) => row.className.includes('border-sky-500'))).toHaveLength(1);
+  });
+});
+
+describe('pins', () => {
+  afterEach(() => {
+    togglePin(['stats']);
+    flush();
+  });
+
+  it('puts the pinned rows first, with a star, and the rows that hold a pinned value too', () => {
+    togglePin(['stats', 'nested', 'a']);
+    flush();
+    const root = setup();
+    expect(root.names()[0]).toBe('stats');
+    const stars = root.rows().filter((row) => row.querySelector('[aria-label="Pinned"]'));
+    expect(stars.map((row) => row.textContent?.includes('stats'))).toEqual([true]);
+    cleanup();
+
+    const inStats = setup(['stats'], 1);
+    expect(inStats.names()).toEqual(['nested', 'str']);
+    expect(inStats.rows()[0]!.querySelector('[aria-label="Pinned"]')).not.toBeNull();
+    expect(inStats.rows()[1]!.querySelector('[aria-label="Pinned"]')).toBeNull();
   });
 });
 
