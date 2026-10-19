@@ -2,6 +2,7 @@ import { Match, Repeat, Switch, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
 import { requestReveal } from '@/devtools-panel/store/state-location';
+import { isPinned } from '@/devtools-panel/store/store';
 import { createElementWidth } from '@/devtools-panel/utils/create-element-width';
 import { getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
@@ -42,6 +43,7 @@ export function MillerNav(props: NavProps) {
       getSort(),
       getHiddenTypes(),
       (key) => getLastChangeId([...containerPath, key]),
+      (key) => isPinned([...containerPath, key]),
     );
 
   const getActiveId = () => {

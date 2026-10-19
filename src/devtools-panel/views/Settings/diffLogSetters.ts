@@ -18,3 +18,8 @@ export const onMaxHistorySlicesChange = createValidatingSetter<number>(
   (maxSlices) => setSetting('diffLog.maxHistorySlices', maxSlices),
   (maxSlices) => Number.isInteger(maxSlices) && maxSlices >= 1 && maxSlices <= 500,
 );
+
+export const onRecentUpdatesChange = createValidatingSetter<number>(
+  (updates) => setSetting('state.recentUpdates', updates),
+  (updates) => Number.isInteger(updates) && updates >= 1 && updates <= 1000,
+);

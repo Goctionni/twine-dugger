@@ -1,4 +1,4 @@
-import { createEffect, createStore, deep } from 'solid-js';
+import { createEffect, createStore, deep, untrack } from 'solid-js';
 
 import { fromJson } from '@/shared/from-json';
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
@@ -36,6 +36,7 @@ const defaultSettings: Settings = {
   'state.propertyOrder': 'type',
   'state.propertyOrderDesc': false,
   'state.filters': [],
+  'state.recentUpdates': 10,
   'state.navigator': 'miller',
   'state.splitDirection': 'auto',
   'passages.splitDirection': 'auto',
@@ -65,10 +66,14 @@ function loadGameConfig(gameId: string | undefined): GameConfig {
     const saved = gameId && localStorage.getItem(getGameSettingsKey(gameId));
     if (saved) {
       const config = fromJson(saved, gameConfigSchema.partial());
-      return { filteredPaths: config.filteredPaths ?? [], locks: config.locks ?? [] };
+      return {
+        filteredPaths: config.filteredPaths ?? [],
+        locks: config.locks ?? [],
+        pins: config.pins ?? [],
+      };
     }
   } catch {}
-  return { filteredPaths: [], locks: [] };
+  return { filteredPaths: [], locks: [], pins: [] };
 }
 
 function createInitialSearchState(settings: Settings): StoreData['viewState']['search'] {
@@ -98,7 +103,7 @@ export const [store, setStore] = createStore<StoreData>({
   connectionState: 'loading-meta',
   candidateIframes: [],
   gameMeta: null,
-  gameConfig: { filteredPaths: [], locks: [] },
+  gameConfig: { filteredPaths: [], locks: [], pins: [] },
   settings: initialSettings,
   viewState: {
     activeTab: 'state',
@@ -214,6 +219,23 @@ export function clearFilteredPaths() {
   });
 }
 
+/** Pinned itself, or holds a pinned path: a pin on a.b.c puts a and a.b first in their containers too */
+export function isPinned(path: Path) {
+  return store.gameConfig.pins.some((pin) => pathStartsWith(pin, path));
+}
+
+/** Pins the path, or unpins it together with everything pinned beneath it */
+export function togglePin(path: Path) {
+  const wasPinned = untrack(() => isPinned(path));
+  setStore((draft) => {
+    if (wasPinned) {
+      draft.gameConfig.pins = draft.gameConfig.pins.filter((pin) => !pathStartsWith(pin, path));
+    } else {
+      draft.gameConfig.pins.push([...path]);
+    }
+  });
+}
+
 export const getSettings = {
   diffLog: {
     fontSize: () => store.settings['diffLog.fontSize'],
@@ -225,6 +247,7 @@ export const getSettings = {
     propertyOrder: () => store.settings['state.propertyOrder'],
     propertyOrderDesc: () => store.settings['state.propertyOrderDesc'],
     filters: () => store.settings['state.filters'],
+    recentUpdates: () => store.settings['state.recentUpdates'],
     navigator: () => store.settings['state.navigator'],
     splitDirection: () => store.settings['state.splitDirection'],
   },

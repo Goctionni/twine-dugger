@@ -38,6 +38,7 @@ export function NumberEditor(props: Props) {
       <div class="flex items-start gap-2">
         <NumberInput
           value={getDraft()}
+          fill
           onChange={(value) => setDraft(value)}
           onKeyDown={onKeyDown}
           disabled={isDisabled()}

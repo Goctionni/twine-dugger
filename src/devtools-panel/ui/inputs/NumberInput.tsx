@@ -10,6 +10,8 @@ interface NumberInputProps {
   onKeyDown?: (e: KeyboardEvent) => void;
   disabled?: boolean;
   readOnly?: boolean;
+  /** Takes the width that is left in a flex row, instead of a fixed one */
+  fill?: boolean;
   className?: string;
   inputProps?: JSX.InputHTMLAttributes<HTMLInputElement>;
 }
@@ -55,7 +57,7 @@ export function NumberInput(props: NumberInputProps) {
   };
 
   return (
-    <div class={clsx('flex', props.className)}>
+    <div class={clsx('flex', props.fill && 'min-w-0 flex-1', props.className)}>
       <button
         type="button"
         aria-label="Decrease"
@@ -83,7 +85,8 @@ export function NumberInput(props: NumberInputProps) {
         class={clsx(
           baseInputClasses,
           '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
-          'w-32 rounded-none',
+          props.fill ? 'min-w-0 flex-1' : 'w-32',
+          'rounded-none',
         )}
         {...props.inputProps}
       />

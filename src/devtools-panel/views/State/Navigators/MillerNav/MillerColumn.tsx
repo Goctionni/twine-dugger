@@ -2,6 +2,7 @@ import { For, Show, createEffect, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
 import { getRevealCount } from '@/devtools-panel/store/state-location';
+import { isPinned } from '@/devtools-panel/store/store';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import {
   getContainerKeyLabel,
@@ -18,6 +19,7 @@ import { getPathLabels } from '../../logic/path-labels';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import { NavRow } from '../Shared/NavRow';
 import { getPreview } from '../Shared/preview';
+import { isRecentlyChanged } from '../Shared/recently-changed';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { getRowId } from './logic/row-id';
 
@@ -53,8 +55,12 @@ export function MillerColumn(props: Props) {
 
   const getKeys = createMemo(
     () =>
-      getVisibleKeys(getContainer(), getSort(), getHiddenTypes(), (key) =>
-        getLastChangeId([...getColumnPath(), key]),
+      getVisibleKeys(
+        getContainer(),
+        getSort(),
+        getHiddenTypes(),
+        (key) => getLastChangeId([...getColumnPath(), key]),
+        (key) => isPinned([...getColumnPath(), key]),
       ),
     { equals: sameItems },
   );
@@ -114,6 +120,7 @@ export function MillerColumn(props: Props) {
               preview={getPreview(getValue(), getType())}
               childCount={getChildCount()}
               hiddenCount={getHiddenChildren()}
+              isRecentlyChanged={isRecentlyChanged([...getColumnPath(), key])}
               state={getRowState()}
               onClick={() =>
                 props.onSelect(

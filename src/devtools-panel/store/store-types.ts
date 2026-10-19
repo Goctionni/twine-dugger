@@ -43,6 +43,7 @@ export interface StoreData {
 export const gameConfigSchema = type({
   locks: lockSchema.array(),
   filteredPaths: pathSchema.array(),
+  pins: pathSchema.array(),
 });
 export type GameConfig = typeof gameConfigSchema.infer;
 
@@ -54,6 +55,7 @@ export const settingsSchema = type({
   'state.propertyOrder': propertyOrderSchema,
   'state.propertyOrderDesc': 'boolean',
   'state.filters': valueTypeSchema.or("'filtered'").array(),
+  'state.recentUpdates': 'number',
   'state.navigator': "'miller' | 'tree' | 'tiles'",
   'state.splitDirection': "'auto' | 'vertical' | 'horizontal'",
   'passages.splitDirection': "'auto' | 'vertical' | 'horizontal'",

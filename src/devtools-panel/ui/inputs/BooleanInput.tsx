@@ -9,6 +9,8 @@ interface BooleanInputProps {
   disabled?: boolean;
   /** Can be focused, and does not change */
   readOnly?: boolean;
+  /** Takes the width that is left in a flex row, instead of a fixed one */
+  fill?: boolean;
   className?: string;
   id?: string;
 }
@@ -40,7 +42,8 @@ export function BooleanInput(props: BooleanInputProps) {
       aria-readonly={props.readOnly ? 'true' : undefined}
       disabled={props.disabled}
       class={clsx(
-        'relative flex h-7 w-46 text-white select-none has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sky-400',
+        'relative flex h-7 text-white select-none has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sky-400',
+        props.fill ? 'min-w-0 flex-1' : 'w-46',
         props.disabled && 'pointer-events-none',
         props.className,
       )}

@@ -1,4 +1,4 @@
-import { Match, Switch } from 'solid-js';
+import { Match, Show, Switch } from 'solid-js';
 
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import type { ValueType } from '@/shared/shared-types';
@@ -14,6 +14,7 @@ interface Props {
   preview?: string;
   childCount?: number;
   hiddenCount?: number;
+  isRecentlyChanged?: boolean;
   state: 'selected' | 'on-path' | 'trail' | 'normal';
   onClick: () => void;
 }
@@ -54,6 +55,14 @@ export function NavRow(props: Props) {
           <span class="min-w-0 truncate font-mono text-xs text-gray-400">{props.preview}</span>
         </Match>
       </Switch>
+      <Show when={props.isRecentlyChanged}>
+        <span
+          role="img"
+          aria-label="Changed recently"
+          title="Changed recently"
+          class="ml-auto h-2 w-2 shrink-0 rounded-full bg-amber-400"
+        />
+      </Show>
     </div>
   );
 }

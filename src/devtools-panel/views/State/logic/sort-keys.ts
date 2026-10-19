@@ -26,6 +26,15 @@ export const toFilterType = (type: ValueType): ValueType =>
 
 const getTypeRank = (type: ValueType) => TYPE_ORDER.indexOf(toFilterType(type));
 
+/** The pinned keys first, each group in the order it had */
+export function pinnedFirst<K extends string | number>(
+  keys: readonly K[],
+  isPinned: (key: K) => boolean,
+): K[] {
+  const pinned = keys.filter(isPinned);
+  return pinned.length ? [...pinned, ...keys.filter((key) => !pinned.includes(key))] : [...keys];
+}
+
 /** The ones that changed last first; the ones that did not change in the known history by name */
 export function sortKeysByChanged<K extends string | number>(
   keys: readonly K[],

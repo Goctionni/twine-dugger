@@ -26,6 +26,7 @@ export function BooleanEditor(props: Props) {
     >
       <BooleanInput
         label={props.label}
+        fill
         value={getValue()}
         onChange={(value) => void setValue(value)}
         readOnly={getStatus() === 'locked' || isWaiting()}

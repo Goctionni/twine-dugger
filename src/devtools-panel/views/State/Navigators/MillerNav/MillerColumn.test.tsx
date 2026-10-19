@@ -65,15 +65,21 @@ describe('MillerColumn', () => {
     expect(setup().names()).toEqual(['stats', 'scores', 'inv', 'tags', 'hp', 'name']);
   });
 
-  it('writes nothing for a change deeper than the column, and only the changed text for a value', () => {
-    const { rows, play } = setup();
+  it('writes only to the rows that changed, and keeps the rows', () => {
+    const { rows, names, play } = setup();
     const before = rows();
+    const rowOf = (name: string) => rows()[names().indexOf(name)]!;
 
-    expect(play((s) => (s.stats.nested.a = 2))).toHaveLength(0);
+    // The dot of the container that holds the change
+    const deeper = play((s) => (s.stats.nested.a = 2));
+    expect(deeper.every((record) => rowOf('stats').contains(record.target))).toBe(true);
+    expect(rowOf('stats').querySelector('[aria-label="Changed recently"]')).not.toBeNull();
+    expect(rowOf('hp').querySelector('[aria-label="Changed recently"]')).toBeNull();
 
+    // The text of the value, and its dot
     const records = play((s) => (s.hp = 9));
-    expect(records).toHaveLength(1);
-    expect(records[0]!.type).toBe('characterData');
+    expect(records.every((record) => rowOf('hp').contains(record.target))).toBe(true);
+    expect(records.filter((record) => record.type === 'characterData')).toHaveLength(1);
     expect(rows()).toEqual(before);
   });
 

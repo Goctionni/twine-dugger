@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vite-plus/test';
 import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
 import type { ValueType } from '@/shared/shared-types';
 
-import { getKeysByName, sortKeysByType } from './sort-keys';
+import { getKeysByName, pinnedFirst, sortKeysByType } from './sort-keys';
 
 it('puts containers first, then booleans, numbers and strings, and names in natural order', () => {
   const types: Record<string, ValueType> = {
@@ -49,4 +49,10 @@ describe('getKeysByName', () => {
     expect(getKeysByName([SET_MARKER, 'b', 'a'])).toEqual([1, 2]);
     expect(getKeysByName('text')).toEqual([]);
   });
+});
+
+it('puts the pinned keys first, and keeps the order inside both groups', () => {
+  const pinned = new Set(['d', 'b']);
+  expect(pinnedFirst(['a', 'b', 'c', 'd'], (key) => pinned.has(key))).toEqual(['b', 'd', 'a', 'c']);
+  expect(pinnedFirst(['a', 'b'], () => false)).toEqual(['a', 'b']);
 });
