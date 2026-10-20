@@ -2,8 +2,8 @@ import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
 
 import { Tooltip } from '@/devtools-panel/ui/display/Tooltip';
-import { getJsonType } from '@/shared/json-safe';
-import type { JSONSafeValue } from '@/shared/shared-types';
+import { formatJsonSafeDate, getJsonType, isContainerType } from '@/shared/json-safe';
+import type { JSONSafeDate, JSONSafeValue } from '@/shared/shared-types';
 
 import { DiffPreview } from './DiffPreview';
 
@@ -57,7 +57,12 @@ function RenderValueFallback(props: RenderValueFallbackProps) {
 
   return (
     <Switch fallback={base()}>
-      <Match when={props.value && typeof props.value === 'object'}>
+      <Match when={getJsonType(props.value) === 'date'}>
+        <code class={clsx(colorClasses.typeOther, fadedCls())}>
+          {formatJsonSafeDate(props.value as JSONSafeDate)}
+        </code>
+      </Match>
+      <Match when={isContainerType(getJsonType(props.value))}>
         <Tooltip
           area="bottom right"
           element={(elProps) => (

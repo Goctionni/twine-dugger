@@ -2,8 +2,13 @@ import type { JSX } from '@solidjs/web';
 import clsx from 'clsx';
 import { createMemo, Match, Switch } from 'solid-js';
 
-import { getContainerKeys, getJsonType } from '@/shared/json-safe';
-import type { JSONSafeArray, JSONSafeObject, JSONSafeValue } from '@/shared/shared-types';
+import { formatJsonSafeDate, getContainerKeys, getJsonType } from '@/shared/json-safe';
+import type {
+  JSONSafeArray,
+  JSONSafeDate,
+  JSONSafeObject,
+  JSONSafeValue,
+} from '@/shared/shared-types';
 
 import { RenderValue } from './RenderValue';
 
@@ -62,6 +67,12 @@ function DiffPreviewInner(props: InnerProps): JSX.Element {
       </Match>
       <Match when={type() === 'object'}>
         <ObjectMapPreview {...props} prefix="{" suffix="}" type="object" />
+      </Match>
+      <Match when={type() === 'date'}>
+        <code>{formatJsonSafeDate(props.value as JSONSafeDate)}</code>
+      </Match>
+      <Match when={type() === 'function'}>
+        <code class="text-purple-300 saturate-50">function</code>
       </Match>
       <Match when={true}>
         <RenderValue value={props.value} />
