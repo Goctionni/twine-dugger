@@ -71,9 +71,6 @@ function DiffPreviewInner(props: InnerProps): JSX.Element {
       <Match when={type() === 'date'}>
         <code>{formatJsonSafeDate(props.value as JSONSafeDate)}</code>
       </Match>
-      <Match when={type() === 'function'}>
-        <code class="text-purple-300 saturate-50">function</code>
-      </Match>
       <Match when={true}>
         <RenderValue value={props.value} />
       </Match>

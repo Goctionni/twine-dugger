@@ -57,11 +57,11 @@ describe('RenderValue', () => {
     expect(container.querySelector('.tp-tooltip')).toBeNull();
   });
 
-  it('renders a function as a flat label with no tooltip', () => {
+  it('renders a function badge with its source in a tooltip', () => {
     const fn = { [TYPE_KEY]: 'function', str: 'function onTick() {}' };
     const { container } = render(() => <RenderValue value={fn} />);
-    expect(container.textContent).toContain('function');
-    expect(container.querySelector('.tp-tooltip')).toBeNull();
+    expect(container.textContent).toContain('function onTick() {}');
+    expect(container.querySelector('.tp-tooltip')).not.toBeNull();
   });
 });
 
@@ -81,5 +81,12 @@ describe('DiffPreview', () => {
     const { container } = render(() => <DiffPreview value={value} />);
     expect(container.textContent).toContain('2026-10-20 06:00:00');
     expect(container.textContent).toContain('count');
+  });
+
+  it('renders a function via RenderValue with its source in the tooltip', () => {
+    const fn = { [TYPE_KEY]: 'function', str: 'function onTick() {}' };
+    const { container } = render(() => <DiffPreview value={fn} />);
+    expect(container.textContent).toContain('function onTick() {}');
+    expect(container.querySelector('.tp-tooltip')).not.toBeNull();
   });
 });

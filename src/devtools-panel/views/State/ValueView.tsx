@@ -3,8 +3,8 @@ import { createMemo, Match, Show, Switch } from 'solid-js';
 import { getActiveState } from '@/devtools-panel/store/game-state';
 import { createGetViewState } from '@/devtools-panel/store/store';
 import type { ContainerType } from '@/shared/json-safe';
-import { formatJsonSafeDate, getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
-import type { JSONSafeDate, JSONSafeValue } from '@/shared/shared-types';
+import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
+import type { JSONSafeValue } from '@/shared/shared-types';
 
 import { PrettyPath } from '../../ui/display/PrettyPath';
 import { TypeIcon } from '../../ui/display/TypeIcon';
@@ -60,7 +60,7 @@ export function ValueView() {
             </pre>
           </Match>
           <Match when={type() === 'date'}>
-            <p class="font-mono">{formatJsonSafeDate(value() as JSONSafeDate)}</p>
+            <p class="font-mono">{formatDate(value() as Record<string, number>)}</p>
           </Match>
           <Match when={true}>
             <p>
@@ -71,4 +71,9 @@ export function ValueView() {
       </div>
     </div>
   );
+}
+
+function formatDate({ Y, M, D, h, m, s }: Record<string, number> = {}) {
+  const pad = (n = 0) => `${n}`.padStart(2, '0');
+  return `${Y}-${pad(M)}-${pad(D)} ${pad(h)}:${pad(m)}:${pad(s)}`;
 }
