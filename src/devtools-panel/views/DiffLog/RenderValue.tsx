@@ -2,8 +2,8 @@ import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
 
 import { Tooltip } from '@/devtools-panel/ui/display/Tooltip';
-import { getJsonType } from '@/shared/json-safe';
-import type { JSONSafeValue } from '@/shared/shared-types';
+import { formatJsonSafeDate, getJsonType, isContainerType } from '@/shared/json-safe';
+import type { JSONSafeDate, JSONSafeValue } from '@/shared/shared-types';
 
 import { DiffPreview } from './DiffPreview';
 
@@ -57,7 +57,36 @@ function RenderValueFallback(props: RenderValueFallbackProps) {
 
   return (
     <Switch fallback={base()}>
-      <Match when={props.value && typeof props.value === 'object'}>
+      <Match when={getJsonType(props.value) === 'function'}>
+        <Tooltip
+          area="bottom right"
+          element={(elProps) => (
+            <span
+              {...elProps}
+              class={clsx('inline-flex cursor-help items-center gap-1', elProps.class)}
+            >
+              <span class="material-symbols-outlined align-middle text-xs text-white">search</span>
+              {base()}
+            </span>
+          )}
+          tooltip={
+            <pre class="font-mono text-xs whitespace-pre-wrap">
+              {props.value &&
+              typeof props.value === 'object' &&
+              'str' in props.value &&
+              typeof props.value.str === 'string'
+                ? props.value.str
+                : 'function'}
+            </pre>
+          }
+        />
+      </Match>
+      <Match when={getJsonType(props.value) === 'date'}>
+        <code class={clsx(colorClasses.typeOther, fadedCls())}>
+          {formatJsonSafeDate(props.value as JSONSafeDate)}
+        </code>
+      </Match>
+      <Match when={isContainerType(getJsonType(props.value))}>
         <Tooltip
           area="bottom right"
           element={(elProps) => (

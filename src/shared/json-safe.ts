@@ -1,4 +1,10 @@
-import type { JSONSafeArray, JSONSafeObject, JSONSafeValue, ValueType } from './shared-types';
+import type {
+  JSONSafeArray,
+  JSONSafeDate,
+  JSONSafeObject,
+  JSONSafeValue,
+  ValueType,
+} from './shared-types';
 
 /** Marks objects that stand in for a non-JSON value (Map, function, Date) */
 export const TYPE_KEY = '__twinedugger-type' as const;
@@ -81,4 +87,9 @@ export function containsFunction(value: JSONSafeValue): boolean {
 
 export function getKeyLabel(type: ContainerType, key: string | number) {
   return type === 'set' && typeof key === 'number' ? key - 1 : key;
+}
+
+export function formatJsonSafeDate({ Y, M, D, h, m, s }: JSONSafeDate): string {
+  const pad = (n: number) => `${n}`.padStart(2, '0');
+  return `${Y}-${pad(M)}-${pad(D)} ${pad(h)}:${pad(m)}:${pad(s)}`;
 }
