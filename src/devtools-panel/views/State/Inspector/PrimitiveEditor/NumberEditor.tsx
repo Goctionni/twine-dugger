@@ -18,6 +18,8 @@ interface Props {
   path: Path;
   /** Names the value for those who cannot see it */
   label: string;
+  /** For a row of a container: no bounds to change and no hint, which would not fit */
+  compact?: boolean;
 }
 
 export function NumberEditor(props: Props) {
@@ -26,7 +28,7 @@ export function NumberEditor(props: Props) {
   // A locked number has a range, which is the number itself until a bound is changed
   const getRange = () => (getStatus() === 'locked' ? getLockRange(getPath()) : undefined);
   // The inputs for the bounds are made once, for as long as it is locked
-  const hasRange = createMemo(() => getRange() !== undefined);
+  const hasRange = createMemo(() => !props.compact && getRange() !== undefined);
   const isExactLock = () => {
     const range = getRange();
     return range !== undefined && range.min === range.max;
@@ -56,7 +58,7 @@ export function NumberEditor(props: Props) {
 
   return (
     <div class="group relative flex flex-col gap-2">
-      <div class="flex items-start gap-2">
+      <div class="flex items-start gap-1">
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
           <NumberInput
             value={getDraft()}
@@ -106,11 +108,13 @@ export function NumberEditor(props: Props) {
           </Match>
         </Switch>
       </div>
-      <KeyHint>
-        {getStatus() === 'locked'
-          ? 'Enter unlocks'
-          : 'Enter saves, or locks / unlocks · Esc reverts · ↑ ↓ ±1 · Shift+↑ ↓ ±10 · Ctrl+↑ ↓ ×10 ÷10'}
-      </KeyHint>
+      <Show when={!props.compact}>
+        <KeyHint>
+          {getStatus() === 'locked'
+            ? 'Enter unlocks'
+            : 'Enter saves, or locks / unlocks · Esc reverts · ↑ ↓ ±1 · Shift+↑ ↓ ±10 · Ctrl+↑ ↓ ×10 ÷10'}
+        </KeyHint>
+      </Show>
     </div>
   );
 }

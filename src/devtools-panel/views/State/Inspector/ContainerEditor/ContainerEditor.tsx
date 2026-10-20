@@ -5,6 +5,7 @@ import { getContainerSize, getJsonType, getPathValue, isContainer } from '@/shar
 import type { Path } from '@/shared/shared-types';
 
 import { ValueHeader } from '../ValueHeader/ValueHeader';
+import { PropertyGrid } from './PropertyGrid';
 
 interface Props {
   path: Path;
@@ -39,6 +40,7 @@ export function ContainerEditor(props: Props) {
           Edit as JSON
         </button>
       </div>
+      <PropertyGrid path={props.path} />
     </div>
   );
 }

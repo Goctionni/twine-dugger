@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Match, Switch, createSignal, untrack } from 'solid-js';
+import { Match, Show, Switch, createSignal, untrack } from 'solid-js';
 
 import { KeyHint } from '@/devtools-panel/ui/display/KeyHint';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
@@ -16,6 +16,8 @@ interface Props {
   path: Path;
   /** Names the value for those who cannot see it */
   label: string;
+  /** For a row of a container: no choice of a larger field, and no hint, which would not fit */
+  compact?: boolean;
 }
 
 export function StringEditor(props: Props) {
@@ -31,7 +33,7 @@ export function StringEditor(props: Props) {
 
   // A single line cannot hold a line break: text that has one is always shown in the larger field
   const hasNewline = () => getDraft().includes('\n');
-  const isMultiline = () => isMultilineChoice() || hasNewline();
+  const isMultiline = () => (!props.compact && isMultilineChoice()) || hasNewline();
 
   // Enter in the field: save, or lock and unlock when there is nothing to save. In the larger
   // field Enter is a new line, and Ctrl+Enter does this
@@ -54,7 +56,7 @@ export function StringEditor(props: Props) {
 
   return (
     <div class="group relative flex flex-col gap-2">
-      <div class="flex items-start gap-2">
+      <div class="flex items-start gap-1">
         <Switch>
           <Match when={!isMultiline()}>
             <StringInput
@@ -70,7 +72,7 @@ export function StringEditor(props: Props) {
           <Match when={isMultiline()}>
             <textarea
               aria-label={props.label}
-              rows="5"
+              rows={props.compact ? 2 : 5}
               spellcheck="false"
               value={getDraft()}
               disabled={isDisabled()}
@@ -90,17 +92,19 @@ export function StringEditor(props: Props) {
           </Match>
         </Switch>
       </div>
-      <label class="flex w-fit items-center gap-2 text-sm text-gray-300 select-none">
-        <input
-          type="checkbox"
-          class="h-4 w-4 check-box"
-          checked={isMultiline()}
-          disabled={hasNewline()}
-          onChange={(event) => setMultilineChoice(event.currentTarget.checked)}
-        />
-        Multiline
-      </label>
-      <KeyHint>{getHelp()}</KeyHint>
+      <Show when={!props.compact}>
+        <label class="flex w-fit items-center gap-2 text-sm text-gray-300 select-none">
+          <input
+            type="checkbox"
+            class="h-4 w-4 check-box"
+            checked={isMultiline()}
+            disabled={hasNewline()}
+            onChange={(event) => setMultilineChoice(event.currentTarget.checked)}
+          />
+          Multiline
+        </label>
+        <KeyHint>{getHelp()}</KeyHint>
+      </Show>
     </div>
   );
 }

@@ -12,7 +12,7 @@ export function PinButton(props: Props) {
       aria-pressed={props.isPinned ? 'true' : 'false'}
       title={props.isPinned ? 'Unpin this value' : 'Pin this value to the top of its container'}
       class={[
-        'inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md border',
+        'inline-flex h-7.5 w-7.5 shrink-0 cursor-pointer items-center justify-center rounded-md border',
         // Like a pinned tile in the state-nav concept. `/20` is a color-mix of the amber with transparent
         props.isPinned
           ? 'border-yellow-700 bg-amber-400/12.5 text-amber-400 hover:bg-amber-400/30'

@@ -42,7 +42,7 @@ export function BooleanInput(props: BooleanInputProps) {
       aria-readonly={props.readOnly ? 'true' : undefined}
       disabled={props.disabled}
       class={clsx(
-        'relative flex h-7 text-white select-none has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sky-400',
+        'relative flex h-7.5 text-white select-none has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sky-400',
         props.fill ? 'min-w-0 flex-1' : 'w-46',
         props.disabled && 'pointer-events-none',
         props.className,
@@ -51,7 +51,7 @@ export function BooleanInput(props: BooleanInputProps) {
       <span
         aria-hidden="true"
         class={clsx(
-          'absolute top-0 h-7 w-1/2 rounded-sm border-2 transition-all',
+          'absolute top-0 h-7.5 w-1/2 rounded-sm border-2 transition-all',
           props.value
             ? 'left-0 border-gray-200 bg-gray-200/15'
             : 'left-1/2 border-gray-500 bg-gray-500/20',

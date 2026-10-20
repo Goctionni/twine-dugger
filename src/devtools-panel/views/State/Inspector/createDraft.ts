@@ -1,9 +1,11 @@
-import { createSignal } from 'solid-js';
+import { createEffect, createSignal } from 'solid-js';
 
 import { setState } from '@/devtools-panel/api/api';
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
+
+import { registerDraft } from './draft-registry';
 
 /**
  * What is being typed into an editor, for the value at a path. The draft starts as the saved value,
@@ -31,6 +33,11 @@ export function createDraft<T extends number | string>(
       console.error('Failed to save the value:', error);
     }
   };
+
+  // Known to the container the value is in, for as long as there is something to save
+  createEffect(isDirty, (dirty) => {
+    if (dirty) return registerDraft({ path: getPath(), save, revert });
+  });
 
   return {
     getStateValue,

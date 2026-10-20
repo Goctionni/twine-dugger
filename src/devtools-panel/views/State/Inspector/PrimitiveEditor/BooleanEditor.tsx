@@ -17,7 +17,7 @@ export function BooleanEditor(props: Props) {
 
   return (
     <div
-      class="flex items-center gap-2"
+      class="flex items-center gap-1"
       onKeyDown={(event) => {
         if (event.key !== 'Enter' || !(event.target instanceof HTMLInputElement)) return;
         event.preventDefault();

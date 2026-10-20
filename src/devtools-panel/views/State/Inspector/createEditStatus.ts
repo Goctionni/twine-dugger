@@ -10,7 +10,9 @@ export function createEditStatus(getPath: () => Path) {
   // Locked by a parent, or in a set: not for this editor to change. Locked itself is only read only
   const isDisabled = () =>
     getStatus() === 'ancestor-lock' || isInsideSet(getLatestState(), getPath());
+  // Locked values would be put back, and the items of a set cannot be named
+  const canDelete = () => getStatus() === 'unlocked' && !isDisabled();
   const toggleLock = () => setPathLock(getPath(), getStatus() === 'unlocked');
 
-  return { getStatus, isDisabled, toggleLock };
+  return { getStatus, isDisabled, canDelete, toggleLock };
 }
