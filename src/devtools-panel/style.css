@@ -42,6 +42,65 @@ input[type='search'] {
   background-size: 12px;
 }
 
+/*
+ * A select that can be styled all through (Chrome: appearance base-select): the button and the options
+ * can hold more than text, like an icon. The button is the first child of the select, and shows
+ * what is chosen with <selectedcontent>.
+ */
+@utility base-select {
+  &,
+  &::picker(select) {
+    appearance: base-select;
+  }
+
+  &::picker(select) {
+    min-width: anchor-size(width);
+    margin-top: 2px;
+    padding: calc(var(--spacing) * 1);
+    border: 1px solid var(--color-gray-600);
+    border-radius: var(--radius-md);
+    background-color: var(--color-gray-800);
+    color: var(--color-gray-100);
+  }
+
+  & > button {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+  }
+
+  & selectedcontent,
+  & option {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing) * 2);
+  }
+
+  & option {
+    padding: calc(var(--spacing) * 1) calc(var(--spacing) * 2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background-color: var(--color-gray-700);
+    }
+
+    &:checked {
+      background-color: var(--color-sky-950);
+    }
+
+    &::checkmark {
+      display: none;
+    }
+  }
+}
+
 /* A checkbox that is darker than the page when it is empty (the browser's is white), and sky blue with a tick when it is checked */
 @utility check-box {
   appearance: none;

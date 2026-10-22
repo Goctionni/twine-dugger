@@ -1,10 +1,20 @@
-import { createMemo } from 'solid-js';
+import { Show, createMemo } from 'solid-js';
 
+import { setState } from '@/devtools-panel/api/api';
 import { getLatestState } from '@/devtools-panel/store/game-state';
-import { getContainerSize, getJsonType, getPathValue, isContainer } from '@/shared/json-safe';
-import type { Path } from '@/shared/shared-types';
+import {
+  getContainerKeys,
+  getContainerSize,
+  getJsonType,
+  getPathValue,
+  isContainer,
+} from '@/shared/json-safe';
+import type { JSONSafeObject, Path } from '@/shared/shared-types';
 
+import { createEditStatus } from '../createEditStatus';
 import { ValueHeader } from '../ValueHeader/ValueHeader';
+import { getAddition, getDefaultType, type AddTarget } from './add-property';
+import { showAddDialog } from './AddPropertyDialog';
 import { PropertyGrid } from './PropertyGrid';
 
 interface Props {
@@ -21,9 +31,28 @@ export function ContainerEditor(props: Props) {
     const container = getContainer();
     return isContainer(container) ? getContainerSize(container) : 0;
   };
-  // Arrays and sets have items, and no names to give them
-  const getAddLabel = () =>
-    getType() === 'array' || getType() === 'set' ? 'Add item' : 'Add property';
+
+  // The items of a set have no place to be named, so nothing is added to one from here
+  const getTarget = (): AddTarget | undefined => {
+    const type = getType();
+    return type === 'object' || type === 'map' || type === 'array' ? type : undefined;
+  };
+  const { canDelete: canChange } = createEditStatus(() => props.path);
+
+  const add = async () => {
+    const target = getTarget();
+    if (!target) return;
+    const container = getContainer() as JSONSafeObject;
+    const keys = getContainerKeys(container, target);
+    const added = await showAddDialog({
+      target,
+      existingKeys: keys,
+      defaultType: getDefaultType(keys.map((key) => getJsonType(container[key]))),
+    });
+    if (!added) return;
+    const { path, value } = getAddition(props.path, target, getCount(), added);
+    await setState(path, value);
+  };
 
   return (
     <div class="flex flex-col gap-3 p-3">
@@ -33,9 +62,17 @@ export function ContainerEditor(props: Props) {
         </p>
       </ValueHeader>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class={buttonClass} disabled title="Not built yet">
-          {getAddLabel()}
-        </button>
+        <Show when={getTarget()}>
+          <button
+            type="button"
+            class={buttonClass}
+            disabled={!canChange()}
+            title={canChange() ? undefined : 'This value is locked, or in a set'}
+            onClick={() => void add()}
+          >
+            {getTarget() === 'array' ? 'Add item' : 'Add property'}
+          </button>
+        </Show>
         <button type="button" class={buttonClass} disabled title="Not built yet">
           Edit as JSON
         </button>

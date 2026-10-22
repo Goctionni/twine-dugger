@@ -6,7 +6,8 @@ import { Dialog } from './Dialog';
 
 interface PromptState {
   dialogTitle: string;
-  content: JSX.Element;
+  /** Made inside the dialog, so that what it sets up goes away when the dialog does */
+  content: () => JSX.Element;
   reject: () => void;
 }
 
@@ -24,7 +25,7 @@ export function showPromptDialog<T>(dialogTitle: string, resolver: PromptResolve
       rejectPromise();
       setPrompt(undefined);
     };
-    setPrompt({ dialogTitle, content: resolver(resolve), reject });
+    setPrompt({ dialogTitle, content: () => resolver(resolve), reject });
   });
 }
 
@@ -65,7 +66,7 @@ export function PromptDialogOutlet() {
     <Show when={prompt()}>
       {(current) => (
         <Dialog onClose={current().reject} open closedby="any" heading={current().dialogTitle}>
-          {current().content}
+          {current().content()}
         </Dialog>
       )}
     </Show>
