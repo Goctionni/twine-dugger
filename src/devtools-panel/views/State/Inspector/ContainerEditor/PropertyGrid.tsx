@@ -10,6 +10,7 @@ import type { JSONSafeObject, Path } from '@/shared/shared-types';
 import { getVisibleKeys } from '../../Navigators/Shared/visible-keys';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import { countUnsavedChildren, discardChildDrafts, saveChildDrafts } from '../draft-registry';
+import { BulkRow } from './BulkRow';
 import { PropertyRow } from './PropertyRow';
 
 type Key = string | number;
@@ -48,6 +49,13 @@ export function PropertyGrid(props: Props) {
       setSelected(new Set<Key>());
     },
   );
+  // Only what is in the grid can be selected
+  const getSelectedKeys = createMemo(
+    () => getPrimitiveKeys().filter((key) => getSelected().has(key)),
+    {
+      equals: sameItems,
+    },
+  );
   const toggle = (key: Key) =>
     setSelected((selected) => {
       const next = new Set(selected);
@@ -58,7 +66,7 @@ export function PropertyGrid(props: Props) {
   const getUnsavedCount = () => countUnsavedChildren(props.path);
 
   return (
-    <section aria-label="Properties" class="@container flex flex-col gap-1">
+    <section aria-label="Properties" class="flex flex-col gap-1">
       {/* Always as tall as the line: it appears while typing, and nothing should move */}
       <div class="flex min-h-5 items-center gap-3 text-xs text-gray-400">
         <Show when={getUnsavedCount() > 0}>
@@ -86,12 +94,18 @@ export function PropertyGrid(props: Props) {
         fallback={<p class="text-sm text-gray-400">No values to edit here.</p>}
       >
         {/* Wide: the names share a column, as wide as the longest but not over 40%. Narrow: each row is two lines */}
-        <ul class="-mx-2 grid grid-cols-1 @min-[22rem]:grid-cols-[fit-content(40%)_minmax(0,1fr)_auto]">
+        <ul class="-mx-2 grid grid-cols-[fit-content(40%)_minmax(0,1fr)_auto]">
+          <BulkRow
+            path={props.path}
+            keys={getPrimitiveKeys()}
+            selectedKeys={getSelectedKeys()}
+            onSelect={(keys) => setSelected(new Set(keys))}
+          />
           <For each={getPrimitiveKeys()}>
             {(key) => (
               <PropertyRow
                 path={[...props.path, key]}
-                isSelected={getSelected().has(key)}
+                isSelected={getSelectedKeys().includes(key)}
                 onToggle={() => toggle(key)}
               />
             )}

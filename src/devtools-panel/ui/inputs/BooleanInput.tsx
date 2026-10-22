@@ -11,7 +11,7 @@ interface BooleanInputProps {
   readOnly?: boolean;
   /** Takes the width that is left in a flex row, instead of a fixed one */
   fill?: boolean;
-  className?: string;
+  class?: string;
   id?: string;
 }
 
@@ -45,7 +45,7 @@ export function BooleanInput(props: BooleanInputProps) {
         'relative flex h-7.5 text-white select-none has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sky-400',
         props.fill ? 'min-w-0 flex-1' : 'w-46',
         props.disabled && 'pointer-events-none',
-        props.className,
+        props.class,
       )}
     >
       <span

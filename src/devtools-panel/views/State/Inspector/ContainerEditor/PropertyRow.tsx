@@ -29,11 +29,11 @@ export function PropertyRow(props: Props) {
   const { canDelete } = createEditStatus(() => props.path);
 
   return (
-    <li class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-y-1 py-1 @min-[22rem]:col-span-3 @min-[22rem]:grid-cols-subgrid">
+    <li class="col-span-3 grid grid-cols-subgrid items-start py-1">
       {/* Only the checkbox and the name react to the pointer, and show that the row is selected */}
       <label
         class={[
-          'col-start-1 row-start-1 mr-1 flex h-7.5 min-w-0 cursor-pointer items-center gap-2 rounded-md border ps-2 pe-1 select-none',
+          'mr-1 flex h-7.5 min-w-0 cursor-pointer items-center gap-2 rounded-md border ps-2 pe-1 select-none',
           props.isSelected ? 'border-sky-500 bg-sky-950' : 'border-transparent hover:bg-gray-800',
         ]}
       >
@@ -56,7 +56,7 @@ export function PropertyRow(props: Props) {
           />
         </Show>
       </label>
-      <div class="col-span-2 row-start-2 min-w-0 @min-[22rem]:col-span-1 @min-[22rem]:col-start-2 @min-[22rem]:row-start-1">
+      <div class="min-w-0">
         <Switch>
           <Match when={getType() === 'boolean'}>
             <BooleanEditor path={props.path} label={getName()} />
@@ -74,7 +74,7 @@ export function PropertyRow(props: Props) {
           </Match>
         </Switch>
       </div>
-      <div class="col-start-2 row-start-1 pl-1 @min-[22rem]:col-start-3">
+      <div class="pl-1">
         <DeleteButton
           disabled={!canDelete()}
           onDelete={() => void deleteValue(props.path, getName())}

@@ -66,3 +66,18 @@ export function setLockRange(path: Path, min: number, max: number) {
   });
   return setLocks(locks);
 }
+
+/** Locks (or unlocks) the paths in one go. Paths that have no value to lock are left out */
+export function setPathLocks(paths: readonly Path[], lock: boolean) {
+  const locks = currentLocks().filter(
+    (current) => !paths.some((path) => pathEquals(current.path, path)),
+  );
+  if (lock) {
+    for (const path of paths) {
+      const value = getLatestValue(path);
+      if (value === undefined || containsFunction(value)) continue;
+      locks.push({ path: [...path], value: structuredClone(value) });
+    }
+  }
+  return setLocks(locks);
+}

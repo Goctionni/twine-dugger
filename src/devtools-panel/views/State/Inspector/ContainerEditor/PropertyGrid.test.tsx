@@ -12,7 +12,10 @@ import type { Path } from '@/shared/shared-types';
 import { confirmDelete } from '../ValueHeader/confirmDelete';
 import { PropertyGrid } from './PropertyGrid';
 
-vi.mock('../ValueHeader/confirmDelete', () => ({ confirmDelete: vi.fn(async () => true) }));
+vi.mock('../ValueHeader/confirmDelete', () => ({
+  confirmDelete: vi.fn(async () => true),
+  confirmDeleteMany: vi.fn(async () => true),
+}));
 
 vi.mock('@/devtools-panel/api/api', () => ({
   getPassageData: async () => [],
@@ -50,10 +53,10 @@ function setup(path: Path = ['hero']) {
   flush();
 
   const view = render(() => <PropertyGrid path={path} />);
-  const names = () =>
-    view.queryAllByRole('listitem').map((row) => row.querySelector('span.truncate')!.textContent);
-  const rowOf = (name: string) =>
-    view.queryAllByRole('listitem')[names().indexOf(name)] as HTMLElement;
+  const rows = () =>
+    view.queryAllByRole('listitem').filter((row) => row.querySelector('span.truncate'));
+  const names = () => rows().map((row) => row.querySelector('span.truncate')!.textContent);
+  const rowOf = (name: string) => rows()[names().indexOf(name)] as HTMLElement;
   const type = (field: HTMLInputElement, text: string) => {
     field.value = text;
     field.dispatchEvent(new Event('input', { bubbles: true }));
@@ -174,6 +177,7 @@ it('marks the properties that changed lately, next to their names', () => {
   const dotsOf = (name: string) =>
     view
       .queryAllByRole('listitem')
+      .filter((row) => row.querySelector('span.truncate'))
       .find((row) => row.textContent?.includes(name))!
       .querySelectorAll('[aria-label="Changed recently"]').length;
   expect(dotsOf('hp')).toBe(0);

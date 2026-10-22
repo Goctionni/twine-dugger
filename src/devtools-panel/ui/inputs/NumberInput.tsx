@@ -63,6 +63,8 @@ export function NumberInput(props: NumberInputProps) {
               btnClass(
                 'contained',
                 '[REMOVE]: rounded-md px-4',
+                '[REMOVE]: disabled:bg-gray-500 disabled:text-gray-300 disabled:hover:bg-gray-500',
+                'disabled:opacity-35',
                 'clr-gray hover:clr-sky w-7 rounded-l-md px-2 font-mono',
               ),
             )}
@@ -104,6 +106,9 @@ export function NumberInput(props: NumberInputProps) {
               btnClass(
                 'contained',
                 '[REMOVE]: rounded-md px-4',
+                // A button that cannot be used is fainter, not brighter
+                '[REMOVE]: disabled:bg-gray-500 disabled:text-gray-300 disabled:hover:bg-gray-500',
+                'disabled:opacity-35',
                 'clr-gray hover:clr-sky w-7 rounded-r-md px-2 font-mono',
               ),
             )}
