@@ -56,6 +56,12 @@ export interface LockRevert {
   attempted: JSONSafeValue;
 }
 
+/** A write of `setStateMulti`. `deep`: restore Map, Set, Date and the markers inside the value too, not only at its top */
+export type Write =
+  | { path: Path; value: JSONSafeValue; deep?: boolean }
+  | { path: Path; delete: true };
+export type WriteResult = { ok: true } | { ok: false; error: string };
+
 export type InitUpdate = { type: 'init'; passage: string; state: JSONSafeObject };
 export type DeltaUpdate = {
   type: 'update';

@@ -6,8 +6,8 @@ import { getPassageData } from './format-helpers/shared';
 import snowmanHelpers from './format-helpers/snowman';
 import sugarcubeHelpers from './format-helpers/sugarcube';
 import type { FormatHelpers } from './format-helpers/type';
+import { applyWrites } from './util/apply-writes';
 import { createLockEnforcer } from './util/locks';
-import { restoreMarkedJsonValue } from './util/post-transform';
 import { createUpdateTracker } from './util/update-tracker';
 
 const formatHelpers: FormatHelpers[] = [
@@ -38,8 +38,7 @@ function init() {
       const reverts = lockEnforcer.enforce();
       return { type: 'update', passage, delta: tracker.getDelta(), reverts };
     },
-    setState: (path, value) => formatHelper.setState(path, restoreMarkedJsonValue(value)),
-    deleteFromState: formatHelper.deleteFromState,
+    setStateMulti: (writes) => applyWrites(writes, formatHelper),
     duplicateStateProperty: formatHelper.duplicateStateProperty,
     setStatePropertyLocks: lockEnforcer.setLocks,
     getPassageData: formatHelper.getPassageData ?? getPassageData,

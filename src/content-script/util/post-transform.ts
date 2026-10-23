@@ -45,7 +45,9 @@ export function posttransformValue(value: JSONSafeValue): unknown {
 
 const restoredTypes = new Set(['Map', 'NumberMap', 'Date']);
 
-export function restoreMarkedJsonValue(value: JSONSafeValue): unknown {
+/** The value to write for a marked JSON value. Without `deep` only its top is restored (a Map, Set or Date) */
+export function restoreMarkedJsonValue(value: JSONSafeValue, { deep = false } = {}): unknown {
+  if (deep) return posttransformValue(value);
   if (value === null || typeof value !== 'object') return value;
   if (Array.isArray(value)) {
     return value[0] !== SET_MARKER ? value : posttransformValue(value);

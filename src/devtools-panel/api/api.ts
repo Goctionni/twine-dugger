@@ -1,4 +1,11 @@
-import type { FormatPassage, JSONSafeValue, Lock, Path } from '@/shared/shared-types';
+import type {
+  FormatPassage,
+  JSONSafeValue,
+  Lock,
+  Path,
+  Write,
+  WriteResult,
+} from '@/shared/shared-types';
 
 import { executeCode, injectContentScript } from './remote-execute';
 import { getGameMetaFn } from './remote-functions/getMetaData';
@@ -18,9 +25,29 @@ export async function getUpdates(full = false) {
   );
 }
 
-export async function setState(path: Array<string | number>, value: JSONSafeValue) {
-  await injectContentScript();
-  return execDuggerFunction('setState', [[...path], value]);
+/**
+ * Writes and deletes, in the order given, in one go between two updates of the game. A write that
+ * fails does not stop the others. The results are logged here, nothing else is done with them yet.
+ */
+export async function setStateMulti(writes: Write[]): Promise<WriteResult[]> {
+  const results =
+    (await execDuggerFunction('setStateMulti', [writes])) ??
+    writes.map((): WriteResult => ({ ok: false, error: 'The call to the page failed' }));
+
+  results.forEach((result, index) => {
+    if (!result.ok) console.error('[Twine Dugger]: A write failed', writes[index], result.error);
+  });
+  return results;
+}
+
+/** `deep`: Maps, Sets and Dates inside the value are restored too, not only the value itself */
+export async function setState(
+  path: Array<string | number>,
+  value: JSONSafeValue,
+  options: { deep?: boolean } = {},
+) {
+  const [result] = await setStateMulti([{ path: [...path], value, deep: options.deep }]);
+  return result!;
 }
 
 export async function goToPassage(passageName: string) {
@@ -52,8 +79,8 @@ export async function duplicateStateProperty(
 }
 
 export async function deleteFromState(path: Array<string | number>) {
-  await injectContentScript();
-  return execDuggerFunction('deleteFromState', [[...path]]);
+  const [result] = await setStateMulti([{ path: [...path], delete: true }]);
+  return result!;
 }
 
 export async function getPassageData() {
