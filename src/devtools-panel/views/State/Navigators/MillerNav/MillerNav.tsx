@@ -9,7 +9,6 @@ import type { Path } from '@/shared/shared-types';
 
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
-import { NavFrame } from '../NavFrame';
 import { isArrowKey } from '../Shared/arrow-keys';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { countCollapsed } from './logic/count-collapsed';
@@ -64,43 +63,41 @@ export function MillerNav(props: NavProps) {
   };
 
   return (
-    <NavFrame {...props}>
-      <div
-        ref={tree}
-        role="tree"
-        aria-label="State"
-        tabindex="0"
-        aria-activedescendant={getActiveId()}
-        onKeyDown={onKeyDown}
-        onFocusIn={(event) => {
-          if (event.target !== event.currentTarget) event.currentTarget.focus();
-        }}
-        class="flex h-full overflow-x-auto outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
-      >
-        <Repeat count={getColumnCount()}>
-          {(depth) => (
-            <Switch>
-              <Match when={depth < getCollapsed()}>
-                <MillerStrip
-                  treeId={treeId}
-                  depth={depth}
-                  path={props.path}
-                  onSelect={props.onSelect}
-                />
-              </Match>
-              <Match when={depth >= getCollapsed()}>
-                <MillerColumn
-                  treeId={treeId}
-                  depth={depth}
-                  path={props.path}
-                  trail={getTrail()}
-                  onSelect={props.onSelect}
-                />
-              </Match>
-            </Switch>
-          )}
-        </Repeat>
-      </div>
-    </NavFrame>
+    <div
+      ref={tree}
+      role="tree"
+      aria-label="State"
+      tabindex="0"
+      aria-activedescendant={getActiveId()}
+      onKeyDown={onKeyDown}
+      onFocusIn={(event) => {
+        if (event.target !== event.currentTarget) event.currentTarget.focus();
+      }}
+      class="flex h-full overflow-x-auto outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
+    >
+      <Repeat count={getColumnCount()}>
+        {(depth) => (
+          <Switch>
+            <Match when={depth < getCollapsed()}>
+              <MillerStrip
+                treeId={treeId}
+                depth={depth}
+                path={props.path}
+                onSelect={props.onSelect}
+              />
+            </Match>
+            <Match when={depth >= getCollapsed()}>
+              <MillerColumn
+                treeId={treeId}
+                depth={depth}
+                path={props.path}
+                trail={getTrail()}
+                onSelect={props.onSelect}
+              />
+            </Match>
+          </Switch>
+        )}
+      </Repeat>
+    </div>
   );
 }

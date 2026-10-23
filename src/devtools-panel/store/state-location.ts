@@ -4,12 +4,15 @@ import { trimToExistingPath } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { getLatestState } from './game-state';
-import { setViewState } from './store';
+import { setViewState, store } from './store';
 
 const [revealCount, setRevealCount] = createSignal(0);
 
 /** Counts the times that the State view was asked to scroll the selection into view */
 export const getRevealCount = revealCount;
+
+/** The path of the selected value, without the state itself */
+export const getStatePath = (): Path => store.viewState.state.path;
 
 /**
  * The one way to select something in the State view. A path that is not in the state is not set:

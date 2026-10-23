@@ -1,11 +1,14 @@
 import { createMemo, createSignal } from 'solid-js';
 
 import { getLatestState } from '@/devtools-panel/store/game-state';
-import { setStatePath } from '@/devtools-panel/store/state-location';
-import { store } from '@/devtools-panel/store/store';
+import { getStatePath, requestReveal, setStatePath } from '@/devtools-panel/store/state-location';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import { pathKey } from '@/shared/path-equals';
+import type { Path } from '@/shared/shared-types';
 
+import { Breadcrumbs } from './Breadcrumbs/Breadcrumbs';
+import { Inspector } from './Inspector/Inspector';
+import { navigators } from './Navigators/navigators';
 import { StateNav } from './Navigators/StateNav';
 import {
   getHiddenTypes,
@@ -22,7 +25,7 @@ export function StateView() {
   const [getSearchText, setSearchText] = createSignal('');
 
   const getSelectionKind = createMemo<SelectionKind>(() =>
-    isContainerType(getJsonType(getPathValue(getLatestState(), store.viewState.state.path)))
+    isContainerType(getJsonType(getPathValue(getLatestState(), getStatePath())))
       ? 'container'
       : 'primitive',
   );
@@ -31,8 +34,17 @@ export function StateView() {
   // a container: that one is opened to look into it, and is edited in a larger view
   const [getClosedPathKey, setClosedPathKey] = createSignal<string>();
   const isOverlayOpen = () =>
-    getSelectionKind() === 'primitive' &&
-    getClosedPathKey() !== pathKey(store.viewState.state.path);
+    getSelectionKind() === 'primitive' && getClosedPathKey() !== pathKey(getStatePath());
+
+  const select = (path: Path) => {
+    setClosedPathKey(undefined);
+    setStatePath(path);
+  };
+  // For what is not a row of the navigator: the selection may be out of view
+  const selectAndReveal = (path: Path) => {
+    select(path);
+    requestReveal();
+  };
 
   return (
     <div class="flex h-full flex-col [container:frame/size]">
@@ -41,24 +53,28 @@ export function StateView() {
         onNavigatorChange={setNavigator}
         searchText={getSearchText()}
         onSearchTextChange={setSearchText}
-        path={store.viewState.state.path}
         hiddenTypes={getHiddenTypes()}
         onHiddenTypesChange={setHiddenTypes}
         sort={getSort()}
         onSortChange={setSort}
       />
-      <div class="min-h-0 flex-1">
-        <StateNav
-          navigator={getNavigator()}
-          path={store.viewState.state.path}
-          selectionKind={getSelectionKind()}
-          onSelect={(path) => {
-            setClosedPathKey(undefined);
-            setStatePath(path);
-          }}
-          isOverlayOpen={isOverlayOpen()}
-          onCloseOverlay={() => setClosedPathKey(pathKey(store.viewState.state.path))}
+      <div class="flex min-h-0 flex-1 flex-col">
+        <Breadcrumbs
+          path={navigators[getNavigator()].getBreadcrumbsPath()}
+          onSelect={selectAndReveal}
         />
+        <div class="relative flex min-h-0 flex-1 inspector-sheet:flex-col">
+          <div class="min-h-0 min-w-0 flex-1 overflow-auto">
+            <StateNav navigator={getNavigator()} path={getStatePath()} onSelect={select} />
+          </div>
+          <Inspector
+            path={getStatePath()}
+            onSelect={selectAndReveal}
+            selectionKind={getSelectionKind()}
+            isOverlayOpen={isOverlayOpen()}
+            onClose={() => setClosedPathKey(pathKey(getStatePath()))}
+          />
+        </div>
       </div>
     </div>
   );

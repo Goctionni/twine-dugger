@@ -1,9 +1,8 @@
-import { Match, Switch, omit } from 'solid-js';
+import { dynamic } from '@solidjs/web';
+import { omit } from 'solid-js';
 
 import type { NavProps, Navigator } from '../types';
-import { MillerNav } from './MillerNav/MillerNav';
-import { TilesNav } from './TilesNav';
-import { TreeNav } from './TreeNav/TreeNav';
+import { navigators } from './navigators';
 
 interface Props extends NavProps {
   navigator: Navigator;
@@ -11,18 +10,8 @@ interface Props extends NavProps {
 
 export function StateNav(props: Props) {
   const navProps = omit(props, 'navigator');
+  // oxlint-disable-next-line solid/reactivity -- dynamic() tracks its source
+  const ActiveNavigator = dynamic(() => navigators[props.navigator].Component);
 
-  return (
-    <Switch>
-      <Match when={props.navigator === 'miller'}>
-        <MillerNav {...navProps} />
-      </Match>
-      <Match when={props.navigator === 'tree'}>
-        <TreeNav {...navProps} />
-      </Match>
-      <Match when={props.navigator === 'tiles'}>
-        <TilesNav {...navProps} />
-      </Match>
-    </Switch>
-  );
+  return <ActiveNavigator {...navProps} />;
 }

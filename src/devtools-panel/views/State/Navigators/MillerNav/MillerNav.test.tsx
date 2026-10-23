@@ -38,15 +38,7 @@ it('shows where the path came from after going up, and forgets it for another br
   flush();
 
   const [getPath, setPath] = createSignal<Path>(['stats', 'nested']);
-  const { container } = render(() => (
-    <MillerNav
-      path={getPath()}
-      selectionKind="container"
-      onSelect={() => {}}
-      isOverlayOpen={false}
-      onCloseOverlay={() => {}}
-    />
-  ));
+  const { container } = render(() => <MillerNav path={getPath()} onSelect={() => {}} />);
   const trailRows = () =>
     [...container.querySelectorAll<HTMLElement>('[data-selection-state="trail"]')].map(
       (row) => row.querySelector('span.shrink-0.truncate')!.textContent,
@@ -82,15 +74,7 @@ it('moves the selection with the arrow keys, and names the selected row as the a
     selected = path;
     setPath(path);
   });
-  const { getByRole } = render(() => (
-    <MillerNav
-      path={getPath()}
-      selectionKind="container"
-      onSelect={onSelect}
-      isOverlayOpen={false}
-      onCloseOverlay={() => {}}
-    />
-  ));
+  const { getByRole } = render(() => <MillerNav path={getPath()} onSelect={onSelect} />);
   const tree = getByRole('tree');
   const press = (key: string, init: KeyboardEventInit = {}) => {
     tree.dispatchEvent(
@@ -134,13 +118,7 @@ it('is one Tab stop: the columns are not, and a column that gets the focus passe
   flush();
 
   const { getByRole, getAllByRole } = render(() => (
-    <MillerNav
-      path={['stats']}
-      selectionKind="container"
-      onSelect={() => {}}
-      isOverlayOpen={false}
-      onCloseOverlay={() => {}}
-    />
+    <MillerNav path={['stats']} onSelect={() => {}} />
   ));
   const tree = getByRole('tree');
   const columns = getAllByRole('group');
@@ -159,15 +137,7 @@ function renderStrips(path: Path, width: number) {
 
   paneWidth = width;
   const onSelect = vi.fn();
-  const view = render(() => (
-    <MillerNav
-      path={path}
-      selectionKind="container"
-      onSelect={onSelect}
-      isOverlayOpen={false}
-      onCloseOverlay={() => {}}
-    />
-  ));
+  const view = render(() => <MillerNav path={path} onSelect={onSelect} />);
   const strips = () => [
     ...view.container.querySelectorAll<HTMLElement>('[role="treeitem"][aria-label]'),
   ];

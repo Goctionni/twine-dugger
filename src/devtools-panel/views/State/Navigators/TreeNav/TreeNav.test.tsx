@@ -7,6 +7,8 @@ import { requestReveal } from '@/devtools-panel/store/state-location';
 import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
 
+import { TYPE_ORDER } from '../../logic/sort-keys';
+import { getTreeTypes } from './tree-types';
 import { TreeNav } from './TreeNav';
 
 vi.mock('@/devtools-panel/api/api', () => ({
@@ -39,15 +41,7 @@ function setup(initialPath: Path = []) {
     setPath(path);
     flush();
   });
-  const view = render(() => (
-    <TreeNav
-      path={getPath()}
-      selectionKind="container"
-      onSelect={onSelect}
-      isOverlayOpen={false}
-      onCloseOverlay={() => {}}
-    />
-  ));
+  const view = render(() => <TreeNav path={getPath()} onSelect={onSelect} />);
   const rows = () => [...view.container.querySelectorAll<HTMLElement>('[role="treeitem"]')];
   const names = () => rows().map((row) => row.querySelector('span.shrink-0.truncate')!.textContent);
   const row = (name: string) => rows().find((item) => item.textContent?.includes(name))!;
@@ -194,4 +188,23 @@ it('scrolls the selected row into view when a reveal is asked for, also when it 
   // Opening and closing is no reason to scroll
   flush();
   expect(scrollIntoView).toHaveBeenCalledTimes(1);
+});
+
+it('tells the toolbar the types of the rows it shows, and every type when it is not there', () => {
+  expect(getTreeTypes()).toEqual(TYPE_ORDER);
+
+  const { caret, unmount } = setup();
+  // The state itself holds objects, an array and a number
+  expect(getTreeTypes()).toEqual(['object', 'array', 'number']);
+
+  caret('stats')!.click();
+  flush();
+  expect(getTreeTypes()).toEqual(['object', 'array', 'number']);
+  caret('inv')!.click();
+  flush();
+  expect(getTreeTypes()).toEqual(['object', 'array', 'number']);
+
+  unmount();
+  flush();
+  expect(getTreeTypes()).toEqual(TYPE_ORDER);
 });
