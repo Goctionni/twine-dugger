@@ -65,9 +65,9 @@ it('restores the value of a row', () => {
   play((live) => (live.score = 12));
 
   restoreButtons()[0]!.click();
-  expect(setState).toHaveBeenCalledWith(['score'], 13);
+  expect(setState).toHaveBeenCalledWith(['score'], 13, { deep: false });
   restoreButtons()[1]!.click();
-  expect(setState).toHaveBeenLastCalledWith(['score'], 10);
+  expect(setState).toHaveBeenLastCalledWith(['score'], 10, { deep: false });
 });
 
 it('cannot restore when the value is locked, or a parent is', async () => {

@@ -2,7 +2,7 @@ import { cleanup, render } from '@solidjs/testing-library';
 import { flush } from 'solid-js';
 import { afterEach, expect, it, vi } from 'vite-plus/test';
 
-import { deleteFromState, setState, setStatePropertyLocks } from '@/devtools-panel/api/api';
+import { setStateMulti, setStatePropertyLocks } from '@/devtools-panel/api/api';
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { clearLocks, getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
 import { createGame } from '@/devtools-panel/store/test-game';
@@ -25,15 +25,13 @@ vi.mock('../ValueHeader/confirmDelete', () => ({
 vi.mock('@/devtools-panel/api/api', () => ({
   getPassageData: async () => [],
   setStatePropertyLocks: vi.fn(async () => {}),
-  setState: vi.fn(async () => {}),
-  deleteFromState: vi.fn(async () => {}),
+  setStateMulti: vi.fn(async () => []),
 }));
 
 afterEach(async () => {
   cleanup();
   await clearLocks();
-  vi.mocked(setState).mockClear();
-  vi.mocked(deleteFromState).mockClear();
+  vi.mocked(setStateMulti).mockClear();
   vi.mocked(confirmDeleteMany).mockClear();
   vi.mocked(setStatePropertyLocks).mockClear();
   flush();
@@ -149,9 +147,11 @@ it('writes the value to the selected rows', async () => {
   type(bulkValue(), '7');
   getByRole('button', { name: 'Save' }).click();
   await Promise.resolve();
-  expect(setState).toHaveBeenCalledTimes(2);
-  expect(setState).toHaveBeenCalledWith(['hero', 'hp'], 7);
-  expect(setState).toHaveBeenCalledWith(['hero', 'gold'], 7);
+  expect(setStateMulti).toHaveBeenCalledTimes(1);
+  expect(setStateMulti).toHaveBeenCalledWith([
+    { path: ['hero', 'gold'], value: 7 },
+    { path: ['hero', 'hp'], value: 7 },
+  ]);
 });
 
 it('can set all of them to the value that is shown', async () => {
@@ -162,8 +162,10 @@ it('can set all of them to the value that is shown', async () => {
   type(bulkValue(), '5');
   getByRole('button', { name: 'Save' }).click();
   await Promise.resolve();
-  expect(setState).toHaveBeenCalledWith(['hero', 'hp'], 5);
-  expect(setState).toHaveBeenCalledWith(['hero', 'gold'], 5);
+  expect(setStateMulti).toHaveBeenCalledWith([
+    { path: ['hero', 'gold'], value: 5 },
+    { path: ['hero', 'hp'], value: 5 },
+  ]);
 });
 
 it('locks all that are selected, and unlocks them', async () => {
@@ -205,10 +207,12 @@ it('deletes the selected rows after one question, and not the locked ones', asyn
 
   const bulkDelete = getAllByRole<HTMLButtonElement>('button', { name: 'Delete' })[0]!;
   bulkDelete.click();
-  await vi.waitFor(() => expect(deleteFromState).toHaveBeenCalledTimes(2));
+  await vi.waitFor(() => expect(setStateMulti).toHaveBeenCalledTimes(1));
   expect(confirmDeleteMany).toHaveBeenCalledWith(2);
-  expect(deleteFromState).toHaveBeenCalledWith(['hero', 'hp']);
-  expect(deleteFromState).toHaveBeenCalledWith(['hero', 'gold']);
+  expect(setStateMulti).toHaveBeenCalledWith([
+    { path: ['hero', 'gold'], delete: true },
+    { path: ['hero', 'hp'], delete: true },
+  ]);
 });
 
 it('deletes the items of an array from the last one', async () => {
@@ -220,11 +224,11 @@ it('deletes the items of an array from the last one', async () => {
   );
 
   getAllByRole<HTMLButtonElement>('button', { name: 'Delete' })[0]!.click();
-  await vi.waitFor(() => expect(deleteFromState).toHaveBeenCalledTimes(3));
-  expect(vi.mocked(deleteFromState).mock.calls.map(([path]) => path)).toEqual([
-    ['list', 2],
-    ['list', 1],
-    ['list', 0],
+  await vi.waitFor(() => expect(setStateMulti).toHaveBeenCalledTimes(1));
+  expect(setStateMulti).toHaveBeenCalledWith([
+    { path: ['list', 2], delete: true },
+    { path: ['list', 1], delete: true },
+    { path: ['list', 0], delete: true },
   ]);
 });
 
@@ -235,5 +239,5 @@ it('does not ask when the answer is no', async () => {
   getAllByRole<HTMLButtonElement>('button', { name: 'Delete' })[0]!.click();
   await Promise.resolve();
   await Promise.resolve();
-  expect(deleteFromState).not.toHaveBeenCalled();
+  expect(setStateMulti).not.toHaveBeenCalled();
 });

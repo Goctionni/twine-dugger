@@ -1,6 +1,6 @@
 import { Match, Show, Switch, createEffect, createMemo, createSignal } from 'solid-js';
 
-import { deleteFromState, setState } from '@/devtools-panel/api/api';
+import { setStateMulti } from '@/devtools-panel/api/api';
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { getLockedPaths, setPathLocks } from '@/devtools-panel/store/locks';
 import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
@@ -10,7 +10,7 @@ import { StringInput } from '@/devtools-panel/ui/inputs/StringInput';
 import { baseInputClasses } from '@/devtools-panel/ui/util/common-classes';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getJsonType, getPathValue } from '@/shared/json-safe';
-import type { JSONSafeValue, Path, ValueType } from '@/shared/shared-types';
+import type { JSONSafeValue, Path, ValueType, Write } from '@/shared/shared-types';
 
 import { getLockStatus, isInsideSet } from '../logic/edit-status';
 import { confirmDeleteMany } from '../ValueHeader/confirmDelete';
@@ -96,15 +96,14 @@ export function BulkRow(props: Props) {
   const save = async () => {
     const value = getDraft();
     if (value === undefined) return;
-    await Promise.all(getEditableKeys().map((key) => setState(getPathOf(key), value)));
+    await setStateMulti(getEditableKeys().map((key) => ({ path: getPathOf(key), value })));
   };
   const toggleLock = () =>
     setPathLocks(getLockableKeys().map(getPathOf), getLockState() !== 'locked');
   const remove = async () => {
     const paths = sortForDeletion(getEditableKeys().map(getPathOf));
     if (!paths.length || !(await confirmDeleteMany(paths.length))) return;
-    // One at a time: the first delete is done before the next one starts
-    for (const path of paths) await deleteFromState(path);
+    await setStateMulti(paths.map((path): Write => ({ path, delete: true })));
   };
 
   // Enter: save what is changed, or else lock and unlock them all. Esc: back to the first value

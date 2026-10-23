@@ -2,7 +2,7 @@ import { For, Show, createSignal } from 'solid-js';
 
 import { setState } from '@/devtools-panel/api/api';
 import { getLatestId, getLatestState } from '@/devtools-panel/store/game-state';
-import { getMarkedValueText, getPathValue } from '@/shared/json-safe';
+import { getMarkedValueText, getPathValue, isContainer } from '@/shared/json-safe';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { createEditStatus } from '../createEditStatus';
@@ -38,7 +38,8 @@ export function HistoryTab(props: Props) {
     return getHiddenCount() === 0 ? entries.at(-1)?.before : undefined;
   };
 
-  const restore = (value: JSONSafeValue) => setState(props.path, value);
+  const restore = (value: JSONSafeValue) =>
+    setState(props.path, value, { deep: isContainer(value) });
   // NaN, the infinities and undefined are not written by the panel
   const canRestore = (value: JSONSafeValue) =>
     canChange() && getMarkedValueText(value) === undefined;

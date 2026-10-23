@@ -76,7 +76,7 @@ it('writes what the dialog gives, at the name, or at the end of an array', async
   vi.mocked(showAddDialog).mockResolvedValueOnce({ name: 'd', value: 4 });
   const group = setup(['group']);
   group.getByRole('button', { name: 'Add property' }).click();
-  await vi.waitFor(() => expect(setState).toHaveBeenCalledWith(['group', 'd'], 4));
+  await vi.waitFor(() => expect(setState).toHaveBeenCalledWith(['group', 'd'], 4, { deep: false }));
   expect(showAddDialog).toHaveBeenLastCalledWith({
     target: 'object',
     existingKeys: ['a', 'b', 'c'],
@@ -87,12 +87,12 @@ it('writes what the dialog gives, at the name, or at the end of an array', async
   vi.mocked(showAddDialog).mockResolvedValueOnce({ value: 'x' });
   const list = setup(['list']);
   list.getByRole('button', { name: 'Add item' }).click();
-  await vi.waitFor(() => expect(setState).toHaveBeenCalledWith(['list', 2], 'x'));
+  await vi.waitFor(() => expect(setState).toHaveBeenCalledWith(['list', 2], 'x', { deep: false }));
   cleanup();
 
   vi.mocked(showAddDialog).mockResolvedValueOnce({ name: 'k2', value: 1 });
   setup(['map']).getByRole('button', { name: 'Add property' }).click();
-  await vi.waitFor(() => expect(setState).toHaveBeenCalledWith(['map', 'k2'], 1));
+  await vi.waitFor(() => expect(setState).toHaveBeenCalledWith(['map', 'k2'], 1, { deep: false }));
 });
 
 it('writes nothing when the dialog is closed, and has no type to start from for mixed children', async () => {
@@ -109,4 +109,12 @@ it('cannot add to a container that is locked', async () => {
   await setPathLock(['group'], true);
   flush();
   expect(view.getByRole<HTMLButtonElement>('button', { name: 'Add property' }).disabled).toBe(true);
+});
+
+it('has the Maps, Sets and Dates inside an added container restored', async () => {
+  vi.mocked(showAddDialog).mockResolvedValueOnce({ name: 'nested', value: { m: { a: 1 } } });
+  setup(['group']).getByRole('button', { name: 'Add property' }).click();
+  await vi.waitFor(() =>
+    expect(setState).toHaveBeenCalledWith(['group', 'nested'], { m: { a: 1 } }, { deep: true }),
+  );
 });

@@ -55,7 +55,8 @@ export function ContainerEditor(props: Props) {
     });
     if (!added) return;
     const { path, value } = getAddition(props.path, target, getCount(), added);
-    await setState(path, value);
+    // Added as JSON, a container can hold Maps, Sets and Dates of its own: they are restored too
+    await setState(path, value, { deep: isContainer(value) });
   };
 
   const { getCantEditReason, isEditingJson, setIsEditingJson } = createEditAsJson({

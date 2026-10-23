@@ -1,6 +1,6 @@
 import { For, Match, Show, Switch, createMemo, createSignal } from 'solid-js';
 
-import { deleteFromState, setState } from '@/devtools-panel/api/api';
+import { setStateMulti } from '@/devtools-panel/api/api';
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { getLockedPaths } from '@/devtools-panel/store/locks';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
@@ -16,7 +16,7 @@ import {
   type ContainerType,
 } from '@/shared/json-safe';
 import { pathStartsWith } from '@/shared/path-equals';
-import type { JSONSafeObject, JSONSafeValue, Path } from '@/shared/shared-types';
+import type { JSONSafeObject, JSONSafeValue, Path, Write } from '@/shared/shared-types';
 
 import { compareJson, type Change } from './compare-json';
 
@@ -209,17 +209,23 @@ export function EditAsJson(props: Props) {
       const { changes } = getComparison();
       if (getContainerType() === 'set') {
         // The items of a set have no place to write to: the whole set is written
-        if (changes.length > 0) {
-          await setState(props.path, [SET_MARKER, ...(JSON.parse(getText()) as JSONSafeValue[])]);
-        }
+        const items = JSON.parse(getText()) as JSONSafeValue[];
+        if (changes.length > 0)
+          await setStateMulti([{ path: props.path, value: [SET_MARKER, ...items] }]);
       } else {
-        // Writes first, then the deletes: the changes of an array list its deletes from the last
-        for (const change of changes) {
-          if (change.op !== 'delete') await setState([...props.path, change.key], change.after);
-        }
-        for (const change of changes) {
-          if (change.op === 'delete') await deleteFromState([...props.path, change.key]);
-        }
+        // Writes first, then the deletes: the changes of an array list its deletes from the last.
+        // A container that is written holds Maps, Sets and Dates of its own: they are restored too
+        const writes = changes
+          .filter((change) => change.op !== 'delete')
+          .map((change): Write => ({
+            path: [...props.path, change.key],
+            value: change.after!,
+            deep: typeof change.after === 'object' && change.after !== null,
+          }));
+        const deletes = changes
+          .filter((change) => change.op === 'delete')
+          .map((change): Write => ({ path: [...props.path, change.key], delete: true }));
+        await setStateMulti([...writes, ...deletes]);
       }
       props.onClose();
     } finally {

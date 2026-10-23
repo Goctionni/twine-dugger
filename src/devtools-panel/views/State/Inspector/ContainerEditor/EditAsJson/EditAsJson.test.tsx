@@ -2,7 +2,7 @@ import { cleanup, render } from '@solidjs/testing-library';
 import { createSignal, flush } from 'solid-js';
 import { afterEach, expect, it, vi } from 'vite-plus/test';
 
-import { deleteFromState, setState } from '@/devtools-panel/api/api';
+import { setStateMulti } from '@/devtools-panel/api/api';
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { clearLocks, setPathLock } from '@/devtools-panel/store/locks';
 import { createGame } from '@/devtools-panel/store/test-game';
@@ -19,8 +19,7 @@ import { ContainerEditor } from '../ContainerEditor';
 vi.mock('@/devtools-panel/api/api', () => ({
   getPassageData: async () => [],
   setStatePropertyLocks: vi.fn(async () => {}),
-  setState: vi.fn(async () => {}),
-  deleteFromState: vi.fn(async () => {}),
+  setStateMulti: vi.fn(async () => []),
 }));
 
 vi.mock('../AddPropertyDialog', () => ({ showAddDialog: vi.fn() }));
@@ -28,8 +27,7 @@ vi.mock('../AddPropertyDialog', () => ({ showAddDialog: vi.fn() }));
 afterEach(async () => {
   cleanup();
   await clearLocks();
-  vi.mocked(setState).mockClear();
-  vi.mocked(deleteFromState).mockClear();
+  vi.mocked(setStateMulti).mockClear();
 });
 
 function setup(path: Path = ['group']) {
@@ -103,10 +101,12 @@ it('saves what changed: sets, adds and deletes, and goes back to the grid', asyn
   type({ a: 2, b: 'two', d: 'new' });
   save().click();
 
-  await vi.waitFor(() => expect(deleteFromState).toHaveBeenCalledWith(['group', 'c']));
-  expect(setState).toHaveBeenCalledWith(['group', 'a'], 2);
-  expect(setState).toHaveBeenCalledWith(['group', 'd'], 'new');
-  expect(setState).toHaveBeenCalledTimes(2);
+  await vi.waitFor(() => expect(setStateMulti).toHaveBeenCalledTimes(1));
+  expect(setStateMulti).toHaveBeenCalledWith([
+    { path: ['group', 'a'], value: 2, deep: false },
+    { path: ['group', 'd'], value: 'new', deep: false },
+    { path: ['group', 'c'], delete: true },
+  ]);
   await vi.waitFor(() => expect(queryByRole('textbox', { name: 'JSON' })).toBeNull());
   expect(getByRole('button', { name: 'Edit as JSON' })).toBeTruthy();
 });
@@ -118,7 +118,7 @@ it('cancels without writing, from the top or the bottom', () => {
   expect(getAllByRole('button', { name: 'Cancel' })).toHaveLength(2);
   getAllByRole('button', { name: 'Cancel' })[0]!.click();
   flush();
-  expect(setState).not.toHaveBeenCalled();
+  expect(setStateMulti).not.toHaveBeenCalled();
   expect(queryByRole('textbox', { name: 'JSON' })).toBeNull();
 });
 
@@ -224,11 +224,11 @@ it('edits an array by position, writing the new items and deleting from the end'
   type([9]);
   save().click();
 
-  await vi.waitFor(() => expect(deleteFromState).toHaveBeenCalledTimes(2));
-  expect(setState).toHaveBeenCalledWith(['list', 0], 9);
-  expect(vi.mocked(deleteFromState).mock.calls.map(([path]) => path)).toEqual([
-    ['list', 2],
-    ['list', 1],
+  await vi.waitFor(() => expect(setStateMulti).toHaveBeenCalledTimes(1));
+  expect(setStateMulti).toHaveBeenCalledWith([
+    { path: ['list', 0], value: 9, deep: false },
+    { path: ['list', 2], delete: true },
+    { path: ['list', 1], delete: true },
   ]);
 });
 
@@ -239,7 +239,9 @@ it('writes a set as a whole, with its marker', async () => {
   type([1, 2, 3]);
   save().click();
 
-  await vi.waitFor(() => expect(setState).toHaveBeenCalledWith(['flags'], [SET_MARKER, 1, 2, 3]));
+  await vi.waitFor(() =>
+    expect(setStateMulti).toHaveBeenCalledWith([{ path: ['flags'], value: [SET_MARKER, 1, 2, 3] }]),
+  );
 });
 
 it('is not for an array that holds containers', () => {
