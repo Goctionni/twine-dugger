@@ -34,6 +34,21 @@ export function getMarkedValueText(value: unknown): string | undefined {
   }
 }
 
+export const MARKED_VALUE_WRITE_ERROR = 'NaN, Infinity and undefined cannot be written from here';
+
+/**
+ * Whether `after` has a marker (see above) where `before` did not have the same one: a marker
+ * that was there and stays is no new value. Containers are compared by key and index.
+ */
+export function hasNewMarkedValue(before: unknown, after: unknown): boolean {
+  if (getMarkedValueText(after) !== undefined) return before !== after;
+  if (after === null || typeof after !== 'object') return false;
+  const previous = typeof before === 'object' && before !== null ? before : {};
+  return Object.entries(after).some(([key, value]) =>
+    hasNewMarkedValue((previous as Record<string, unknown>)[key], value),
+  );
+}
+
 export type ContainerType = 'object' | 'array' | 'map' | 'set';
 
 export function getJsonType(value: unknown): ValueType {

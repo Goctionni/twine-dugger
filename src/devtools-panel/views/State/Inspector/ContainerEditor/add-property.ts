@@ -1,4 +1,9 @@
-import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
+import {
+  MARKED_VALUE_WRITE_ERROR,
+  SET_MARKER,
+  TYPE_KEY,
+  hasNewMarkedValue,
+} from '@/shared/json-safe';
 import type { JSONSafeValue, Path, ValueType } from '@/shared/shared-types';
 
 export const NEW_TYPES = ['string', 'number', 'boolean', 'object', 'map', 'array', 'set'] as const;
@@ -45,6 +50,7 @@ export function parseJsonValue(type: NewType, text: string): Parsed {
   } catch {
     return { error: 'This is not valid JSON' };
   }
+  if (hasNewMarkedValue(undefined, value)) return { error: MARKED_VALUE_WRITE_ERROR };
 
   switch (type) {
     case 'string':

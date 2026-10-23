@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vite-plus/test';
 import {
   getJsonType,
   getMarkedValueText,
+  hasNewMarkedValue,
   isNumberLike,
   jsonEqual,
   NAN_MARKER,
@@ -70,5 +71,22 @@ describe('markers for NaN, the infinities and undefined', () => {
     expect(getMarkedValueText(NEGATIVE_INFINITY_MARKER)).toBe('-Infinity');
     expect(getMarkedValueText(UNDEFINED_MARKER)).toBe('undefined');
     expect(getMarkedValueText('undefined')).toBeUndefined();
+  });
+});
+
+describe('hasNewMarkedValue', () => {
+  it('finds a marker that was not there before, at any depth', () => {
+    expect(hasNewMarkedValue(1, NAN_MARKER)).toBe(true);
+    expect(hasNewMarkedValue(undefined, { a: [1, UNDEFINED_MARKER] })).toBe(true);
+    expect(hasNewMarkedValue({ a: 1 }, { a: POSITIVE_INFINITY_MARKER })).toBe(true);
+    // Another marker in the same place is new too
+    expect(hasNewMarkedValue(NAN_MARKER, POSITIVE_INFINITY_MARKER)).toBe(true);
+  });
+
+  it('does not find one that stays where it was, or a plain value', () => {
+    expect(hasNewMarkedValue(NAN_MARKER, NAN_MARKER)).toBe(false);
+    expect(hasNewMarkedValue({ a: NAN_MARKER, b: 1 }, { a: NAN_MARKER, b: 2 })).toBe(false);
+    expect(hasNewMarkedValue([NAN_MARKER], [NAN_MARKER, 3])).toBe(false);
+    expect(hasNewMarkedValue(undefined, { a: 'NaN', b: null })).toBe(false);
   });
 });

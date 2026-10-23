@@ -1,7 +1,9 @@
 import {
+  MARKED_VALUE_WRITE_ERROR,
   SET_MARKER,
   TYPE_KEY,
   getContainerKeys,
+  hasNewMarkedValue,
   jsonEqual,
   type ContainerType,
 } from '@/shared/json-safe';
@@ -43,10 +45,16 @@ export function compareJson(
     return fail((error as Error).message);
   }
 
-  if (containerType === 'array' || containerType === 'set') {
-    return compareItems(containerType, container as JSONSafeArray, edited);
-  }
-  return compareProperties(containerType, container as JSONSafeObject, keysInEdit, edited);
+  const comparison =
+    containerType === 'array' || containerType === 'set'
+      ? compareItems(containerType, container as JSONSafeArray, edited)
+      : compareProperties(containerType, container as JSONSafeObject, keysInEdit, edited);
+
+  // The panel does not write NaN, the infinities or undefined: a marker is only there to stay
+  const writesMarker = comparison.changes.some(
+    (change) => change.op !== 'delete' && hasNewMarkedValue(change.before, change.after),
+  );
+  return writesMarker ? fail(MARKED_VALUE_WRITE_ERROR) : comparison;
 }
 
 function compareItems(type: 'array' | 'set', container: JSONSafeArray, edited: unknown) {

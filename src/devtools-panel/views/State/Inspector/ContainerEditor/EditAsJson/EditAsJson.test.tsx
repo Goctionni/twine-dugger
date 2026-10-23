@@ -6,7 +6,12 @@ import { deleteFromState, setState } from '@/devtools-panel/api/api';
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { clearLocks, setPathLock } from '@/devtools-panel/store/locks';
 import { createGame } from '@/devtools-panel/store/test-game';
-import { SET_MARKER } from '@/shared/json-safe';
+import {
+  MARKED_VALUE_WRITE_ERROR,
+  NAN_MARKER,
+  SET_MARKER,
+  UNDEFINED_MARKER,
+} from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { ContainerEditor } from '../ContainerEditor';
@@ -387,4 +392,28 @@ it('lists the changes to locked properties first, in red', async () => {
   expect(lines.map((line) => line.textContent)).toEqual(['b "two" → "changed"', 'a 1 → 2']);
   expect(lines[0]!.className).toContain('text-red-400');
   expect(lines[1]!.className).not.toContain('text-red-400');
+});
+
+it('does not take NaN, an infinity or undefined from the text, and lets existing ones be', () => {
+  const game = createGame({ group: { a: 1, bad: Number.NaN } });
+  startGameState(game.state());
+  applyUpdate(game.update());
+  flush();
+  const view = render(() => <ContainerEditor path={['group']} />);
+  view.getByRole('button', { name: 'Edit as JSON' }).click();
+  flush();
+  const area = view.getByRole<HTMLTextAreaElement>('textbox', { name: 'JSON' });
+  const type = (value: unknown) => {
+    area.value = JSON.stringify(value);
+    area.dispatchEvent(new Event('input', { bubbles: true }));
+    flush();
+  };
+
+  type({ a: 2, bad: NAN_MARKER });
+  expect(view.queryByRole('alert')).toBeNull();
+
+  type({ a: UNDEFINED_MARKER, bad: NAN_MARKER });
+  expect(view.getByRole('alert').textContent).toBe(MARKED_VALUE_WRITE_ERROR);
+  expect(area.className).toContain('border-red-500!');
+  expect(view.getByRole<HTMLButtonElement>('button', { name: 'Save changes' }).disabled).toBe(true);
 });

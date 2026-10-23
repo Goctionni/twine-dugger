@@ -1,6 +1,13 @@
 import { expect, it } from 'vite-plus/test';
 
-import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
+import {
+  MARKED_VALUE_WRITE_ERROR,
+  NAN_MARKER,
+  POSITIVE_INFINITY_MARKER,
+  SET_MARKER,
+  TYPE_KEY,
+  UNDEFINED_MARKER,
+} from '@/shared/json-safe';
 
 import {
   checkName,
@@ -74,4 +81,12 @@ it('puts a new item of an array at the end, and a property at its name', () => {
     value: 'y',
   });
   expect(getAddition([], 'map', 0, { name: 'k', value: 1 }).path).toEqual(['k']);
+});
+
+it('does not take NaN, an infinity or undefined from the text', () => {
+  const error = { error: MARKED_VALUE_WRITE_ERROR };
+  expect(parseJsonValue('string', `"${NAN_MARKER}"`)).toEqual(error);
+  expect(parseJsonValue('object', `{"a": {"b": "${UNDEFINED_MARKER}"}}`)).toEqual(error);
+  expect(parseJsonValue('array', `["${POSITIVE_INFINITY_MARKER}"]`)).toEqual(error);
+  expect(parseJsonValue('string', '"NaN"')).toEqual({ value: 'NaN' });
 });

@@ -1,6 +1,13 @@
 import { expect, it } from 'vite-plus/test';
 
-import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
+import {
+  MARKED_VALUE_WRITE_ERROR,
+  NAN_MARKER,
+  POSITIVE_INFINITY_MARKER,
+  SET_MARKER,
+  TYPE_KEY,
+  UNDEFINED_MARKER,
+} from '@/shared/json-safe';
 
 import { compareJson } from './compare-json';
 
@@ -58,4 +65,26 @@ it('compares the items of a set without its marker', () => {
     { op: 'add', key: 2, after: 3 },
   ]);
   expect(compareJson('set', set, [], JSON.stringify(set)).error).toContain('marker');
+});
+
+it('does not write NaN, an infinity or undefined, but lets one stay where it is', () => {
+  const state = { a: 1, bad: NAN_MARKER, group: { n: NAN_MARKER, x: 1 } };
+  const keys = ['a', 'bad', 'group'];
+  const compareState = (text: string) => compareJson('object', state, keys, text);
+
+  expect(compareState(`{"a": "${UNDEFINED_MARKER}", "bad": "${NAN_MARKER}"}`).error).toBe(
+    MARKED_VALUE_WRITE_ERROR,
+  );
+  expect(compareState(`{"a": 1, "bad": "${POSITIVE_INFINITY_MARKER}"}`).error).toBe(
+    MARKED_VALUE_WRITE_ERROR,
+  );
+  expect(compareState(`{"new": [1, "${NAN_MARKER}"]}`).error).toBe(MARKED_VALUE_WRITE_ERROR);
+
+  // Unchanged markers, also inside a container that changes elsewhere, are fine
+  const kept = compareState(
+    `{"a": 2, "bad": "${NAN_MARKER}", "group": {"n": "${NAN_MARKER}", "x": 2}}`,
+  );
+  expect(kept.error).toBeUndefined();
+  expect(kept.changes.map((change) => change.key)).toEqual(['a', 'group']);
+  expect(compareJson('array', [1], [], `["${NAN_MARKER}"]`).error).toBe(MARKED_VALUE_WRITE_ERROR);
 });
