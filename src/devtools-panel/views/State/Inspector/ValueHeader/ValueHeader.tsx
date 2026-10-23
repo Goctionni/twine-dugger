@@ -27,7 +27,7 @@ export function ValueHeader(props: Props) {
   const getTitle = () => getPathLabels(getLatestState(), props.path).at(-1) ?? 'State';
   const isRoot = () => props.path.length === 0;
 
-  const { canDelete } = createEditStatus(() => props.path);
+  const { canChange } = createEditStatus(() => props.path);
 
   return (
     <header class="flex flex-col gap-1">
@@ -38,7 +38,7 @@ export function ValueHeader(props: Props) {
           <div class="-mr-2 ml-auto flex gap-1">
             <PinButton isPinned={isPinned(props.path)} onToggle={() => togglePin(props.path)} />
             <DeleteButton
-              disabled={!canDelete()}
+              disabled={!canChange()}
               onDelete={() => void deleteValue(props.path, getTitle())}
             />
           </div>

@@ -11,8 +11,8 @@ export function createEditStatus(getPath: () => Path) {
   const isDisabled = () =>
     getStatus() === 'ancestor-lock' || isInsideSet(getLatestState(), getPath());
   // Locked values would be put back, and the items of a set cannot be named
-  const canDelete = () => getStatus() === 'unlocked' && !isDisabled();
+  const canChange = () => getStatus() === 'unlocked' && !isDisabled();
   const toggleLock = () => setPathLock(getPath(), getStatus() === 'unlocked');
 
-  return { getStatus, isDisabled, canDelete, toggleLock };
+  return { getStatus, isDisabled, canChange, toggleLock };
 }

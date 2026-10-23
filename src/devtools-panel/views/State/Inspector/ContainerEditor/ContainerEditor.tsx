@@ -1,4 +1,4 @@
-import { Show, createMemo } from 'solid-js';
+import { Match, Show, Switch, createMemo } from 'solid-js';
 
 import { setState } from '@/devtools-panel/api/api';
 import { getLatestState } from '@/devtools-panel/store/game-state';
@@ -15,6 +15,9 @@ import { createEditStatus } from '../createEditStatus';
 import { ValueHeader } from '../ValueHeader/ValueHeader';
 import { getAddition, getDefaultType, type AddTarget } from './add-property';
 import { showAddDialog } from './AddPropertyDialog';
+import { createSelection } from './createSelection';
+import { createEditAsJson } from './EditAsJson/create-edit-as-json';
+import { EditAsJson } from './EditAsJson/EditAsJson';
 import { PropertyGrid } from './PropertyGrid';
 
 interface Props {
@@ -31,13 +34,14 @@ export function ContainerEditor(props: Props) {
     const container = getContainer();
     return isContainer(container) ? getContainerSize(container) : 0;
   };
+  const selection = createSelection(() => props.path);
 
   // The items of a set have no place to be named, so nothing is added to one from here
   const getTarget = (): AddTarget | undefined => {
     const type = getType();
     return type === 'object' || type === 'map' || type === 'array' ? type : undefined;
   };
-  const { canDelete: canChange } = createEditStatus(() => props.path);
+  const { canChange } = createEditStatus(() => props.path);
 
   const add = async () => {
     const target = getTarget();
@@ -53,6 +57,11 @@ export function ContainerEditor(props: Props) {
     const { path, value } = getAddition(props.path, target, getCount(), added);
     await setState(path, value);
   };
+
+  const { getCantEditReason, isEditingJson, setIsEditingJson } = createEditAsJson({
+    containerPath: () => props.path,
+    container: getContainer,
+  });
 
   return (
     <div class="flex flex-col gap-3 p-3">
@@ -73,11 +82,30 @@ export function ContainerEditor(props: Props) {
             {getTarget() === 'array' ? 'Add item' : 'Add property'}
           </button>
         </Show>
-        <button type="button" class={buttonClass} disabled title="Not built yet">
-          Edit as JSON
-        </button>
+        <Show when={!isEditingJson()}>
+          <button
+            type="button"
+            class={buttonClass}
+            disabled={Boolean(getCantEditReason())}
+            title={getCantEditReason()}
+            onClick={() => setIsEditingJson(true)}
+          >
+            Edit as JSON
+          </button>
+        </Show>
       </div>
-      <PropertyGrid path={props.path} />
+      <Switch>
+        <Match when={isEditingJson()}>
+          <EditAsJson
+            path={props.path}
+            selectedKeys={[...selection.getSelected()]}
+            onClose={() => setIsEditingJson(false)}
+          />
+        </Match>
+        <Match when={!isEditingJson()}>
+          <PropertyGrid path={props.path} selection={selection} />
+        </Match>
+      </Switch>
     </div>
   );
 }

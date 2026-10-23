@@ -1,22 +1,23 @@
-import { For, Show, createEffect, createMemo, createSignal } from 'solid-js';
+import { For, Show, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
 import { isPinned } from '@/devtools-panel/store/store';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getPathValue, isContainer } from '@/shared/json-safe';
-import { pathKey } from '@/shared/path-equals';
 import type { JSONSafeObject, Path } from '@/shared/shared-types';
 
 import { getVisibleKeys } from '../../Navigators/Shared/visible-keys';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import { countUnsavedChildren, discardChildDrafts, saveChildDrafts } from '../draft-registry';
 import { BulkRow } from './BulkRow';
+import type { Selection } from './createSelection';
 import { PropertyRow } from './PropertyRow';
 
 type Key = string | number;
 
 interface Props {
   path: Path;
+  selection: Selection;
 }
 
 const textButtonClass = 'cursor-pointer text-sky-400 hover:underline';
@@ -41,27 +42,11 @@ export function PropertyGrid(props: Props) {
   const getPrimitiveKeys = createMemo(() => getKeys().filter(isPrimitive), { equals: sameItems });
   const getContainerCount = () => getKeys().length - getPrimitiveKeys().length;
 
-  // What is selected belongs to this container
-  const [getSelected, setSelected] = createSignal<ReadonlySet<Key>>(new Set());
-  createEffect(
-    () => pathKey(props.path),
-    () => {
-      setSelected(new Set<Key>());
-    },
-  );
   // Only what is in the grid can be selected
   const getSelectedKeys = createMemo(
-    () => getPrimitiveKeys().filter((key) => getSelected().has(key)),
-    {
-      equals: sameItems,
-    },
+    () => getPrimitiveKeys().filter((key) => props.selection.getSelected().has(key)),
+    { equals: sameItems },
   );
-  const toggle = (key: Key) =>
-    setSelected((selected) => {
-      const next = new Set(selected);
-      if (!next.delete(key)) next.add(key);
-      return next;
-    });
 
   const getUnsavedCount = () => countUnsavedChildren(props.path);
 
@@ -99,14 +84,14 @@ export function PropertyGrid(props: Props) {
             path={props.path}
             keys={getPrimitiveKeys()}
             selectedKeys={getSelectedKeys()}
-            onSelect={(keys) => setSelected(new Set(keys))}
+            onSelect={props.selection.select}
           />
           <For each={getPrimitiveKeys()}>
             {(key) => (
               <PropertyRow
                 path={[...props.path, key]}
                 isSelected={getSelectedKeys().includes(key)}
-                onToggle={() => toggle(key)}
+                onToggle={() => props.selection.toggle(key)}
               />
             )}
           </For>

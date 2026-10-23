@@ -26,7 +26,7 @@ export function PropertyRow(props: Props) {
   const getValue = () => getPathValue(getLatestState(), props.path);
   const getType = createMemo(() => getJsonType(getValue()));
   const getName = () => getPathLabels(getLatestState(), props.path).at(-1) ?? '';
-  const { canDelete } = createEditStatus(() => props.path);
+  const { canChange } = createEditStatus(() => props.path);
 
   return (
     <li class="col-span-3 grid grid-cols-subgrid items-start py-1">
@@ -76,7 +76,7 @@ export function PropertyRow(props: Props) {
       </div>
       <div class="pl-1">
         <DeleteButton
-          disabled={!canDelete()}
+          disabled={!canChange()}
           onDelete={() => void deleteValue(props.path, getName())}
         />
       </div>

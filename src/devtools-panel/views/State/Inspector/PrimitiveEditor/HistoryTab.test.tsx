@@ -1,5 +1,5 @@
 import { cleanup, render } from '@solidjs/testing-library';
-import { flush } from 'solid-js';
+import { createSignal, flush } from 'solid-js';
 import { afterEach, expect, it, vi } from 'vite-plus/test';
 
 import { setState } from '@/devtools-panel/api/api';
@@ -88,4 +88,31 @@ it('shows the first five changes and the rest on request', () => {
   getByText('Show older (2)').click();
   flush();
   expect(rows()).toHaveLength(8);
+});
+
+it('starts short again when another value is selected', () => {
+  const game = createGame({ score: 10, other: 1 });
+  startGameState(game.state());
+  applyUpdate(game.update());
+  flush();
+  for (let value = 11; value <= 17; value++) {
+    game.live.score = value;
+    applyUpdate(game.update());
+    flush();
+  }
+  for (let value = 2; value <= 8; value++) {
+    game.live.other = value;
+    applyUpdate(game.update());
+    flush();
+  }
+
+  const [getPath, setPath] = createSignal<Path>(['score']);
+  const view = render(() => <HistoryTab path={getPath()} />);
+  view.getByText('Show older (2)').click();
+  flush();
+  expect(view.queryAllByRole('listitem')).toHaveLength(8);
+
+  setPath(['other']);
+  flush();
+  expect(view.queryAllByRole('listitem')).toHaveLength(5);
 });

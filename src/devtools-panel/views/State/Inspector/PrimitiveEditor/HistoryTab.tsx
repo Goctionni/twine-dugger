@@ -3,10 +3,10 @@ import { For, Show, createSignal } from 'solid-js';
 import { setState } from '@/devtools-panel/api/api';
 import { getLatestId, getLatestState } from '@/devtools-panel/store/game-state';
 import { getPathValue } from '@/shared/json-safe';
-import { pathKey } from '@/shared/path-equals';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { createEditStatus } from '../createEditStatus';
+import { createStablePath } from '../createStablePath';
 import { createValueHistory } from '../createValueHistory';
 import { describeAge, formatAsJson } from '../logic/info';
 import { describeDelta } from '../logic/value-history';
@@ -19,13 +19,14 @@ interface Props {
 
 export function HistoryTab(props: Props) {
   const getHistory = createValueHistory(() => props.path);
-  const status = createEditStatus(() => props.path);
+  const { canChange } = createEditStatus(() => props.path);
   const getValue = () => getPathValue(getLatestState(), props.path);
-  const canRestore = () => status.getStatus() === 'unlocked' && !status.isDisabled();
 
-  // The list is long for the one path it was asked for: another value starts short again
-  const [getLongFor, setLongFor] = createSignal<string>();
-  const getShowAll = () => getLongFor() === pathKey(props.path);
+  const getStablePath = createStablePath(() => props.path);
+  const [getShowAll, setShowAll] = createSignal(() => {
+    getStablePath(); // Reset getShowAll when the path changes (The component stays alive during path changes)
+    return false;
+  });
 
   const getShown = () =>
     getShowAll() ? getHistory().entries : getHistory().entries.slice(0, FIRST_ENTRIES);
@@ -69,7 +70,7 @@ export function HistoryTab(props: Props) {
                     <button
                       type="button"
                       class="cursor-pointer rounded px-2 py-0.5 text-sky-400 hover:bg-gray-800 disabled:cursor-default disabled:text-gray-500 disabled:hover:bg-transparent"
-                      disabled={!canRestore()}
+                      disabled={!canChange()}
                       onClick={() => restore(entry().value!)}
                     >
                       Restore
@@ -97,7 +98,7 @@ export function HistoryTab(props: Props) {
             <button
               type="button"
               class="cursor-pointer rounded px-2 py-0.5 text-sky-400 hover:bg-gray-800 disabled:cursor-default disabled:text-gray-500 disabled:hover:bg-transparent"
-              disabled={!canRestore()}
+              disabled={!canChange()}
               onClick={() => restore(getEarlier()!)}
             >
               Restore
@@ -109,7 +110,7 @@ export function HistoryTab(props: Props) {
         <button
           type="button"
           class="mt-2 cursor-pointer text-sm text-sky-400 hover:underline"
-          onClick={() => setLongFor(pathKey(props.path))}
+          onClick={() => setShowAll(true)}
         >
           Show older ({getHiddenCount()})
         </button>

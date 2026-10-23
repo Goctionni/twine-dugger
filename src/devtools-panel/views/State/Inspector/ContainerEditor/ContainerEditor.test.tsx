@@ -56,10 +56,12 @@ it('counts the entries of the state itself, which has no pin and delete', () => 
   expect(view.queryByRole('button', { name: 'Pin' })).toBeNull();
 });
 
-it('has buttons to add and to edit as JSON, which does nothing yet', () => {
+it('has buttons to add and to edit as JSON', () => {
   const view = setup(['group']);
   expect(view.getByRole('button', { name: 'Add property' })).toBeTruthy();
-  expect(view.getByRole<HTMLButtonElement>('button', { name: 'Edit as JSON' }).disabled).toBe(true);
+  expect(view.getByRole<HTMLButtonElement>('button', { name: 'Edit as JSON' }).disabled).toBe(
+    false,
+  );
 });
 
 it('says item for an array, property for a map, and adds nothing to a set', () => {

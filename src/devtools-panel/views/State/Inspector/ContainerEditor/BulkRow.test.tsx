@@ -9,7 +9,13 @@ import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
 
 import { confirmDeleteMany } from '../ValueHeader/confirmDelete';
+import { createSelection } from './createSelection';
 import { PropertyGrid } from './PropertyGrid';
+
+function Grid(props: { path: Path }) {
+  const selection = createSelection(() => props.path);
+  return <PropertyGrid path={props.path} selection={selection} />;
+}
 
 vi.mock('../ValueHeader/confirmDelete', () => ({
   confirmDelete: vi.fn(async () => true),
@@ -42,7 +48,7 @@ function setup(path: Path = ['hero']) {
   applyUpdate(game.update());
   flush();
 
-  const view = render(() => <PropertyGrid path={path} />);
+  const view = render(() => <Grid path={path} />);
   const checkbox = (name: string) =>
     view.getByText(name, { selector: 'span.truncate' }).closest('label')!
       .firstElementChild as HTMLInputElement;
