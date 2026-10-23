@@ -1,7 +1,19 @@
-import { isNumberLike, SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
+import {
+  isNumberLike,
+  NAN_MARKER,
+  NEGATIVE_INFINITY_MARKER,
+  POSITIVE_INFINITY_MARKER,
+  SET_MARKER,
+  TYPE_KEY,
+  UNDEFINED_MARKER,
+} from '@/shared/json-safe';
 import type { JSONSafeDate, JSONSafeObject, JSONSafeValue } from '@/shared/shared-types';
 
 export function posttransformValue(value: JSONSafeValue): unknown {
+  if (value === NAN_MARKER) return Number.NaN;
+  if (value === POSITIVE_INFINITY_MARKER) return Infinity;
+  if (value === NEGATIVE_INFINITY_MARKER) return -Infinity;
+  if (value === UNDEFINED_MARKER) return undefined;
   if (value === null || typeof value !== 'object') return value;
 
   if (Array.isArray(value)) {

@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vite-plus/test';
 
-import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
+import {
+  NAN_MARKER,
+  NEGATIVE_INFINITY_MARKER,
+  POSITIVE_INFINITY_MARKER,
+  SET_MARKER,
+  TYPE_KEY,
+  UNDEFINED_MARKER,
+} from '@/shared/json-safe';
 import type { JSONSafeValue } from '@/shared/shared-types';
 
 import { setState } from '../format-helpers/shared';
-import { restoreMarkedJsonValue } from './post-transform';
+import { posttransformValue, restoreMarkedJsonValue } from './post-transform';
 
 describe('restoreSpecialValue', () => {
   it('makes a Map, a NumberMap, a Set and a Date from their marked form', () => {
@@ -33,5 +40,24 @@ describe('restoreSpecialValue', () => {
     const sent = JSON.parse(JSON.stringify({ [TYPE_KEY]: 'Map' })) as JSONSafeValue;
     setState(state as never, ['holder', 'visits'], restoreMarkedJsonValue(sent));
     expect((state.holder as Record<string, unknown>).visits).toBeInstanceOf(Map);
+  });
+});
+
+describe('posttransformValue with markers', () => {
+  it('turns the markers back into the values, at every depth', () => {
+    const restored = posttransformValue({
+      nan: NAN_MARKER,
+      up: POSITIVE_INFINITY_MARKER,
+      down: NEGATIVE_INFINITY_MARKER,
+      gone: UNDEFINED_MARKER,
+      list: [UNDEFINED_MARKER],
+    } as never) as Record<string, unknown>;
+
+    expect(restored.nan).toBeNaN();
+    expect(restored.up).toBe(Infinity);
+    expect(restored.down).toBe(-Infinity);
+    expect('gone' in restored && restored.gone).toBeUndefined();
+    expect(restored.list).toEqual([undefined]);
+    expect(posttransformValue([SET_MARKER, NAN_MARKER])).toEqual(new Set([Number.NaN]));
   });
 });

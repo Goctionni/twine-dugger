@@ -20,9 +20,11 @@ export const TYPE_ORDER: ValueType[] = [
   'other',
 ];
 
-/** The type of the filter and the sort that a type belongs to */
-export const toFilterType = (type: ValueType): ValueType =>
-  TYPE_ORDER.includes(type) ? type : 'other';
+/** The type of the filter and the sort that a type belongs to. NaN and the infinities are numbers */
+export const toFilterType = (type: ValueType): ValueType => {
+  if (type === 'NaN' || type === 'infinity') return 'number';
+  return TYPE_ORDER.includes(type) ? type : 'other';
+};
 
 const getTypeRank = (type: ValueType) => TYPE_ORDER.indexOf(toFilterType(type));
 

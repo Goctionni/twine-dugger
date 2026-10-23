@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 
+import { UNDEFINED_MARKER } from '@/shared/json-safe';
+
 import { setState } from '../format-helpers/shared';
 import { createLockEnforcer } from './locks';
 import { posttransformValue } from './post-transform';
@@ -41,7 +43,7 @@ describe('createLockEnforcer', () => {
     setLocks(locks);
 
     delete state.player.gold;
-    expect(enforce()).toEqual([{ path: ['player', 'gold'], attempted: undefined }]);
+    expect(enforce()).toEqual([{ path: ['player', 'gold'], attempted: UNDEFINED_MARKER }]);
     expect(state).toEqual({ player: { gold: 5 } });
 
     delete state.player;
@@ -55,7 +57,7 @@ describe('createLockEnforcer', () => {
     setLocks(locks);
 
     state.items.pop();
-    expect(enforce()).toEqual([{ path: ['items', 2], attempted: undefined }]);
+    expect(enforce()).toEqual([{ path: ['items', 2], attempted: UNDEFINED_MARKER }]);
     expect(state.items).toEqual([1, 2, 3]);
 
     state.items.length = 1;

@@ -1,6 +1,6 @@
 import { expect, it } from 'vite-plus/test';
 
-import { SET_MARKER } from '@/shared/json-safe';
+import { NAN_MARKER, POSITIVE_INFINITY_MARKER, SET_MARKER } from '@/shared/json-safe';
 
 import { getLockingPath } from './edit-status';
 import { describeAge, describeLength, describeType, formatAsJson, getPosition } from './info';
@@ -8,8 +8,8 @@ import { describeAge, describeLength, describeType, formatAsJson, getPosition } 
 it('says what kind of number it is', () => {
   expect(describeType(3, 'number')).toBe('number · integer');
   expect(describeType(3.5, 'number')).toBe('number · decimal');
-  expect(describeType(NaN, 'number')).toBe('number · NaN');
-  expect(describeType(Infinity, 'number')).toBe('number · infinite');
+  expect(describeType(NAN_MARKER, 'NaN')).toBe('number · NaN');
+  expect(describeType(POSITIVE_INFINITY_MARKER, 'infinity')).toBe('number · infinite');
   expect(describeType('a', 'string')).toBe('string');
 });
 
@@ -23,6 +23,7 @@ it('counts the characters and the lines of a text, and notices numbers', () => {
 it('writes a value as JSON, and cuts a long one', () => {
   expect(formatAsJson('a"b')).toBe('"a\\"b"');
   expect(formatAsJson(undefined)).toBe('undefined');
+  expect(formatAsJson(NAN_MARKER)).toBe('NaN');
   expect(formatAsJson('x'.repeat(100))).toHaveLength(80);
   expect(formatAsJson('x'.repeat(100)).endsWith('…')).toBe(true);
 });

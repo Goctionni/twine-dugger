@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vite-plus/test';
 
-import { isNumberLike, jsonEqual, SET_MARKER, trimToExistingPath, TYPE_KEY } from './json-safe';
+import {
+  getJsonType,
+  getMarkedValueText,
+  isNumberLike,
+  jsonEqual,
+  NAN_MARKER,
+  NEGATIVE_INFINITY_MARKER,
+  POSITIVE_INFINITY_MARKER,
+  SET_MARKER,
+  trimToExistingPath,
+  TYPE_KEY,
+  UNDEFINED_MARKER,
+} from './json-safe';
 
 describe('trimToExistingPath', () => {
   const state = {
@@ -39,5 +51,24 @@ describe('jsonEqual', () => {
     expect(jsonEqual({ a: [NaN, 1] }, { a: [NaN, 1] })).toBe(true);
     expect(jsonEqual({ a: NaN }, { a: 0 })).toBe(false);
     expect(jsonEqual([1], { 0: 1 })).toBe(false);
+  });
+});
+
+describe('markers for NaN, the infinities and undefined', () => {
+  it('are told apart as values of their own type, and a plain string is a string', () => {
+    expect(getJsonType(NAN_MARKER)).toBe('NaN');
+    expect(getJsonType(POSITIVE_INFINITY_MARKER)).toBe('infinity');
+    expect(getJsonType(NEGATIVE_INFINITY_MARKER)).toBe('infinity');
+    expect(getJsonType(UNDEFINED_MARKER)).toBe('undefined');
+    expect(getJsonType('NaN')).toBe('string');
+    expect(getJsonType(Number.NaN)).toBe('number');
+  });
+
+  it('say what they stand for as text', () => {
+    expect(getMarkedValueText(NAN_MARKER)).toBe('NaN');
+    expect(getMarkedValueText(POSITIVE_INFINITY_MARKER)).toBe('Infinity');
+    expect(getMarkedValueText(NEGATIVE_INFINITY_MARKER)).toBe('-Infinity');
+    expect(getMarkedValueText(UNDEFINED_MARKER)).toBe('undefined');
+    expect(getMarkedValueText('undefined')).toBeUndefined();
   });
 });

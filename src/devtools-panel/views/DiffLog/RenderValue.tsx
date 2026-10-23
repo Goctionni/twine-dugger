@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
 
 import { Tooltip } from '@/devtools-panel/ui/display/Tooltip';
-import { getJsonType } from '@/shared/json-safe';
+import { getJsonType, getMarkedValueText } from '@/shared/json-safe';
 import type { JSONSafeValue } from '@/shared/shared-types';
 
 import { DiffPreview } from './DiffPreview';
@@ -19,6 +19,9 @@ export function RenderValue(props: { value: JSONSafeValue; faded?: boolean }) {
   const fadedCls = () => (props.faded ? 'opacity-60 saturate-50' : '');
   const renderType = () => {
     const t = typeof props.value;
+    if (getMarkedValueText(props.value)) {
+      return getJsonType(props.value) === 'undefined' ? 'marked' : 'invalid-number';
+    }
     if (t === 'string' && !props.value) return 'empty';
     if (t === 'string' || t === 'boolean' || t === 'number') return t;
     return 'type';
@@ -27,6 +30,19 @@ export function RenderValue(props: { value: JSONSafeValue; faded?: boolean }) {
     <Switch fallback={<RenderValueFallback value={props.value} faded={props.faded} />}>
       <Match when={renderType() === 'empty'}>
         <code class={clsx(colorClasses.typeEmpty, fadedCls())}>""</code>
+      </Match>
+      <Match when={renderType() === 'invalid-number'}>
+        <code
+          class={clsx('rounded-xs bg-red-600 px-1 font-semibold text-white', fadedCls())}
+          title="Not a valid number"
+        >
+          {getMarkedValueText(props.value)}
+        </code>
+      </Match>
+      <Match when={renderType() === 'marked'}>
+        <code class={clsx(colorClasses.typeEmpty, fadedCls())}>
+          {getMarkedValueText(props.value)}
+        </code>
       </Match>
       <Match when={renderType() === 'boolean'}>
         <code class={clsx(colorClasses.typeBoolean, fadedCls())}>

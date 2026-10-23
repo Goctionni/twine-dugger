@@ -1,13 +1,18 @@
-import { getContainerKeys, getJsonType, isContainerType } from '@/shared/json-safe';
+import {
+  getContainerKeys,
+  getJsonType,
+  getMarkedValueText,
+  isContainerType,
+} from '@/shared/json-safe';
 import type { JSONSafeContainer, JSONSafeValue, ValueType } from '@/shared/shared-types';
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
 export function describeType(value: JSONSafeValue, type: ValueType): string {
+  if (type === 'NaN') return 'number · NaN';
+  if (type === 'infinity') return 'number · infinite';
   if (type !== 'number') return type;
   const number = value as number;
-  if (Number.isNaN(number)) return 'number · NaN';
-  if (!Number.isFinite(number)) return 'number · infinite';
   return `number · ${Number.isInteger(number) ? 'integer' : 'decimal'}`;
 }
 
@@ -18,7 +23,8 @@ export function describeLength(text: string): string {
 }
 
 export function formatAsJson(value: JSONSafeValue, maxLength = 80): string {
-  const text = JSON.stringify(value) ?? 'undefined';
+  // The markers of NaN, the infinities and undefined are shown as the values they stand for
+  const text = getMarkedValueText(value) ?? JSON.stringify(value) ?? 'undefined';
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
 }
 

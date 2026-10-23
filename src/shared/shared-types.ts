@@ -66,7 +66,7 @@ export type DeltaUpdate = {
 export type UpdateResult = InitUpdate | DeltaUpdate;
 
 export const valueTypeSchema = type(
-  "'other' | 'null' | 'undefined' | 'object' | 'array' | 'map' | 'set' | 'function' | 'date' | 'string' | 'number' | 'boolean'",
+  "'other' | 'null' | 'undefined' | 'NaN' | 'infinity' | 'object' | 'array' | 'map' | 'set' | 'function' | 'date' | 'string' | 'number' | 'boolean'",
 );
 export type ValueType = typeof valueTypeSchema.infer;
 

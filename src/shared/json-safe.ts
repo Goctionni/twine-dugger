@@ -12,14 +12,47 @@ export const TYPE_KEY = '__twinedugger-type' as const;
 /** First element of an array that stands in for a Set */
 export const SET_MARKER = `${TYPE_KEY}: Set` as const;
 
+/** Stand in for values that do not survive the trip to the panel, or the diff: NaN, the infinities, undefined */
+export const NAN_MARKER = `${TYPE_KEY}: NaN` as const;
+export const POSITIVE_INFINITY_MARKER = `${TYPE_KEY}: +Infinity` as const;
+export const NEGATIVE_INFINITY_MARKER = `${TYPE_KEY}: -Infinity` as const;
+export const UNDEFINED_MARKER = `${TYPE_KEY}: undefined` as const;
+
+/** What a marker stands for, as text. Nothing for a value that is not one of the four markers */
+export function getMarkedValueText(value: unknown): string | undefined {
+  switch (value) {
+    case NAN_MARKER:
+      return 'NaN';
+    case POSITIVE_INFINITY_MARKER:
+      return 'Infinity';
+    case NEGATIVE_INFINITY_MARKER:
+      return '-Infinity';
+    case UNDEFINED_MARKER:
+      return 'undefined';
+    default:
+      return undefined;
+  }
+}
+
 export type ContainerType = 'object' | 'array' | 'map' | 'set';
 
 export function getJsonType(value: unknown): ValueType {
   if (value === null) return 'null';
   const t = typeof value;
-  if (t === 'string' || t === 'number' || t === 'boolean' || t === 'undefined') {
-    return t as ValueType;
+  if (t === 'string') {
+    switch (value) {
+      case NAN_MARKER:
+        return 'NaN';
+      case POSITIVE_INFINITY_MARKER:
+      case NEGATIVE_INFINITY_MARKER:
+        return 'infinity';
+      case UNDEFINED_MARKER:
+        return 'undefined';
+      default:
+        return 'string';
+    }
   }
+  if (t === 'number' || t === 'boolean' || t === 'undefined') return t as ValueType;
   if (Array.isArray(value)) return value[0] === SET_MARKER ? 'set' : 'array';
   if (t === 'object') {
     switch ((value as Record<string, unknown>)[TYPE_KEY]) {

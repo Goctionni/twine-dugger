@@ -1,5 +1,12 @@
 import type { IdentityCache, IdentityLookup } from '@/shared/id-helper';
-import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
+import {
+  NAN_MARKER,
+  NEGATIVE_INFINITY_MARKER,
+  POSITIVE_INFINITY_MARKER,
+  SET_MARKER,
+  TYPE_KEY,
+  UNDEFINED_MARKER,
+} from '@/shared/json-safe';
 import type {
   ArrayValue,
   ContainerValue,
@@ -42,6 +49,11 @@ export function pretransformValue(
   identityCache: IdentityCache,
   identityLookup: IdentityLookup,
 ): JSONSafeValue {
+  if (value === undefined) return UNDEFINED_MARKER;
+  if (typeof value === 'number' && !Number.isFinite(value)) {
+    if (Number.isNaN(value)) return NAN_MARKER;
+    return value > 0 ? POSITIVE_INFINITY_MARKER : NEGATIVE_INFINITY_MARKER;
+  }
   if (!value) return value;
   if (primitiveTypes.has(typeof value)) return value as Primitive;
 

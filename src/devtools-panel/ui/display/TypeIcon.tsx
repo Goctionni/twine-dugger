@@ -20,6 +20,8 @@ const icons: Record<ValueType, { letters: string; classes: string }> = {
   date: { letters: 'D', classes: colored('bg-orange-500 text-white') },
   string: { letters: 'az', classes: colored('bg-yellow-400 text-yellow-900') },
   number: { letters: '#', classes: colored('bg-red-500 text-white') },
+  NaN: { letters: '#?', classes: colored('bg-red-900 text-white') },
+  infinity: { letters: '∞', classes: colored('bg-red-900 text-white') },
   boolean: { letters: '01', classes: colored('bg-black text-white') },
   null: { letters: 'ø', classes: colored('bg-slate-500 text-white') },
   undefined: { letters: '?', classes: colored('bg-gray-400 text-gray-800') },
