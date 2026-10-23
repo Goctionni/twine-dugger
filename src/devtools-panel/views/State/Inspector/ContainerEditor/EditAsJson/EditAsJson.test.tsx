@@ -80,12 +80,13 @@ it('is about the selected properties when some of them are selected', () => {
 });
 
 it('can include the container properties, until something is typed', () => {
-  const { open, area, getByRole, type } = setup();
+  const { open, area, getByRole, queryByText, type } = setup();
   open();
   const box = () => getByRole<HTMLInputElement>('checkbox', { name: /Include container/ });
   box().click();
   flush();
   expect(Object.keys(JSON.parse(area().value) as object)).toEqual(['a', 'b', 'c', 'deep', 'tags']);
+  expect(queryByText(/container properties excluded/)).toBeNull();
 
   type({ a: 1 });
   expect(box().disabled).toBe(true);
@@ -105,11 +106,12 @@ it('saves what changed: sets, adds and deletes, and goes back to the grid', asyn
   expect(getByRole('button', { name: 'Edit as JSON' })).toBeTruthy();
 });
 
-it('cancels without writing', () => {
-  const { open, type, getByRole, queryByRole } = setup();
+it('cancels without writing, from the top or the bottom', () => {
+  const { open, type, getAllByRole, queryByRole } = setup();
   open();
   type({ a: 5 });
-  getByRole('button', { name: 'Cancel' }).click();
+  expect(getAllByRole('button', { name: 'Cancel' })).toHaveLength(2);
+  getAllByRole('button', { name: 'Cancel' })[0]!.click();
   flush();
   expect(setState).not.toHaveBeenCalled();
   expect(queryByRole('textbox', { name: 'JSON' })).toBeNull();
@@ -144,11 +146,57 @@ it('makes it an error to change a value that is locked, and only then', async ()
   expect(save().disabled).toBe(false);
 
   type({ a: 1, b: 'changed', c: true });
-  expect(getByRole('alert').textContent).toBe('b is locked, and cannot be changed');
+  expect(getByRole('alert').textContent).toBe(
+    'Locked properties cannot be changed. See list of changes for details',
+  );
   expect(save().disabled).toBe(true);
 
+  // A locked property that is left out of the text is not deleted: it is not in the edit
   type({ a: 1, c: true });
-  expect(getByRole('alert').textContent).toBe('b is locked, and cannot be changed');
+  expect(queryByRole('alert')).toBeNull();
+});
+
+it('hides Add property while editing', () => {
+  const { open, getByRole, queryByRole } = setup();
+  expect(getByRole('button', { name: 'Add property' })).toBeTruthy();
+  open();
+  expect(queryByRole('button', { name: 'Add property' })).toBeNull();
+});
+
+it('leaves the locked properties out of the text when nothing is selected', async () => {
+  const { open, area, getByText } = setup();
+  await setPathLock(['group', 'b'], true);
+  flush();
+  open();
+  expect(getByText('Editing all unlocked properties')).toBeTruthy();
+  expect(JSON.parse(area().value)).toEqual({ a: 1, c: true });
+  expect(getByText('1 locked property excluded')).toBeTruthy();
+});
+
+it('blocks saving a locked property that is typed back in with another value', async () => {
+  const { open, type, save, getByRole } = setup();
+  await setPathLock(['group', 'b'], true);
+  flush();
+  open();
+
+  type({ a: 1, b: 'changed', c: true });
+  expect(getByRole('alert').textContent).toBe(
+    'Locked properties cannot be changed. See list of changes for details',
+  );
+  expect(save().disabled).toBe(true);
+});
+
+it('cannot be opened while a selected property is locked', async () => {
+  const { rowBox, getByRole } = setup();
+  await setPathLock(['group', 'b'], true);
+  flush();
+  rowBox('a').click();
+  rowBox('b').click();
+  flush();
+
+  const button = getByRole<HTMLButtonElement>('button', { name: 'Edit as JSON' });
+  expect(button.disabled).toBe(true);
+  expect(button.title).toBe('Some of the selected properties are locked');
 });
 
 it('lists the changes on request, with the type changes', () => {
@@ -250,4 +298,93 @@ it('starts with the grid again when another container is selected', () => {
   flush();
   expect(view.queryByRole('textbox', { name: 'JSON' })).toBeNull();
   expect(view.getByRole('button', { name: 'Edit as JSON' })).toBeTruthy();
+});
+
+it('marks the text red while something blocks saving, and shows a warning only without it', async () => {
+  const { open, type, area, getByRole, queryByText } = setup();
+  await setPathLock(['group', 'b'], true);
+  flush();
+  open();
+  expect(area().getAttribute('aria-invalid')).toBe('false');
+
+  // A property that is not in the edit: a warning
+  type({ a: 1, c: true, deep: 5 });
+  expect(queryByText(/"deep" exists on this object/)).toBeTruthy();
+  expect(area().getAttribute('aria-invalid')).toBe('false');
+
+  // A locked one typed back with another value: the error, and the warning goes
+  type({ a: 1, b: 'changed', c: true, deep: 5 });
+  expect(getByRole('alert').textContent).toBe(
+    'Locked properties cannot be changed. See list of changes for details',
+  );
+  expect(area().getAttribute('aria-invalid')).toBe('true');
+  expect(area().className).toContain('border-red-500!');
+  expect(queryByText(/exists on this object/)).toBeNull();
+});
+
+it('starts a new line like the line before it, further in after a { or [', () => {
+  const { open, type, area } = setup();
+  open();
+  const pressEnter = (caret: number) => {
+    area().setSelectionRange(caret, caret);
+    area().dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+    flush();
+  };
+
+  type('{\n  "a": 1');
+  pressEnter(area().value.length);
+  expect(area().value).toBe('{\n  "a": 1\n  ');
+
+  type('{\n  "a": [');
+  pressEnter(area().value.length);
+  expect(area().value).toBe('{\n  "a": [\n    ');
+
+  type('{}');
+  pressEnter(1);
+  expect(area().value).toBe('{\n  \n}');
+  expect(area().selectionStart).toBe(4);
+
+  type('  ]');
+  pressEnter(area().value.length);
+  expect(area().value).toBe('  ]\n  ');
+});
+
+it('takes a } or ] that starts a line one level back', () => {
+  const { open, type, area } = setup();
+  open();
+  const press = (key: string) => {
+    area().setSelectionRange(area().value.length, area().value.length);
+    area().dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    flush();
+  };
+
+  type('{\n  "a": [\n    ');
+  press(']');
+  expect(area().value).toBe('{\n  "a": [\n  ]');
+
+  type('{\n  ');
+  press('}');
+  expect(area().value).toBe('{\n}');
+
+  // After other text on the line it is only typed (the browser does that)
+  type('{ "a": 1 ');
+  press('}');
+  expect(area().value).toBe('{ "a": 1 ');
+});
+
+it('lists the changes to locked properties first, in red', async () => {
+  const { open, type, getByRole, container } = setup();
+  await setPathLock(['group', 'b'], true);
+  flush();
+  open();
+  type({ a: 2, b: 'changed', c: true });
+  getByRole('checkbox', { name: 'Show list of changes' }).click();
+  flush();
+
+  const lines = [...container.querySelectorAll<HTMLElement>('.font-mono.text-gray-400 > div')];
+  expect(lines.map((line) => line.textContent)).toEqual(['b "two" → "changed"', 'a 1 → 2']);
+  expect(lines[0]!.className).toContain('text-red-400');
+  expect(lines[1]!.className).not.toContain('text-red-400');
 });

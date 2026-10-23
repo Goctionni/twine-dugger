@@ -61,6 +61,7 @@ export function ContainerEditor(props: Props) {
   const { getCantEditReason, isEditingJson, setIsEditingJson } = createEditAsJson({
     containerPath: () => props.path,
     container: getContainer,
+    selectedKeys: selection.getSelected,
   });
 
   return (
@@ -70,19 +71,19 @@ export function ContainerEditor(props: Props) {
           {getCount()} {getCount() === 1 ? 'entry' : 'entries'}
         </p>
       </ValueHeader>
-      <div class="flex flex-wrap gap-2">
-        <Show when={getTarget()}>
-          <button
-            type="button"
-            class={buttonClass}
-            disabled={!canChange()}
-            title={canChange() ? undefined : 'This value is locked, or in a set'}
-            onClick={() => void add()}
-          >
-            {getTarget() === 'array' ? 'Add item' : 'Add property'}
-          </button>
-        </Show>
-        <Show when={!isEditingJson()}>
+      <Show when={!isEditingJson()}>
+        <div class="flex flex-wrap gap-2">
+          <Show when={getTarget()}>
+            <button
+              type="button"
+              class={buttonClass}
+              disabled={!canChange()}
+              title={canChange() ? undefined : 'This value is locked, or in a set'}
+              onClick={() => void add()}
+            >
+              {getTarget() === 'array' ? 'Add item' : 'Add property'}
+            </button>
+          </Show>
           <button
             type="button"
             class={buttonClass}
@@ -92,8 +93,8 @@ export function ContainerEditor(props: Props) {
           >
             Edit as JSON
           </button>
-        </Show>
-      </div>
+        </div>
+      </Show>
       <Switch>
         <Match when={isEditingJson()}>
           <EditAsJson

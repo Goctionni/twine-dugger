@@ -66,6 +66,11 @@ export function BulkRow(props: Props) {
       }),
     { equals: sameItems },
   );
+  // A value that is locked cannot be set, and skipping it quietly would hide that: the input says so
+  const getLockedCount = createMemo(
+    () => props.selectedKeys.filter((key) => getStatus(getPathOf(key)) !== 'unlocked').length,
+  );
+  const isSaveShown = () => isEdited() && getLockedCount() === 0;
   const getLockState = createMemo(() =>
     getBulkLockState(getLockableKeys().map((key) => getStatus(getPathOf(key)))),
   );
@@ -135,7 +140,7 @@ export function BulkRow(props: Props) {
   };
 
   // Read only, but not faded: it says why there is no value
-  const mixedClass = 'min-w-0 flex-1 rounded-md italic text-red-400 [&[readonly]]:opacity-100';
+  const messageClass = 'min-w-0 flex-1 rounded-md italic text-red-400 [&[readonly]]:opacity-100';
 
   return (
     <li
@@ -173,6 +178,14 @@ export function BulkRow(props: Props) {
       <div class="min-w-0">
         <div class="flex items-start gap-1">
           <Switch>
+            <Match when={getLockedCount() > 0}>
+              <input
+                readonly
+                aria-label="Value for the selected"
+                value={`${getLockedCount()} locked`}
+                class={[baseInputClasses, messageClass]}
+              />
+            </Match>
             <Match when={getKind() === 'number'}>
               <NumberInput
                 fill
@@ -208,7 +221,7 @@ export function BulkRow(props: Props) {
                 readonly
                 aria-label="Value for the selected"
                 value="Mixed values"
-                class={[baseInputClasses, mixedClass]}
+                class={[baseInputClasses, messageClass]}
               />
             </Match>
             <Match when={getKind() === 'none' || getKind() === 'other'}>
@@ -225,10 +238,10 @@ export function BulkRow(props: Props) {
             </Match>
           </Switch>
           <Switch>
-            <Match when={isEdited()}>
+            <Match when={isSaveShown()}>
               <SaveButton onClick={() => void save()} />
             </Match>
-            <Match when={!isEdited()}>
+            <Match when={!isSaveShown()}>
               <button
                 type="button"
                 aria-label="Lock the selected"

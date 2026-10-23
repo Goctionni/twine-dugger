@@ -127,11 +127,24 @@ it('starts from the value of the first selected row of the grid, and says when t
   expect(mixed.readOnly).toBe(true);
 });
 
-it('writes the value to the selected rows, and leaves the locked ones alone', async () => {
-  const { select, bulkValue, type, getByRole } = setup();
+it('cannot be edited, and says why, while a selected value is locked', async () => {
+  const { select, getByRole, queryByRole, lockButton } = setup();
   await setPathLock(['hero', 'level'], true);
   flush();
-  select('hp', 'gold', 'level');
+  select('hp', 'level');
+
+  const message = getByRole<HTMLInputElement>('textbox', { name: 'Value for the selected' });
+  expect(message.value).toBe('1 locked');
+  expect(message.readOnly).toBe(true);
+  expect(message.className).toContain('text-red-400');
+  expect(queryByRole('button', { name: 'Save' })).toBeNull();
+  // The lock button still works: it is the way out
+  expect(lockButton().disabled).toBe(false);
+});
+
+it('writes the value to the selected rows', async () => {
+  const { select, bulkValue, type, getByRole } = setup();
+  select('hp', 'gold');
 
   type(bulkValue(), '7');
   getByRole('button', { name: 'Save' }).click();
