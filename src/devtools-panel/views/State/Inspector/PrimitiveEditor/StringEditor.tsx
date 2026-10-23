@@ -6,11 +6,11 @@ import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
 import { StringInput } from '@/devtools-panel/ui/inputs/StringInput';
 import { baseInputClasses } from '@/devtools-panel/ui/util/common-classes';
+import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import type { Path } from '@/shared/shared-types';
 
 import { createDraft } from '../createDraft';
 import { createEditStatus } from '../createEditStatus';
-import { createStablePath } from '../createStablePath';
 
 interface Props {
   path: Path;

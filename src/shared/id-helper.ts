@@ -34,12 +34,7 @@ export function setupIdentityHasher() {
       const live = oldLookup.get(key) ?? newLookup.get(key);
       if (!live || !oldLive.has(live) || !newLive.has(live)) return undefined;
 
-      let hash = hashes.get(live);
-      if (!hash) {
-        hash = `$$ref:${(hashIndex++).toString(36)}`;
-        hashes.set(live, hash);
-      }
-      return hash;
+      return hashes.getOrInsertComputed(live, () => `$$ref:${(hashIndex++).toString(36)}`);
     },
     setIdentitySources(sources: {
       oldIdentityLookup: IdentityLookup;

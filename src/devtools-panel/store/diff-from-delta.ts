@@ -52,10 +52,5 @@ const diffs = new WeakMap<object, DiffChange[]>();
 export function getDiffFromDelta(delta: Delta): DiffChange[] {
   if (!delta) return [];
 
-  let diff = diffs.get(delta as object);
-  if (!diff) {
-    diff = walkDelta(delta as DeltaNode);
-    diffs.set(delta as object, diff);
-  }
-  return diff;
+  return diffs.getOrInsertComputed(delta as object, () => walkDelta(delta as DeltaNode));
 }

@@ -5,11 +5,11 @@ import { KeyHint } from '@/devtools-panel/ui/display/KeyHint';
 import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
 import { SaveButton } from '@/devtools-panel/ui/inputs/SaveButton';
+import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import type { Path } from '@/shared/shared-types';
 
 import { createDraft } from '../createDraft';
 import { createEditStatus } from '../createEditStatus';
-import { createStablePath } from '../createStablePath';
 import type { LockRange } from '../logic/lock-range';
 import { changeBound } from '../logic/lock-range';
 import { RangeBound } from './RangeBound';

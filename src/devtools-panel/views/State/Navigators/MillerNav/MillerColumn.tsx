@@ -4,22 +4,13 @@ import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-sta
 import { getRevealCount } from '@/devtools-panel/store/state-location';
 import { isPinned } from '@/devtools-panel/store/store';
 import { sameItems } from '@/devtools-panel/utils/same-items';
-import {
-  getContainerKeyLabel,
-  getContainerSize,
-  getJsonType,
-  getPathValue,
-  isContainer,
-} from '@/shared/json-safe';
+import { getContainerSize, getPathValue, isContainer } from '@/shared/json-safe';
 import { pathEquals } from '@/shared/path-equals';
-import type { JSONSafeObject, JSONSafeValue, Path } from '@/shared/shared-types';
+import type { Path } from '@/shared/shared-types';
 
-import { countHiddenKeys } from '../../logic/filter-keys';
 import { getPathLabels } from '../../logic/path-labels';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import { NavRow } from '../Shared/NavRow';
-import { getPreview } from '../Shared/preview';
-import { isRecentlyChanged } from '../Shared/recently-changed';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { getRowId } from './logic/row-id';
 
@@ -31,9 +22,6 @@ interface Props {
   trail: Path;
   onSelect: (path: Path) => void;
 }
-
-const getChild = (container: JSONSafeValue, key: string | number) =>
-  (container as JSONSafeObject)[key];
 
 export function MillerColumn(props: Props) {
   // Each of these only notifies when its own result changes, so a new selection leaves the columns
@@ -49,7 +37,7 @@ export function MillerColumn(props: Props) {
   let column: HTMLDivElement | undefined;
   createEffect(getRevealCount, () => {
     column
-      ?.querySelector('[data-state="selected"], [data-state="on-path"]')
+      ?.querySelector('[data-selection-state="selected"], [data-selection-state="on-path"]')
       ?.scrollIntoView({ block: 'nearest' });
   });
 
@@ -64,11 +52,6 @@ export function MillerColumn(props: Props) {
       ),
     { equals: sameItems },
   );
-
-  const getRowName = (key: string | number) => {
-    const container = getContainer();
-    return isContainer(container) ? getContainerKeyLabel(container, key) : String(key);
-  };
 
   const getTitle = () => getPathLabels(getLatestState(), getColumnPath()).at(-1) ?? 'State';
 
@@ -93,39 +76,20 @@ export function MillerColumn(props: Props) {
       </div>
       <For each={getKeys()}>
         {(key) => {
-          const getValue = () => getChild(getContainer(), key);
-          const getType = createMemo(() => getJsonType(getValue()));
-          const getRowState = () => {
+          const getSelectionState = () => {
             if (getSelectedKey() === key) return isSelectionHere() ? 'selected' : 'on-path';
             return getTrailKey() === key ? 'trail' : 'normal';
-          };
-          const getHiddenChildren = () => countHiddenKeys(getValue(), getHiddenTypes());
-          const getChildCount = () => {
-            const value = getValue();
-            return isContainer(value) ? getContainerSize(value) - getHiddenChildren() : undefined;
-          };
-          const getIsExpanded = () => {
-            const count = getChildCount();
-            if (count === undefined) return undefined;
-            return getRowState() === 'on-path' || (getRowState() === 'selected' && count > 0);
           };
 
           return (
             <NavRow
               id={getRowId(props.treeId, props.depth, key)}
-              level={props.depth + 1}
-              isExpanded={getIsExpanded()}
-              name={getRowName(key)}
-              type={getType()}
-              preview={getPreview(getValue(), getType())}
-              childCount={getChildCount()}
-              hiddenCount={getHiddenChildren()}
-              isPinned={isPinned([...getColumnPath(), key])}
-              isRecentlyChanged={isRecentlyChanged([...getColumnPath(), key])}
-              state={getRowState()}
+              path={[...getColumnPath(), key]}
+              isExpanded={getSelectionState() === 'on-path' || getSelectionState() === 'selected'}
+              selectionState={getSelectionState()}
               onClick={() =>
                 props.onSelect(
-                  getRowState() === 'selected' ? getColumnPath() : [...getColumnPath(), key],
+                  getSelectionState() === 'selected' ? getColumnPath() : [...getColumnPath(), key],
                 )
               }
             />

@@ -3,7 +3,7 @@ import { Match, Switch, omit } from 'solid-js';
 import type { NavProps, Navigator } from '../types';
 import { MillerNav } from './MillerNav/MillerNav';
 import { TilesNav } from './TilesNav';
-import { TreeNav } from './TreeNav';
+import { TreeNav } from './TreeNav/TreeNav';
 
 interface Props extends NavProps {
   navigator: Navigator;

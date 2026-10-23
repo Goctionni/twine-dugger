@@ -1,11 +1,11 @@
 import { createSignal, type Accessor } from 'solid-js';
 
 import { getLockedPaths } from '@/devtools-panel/store/locks';
+import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import { isContainer } from '@/shared/json-safe';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { createEditStatus } from '../../createEditStatus';
-import { createStablePath } from '../../createStablePath';
 import { getLockStatus } from '../../logic/edit-status';
 
 interface Options {

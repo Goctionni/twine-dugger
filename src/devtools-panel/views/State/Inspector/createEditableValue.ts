@@ -2,10 +2,9 @@ import { setState } from '@/devtools-panel/api/api';
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { getSettings } from '@/devtools-panel/store/store';
 import { createOptimisticWithTimeout } from '@/devtools-panel/utils/create-optimistic-with-timeout';
+import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import { getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
-
-import { createStablePath } from './createStablePath';
 
 /**
  * The value at a path, for an editor to show and set. What is set shows at once, and stays until

@@ -2,11 +2,11 @@ import { For, Show, createSignal } from 'solid-js';
 
 import { setState } from '@/devtools-panel/api/api';
 import { getLatestId, getLatestState } from '@/devtools-panel/store/game-state';
+import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import { getMarkedValueText, getPathValue, isContainer } from '@/shared/json-safe';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { createEditStatus } from '../createEditStatus';
-import { createStablePath } from '../createStablePath';
 import { createValueHistory } from '../createValueHistory';
 import { describeAge, formatAsJson } from '../logic/info';
 import { describeDelta } from '../logic/value-history';

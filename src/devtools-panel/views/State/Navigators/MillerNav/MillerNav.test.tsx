@@ -48,7 +48,7 @@ it('shows where the path came from after going up, and forgets it for another br
     />
   ));
   const trailRows = () =>
-    [...container.querySelectorAll<HTMLElement>('[data-state="trail"]')].map(
+    [...container.querySelectorAll<HTMLElement>('[data-selection-state="trail"]')].map(
       (row) => row.querySelector('span.shrink-0.truncate')!.textContent,
     );
   const go = (path: Path) => {

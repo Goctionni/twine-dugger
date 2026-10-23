@@ -1,6 +1,6 @@
 import type { Path } from '@/shared/shared-types';
 
-export type ArrowKey = 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight';
+import type { ArrowKey } from '../../Shared/arrow-keys';
 
 /**
  * Where an arrow key takes the selection in the Miller columns, or nothing when it stays:

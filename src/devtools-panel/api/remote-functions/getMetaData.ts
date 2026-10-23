@@ -81,7 +81,6 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
         ifId: 'string',
         has: 'function',
         get: 'function',
-        add: 'function',
       },
       storage: 'object',
     },

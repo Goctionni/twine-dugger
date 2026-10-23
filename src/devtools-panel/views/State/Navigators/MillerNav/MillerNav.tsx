@@ -10,18 +10,15 @@ import type { Path } from '@/shared/shared-types';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { NavFrame } from '../NavFrame';
+import { isArrowKey } from '../Shared/arrow-keys';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { countCollapsed } from './logic/count-collapsed';
 import { countColumns } from './logic/count-columns';
-import type { ArrowKey } from './logic/key-target';
 import { getKeyTarget } from './logic/key-target';
 import { nextTrail } from './logic/next-trail';
 import { getRowId, getStripId } from './logic/row-id';
 import { MillerColumn } from './MillerColumn';
 import { MillerStrip } from './MillerStrip';
-
-const isArrowKey = (key: string): key is ArrowKey =>
-  ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key);
 
 export function MillerNav(props: NavProps) {
   const treeId = `miller-${crypto.randomUUID()}`;
@@ -55,7 +52,7 @@ export function MillerNav(props: NavProps) {
       : getRowId(treeId, depth, props.path.at(-1)!);
   };
 
-  function onKeyDown(event: KeyboardEvent) {
+  const onKeyDown = (event: KeyboardEvent) => {
     if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
     if (!isArrowKey(event.key)) return;
     event.preventDefault();
@@ -64,7 +61,7 @@ export function MillerNav(props: NavProps) {
     if (!target) return;
     props.onSelect(target);
     requestReveal();
-  }
+  };
 
   return (
     <NavFrame {...props}>

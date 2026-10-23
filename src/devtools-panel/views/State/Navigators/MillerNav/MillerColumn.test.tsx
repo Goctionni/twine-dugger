@@ -189,7 +189,7 @@ describe('selecting', () => {
 
 describe('revealing the selection', () => {
   const revealed = () =>
-    scrollIntoView.mock.contexts.map((row) => (row as HTMLElement).dataset.state);
+    scrollIntoView.mock.contexts.map((row) => (row as HTMLElement).dataset.selectionState);
 
   it('scrolls to the selected row when the column is made', () => {
     setup(['hp']);
@@ -225,7 +225,9 @@ describe('revealing the selection', () => {
 
 describe('the trail', () => {
   const states = (names: string[], setupResult: ReturnType<typeof setup>) =>
-    Object.fromEntries(setupResult.rows().map((row, index) => [names[index], row.dataset.state]));
+    Object.fromEntries(
+      setupResult.rows().map((row, index) => [names[index], row.dataset.selectionState]),
+    );
 
   it('marks the row of the trail that is not on the path', () => {
     const result = setup(['stats'], 1, ['stats', 'nested']);

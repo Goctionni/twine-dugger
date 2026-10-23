@@ -218,8 +218,10 @@ export interface SugarCubeGlobals {
       get ifId(): string;
       has(name: string): boolean;
       get(name: string): SugarCubePassage;
-      add(passage: SugarCubePassage): boolean;
+      add?(passage: SugarCubePassage): boolean;
+      passages: Record<string, SugarCubePassage>;
     };
+    Passage: new (title: string, element: HTMLElement) => SugarCubePassage;
     storage: {
       name: string;
     };
