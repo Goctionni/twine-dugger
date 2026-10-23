@@ -15,12 +15,20 @@ const colorClasses = {
   typeOther: 'text-purple-300',
 } as const;
 
-export function RenderValue(props: { value: JSONSafeValue; faded?: boolean }) {
+interface Props {
+  value: JSONSafeValue;
+  faded?: boolean;
+  disableInvalidHighlight?: boolean;
+}
+
+export function RenderValue(props: Props) {
   const fadedCls = () => (props.faded ? 'opacity-60 saturate-50' : '');
   const renderType = () => {
     const t = typeof props.value;
     if (getMarkedValueText(props.value)) {
-      return getJsonType(props.value) === 'undefined' ? 'marked' : 'invalid-number';
+      return !props.disableInvalidHighlight && getJsonType(props.value) !== 'undefined'
+        ? 'invalid-number'
+        : 'marked';
     }
     if (t === 'string' && !props.value) return 'empty';
     if (t === 'string' || t === 'boolean' || t === 'number') return t;

@@ -69,7 +69,7 @@ export function PropertyRow(props: Props) {
           </Match>
           <Match when={!['boolean', 'number', 'string'].includes(getType())}>
             <div class="flex min-h-7.5 min-w-0 items-center text-sm">
-              <RenderValue value={getValue()} />
+              <RenderValue value={getValue()} disableInvalidHighlight />
             </div>
           </Match>
         </Switch>

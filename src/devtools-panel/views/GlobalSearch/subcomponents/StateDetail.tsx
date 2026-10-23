@@ -30,7 +30,10 @@ export function StateDetail(props: Props) {
       <PrettyPath class="font-mono text-sm font-bold break-all" path={props.hit.path} statePrefix />
       <div class="font-mono text-sm break-all">
         {/* TODO: Add input back */}
-        <RenderValue value={getPathValue(getLatestState(), props.hit.path) as JSONSafeValue} />
+        <RenderValue
+          value={getPathValue(getLatestState(), props.hit.path) as JSONSafeValue}
+          disableInvalidHighlight
+        />
       </div>
       <div>
         <button type="button" class={btnClass('contained')} onClick={showInState}>

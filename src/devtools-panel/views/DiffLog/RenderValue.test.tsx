@@ -20,3 +20,8 @@ it('shows NaN and the infinities as a red badge, and undefined plainly', () => {
   expect(getByText('-Infinity').className).toContain('bg-red-600');
   expect(getByText('undefined').className).not.toContain('bg-red-600');
 });
+
+it('shows them as plain text when the highlight is disabled', () => {
+  const { getByText } = render(() => <RenderValue value={NAN_MARKER} disableInvalidHighlight />);
+  expect(getByText('NaN').className).not.toContain('bg-red-600');
+});

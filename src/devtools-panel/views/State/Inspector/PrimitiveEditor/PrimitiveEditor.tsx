@@ -8,6 +8,7 @@ import type { Path } from '@/shared/shared-types';
 import { getPathLabels } from '../../logic/path-labels';
 import { ValueHeader } from '../ValueHeader/ValueHeader';
 import { BooleanEditor } from './BooleanEditor';
+import { InvalidNumberEditor } from './InvalidNumberEditor';
 import { NumberEditor } from './NumberEditor';
 import { StringEditor } from './StringEditor';
 import { ValueTabs } from './ValueTabs';
@@ -35,8 +36,11 @@ export function PrimitiveEditor(props: Props) {
         <Match when={getType() === 'number'}>
           <NumberEditor path={props.path} label={getTitle()} />
         </Match>
-        <Match when={!['boolean', 'string', 'number'].includes(getType())}>
-          <RenderValue value={getValue()} />
+        <Match when={getType() === 'NaN' || getType() === 'infinity'}>
+          <InvalidNumberEditor path={props.path} />
+        </Match>
+        <Match when={!['boolean', 'string', 'number', 'NaN', 'infinity'].includes(getType())}>
+          <RenderValue value={getValue()} disableInvalidHighlight />
         </Match>
       </Switch>
       <ValueTabs path={props.path} onSelect={props.onSelect} />

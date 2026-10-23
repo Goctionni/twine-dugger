@@ -1,12 +1,15 @@
-import { expect, it } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 import type { PathRecord } from '@/devtools-panel/store/game-state';
+import { NAN_MARKER, POSITIVE_INFINITY_MARKER } from '@/shared/json-safe';
 
 import {
   describeChangeCount,
   describeDelta,
   describeRange,
+  getLastValidValue,
   getValueHistory,
+  type HistoryEntry,
 } from './value-history';
 
 it('has nothing for a path that never changed', () => {
@@ -67,4 +70,27 @@ it('counts the changes and finds the range', () => {
   expect(describeRange(history, 4)).toBe('4 – 20');
   expect(describeRange(history, 'text')).toBeUndefined();
   expect(describeRange({ entries: [], forgotten: 0 }, 4)).toBeUndefined();
+});
+
+describe('getLastValidValue', () => {
+  const entry = (before: HistoryEntry['before']): HistoryEntry => ({
+    id: 1,
+    timestamp: 0,
+    value: undefined,
+    before,
+  });
+
+  it('is the most recent earlier value that the panel may write', () => {
+    expect(getLastValidValue([entry(NAN_MARKER), entry(3), entry(1)])).toBe(3);
+    expect(getLastValidValue([entry(POSITIVE_INFINITY_MARKER), entry('a')])).toBe('a');
+    expect(getLastValidValue([entry(null)])).toBeNull();
+    expect(getLastValidValue([entry(false)])).toBe(false);
+  });
+
+  it('is nothing when there is none, or only markers, undefined and containers', () => {
+    expect(getLastValidValue([])).toBeUndefined();
+    expect(
+      getLastValidValue([entry(undefined), entry(NAN_MARKER), entry({ a: 1 })]),
+    ).toBeUndefined();
+  });
 });

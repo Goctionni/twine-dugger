@@ -116,3 +116,14 @@ it('starts short again when another value is selected', () => {
   flush();
   expect(view.queryAllByRole('listitem')).toHaveLength(5);
 });
+
+it('does not restore a value that is NaN, an infinity or undefined', () => {
+  const { play, restoreButtons } = setup(['score']);
+  play((live) => (live.score = Number.NaN));
+  play((live) => (live.score = 12));
+
+  // 12 is current; NaN (before 12) cannot be written; 10 (before the NaN) can
+  const buttons = restoreButtons();
+  expect(buttons).toHaveLength(2);
+  expect(buttons.map((button) => button.disabled)).toEqual([true, false]);
+});

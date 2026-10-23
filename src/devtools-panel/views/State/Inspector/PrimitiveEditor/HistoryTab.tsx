@@ -2,7 +2,7 @@ import { For, Show, createSignal } from 'solid-js';
 
 import { setState } from '@/devtools-panel/api/api';
 import { getLatestId, getLatestState } from '@/devtools-panel/store/game-state';
-import { getPathValue } from '@/shared/json-safe';
+import { getMarkedValueText, getPathValue } from '@/shared/json-safe';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { createEditStatus } from '../createEditStatus';
@@ -39,6 +39,9 @@ export function HistoryTab(props: Props) {
   };
 
   const restore = (value: JSONSafeValue) => setState(props.path, value);
+  // NaN, the infinities and undefined are not written by the panel
+  const canRestore = (value: JSONSafeValue) =>
+    canChange() && getMarkedValueText(value) === undefined;
 
   return (
     <Show
@@ -70,7 +73,7 @@ export function HistoryTab(props: Props) {
                     <button
                       type="button"
                       class="cursor-pointer rounded px-2 py-0.5 text-sky-400 hover:bg-gray-800 disabled:cursor-default disabled:text-gray-500 disabled:hover:bg-transparent"
-                      disabled={!canChange()}
+                      disabled={!canRestore(entry().value)}
                       onClick={() => restore(entry().value!)}
                     >
                       Restore
@@ -98,7 +101,7 @@ export function HistoryTab(props: Props) {
             <button
               type="button"
               class="cursor-pointer rounded px-2 py-0.5 text-sky-400 hover:bg-gray-800 disabled:cursor-default disabled:text-gray-500 disabled:hover:bg-transparent"
-              disabled={!canChange()}
+              disabled={!canRestore(getEarlier())}
               onClick={() => restore(getEarlier()!)}
             >
               Restore

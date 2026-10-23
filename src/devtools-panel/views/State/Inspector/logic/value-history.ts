@@ -1,4 +1,5 @@
 import type { PathRecord } from '@/devtools-panel/store/game-state';
+import { getMarkedValueText } from '@/shared/json-safe';
 import type { JSONSafeValue } from '@/shared/shared-types';
 
 export interface HistoryEntry {
@@ -39,6 +40,19 @@ export function sameHistory(a: ValueHistory, b: ValueHistory): boolean {
     a.entries.length === b.entries.length &&
     a.entries.every((entry, index) => entry.id === b.entries[index]!.id)
   );
+}
+
+/**
+ * What a value of NaN or an infinity can go back to: the most recent value it had before that is
+ * a string, number, boolean or null. Not undefined, NaN or an infinity (the panel does not write
+ * those), and not a container (it would be written without restoring what is inside it)
+ */
+export function getLastValidValue(entries: readonly HistoryEntry[]): JSONSafeValue | undefined {
+  for (const { before } of entries) {
+    if (before === undefined || (typeof before === 'object' && before !== null)) continue;
+    if (getMarkedValueText(before) === undefined) return before;
+  }
+  return undefined;
 }
 
 /** How much a number went up or down, like "+3". Nothing for other values */
