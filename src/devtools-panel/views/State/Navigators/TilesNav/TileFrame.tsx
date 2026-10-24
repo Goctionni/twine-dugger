@@ -3,6 +3,7 @@ import type { JSX } from '@solidjs/web';
 export type TileSelectionState = 'selected' | 'normal';
 
 interface Props {
+  id: string;
   selectionState: TileSelectionState;
   title?: string;
   onClick: () => void;
@@ -13,6 +14,7 @@ interface Props {
 export function TileFrame(props: Props) {
   return (
     <div
+      id={props.id}
       role="option"
       aria-selected={props.selectionState === 'selected' ? 'true' : 'false'}
       data-selection-state={props.selectionState}

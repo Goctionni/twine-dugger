@@ -14,6 +14,7 @@ import { TileFrame, type TileSelectionState } from './TileFrame';
 import { TileIcon } from './TileIcon';
 
 interface Props {
+  id: string;
   path: Path;
   selectionState: TileSelectionState;
   onSelect: () => void;
@@ -33,6 +34,7 @@ export function Tile(props: Props) {
 
   return (
     <TileFrame
+      id={props.id}
       selectionState={props.selectionState}
       onClick={() => (getCounts() === undefined ? props.onSelect() : props.onOpen())}
     >

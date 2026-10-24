@@ -58,6 +58,12 @@ export function StateView() {
     requestScrollTo();
   };
 
+  const onBreadcrumbClick = (path: Path) => {
+    const onNavigatorBreadcrumbClick = getNavigatorInfo()?.onBreadcrumbClick;
+    if (onNavigatorBreadcrumbClick) onNavigatorBreadcrumbClick(path);
+    else selectAndScrollTo(path);
+  };
+
   return (
     <NavigatorInfoContext value={publishNavigatorInfo}>
       <div class="flex h-full flex-col [container:frame/size]">
@@ -75,7 +81,7 @@ export function StateView() {
         <div class="flex min-h-0 flex-1 flex-col">
           <Breadcrumbs
             path={getNavigatorInfo()?.getBreadcrumbsPath() ?? getStatePath()}
-            onSelect={selectAndScrollTo}
+            onSelect={onBreadcrumbClick}
           />
           <div class="relative flex min-h-0 flex-1 inspector-sheet:flex-col">
             <div class="min-h-0 min-w-0 flex-1 overflow-auto">

@@ -141,6 +141,105 @@ it('marks a pinned tile, and a tile that holds a changed value, containers too',
   expect(tile('hp').querySelector('[aria-label="Changed recently"]')).toBeNull();
 });
 
+describe('the keyboard', () => {
+  // jsdom has no layout: the columns are what the grid says
+  const putInColumns = (list: HTMLElement, columns: number) => {
+    list.style.gridTemplateColumns = Array(columns).fill('100px').join(' ');
+  };
+  const selectedName = (tiles: HTMLElement[]) => {
+    const selected = tiles.find((tile) => tile.getAttribute('aria-selected') === 'true');
+    return selected?.children[selected.children.length - 2]?.textContent;
+  };
+
+  function press(setupResult: ReturnType<typeof setup>, key: string, init: KeyboardEventInit = {}) {
+    setupResult
+      .getByRole('listbox')
+      .dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }),
+      );
+    flush();
+  }
+
+  it('is a list that has the focus, and says which tile is active', () => {
+    const view = setup(['hp']);
+    const list = view.getByRole('listbox');
+    expect(list.getAttribute('tabindex')).toBe('0');
+    expect(list.getAttribute('aria-activedescendant')).toBe(view.tile('hp').id);
+
+    press(view, 'ArrowLeft');
+    expect(list.getAttribute('aria-activedescendant')).toBe(view.tile('inv').id);
+  });
+
+  it('goes through the tiles with left and right, from the first value when nothing is selected', () => {
+    // The container is selected, and has no tile of its own
+    const view = setup(['stats']);
+    expect(selectedName(view.tiles())).toBeUndefined();
+
+    press(view, 'ArrowRight');
+    expect(selectedName(view.tiles())).toBe('nested');
+    press(view, 'ArrowRight');
+    expect(selectedName(view.tiles())).toBe('str');
+    press(view, 'ArrowLeft');
+    expect(selectedName(view.tiles())).toBe('nested');
+    // The tile that goes up is before the first value
+    press(view, 'ArrowLeft');
+    expect(selectedName(view.tiles())).toBe('State');
+    expect(getStatePath()).toEqual([]);
+  });
+
+  it('goes up and down through the rows of tiles', () => {
+    const view = setup(['hp']);
+    putInColumns(view.getByRole('listbox'), 2);
+    // empty stats / inv hp
+    press(view, 'ArrowUp');
+    expect(selectedName(view.tiles())).toBe('stats');
+    press(view, 'ArrowDown');
+    expect(selectedName(view.tiles())).toBe('hp');
+    press(view, 'ArrowDown');
+    expect(selectedName(view.tiles())).toBe('hp');
+  });
+
+  it('opens the selected container with enter, and goes up with enter on the tile that goes up', () => {
+    const view = setup(['stats', 'str']);
+    press(view, 'Enter');
+    // A value: nothing to open
+    expect(view.names()).toEqual(['State', 'nested', 'str', 'name']);
+
+    press(view, 'ArrowLeft');
+    expect(selectedName(view.tiles())).toBe('nested');
+    press(view, 'Enter');
+    expect(view.names()).toEqual(['stats', 'a']);
+    expect(getStatePath()).toEqual(['stats', 'nested']);
+
+    press(view, 'ArrowRight');
+    expect(selectedName(view.tiles())).toBe('a');
+  });
+
+  it('goes up with backspace and with shift and up or left, and selects the container it came from', () => {
+    const view = setup(['stats', 'nested']);
+    press(view, 'Backspace');
+    expect(view.names()).toEqual(['State', 'nested', 'str', 'name']);
+    expect(selectedName(view.tiles())).toBe('nested');
+
+    press(view, 'ArrowLeft', { shiftKey: true });
+    expect(view.names()).toEqual(['empty', 'stats', 'inv', 'hp']);
+    expect(selectedName(view.tiles())).toBe('stats');
+
+    // Nothing is above the state itself
+    press(view, 'ArrowUp', { shiftKey: true });
+    press(view, 'Backspace');
+    expect(view.names()).toEqual(['empty', 'stats', 'inv', 'hp']);
+  });
+
+  it('shows the tile that a key selected', () => {
+    const view = setup(['stats']);
+    const scrollIntoView = vi.mocked(Element.prototype.scrollIntoView);
+    scrollIntoView.mockClear();
+    press(view, 'ArrowRight');
+    expect(scrollIntoView).toHaveBeenCalled();
+  });
+});
+
 it('tells the breadcrumbs which container it shows, and the toolbar the types in it', () => {
   const { tile, unmount } = setup(['hp']);
   const info = () => untrack(() => getInfo()!);
@@ -155,6 +254,52 @@ it('tells the breadcrumbs which container it shows, and the toolbar the types in
   unmount();
   flush();
   expect(untrack(getInfo)).toBeUndefined();
+});
+
+describe('the breadcrumbs', () => {
+  const selectedName = (view: ReturnType<typeof setup>) => {
+    const selected = view.tiles().find((tile) => tile.getAttribute('aria-selected') === 'true');
+    return selected?.children[selected.children.length - 2]?.textContent;
+  };
+  const click = (path: Path) => untrack(() => getInfo()!).onBreadcrumbClick!(path);
+
+  it('goes up to a container above, and selects the container that it came from', () => {
+    const view = setup(['stats', 'nested']);
+    click(['stats']);
+    flush();
+    expect(view.names()).toEqual(['State', 'nested', 'str', 'name']);
+    expect(selectedName(view)).toBe('nested');
+
+    click([]);
+    flush();
+    expect(view.names()).toEqual(['empty', 'stats', 'inv', 'hp']);
+    expect(selectedName(view)).toBe('stats');
+  });
+
+  it('goes up more than one container at once', () => {
+    const view = setup(['stats', 'nested']);
+    click([]);
+    flush();
+    expect(view.names()).toEqual(['empty', 'stats', 'inv', 'hp']);
+    expect(selectedName(view)).toBe('stats');
+    expect(getStatePath()).toEqual(['stats']);
+  });
+
+  it('selects what is not above the container that is shown', () => {
+    const view = setup(['stats', 'nested']);
+    // The container itself
+    click(['stats', 'nested']);
+    flush();
+    expect(getStatePath()).toEqual(['stats', 'nested']);
+    expect(view.names()).toEqual(['stats', 'a']);
+
+    // Something next to it, from a menu of the breadcrumbs
+    click(['stats', 'str']);
+    flush();
+    expect(getStatePath()).toEqual(['stats', 'str']);
+    expect(view.names()).toEqual(['State', 'nested', 'str', 'name']);
+    expect(selectedName(view)).toBe('str');
+  });
 });
 
 describe('the filter of types', () => {

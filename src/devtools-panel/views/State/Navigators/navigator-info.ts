@@ -8,6 +8,8 @@ export interface NavigatorInfo {
   getBreadcrumbsPath: () => Path;
   /** The types of what the navigator shows, for the filter of types in the toolbar */
   getAvailableTypes: () => ValueType[];
+  /** A click on a path in the breadcrumbs. Without it, the path is selected */
+  onBreadcrumbClick?: (path: Path) => void;
 }
 
 /** Gives the info of a navigator to whoever shows it; the function it returns takes it back */

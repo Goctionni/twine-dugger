@@ -12,6 +12,7 @@ export function createNodeInfo(getPath: () => Path) {
   const getType = createMemo(() => getJsonType(getValue()));
 
   const getName = () => {
+    if (getPath().length === 0) return 'State';
     const container = getPathValue(getLatestState(), getPath().slice(0, -1));
     const key = getPath().at(-1)!;
     return isContainer(container) ? getContainerKeyLabel(container, key) : String(key);
