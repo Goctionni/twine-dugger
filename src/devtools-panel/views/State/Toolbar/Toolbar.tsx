@@ -4,7 +4,6 @@ import { sameItems } from '@/devtools-panel/utils/same-items';
 import type { ValueType } from '@/shared/shared-types';
 
 import { TYPE_ORDER } from '../logic/sort-keys';
-import { navigators } from '../Navigators/navigators';
 import type { Navigator, Sort } from '../types';
 import { createResolveBreakpoints } from './createResolveBreakpoints';
 import { NavigatorSwitch } from './NavigatorSwitch';
@@ -17,6 +16,8 @@ interface Props {
   onNavigatorChange: (navigator: Navigator) => void;
   searchText: string;
   onSearchTextChange: (searchText: string) => void;
+  /** The types of what the navigator shows */
+  availableTypes: ValueType[];
   hiddenTypes: ValueType[];
   onHiddenTypesChange: (hiddenTypes: ValueType[]) => void;
   sort: Sort;
@@ -37,9 +38,8 @@ export function Toolbar(props: Props) {
   // A hidden type stays in the list, so that it can be shown again
   const getTypes = createMemo(
     () => {
-      const onScreen = navigators[props.navigator].getAvailableTypes();
       return TYPE_ORDER.filter(
-        (type) => onScreen.includes(type) || props.hiddenTypes.includes(type),
+        (type) => props.availableTypes.includes(type) || props.hiddenTypes.includes(type),
       );
     },
     { equals: sameItems },

@@ -1,7 +1,7 @@
 import { For, Match, Switch } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
-import { requestScrollTo } from '@/devtools-panel/store/state-location';
+import { getStatePath, requestScrollTo } from '@/devtools-panel/store/state-location';
 import { isPinned } from '@/devtools-panel/store/store';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import { sameItems } from '@/devtools-panel/utils/same-items';
@@ -11,6 +11,7 @@ import type { Path } from '@/shared/shared-types';
 
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
+import { provideNavigatorInfo } from '../navigator-info';
 import { isArrowKey } from '../Shared/arrow-keys';
 import { createScrollToSelection } from '../Shared/create-scroll-to-selection';
 import { getVisibleKeys } from '../Shared/visible-keys';
@@ -21,7 +22,6 @@ import { createTreeRows } from './create-tree-rows';
 import { createValueList } from './create-value-list';
 import { getRowDomId } from './logic/row-dom-id';
 import { onTreeListArrowKey, onTreeOnlyArrowKey } from './tree-arrow-keys';
-import { provideTreeTypes } from './tree-types';
 import { TreePrimitiveList } from './TreePrimitiveList';
 import { TreeRow } from './TreeRow';
 
@@ -55,7 +55,7 @@ export function TreeNav(props: NavProps) {
     hasValueList: list.hasValueList,
     getListedPath: list.getListedPath,
   });
-  provideTreeTypes(getShownTypes);
+  provideNavigatorInfo({ getBreadcrumbsPath: getStatePath, getAvailableTypes: getShownTypes });
 
   const getActiveId = () =>
     isSelectedRowShown() ? getRowDomId(treeId, pathKey(getSelectedPath())) : undefined;

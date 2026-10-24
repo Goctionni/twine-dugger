@@ -1,7 +1,7 @@
 import { Match, Repeat, Switch, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
-import { requestScrollTo } from '@/devtools-panel/store/state-location';
+import { getStatePath, requestScrollTo } from '@/devtools-panel/store/state-location';
 import { isPinned } from '@/devtools-panel/store/store';
 import { createElementWidth } from '@/devtools-panel/utils/create-element-width';
 import { getPathValue } from '@/shared/json-safe';
@@ -9,6 +9,7 @@ import type { Path } from '@/shared/shared-types';
 
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
+import { provideNavigatorInfo } from '../navigator-info';
 import { isArrowKey } from '../Shared/arrow-keys';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { countCollapsed } from './logic/count-collapsed';
@@ -16,6 +17,7 @@ import { countColumns } from './logic/count-columns';
 import { getKeyTarget } from './logic/key-target';
 import { nextTrail } from './logic/next-trail';
 import { getRowId, getStripId } from './logic/row-id';
+import { getTypesInColumns } from './logic/types-in-columns';
 import { MillerColumn } from './MillerColumn';
 import { MillerStrip } from './MillerStrip';
 
@@ -41,6 +43,11 @@ export function MillerNav(props: NavProps) {
       (key) => getLastChangeId([...containerPath, key]),
       (key) => isPinned([...containerPath, key]),
     );
+
+  provideNavigatorInfo({
+    getBreadcrumbsPath: getStatePath,
+    getAvailableTypes: () => getTypesInColumns(getLatestState(), getStatePath()),
+  });
 
   const getActiveId = () => {
     if (!props.path.length) return undefined;

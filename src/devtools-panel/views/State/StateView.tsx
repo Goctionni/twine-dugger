@@ -8,7 +8,12 @@ import type { Path } from '@/shared/shared-types';
 
 import { Breadcrumbs } from './Breadcrumbs/Breadcrumbs';
 import { Inspector } from './Inspector/Inspector';
-import { navigators } from './Navigators/navigators';
+import { TYPE_ORDER } from './logic/sort-keys';
+import {
+  NavigatorInfoContext,
+  type NavigatorInfo,
+  type PublishNavigatorInfo,
+} from './Navigators/navigator-info';
 import { StateNav } from './Navigators/StateNav';
 import {
   getHiddenTypes,
@@ -23,6 +28,13 @@ import type { SelectionKind } from './types';
 
 export function StateView() {
   const [getSearchText, setSearchText] = createSignal('');
+
+  const [getNavigatorInfo, setNavigatorInfo] = createSignal<NavigatorInfo>();
+  // A navigator that another one replaces takes back only its own info
+  const publishNavigatorInfo: PublishNavigatorInfo = (info) => {
+    setNavigatorInfo(info);
+    return () => setNavigatorInfo((current) => (current === info ? undefined : current));
+  };
 
   const getSelectionKind = createMemo<SelectionKind>(() =>
     isContainerType(getJsonType(getPathValue(getLatestState(), getStatePath())))
@@ -47,35 +59,38 @@ export function StateView() {
   };
 
   return (
-    <div class="flex h-full flex-col [container:frame/size]">
-      <Toolbar
-        navigator={getNavigator()}
-        onNavigatorChange={setNavigator}
-        searchText={getSearchText()}
-        onSearchTextChange={setSearchText}
-        hiddenTypes={getHiddenTypes()}
-        onHiddenTypesChange={setHiddenTypes}
-        sort={getSort()}
-        onSortChange={setSort}
-      />
-      <div class="flex min-h-0 flex-1 flex-col">
-        <Breadcrumbs
-          path={navigators[getNavigator()].getBreadcrumbsPath()}
-          onSelect={selectAndScrollTo}
+    <NavigatorInfoContext value={publishNavigatorInfo}>
+      <div class="flex h-full flex-col [container:frame/size]">
+        <Toolbar
+          navigator={getNavigator()}
+          onNavigatorChange={setNavigator}
+          searchText={getSearchText()}
+          onSearchTextChange={setSearchText}
+          availableTypes={getNavigatorInfo()?.getAvailableTypes() ?? TYPE_ORDER}
+          hiddenTypes={getHiddenTypes()}
+          onHiddenTypesChange={setHiddenTypes}
+          sort={getSort()}
+          onSortChange={setSort}
         />
-        <div class="relative flex min-h-0 flex-1 inspector-sheet:flex-col">
-          <div class="min-h-0 min-w-0 flex-1 overflow-auto">
-            <StateNav navigator={getNavigator()} path={getStatePath()} onSelect={select} />
-          </div>
-          <Inspector
-            path={getStatePath()}
+        <div class="flex min-h-0 flex-1 flex-col">
+          <Breadcrumbs
+            path={getNavigatorInfo()?.getBreadcrumbsPath() ?? getStatePath()}
             onSelect={selectAndScrollTo}
-            selectionKind={getSelectionKind()}
-            isOverlayOpen={isOverlayOpen()}
-            onClose={() => setClosedPathKey(pathKey(getStatePath()))}
           />
+          <div class="relative flex min-h-0 flex-1 inspector-sheet:flex-col">
+            <div class="min-h-0 min-w-0 flex-1 overflow-auto">
+              <StateNav navigator={getNavigator()} path={getStatePath()} onSelect={select} />
+            </div>
+            <Inspector
+              path={getStatePath()}
+              onSelect={selectAndScrollTo}
+              selectionKind={getSelectionKind()}
+              isOverlayOpen={isOverlayOpen()}
+              onClose={() => setClosedPathKey(pathKey(getStatePath()))}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </NavigatorInfoContext>
   );
 }

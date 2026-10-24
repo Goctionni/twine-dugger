@@ -33,6 +33,9 @@ const icons: Record<ValueType, { letters: string; classes: string }> = {
   },
 };
 
+/** The letters of the icon of a type, for a larger icon elsewhere */
+export const getTypeLetters = (type: ValueType) => icons[type].letters;
+
 export function TypeIcon(props: Props) {
   return (
     <span

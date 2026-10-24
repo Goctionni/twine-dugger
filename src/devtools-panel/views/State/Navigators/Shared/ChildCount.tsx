@@ -7,6 +7,10 @@ interface Props {
   isSelected: boolean;
 }
 
+/** The tooltip of a count: the values shown, and how many the filter hides */
+export const getChildCountTitle = (count: number, hiddenCount: number) =>
+  `Contains ${count} ${count === 1 ? 'value' : 'values'}${hiddenCount > 0 ? ` (${hiddenCount} hidden)` : ''}`;
+
 export function ChildCount(props: Props) {
   const isEmpty = () => props.count === 0 && props.hiddenCount === 0 && props.isSelected;
 
@@ -27,7 +31,7 @@ export function ChildCount(props: Props) {
             'shrink-0 font-mono text-[11px]',
             props.hiddenCount > 0 ? 'text-amber-400' : 'text-gray-500',
           ]}
-          title={`Contains ${props.count} ${props.count === 1 ? 'value' : 'values'}${props.hiddenCount > 0 ? ` (${props.hiddenCount} hidden)` : ''}`}
+          title={getChildCountTitle(props.count, props.hiddenCount)}
         >
           {props.count} ›
         </span>

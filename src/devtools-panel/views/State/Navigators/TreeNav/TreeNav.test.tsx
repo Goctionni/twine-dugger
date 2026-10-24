@@ -1,5 +1,5 @@
 import { cleanup, render, within } from '@solidjs/testing-library';
-import { createSignal, flush } from 'solid-js';
+import { createSignal, flush, untrack } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
@@ -8,15 +8,26 @@ import { setSetting } from '@/devtools-panel/store/store';
 import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
 
-import { TYPE_ORDER } from '../../logic/sort-keys';
 import { setHiddenTypes } from '../../store-helpers/view-prefs';
-import { getTreeTypes } from './tree-types';
+import {
+  NavigatorInfoContext,
+  type NavigatorInfo,
+  type PublishNavigatorInfo,
+} from '../navigator-info';
 import { TreeNav } from './TreeNav';
 
 vi.mock('@/devtools-panel/api/api', () => ({
   getPassageData: async () => [],
   setStatePropertyLocks: async () => {},
 }));
+
+// What the tree tells the toolbar and the breadcrumbs, as StateView receives it
+const [getInfo, setInfo] = createSignal<NavigatorInfo>();
+const publish: PublishNavigatorInfo = (info) => {
+  setInfo(info);
+  return () => setInfo(undefined);
+};
+const getTreeTypes = () => untrack(() => getInfo()?.getAvailableTypes());
 
 // jsdom has no layout, so no scrolling either
 const scrollIntoView = vi.fn();
@@ -43,7 +54,11 @@ function setup(initialPath: Path = []) {
     setPath(path);
     flush();
   });
-  const view = render(() => <TreeNav path={getPath()} onSelect={onSelect} />);
+  const view = render(() => (
+    <NavigatorInfoContext value={publish}>
+      <TreeNav path={getPath()} onSelect={onSelect} />
+    </NavigatorInfoContext>
+  ));
   const rows = () => [...view.container.querySelectorAll<HTMLElement>('[role="treeitem"]')];
   const names = () => rows().map((row) => row.querySelector('span.shrink-0.truncate')!.textContent);
   const row = (name: string) => rows().find((item) => item.textContent?.includes(name))!;
@@ -197,8 +212,8 @@ it('scrolls the selected row into view when a scroll to it is asked for, also wh
   expect(scrollIntoView).toHaveBeenCalledTimes(1);
 });
 
-it('tells the toolbar the types of the rows it shows, and every type when it is not there', () => {
-  expect(getTreeTypes()).toEqual(TYPE_ORDER);
+it('tells the toolbar the types of the rows it shows, and nothing when it is not there', () => {
+  expect(getTreeTypes()).toBeUndefined();
 
   const { caret, unmount } = setup();
   // The state itself holds objects, an array and a number
@@ -213,7 +228,7 @@ it('tells the toolbar the types of the rows it shows, and every type when it is 
 
   unmount();
   flush();
-  expect(getTreeTypes()).toEqual(TYPE_ORDER);
+  expect(getTreeTypes()).toBeUndefined();
 });
 
 describe('with the values in a list', () => {

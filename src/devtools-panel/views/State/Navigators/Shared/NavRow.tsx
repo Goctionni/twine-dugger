@@ -1,14 +1,13 @@
-import { Match, Show, Switch, createMemo } from 'solid-js';
+import { Match, Show, Switch } from 'solid-js';
 
-import { getLatestState } from '@/devtools-panel/store/game-state';
 import { isPinned } from '@/devtools-panel/store/store';
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
-import { getContainerKeyLabel, getJsonType, getPathValue, isContainer } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
+import { ChangedDot } from './ChangedDot';
 import { ChildCount } from './ChildCount';
-import { getChildCounts, sameChildCounts } from './get-child-counts';
+import { createNodeInfo } from './create-node-info';
 import { getPreview } from './preview';
 import { isRecentlyChanged } from './recently-changed';
 
@@ -26,16 +25,7 @@ export function NavRow(props: Props) {
   // The path of a row is a new array whenever it is worked out again
   const getPath = createStablePath(() => props.path);
   const getLevel = () => getPath().length;
-  const getValue = () => getPathValue(getLatestState(), getPath());
-  const getType = createMemo(() => getJsonType(getValue()));
-
-  const getName = () => {
-    const container = getPathValue(getLatestState(), getPath().slice(0, -1));
-    const key = getPath().at(-1)!;
-    return isContainer(container) ? getContainerKeyLabel(container, key) : String(key);
-  };
-  // Read in several places, and each reading is a pass over the values of the container
-  const getCounts = createMemo(() => getChildCounts(getValue()), { equals: sameChildCounts });
+  const { getValue, getType, getName, getCounts } = createNodeInfo(getPath);
   // Only a container with something to show can be open
   const getIsOpen = () => {
     const counts = getCounts();
@@ -88,12 +78,7 @@ export function NavRow(props: Props) {
         </span>
       </Show>
       <Show when={isRecentlyChanged(getPath())}>
-        <span
-          role="img"
-          aria-label="Changed recently"
-          title="Changed recently"
-          class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"
-        />
+        <ChangedDot />
       </Show>
     </div>
   );

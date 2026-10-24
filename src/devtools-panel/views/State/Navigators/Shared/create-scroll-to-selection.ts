@@ -18,14 +18,14 @@ export function createScrollToSelection(
   let isScrollToPending = false;
 
   createEffect(
-    () => [getScrollToTrigger(), isSelectedRowShown()] as const,
-    ([scrollToTrigger, isShown]) => {
+    () => [getScrollToTrigger(), isSelectedRowShown(), getSelectedPath().length === 0] as const,
+    ([scrollToTrigger, isShown, isNothingSelected]) => {
       if (scrollToTrigger !== handledScrollToTrigger) {
         handledScrollToTrigger = scrollToTrigger;
         isScrollToPending = true;
       }
       // Nothing is selected: no row to show, and a click later is not a scroll
-      if (getSelectedPath().length === 0) isScrollToPending = false;
+      if (isNothingSelected) isScrollToPending = false;
       if (!isScrollToPending || !isShown) return;
 
       isScrollToPending = false;
