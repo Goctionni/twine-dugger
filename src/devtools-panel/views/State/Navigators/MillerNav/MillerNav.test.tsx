@@ -170,3 +170,18 @@ it('names the strip as the active one when the selected row is in a column that 
   expect(strips()).toHaveLength(1);
   expect(getByRole('tree').getAttribute('aria-activedescendant')).toBe(strips()[0]!.id);
 });
+
+it('selects the row that starts with what is typed, among the rows next to the selected one', () => {
+  const game = createGame({ stats: { str: 1 }, skills: { cook: 1 }, hp: 10, gold: 5 });
+  startGameState(game.state());
+  flush();
+
+  const [getPath, setPath] = createSignal<Path>(['hp']);
+  const onSelect = vi.fn((path: Path) => setPath(path));
+  const { getByRole } = render(() => <MillerNav path={getPath()} onSelect={onSelect} />);
+  getByRole('tree').dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true }),
+  );
+  flush();
+  expect(onSelect).toHaveBeenCalledWith(['gold']);
+});

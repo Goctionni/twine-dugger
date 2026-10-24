@@ -5,7 +5,7 @@ import { requestScrollTo } from '@/devtools-panel/store/state-location';
 import { isPinned } from '@/devtools-panel/store/store';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import { sameItems } from '@/devtools-panel/utils/same-items';
-import { getPathValue, isContainer } from '@/shared/json-safe';
+import { getContainerKeyLabel, getPathValue, isContainer, isSet } from '@/shared/json-safe';
 import { pathStartsWith } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
@@ -14,6 +14,7 @@ import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { createScrollToSelection } from '../Shared/create-scroll-to-selection';
 import { getTypesIn } from '../Shared/get-types-in';
+import { isTypeAheadKey, provideTypeAhead } from '../Shared/TypeAhead/provide-type-ahead';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { Tile } from './Tile';
 import { resolveTilesContainerPath } from './tiles-container-path';
@@ -119,10 +120,29 @@ export function TilesNav(props: NavProps) {
     () => true,
   );
 
+  const selectTile = (index: number) => {
+    const key = getTileKeys()[index]!;
+    const path = getTilePath(key);
+    selectAndScrollTo(path);
+  };
+
+  const handleTypeAheadKey = provideTypeAhead({
+    getNames: () => {
+      const tilesContainer = getPathValue(getLatestState(), getTilesContainerPath());
+      if (!isContainer(tilesContainer)) return [];
+      const isSetContainer = isSet(tilesContainer);
+      return getTileKeys().map((key) => {
+        if (key === UP) return '';
+        return isSetContainer ? getContainerKeyLabel(tilesContainer, key) : String(key);
+      });
+    },
+    getSelectedIndex,
+    selectIndex: selectTile,
+  });
+
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
 
-    const selectTile = (index: number) => selectAndScrollTo(getTilePath(getTileKeys()[index]!));
     const activateTile = (index: number) => {
       const key = getTileKeys()[index]!;
       if (key === UP) goUp();
@@ -145,6 +165,7 @@ export function TilesNav(props: NavProps) {
     if (isSelectKey(event)) return handleSelectKey(event, context);
     if (isLeftRightKey(event)) return handleLeftRightKey(event, context);
     if (isUpDownKey(event)) return handleUpDownKey(event, context);
+    if (isTypeAheadKey(event)) return handleTypeAheadKey(event);
   };
 
   return (

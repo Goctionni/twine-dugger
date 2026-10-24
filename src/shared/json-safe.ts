@@ -161,6 +161,9 @@ export function getKeyLabel(type: ContainerType, key: string | number) {
 
 export function getContainerKeyLabel(container: JSONSafeContainer, key: string | number) {
   if (typeof key === 'string') return key;
-  const isSet = Array.isArray(container) && container[0] === SET_MARKER;
-  return String(isSet ? key - 1 : key);
+  return String(isSet(container) ? key - 1 : key);
+}
+
+export function isSet(value: JSONSafeValue): value is JSONSafeArray {
+  return Array.isArray(value) && value[0] === SET_MARKER;
 }

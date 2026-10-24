@@ -6,7 +6,7 @@ import { isPinned } from '@/devtools-panel/store/store';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getPathValue } from '@/shared/json-safe';
-import { pathKey } from '@/shared/path-equals';
+import { pathEquals, pathKey } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
@@ -14,6 +14,8 @@ import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { isArrowKey } from '../Shared/arrow-keys';
 import { createScrollToSelection } from '../Shared/create-scroll-to-selection';
+import { getNodeName } from '../Shared/get-node-name';
+import { isTypeAheadKey, provideTypeAhead } from '../Shared/TypeAhead/provide-type-ahead';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { createContainerMemos } from './create-container-memos';
 import { createShownTypes } from './create-shown-types';
@@ -69,7 +71,24 @@ export function TreeNav(props: NavProps) {
     requestScrollTo();
   };
 
+  // Typing goes through what has the focus, in the order that it is shown: the values of the list
+  // when one of them is selected, else the rows of the tree
+  const getTypeAheadPaths = () => {
+    const listedPath = list.getListedPath();
+    if (listedPath && list.isValueSelected()) {
+      return list.getValueKeysAt(listedPath).map((key) => [...listedPath, key]);
+    }
+    return getRows().map((row) => row.path);
+  };
+  const handleTypeAheadKey = provideTypeAhead({
+    getNames: () => getTypeAheadPaths().map((path) => getNodeName(getLatestState(), path)),
+    getSelectedIndex: () =>
+      getTypeAheadPaths().findIndex((path) => pathEquals(path, getSelectedPath())),
+    selectIndex: (index) => selectByKey(getTypeAheadPaths()[index]!),
+  });
+
   const onKeyDown = (event: KeyboardEvent) => {
+    if (isTypeAheadKey(event)) return handleTypeAheadKey(event);
     if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
     if (!isArrowKey(event.key)) return;
     event.preventDefault();

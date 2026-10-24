@@ -212,6 +212,25 @@ it('scrolls the selected row into view when a scroll to it is asked for, also wh
   expect(scrollIntoView).toHaveBeenCalledTimes(1);
 });
 
+const typeInTree = (tree: HTMLElement, key: string) => {
+  tree.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+  flush();
+};
+
+it('selects the row that starts with what is typed', () => {
+  const { tree, onSelect } = setup();
+  typeInTree(tree(), 'h');
+  expect(onSelect).toHaveBeenLastCalledWith(['hp']);
+});
+
+it('goes through the rows of the open containers too when typing', () => {
+  const { caret, tree, onSelect } = setup(['hp']);
+  caret('stats')!.click();
+  flush();
+  typeInTree(tree(), 'n');
+  expect(onSelect).toHaveBeenLastCalledWith(['stats', 'nested']);
+});
+
 it('tells the toolbar the types of the rows it shows, and nothing when it is not there', () => {
   expect(getTreeTypes()).toBeUndefined();
 
@@ -232,6 +251,23 @@ it('tells the toolbar the types of the rows it shows, and nothing when it is not
 });
 
 describe('with the values in a list', () => {
+  it('types through the values of the list when one of them is selected', () => {
+    const { play, tree, onSelect } = setup(['stats', 'str']);
+    play((live) => {
+      live.stats.name = 'x';
+      live.stats.sword = 'y';
+    });
+    // Not through the rows of the tree: nested is a row, name is a value
+    typeInTree(tree(), 'n');
+    expect(onSelect).toHaveBeenLastCalledWith(['stats', 'name']);
+  });
+
+  it('types through the rows of the tree when a container is selected', () => {
+    const { tree, onSelect } = setup(['stats']);
+    typeInTree(tree(), 'i');
+    expect(onSelect).toHaveBeenLastCalledWith(['inv']);
+  });
+
   beforeEach(() => setSetting('state.treeLayout', 'primitives-in-list'));
   afterEach(() => setSetting('state.treeLayout', 'containers-and-primitives'));
 

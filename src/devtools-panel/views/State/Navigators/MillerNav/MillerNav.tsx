@@ -11,6 +11,8 @@ import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { isArrowKey } from '../Shared/arrow-keys';
+import { getNodeName } from '../Shared/get-node-name';
+import { isTypeAheadKey, provideTypeAhead } from '../Shared/TypeAhead/provide-type-ahead';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { countCollapsed } from './logic/count-collapsed';
 import { countColumns } from './logic/count-columns';
@@ -58,7 +60,25 @@ export function MillerNav(props: NavProps) {
       : getRowId(treeId, depth, props.path.at(-1)!);
   };
 
+  // The rows of the column of the selection: typing goes through the ones next to the selected one
+  const getSiblingKeys = () => getKeysAt(props.path.slice(0, -1));
+  const handleTypeAheadKey = provideTypeAhead({
+    getNames: () =>
+      getSiblingKeys().map((key) =>
+        getNodeName(getLatestState(), [...props.path.slice(0, -1), key]),
+      ),
+    getSelectedIndex: () => {
+      const key = props.path.at(-1);
+      return key === undefined ? -1 : getSiblingKeys().indexOf(key);
+    },
+    selectIndex: (index) => {
+      props.onSelect([...props.path.slice(0, -1), getSiblingKeys()[index]!]);
+      requestScrollTo();
+    },
+  });
+
   const onKeyDown = (event: KeyboardEvent) => {
+    if (isTypeAheadKey(event)) return handleTypeAheadKey(event);
     if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
     if (!isArrowKey(event.key)) return;
     event.preventDefault();

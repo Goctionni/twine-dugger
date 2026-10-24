@@ -1,6 +1,6 @@
 import { cleanup, render } from '@solidjs/testing-library';
 import { createSignal, flush, untrack } from 'solid-js';
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { getStatePath, setStatePath } from '@/devtools-panel/store/state-location';
@@ -14,6 +14,7 @@ import {
   type NavigatorInfo,
   type PublishNavigatorInfo,
 } from '../navigator-info';
+import { TypeAheadContext, type TypedText } from '../Shared/TypeAhead/type-ahead-context';
 import { TilesNav } from './TilesNav';
 
 vi.mock('@/devtools-panel/api/api', () => ({
@@ -27,6 +28,9 @@ const publish: PublishNavigatorInfo = (info) => {
   setInfo(info);
   return () => setInfo(undefined);
 };
+
+// What the tiles tell StateView to show of what is typed
+const [getTyped, setTyped] = createSignal<TypedText>();
 
 // jsdom has no layout, so no scrolling either
 Element.prototype.scrollIntoView = vi.fn();
@@ -60,7 +64,9 @@ function setup(initialPath: Path = []) {
   });
   const view = render(() => (
     <NavigatorInfoContext value={publish}>
-      <TilesNav path={getStatePath()} onSelect={onSelect} />
+      <TypeAheadContext value={setTyped}>
+        <TilesNav path={getStatePath()} onSelect={onSelect} />
+      </TypeAheadContext>
     </NavigatorInfoContext>
   ));
   const tiles = () => [...view.container.querySelectorAll<HTMLElement>('[role="option"]')];
@@ -254,6 +260,92 @@ it('tells the breadcrumbs which container it shows, and the toolbar the types in
   unmount();
   flush();
   expect(untrack(getInfo)).toBeUndefined();
+});
+
+describe('type-ahead', () => {
+  const selectedName = (view: ReturnType<typeof setup>) => {
+    const selected = view.tiles().find((tile) => tile.getAttribute('aria-selected') === 'true');
+    return selected?.children[selected.children.length - 2]?.textContent;
+  };
+  const type = (view: ReturnType<typeof setup>, ...letters: string[]) =>
+    letters.forEach((letter) => {
+      view
+        .getByRole('listbox')
+        .dispatchEvent(
+          new KeyboardEvent('keydown', { key: letter, bubbles: true, cancelable: true }),
+        );
+      flush();
+    });
+  const typed = () => untrack(getTyped);
+  const wait = (ms: number) => {
+    vi.advanceTimersByTime(ms);
+    flush();
+  };
+
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it('selects the tile that starts with what is typed, and shows what is typed', () => {
+    const view = setup(['stats']);
+    type(view, 'n');
+    expect(selectedName(view)).toBe('nested');
+    expect(typed()).toEqual({ text: 'n', isMiss: false });
+
+    type(view, 'a');
+    expect(selectedName(view)).toBe('name');
+    expect(typed()).toEqual({ text: 'na', isMiss: false });
+  });
+
+  it('goes to the next tile with the same letter, and does not select the tile that goes up', () => {
+    const view = setup(['stats']);
+    type(view, 'n', 'n');
+    expect(selectedName(view)).toBe('name');
+    type(view, 'n');
+    expect(selectedName(view)).toBe('nested');
+  });
+
+  it('starts over after a pause, and stops showing what was typed', () => {
+    const view = setup(['stats']);
+    type(view, 's');
+    expect(selectedName(view)).toBe('str');
+    wait(600);
+    expect(typed()).toBeUndefined();
+
+    // A new search: the next tile with an n after the selected one
+    type(view, 'n');
+    expect(selectedName(view)).toBe('name');
+    expect(typed()).toEqual({ text: 'n', isMiss: false });
+  });
+
+  it('shows what is typed twice as long when nothing starts with it', () => {
+    const view = setup(['stats']);
+    type(view, 'z');
+    expect(selectedName(view)).toBeUndefined();
+    expect(typed()).toEqual({ text: 'z', isMiss: true });
+    wait(600);
+    expect(typed()).toEqual({ text: 'z', isMiss: true });
+    wait(500);
+    expect(typed()).toBeUndefined();
+  });
+
+  it('leaves shortcuts, and a space that starts it, alone', () => {
+    const view = setup(['stats']);
+    const press = (init: KeyboardEventInit) =>
+      view
+        .getByRole('listbox')
+        .dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init }));
+    press({ key: 'n', ctrlKey: true });
+    press({ key: ' ' });
+    expect(typed()).toBeUndefined();
+  });
+
+  it('does not show it any more when the tiles are gone', () => {
+    const view = setup(['stats']);
+    type(view, 'n');
+    view.unmount();
+    flush();
+    expect(typed()).toBeUndefined();
+  });
 });
 
 describe('the breadcrumbs', () => {
