@@ -45,27 +45,29 @@ export function TreePrimitiveList(props: Props) {
 
   return (
     <>
-      <div class="sticky top-0 truncate bg-gray-900 px-2 py-1 font-mono text-xs text-gray-400">
+      <div class="sticky top-0 truncate bg-gray-900 px-3 py-1 font-mono text-xs text-gray-400">
         {getTitle()}
         <Show when={getHiddenCount() > 0}>
           <span class="text-amber-400"> · {getHiddenCount()} hidden</span>
         </Show>
       </div>
-      <For
-        each={props.getValueKeys(getContainerPath())}
-        fallback={<p class="px-2 py-1 text-sm text-gray-500 italic">No values</p>}
-      >
-        {(key) => (
-          <NavRow
-            id={getRowDomId(props.treeId, pathKey([...getContainerPath(), key]))}
-            path={[...getContainerPath(), key]}
-            selectionState={
-              pathEquals(props.selectedPath, [...getContainerPath(), key]) ? 'selected' : 'normal'
-            }
-            onClick={() => props.onSelect([...getContainerPath(), key])}
-          />
-        )}
-      </For>
+      <div class="p-1">
+        <For
+          each={props.getValueKeys(getContainerPath())}
+          fallback={<p class="px-2 py-1 text-sm text-gray-500 italic">No values</p>}
+        >
+          {(key) => (
+            <NavRow
+              id={getRowDomId(props.treeId, pathKey([...getContainerPath(), key]))}
+              path={[...getContainerPath(), key]}
+              selectionState={
+                pathEquals(props.selectedPath, [...getContainerPath(), key]) ? 'selected' : 'normal'
+              }
+              onClick={() => props.onSelect([...getContainerPath(), key])}
+            />
+          )}
+        </For>
+      </div>
     </>
   );
 }

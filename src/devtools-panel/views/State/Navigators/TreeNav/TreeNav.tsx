@@ -147,7 +147,7 @@ export function TreeNav(props: NavProps) {
               <div class="min-w-0 flex-[0_0_42%] overflow-auto border-r border-gray-700 p-1">
                 {treeRows()}
               </div>
-              <div role="group" aria-label="Values" class="min-w-0 flex-1 overflow-auto p-1">
+              <div role="group" aria-label="Values" class="min-w-0 flex-1 overflow-auto">
                 <TreePrimitiveList
                   treeId={treeId}
                   containerPath={getListed()}

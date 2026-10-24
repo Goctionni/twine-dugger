@@ -87,7 +87,7 @@ export function NumberInput(props: NumberInputProps) {
           baseInputClasses,
           '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
           props.fill ? 'min-w-0 flex-1' : 'w-32',
-          'rounded-none',
+          'rounded-none text-center',
         )}
         {...props.inputProps}
       />

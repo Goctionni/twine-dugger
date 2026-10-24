@@ -66,36 +66,40 @@ export function MillerColumn(props: Props) {
       role="group"
       aria-label={getTitle()}
       tabindex="-1"
-      class="min-w-57.5 flex-1 basis-57.5 overflow-y-auto border-r border-gray-700 p-1 not-last:max-w-86.25 last:border-r-0"
+      class="min-w-57.5 flex-1 basis-57.5 overflow-y-auto border-r border-gray-700 not-last:max-w-86.25 last:border-r-0"
     >
-      <div class="sticky top-0 truncate bg-gray-900 px-2 py-1 font-mono text-xs text-gray-400">
+      <div class="sticky top-0 truncate bg-gray-900 px-3 py-1 font-mono text-xs text-gray-400">
         {getTitle()}
         <Show when={getHiddenCount() > 0}>
           <span class="text-amber-400"> · {getHiddenCount()} hidden</span>
         </Show>
       </div>
-      <For each={getKeys()}>
-        {(key) => {
-          const getSelectionState = () => {
-            if (getSelectedKey() === key) return isSelectionHere() ? 'selected' : 'on-path';
-            return getTrailKey() === key ? 'trail' : 'normal';
-          };
+      <div class="p-1">
+        <For each={getKeys()}>
+          {(key) => {
+            const getSelectionState = () => {
+              if (getSelectedKey() === key) return isSelectionHere() ? 'selected' : 'on-path';
+              return getTrailKey() === key ? 'trail' : 'normal';
+            };
 
-          return (
-            <NavRow
-              id={getRowId(props.treeId, props.depth, key)}
-              path={[...getColumnPath(), key]}
-              isExpanded={getSelectionState() === 'on-path' || getSelectionState() === 'selected'}
-              selectionState={getSelectionState()}
-              onClick={() =>
-                props.onSelect(
-                  getSelectionState() === 'selected' ? getColumnPath() : [...getColumnPath(), key],
-                )
-              }
-            />
-          );
-        }}
-      </For>
+            return (
+              <NavRow
+                id={getRowId(props.treeId, props.depth, key)}
+                path={[...getColumnPath(), key]}
+                isExpanded={getSelectionState() === 'on-path' || getSelectionState() === 'selected'}
+                selectionState={getSelectionState()}
+                onClick={() =>
+                  props.onSelect(
+                    getSelectionState() === 'selected'
+                      ? getColumnPath()
+                      : [...getColumnPath(), key],
+                  )
+                }
+              />
+            );
+          }}
+        </For>
+      </div>
     </div>
   );
 }
