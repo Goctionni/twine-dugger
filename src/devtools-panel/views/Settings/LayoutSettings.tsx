@@ -13,6 +13,8 @@ const directions: { value: SplitDirection; label: string }[] = [
   { value: 'horizontal', label: 'Horizontal (side by side)' },
 ];
 
+type TreeLayout = ReturnType<typeof getSettings.state.treeLayout>;
+
 export function LayoutSettings() {
   return (
     <>
@@ -29,6 +31,25 @@ export function LayoutSettings() {
             <For each={directions}>
               {(direction) => <option value={direction.value}>{direction.label}</option>}
             </For>
+          </select>
+        )}
+      </SettingControl>
+      <SettingControl label="State page: tree">
+        {(id) => (
+          <select
+            id={id}
+            class="w-64 cursor-pointer rounded-sm border border-slate-600 bg-slate-900 px-2 py-1"
+            value={getSettings.state.treeLayout()}
+            onChange={(event) =>
+              setSetting('state.treeLayout', event.currentTarget.value as TreeLayout)
+            }
+          >
+            <option value="containers-and-primitives">
+              Show containers and primitives in the tree
+            </option>
+            <option value="primitives-in-list">
+              Show containers in the tree, primitives in a list
+            </option>
           </select>
         )}
       </SettingControl>

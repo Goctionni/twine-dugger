@@ -2,11 +2,10 @@ import { Show, createMemo } from 'solid-js';
 
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
-import { getPathValue } from '@/shared/json-safe';
+import { getPathValue, isContainer } from '@/shared/json-safe';
 import { pathEquals } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
-import { getChildCounts, sameChildCounts } from '../Shared/get-child-counts';
 import { NavRow } from '../Shared/NavRow';
 import type { createTreeExpansion } from './create-tree-expansion';
 import type { TreeRow as TreeRowData } from './logic/get-tree-rows';
@@ -17,6 +16,10 @@ interface Props {
   treeId: string;
   row: TreeRowData;
   selectedPath: Path;
+  /** The container whose values are in the list beside the tree. Without a list, nothing */
+  listedPath?: Path;
+  /** Whether the container at a path has rows to open */
+  canOpen: (path: Path) => boolean;
   expansion: ReturnType<typeof createTreeExpansion>;
   onSelect: (path: Path) => void;
 }
@@ -30,16 +33,16 @@ const ROW_PADDING = 6;
 export function TreeRow(props: Props) {
   // The path of a row is a new array whenever the rows are worked out again
   const getPath = createStablePath(() => props.row.path);
-  const getCounts = createMemo(() => getChildCounts(getPathValue(getLatestState(), getPath())), {
-    equals: sameChildCounts,
-  });
-  const isContainerRow = () => getCounts() !== undefined;
-  const canOpen = () => (getCounts()?.shown ?? 0) > 0;
+  const isContainerRow = () => isContainer(getPathValue(getLatestState(), getPath()));
+  const canOpen = createMemo(() => props.canOpen(getPath()));
   const isOpen = () => props.expansion.isExpanded(props.row.id);
 
-  // Only the selected row is marked: the rows above it are the way to it, not part of it
-  const getSelectionState = () =>
-    pathEquals(props.selectedPath, getPath()) ? 'selected' : 'normal';
+  // Only the selected row is marked: the rows above it are the way to it, not part of it. When
+  // the selection is a value in the list, the container that holds it is marked quietly
+  const getSelectionState = () => {
+    if (pathEquals(props.selectedPath, getPath())) return 'selected';
+    return props.listedPath && pathEquals(props.listedPath, getPath()) ? 'on-path' : 'normal';
+  };
 
   // A container opens when it is clicked, and closes when it is clicked again while it is selected
   const onClick = () => {

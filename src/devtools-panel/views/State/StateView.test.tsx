@@ -3,7 +3,11 @@ import { flush } from 'solid-js';
 import { afterEach, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
-import { getRevealCount, getStatePath, setStatePath } from '@/devtools-panel/store/state-location';
+import {
+  getScrollToTrigger,
+  getStatePath,
+  setStatePath,
+} from '@/devtools-panel/store/state-location';
 import { createGame } from '@/devtools-panel/store/test-game';
 
 import { StateView } from './StateView';
@@ -23,7 +27,7 @@ globalThis.ResizeObserver = class {
 
 afterEach(cleanup);
 
-it('selects the crumb that is clicked and asks for the selection to be revealed', () => {
+it('selects the crumb that is clicked and asks to scroll to the selection', () => {
   const game = createGame({ stats: { str: 1 } });
   startGameState(game.state());
   applyUpdate(game.update());
@@ -32,7 +36,7 @@ it('selects the crumb that is clicked and asks for the selection to be revealed'
   flush();
 
   const { getByRole } = render(() => <StateView />);
-  const before = getRevealCount();
+  const before = getScrollToTrigger();
 
   within(getByRole('navigation', { name: 'Path' }))
     .getByText('stats')
@@ -40,7 +44,7 @@ it('selects the crumb that is clicked and asks for the selection to be revealed'
   flush();
 
   expect(getStatePath()).toEqual(['stats']);
-  expect(getRevealCount()).toBe(before + 1);
+  expect(getScrollToTrigger()).toBe(before + 1);
 });
 
 it('shows the navigator, the breadcrumbs and the inspector of the selection', () => {

@@ -1,7 +1,7 @@
 import { For, Show, createEffect, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
-import { getRevealCount } from '@/devtools-panel/store/state-location';
+import { getScrollToTrigger } from '@/devtools-panel/store/state-location';
 import { isPinned } from '@/devtools-panel/store/store';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getContainerSize, getPathValue, isContainer } from '@/shared/json-safe';
@@ -35,7 +35,7 @@ export function MillerColumn(props: Props) {
 
   // Also when the column is made: coming back to the page shows what was selected
   let column: HTMLDivElement | undefined;
-  createEffect(getRevealCount, () => {
+  createEffect(getScrollToTrigger, () => {
     column
       ?.querySelector('[data-selection-state="selected"], [data-selection-state="on-path"]')
       ?.scrollIntoView({ block: 'nearest' });

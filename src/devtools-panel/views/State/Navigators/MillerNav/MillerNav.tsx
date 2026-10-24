@@ -1,7 +1,7 @@
 import { Match, Repeat, Switch, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
-import { requestReveal } from '@/devtools-panel/store/state-location';
+import { requestScrollTo } from '@/devtools-panel/store/state-location';
 import { isPinned } from '@/devtools-panel/store/store';
 import { createElementWidth } from '@/devtools-panel/utils/create-element-width';
 import { getPathValue } from '@/shared/json-safe';
@@ -59,7 +59,7 @@ export function MillerNav(props: NavProps) {
     const target = getKeyTarget(event.key, props.path, getTrail(), getKeysAt);
     if (!target) return;
     props.onSelect(target);
-    requestReveal();
+    requestScrollTo();
   };
 
   return (

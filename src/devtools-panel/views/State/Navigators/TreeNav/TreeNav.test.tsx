@@ -1,13 +1,15 @@
-import { cleanup, render } from '@solidjs/testing-library';
+import { cleanup, render, within } from '@solidjs/testing-library';
 import { createSignal, flush } from 'solid-js';
-import { afterEach, expect, it, vi } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
-import { requestReveal } from '@/devtools-panel/store/state-location';
+import { requestScrollTo } from '@/devtools-panel/store/state-location';
+import { setSetting } from '@/devtools-panel/store/store';
 import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
 
 import { TYPE_ORDER } from '../../logic/sort-keys';
+import { setHiddenTypes } from '../../store-helpers/view-prefs';
 import { getTreeTypes } from './tree-types';
 import { TreeNav } from './TreeNav';
 
@@ -52,7 +54,12 @@ function setup(initialPath: Path = []) {
     tree().dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
     flush();
   };
-  return { ...view, rows, names, row, caret, tree, press, onSelect, setPath, getPath };
+  const play = (mutate: (live: any) => void) => {
+    mutate(game.live);
+    applyUpdate(game.update());
+    flush();
+  };
+  return { ...view, rows, names, row, caret, tree, press, onSelect, setPath, getPath, play };
 }
 
 it('shows the values of the state, closed, with their levels', () => {
@@ -175,13 +182,13 @@ it('does not scroll for a click, also not when the tree was made with nothing se
   expect(scrollIntoView).not.toHaveBeenCalled();
 });
 
-it('scrolls the selected row into view when a reveal is asked for, also when it is shown a moment later', () => {
+it('scrolls the selected row into view when a scroll to it is asked for, also when it is shown a moment later', () => {
   const { setPath } = setup();
   scrollIntoView.mockClear();
 
   // Its parents are opened after the path is set: the scroll waits for the row
   setPath(['stats', 'nested', 'a']);
-  requestReveal();
+  requestScrollTo();
   flush();
   expect(scrollIntoView).toHaveBeenCalledTimes(1);
 
@@ -207,4 +214,130 @@ it('tells the toolbar the types of the rows it shows, and every type when it is 
   unmount();
   flush();
   expect(getTreeTypes()).toEqual(TYPE_ORDER);
+});
+
+describe('with the values in a list', () => {
+  beforeEach(() => setSetting('state.treeLayout', 'primitives-in-list'));
+  afterEach(() => setSetting('state.treeLayout', 'containers-and-primitives'));
+
+  const listNames = (view: ReturnType<typeof setup>) =>
+    [...view.container.querySelectorAll('[role="group"] [role="treeitem"]')].map(
+      (row) => row.querySelector('span.truncate')!.textContent,
+    );
+
+  it('has only the containers in the tree, and the values of the selected one in the list', () => {
+    const view = setup(['stats']);
+    // hp is a value of the state itself: not in the tree
+    expect(view.names().filter((name) => !listNames(view).includes(name!))).toEqual([
+      'empty',
+      'stats',
+      'inv',
+    ]);
+    expect(listNames(view)).toEqual(['str']);
+    expect(view.getByRole('group', { name: 'Values' }).textContent).toContain('stats');
+
+    view.setPath([]);
+    flush();
+    expect(listNames(view)).toEqual(['hp']);
+  });
+
+  it('counts only the values that the filter hides in the header of the list', () => {
+    const view = setup();
+    const header = () => view.getByRole('group', { name: 'Values' }).textContent;
+
+    // inv is an array: hidden from the tree, not from the list
+    setHiddenTypes(['array']);
+    flush();
+    expect(header()).not.toContain('hidden');
+
+    setHiddenTypes(['number']);
+    flush();
+    expect(header()).toContain('· 1 hidden');
+    setHiddenTypes([]);
+  });
+
+  it('lists the values of the container that holds a selected value, and marks it quietly', () => {
+    const view = setup(['stats', 'str']);
+    expect(listNames(view)).toEqual(['str']);
+    expect(view.row('stats').dataset.selectionState).toBe('on-path');
+    const listed = view.getByRole('group', { name: 'Values' });
+    expect(
+      within(listed).getByText('str').closest('[role="treeitem"]')!.getAttribute('aria-selected'),
+    ).toBe('true');
+  });
+
+  it('selects a value of the list that is clicked', () => {
+    const view = setup(['stats']);
+    view
+      .getByRole('group', { name: 'Values' })
+      .querySelector<HTMLElement>('[role="treeitem"]')!
+      .click();
+    flush();
+    expect(view.getPath()).toEqual(['stats', 'str']);
+  });
+
+  it('has a caret only for a container that holds a container', () => {
+    const { caret } = setup();
+    expect(caret('stats')).not.toBeNull();
+    // inv holds two numbers, which are in the list
+    expect(caret('inv')).toBeNull();
+    expect(caret('empty')).toBeNull();
+  });
+
+  it('tells the toolbar the types of the containers in the tree and of the values in the list', () => {
+    const { caret, play, setPath } = setup();
+    play((live) => (live.labels = { name: 'x', inner: {} }));
+    expect(getTreeTypes()).toEqual(['object', 'array', 'number']);
+
+    // The state's own values are listed: a number. A string in a container that is open is not
+    caret('labels')!.click();
+    flush();
+    expect(getTreeTypes()).toEqual(['object', 'array', 'number']);
+
+    // Select that container: its values, a string, are the ones listed
+    setPath(['labels']);
+    flush();
+    expect(getTreeTypes()).toEqual(['object', 'array', 'string']);
+  });
+
+  it('goes into the list with right and back with left, and through it with up and down', () => {
+    const { press, getPath, setPath } = setup();
+    setPath(['inv']);
+    flush();
+
+    // inv holds values only: there is nothing to open, so right goes into the list
+    press('ArrowRight');
+    expect(getPath()).toEqual(['inv', 0]);
+    press('ArrowDown');
+    expect(getPath()).toEqual(['inv', 1]);
+    press('ArrowDown');
+    expect(getPath()).toEqual(['inv', 1]);
+    press('ArrowUp');
+    expect(getPath()).toEqual(['inv', 0]);
+    press('ArrowLeft');
+    expect(getPath()).toEqual(['inv']);
+  });
+
+  it('opens a container with right first, and goes into the list once it is open', () => {
+    const { press, getPath, setPath, names } = setup();
+    setPath(['stats']);
+    flush();
+    expect(names()).not.toContain('nested');
+
+    press('ArrowRight');
+    expect(names()).toContain('nested');
+    expect(getPath()).toEqual(['stats']);
+    press('ArrowRight');
+    expect(getPath()).toEqual(['stats', 'str']);
+  });
+});
+
+it('lists the types of all values in the open containers when the values are in the tree', () => {
+  const { caret, play } = setup();
+  play((live) => (live.labels = { name: 'x' }));
+  expect(getTreeTypes()).toEqual(['object', 'array', 'number']);
+
+  caret('labels')!.click();
+  flush();
+  expect(getTreeTypes()).toEqual(['object', 'array', 'number', 'string']);
 });

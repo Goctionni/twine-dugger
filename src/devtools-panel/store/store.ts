@@ -38,6 +38,7 @@ const defaultSettings: Settings = {
   'state.filters': [],
   'state.recentUpdates': 10,
   'state.navigator': 'miller',
+  'state.treeLayout': 'containers-and-primitives',
   'state.splitDirection': 'auto',
   'passages.splitDirection': 'auto',
   'editor.disableHighlighting': 'large',
@@ -249,6 +250,7 @@ export const getSettings = {
     filters: () => store.settings['state.filters'],
     recentUpdates: () => store.settings['state.recentUpdates'],
     navigator: () => store.settings['state.navigator'],
+    treeLayout: () => store.settings['state.treeLayout'],
     splitDirection: () => store.settings['state.splitDirection'],
   },
   passages: {

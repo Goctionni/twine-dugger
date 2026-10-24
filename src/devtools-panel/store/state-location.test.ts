@@ -2,7 +2,7 @@ import { flush } from 'solid-js';
 import { afterEach, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from './game-state';
-import { getRevealCount, setStatePath, showInStateView } from './state-location';
+import { getScrollToTrigger, setStatePath, showInStateView } from './state-location';
 import { setViewState, store } from './store';
 import { createGame } from './test-game';
 
@@ -51,16 +51,16 @@ it('does not set a path that is not in the state, nor one that goes through a va
   expect(path()).toEqual(['stats']);
 });
 
-it('asks for the reveal only when the path is set', () => {
+it('asks for a scroll to the selection only when the path is set', () => {
   start();
-  const before = getRevealCount();
+  const before = getScrollToTrigger();
 
   showInStateView(['missing']);
   flush();
-  expect(getRevealCount()).toBe(before);
+  expect(getScrollToTrigger()).toBe(before);
 
   showInStateView(['stats']);
   flush();
-  expect(getRevealCount()).toBe(before + 1);
+  expect(getScrollToTrigger()).toBe(before + 1);
   expect(path()).toEqual(['stats']);
 });

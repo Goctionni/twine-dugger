@@ -1,7 +1,7 @@
 import { createMemo, createSignal } from 'solid-js';
 
 import { getLatestState } from '@/devtools-panel/store/game-state';
-import { getStatePath, requestReveal, setStatePath } from '@/devtools-panel/store/state-location';
+import { getStatePath, requestScrollTo, setStatePath } from '@/devtools-panel/store/state-location';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import { pathKey } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
@@ -41,9 +41,9 @@ export function StateView() {
     setStatePath(path);
   };
   // For what is not a row of the navigator: the selection may be out of view
-  const selectAndReveal = (path: Path) => {
+  const selectAndScrollTo = (path: Path) => {
     select(path);
-    requestReveal();
+    requestScrollTo();
   };
 
   return (
@@ -61,7 +61,7 @@ export function StateView() {
       <div class="flex min-h-0 flex-1 flex-col">
         <Breadcrumbs
           path={navigators[getNavigator()].getBreadcrumbsPath()}
-          onSelect={selectAndReveal}
+          onSelect={selectAndScrollTo}
         />
         <div class="relative flex min-h-0 flex-1 inspector-sheet:flex-col">
           <div class="min-h-0 min-w-0 flex-1 overflow-auto">
@@ -69,7 +69,7 @@ export function StateView() {
           </div>
           <Inspector
             path={getStatePath()}
-            onSelect={selectAndReveal}
+            onSelect={selectAndScrollTo}
             selectionKind={getSelectionKind()}
             isOverlayOpen={isOverlayOpen()}
             onClose={() => setClosedPathKey(pathKey(getStatePath()))}

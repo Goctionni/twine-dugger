@@ -187,21 +187,21 @@ describe('selecting', () => {
   });
 });
 
-describe('revealing the selection', () => {
-  const revealed = () =>
+describe('scrolling to the selection', () => {
+  const scrolledTo = () =>
     scrollIntoView.mock.contexts.map((row) => (row as HTMLElement).dataset.selectionState);
 
   it('scrolls to the selected row when the column is made', () => {
     setup(['hp']);
-    expect(revealed()).toEqual(['selected']);
+    expect(scrolledTo()).toEqual(['selected']);
   });
 
   it('scrolls to the row that is on the path, and not in a column without one', () => {
     setup(['stats', 'str']);
-    expect(revealed()).toEqual(['on-path']);
+    expect(scrolledTo()).toEqual(['on-path']);
     scrollIntoView.mockClear();
     setup(['hp'], 1);
-    expect(revealed()).toEqual([]);
+    expect(scrolledTo()).toEqual([]);
   });
 
   it('scrolls again when something outside asks, also for the path that is selected already', () => {
@@ -210,7 +210,7 @@ describe('revealing the selection', () => {
 
     showInStateView(['hp']);
     flush();
-    expect(revealed()).toEqual(['selected']);
+    expect(scrolledTo()).toEqual(['selected']);
   });
 
   it('does not scroll for a click in the column', () => {
@@ -219,7 +219,7 @@ describe('revealing the selection', () => {
 
     rows()[0]!.click();
     flush();
-    expect(revealed()).toEqual([]);
+    expect(scrolledTo()).toEqual([]);
   });
 });
 

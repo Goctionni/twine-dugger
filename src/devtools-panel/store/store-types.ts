@@ -57,6 +57,8 @@ export const settingsSchema = type({
   'state.filters': valueTypeSchema.or("'filtered'").array(),
   'state.recentUpdates': 'number',
   'state.navigator': "'miller' | 'tree' | 'tiles'",
+  // The tree: all values in it, or only the containers in it and the values of the selected one in a list
+  'state.treeLayout': "'containers-and-primitives' | 'primitives-in-list'",
   'state.splitDirection': "'auto' | 'vertical' | 'horizontal'",
   'passages.splitDirection': "'auto' | 'vertical' | 'horizontal'",
   'editor.disableHighlighting': "'never' | 'very-large' | 'large' | 'normal' | 'always'",

@@ -1,26 +1,28 @@
-import { For, createEffect, createMemo } from 'solid-js';
+import { For, Match, Switch } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
-import { getRevealCount, requestReveal } from '@/devtools-panel/store/state-location';
+import { requestScrollTo } from '@/devtools-panel/store/state-location';
 import { isPinned } from '@/devtools-panel/store/store';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getPathValue } from '@/shared/json-safe';
-import { pathEquals, pathKey } from '@/shared/path-equals';
+import { pathKey } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
-import { TYPE_ORDER } from '../../logic/sort-keys';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { isArrowKey } from '../Shared/arrow-keys';
-import { getTypesIn } from '../Shared/get-types-in';
+import { createScrollToSelection } from '../Shared/create-scroll-to-selection';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { createContainerMemos } from './create-container-memos';
+import { createShownTypes } from './create-shown-types';
 import { createTreeExpansion } from './create-tree-expansion';
-import { getTreeKeyAction } from './logic/get-tree-key-action';
-import { getTreeRows, sameRows, type TreeRow as TreeRowData } from './logic/get-tree-rows';
+import { createTreeRows } from './create-tree-rows';
+import { createValueList } from './create-value-list';
 import { getRowDomId } from './logic/row-dom-id';
+import { onTreeListArrowKey, onTreeOnlyArrowKey } from './tree-arrow-keys';
 import { provideTreeTypes } from './tree-types';
+import { TreePrimitiveList } from './TreePrimitiveList';
 import { TreeRow } from './TreeRow';
 
 export function TreeNav(props: NavProps) {
@@ -39,83 +41,69 @@ export function TreeNav(props: NavProps) {
       ),
     sameItems,
   );
-  const getTypesAt = createContainerMemos(
-    (containerPath) => getTypesIn(getPathValue(getLatestState(), containerPath)),
-    sameItems,
-  );
+  const list = createValueList(getSelectedPath, getKeysAt);
+  const { getRows, canOpen, isSelectedRowShown } = createTreeRows({
+    getSelectedPath,
+    expansion,
+    list,
+    getKeysAt,
+  });
 
-  // A row that is still there stays the same object: only the rows that changed are worked out again
-  const getRows = createMemo(
-    (previous: TreeRowData[] = []) => {
-      const known = new Map(previous.map((row) => [row.id, row]));
-      return getTreeRows(getLatestState(), expansion.isExpanded, getKeysAt).map(
-        (row) => known.get(row.id) ?? row,
-      );
-    },
-    { equals: sameRows },
-  );
-
-  // For the filter of the toolbar: the types of the values in the state itself and in the
-  // containers that are open
-  const getShownTypes = createMemo(
-    () => {
-      const found = new Set(getTypesAt([]));
-      for (const row of getRows()) {
-        if (expansion.isExpanded(row.id)) getTypesAt(row.path).forEach((type) => found.add(type));
-      }
-      return TYPE_ORDER.filter((type) => found.has(type));
-    },
-    { equals: sameItems },
-  );
-  // oxlint-disable-next-line solid/reactivity -- it is read later, by the toolbar
+  const getShownTypes = createShownTypes({
+    getRows,
+    isExpanded: expansion.isExpanded,
+    hasValueList: list.hasValueList,
+    getListedPath: list.getListedPath,
+  });
   provideTreeTypes(getShownTypes);
 
-  const isSelectedRowShown = createMemo(() =>
-    getRows().some((row) => pathEquals(row.path, getSelectedPath())),
-  );
   const getActiveId = () =>
     isSelectedRowShown() ? getRowDomId(treeId, pathKey(getSelectedPath())) : undefined;
 
-  // A reveal is asked for (the breadcrumbs, the diff log, the keys), and also when the tree is made.
-  // The row of the selection may not be there yet: its parents are opened a moment after the
-  // selection is set, so the scroll waits for the row to be shown
   let tree: HTMLDivElement | undefined;
-  let handledRevealCount = -1;
-  let isRevealPending = false;
-  createEffect(
-    () => [getRevealCount(), isSelectedRowShown()] as const,
-    ([revealCount, isShown]) => {
-      if (revealCount !== handledRevealCount) {
-        handledRevealCount = revealCount;
-        isRevealPending = true;
-      }
-      // Nothing is selected: no row to show, and a click later is not a reveal
-      if (getSelectedPath().length === 0) isRevealPending = false;
-      if (!isRevealPending || !isShown) return;
-      isRevealPending = false;
-      tree
-        ?.querySelector('[data-selection-state="selected"]')
-        ?.scrollIntoView({ block: 'nearest' });
-    },
-  );
+  createScrollToSelection(() => tree, getSelectedPath, isSelectedRowShown);
 
-  const hasChildren = (row: { path: Path }) => getKeysAt(row.path).length > 0;
+  // A key that selects a row asks for it to be in view
+  const selectByKey = (path: Path) => {
+    props.onSelect(path);
+    requestScrollTo();
+  };
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
     if (!isArrowKey(event.key)) return;
     event.preventDefault();
 
-    const action = getTreeKeyAction(event.key, getSelectedPath(), getRows(), hasChildren);
-    if (action?.type === 'select') {
-      props.onSelect(action.path);
-      requestReveal();
-    } else if (action?.type === 'expand') {
-      expansion.expand(action.id);
-    } else if (action?.type === 'collapse') {
-      expansion.collapse(action.id);
+    const options = {
+      selectedPath: getSelectedPath(),
+      rows: getRows(),
+      canOpen,
+      onSelect: selectByKey,
+      expansion,
+    };
+    const listedPath = list.getListedPath();
+    if (listedPath) {
+      onTreeListArrowKey(event.key, { ...options, listedPath, getValueKeys: list.getValueKeysAt });
+    } else {
+      onTreeOnlyArrowKey(event.key, options);
     }
   };
+
+  const treeRows = () => (
+    <For each={getRows()} keyed={(row) => row.id}>
+      {(getRow) => (
+        <TreeRow
+          treeId={treeId}
+          row={getRow()}
+          selectedPath={getSelectedPath()}
+          listedPath={list.getListedPath()}
+          canOpen={canOpen}
+          expansion={expansion}
+          onSelect={props.onSelect}
+        />
+      )}
+    </For>
+  );
 
   return (
     <div
@@ -128,19 +116,32 @@ export function TreeNav(props: NavProps) {
       onFocusIn={(event) => {
         if (event.target !== event.currentTarget) event.currentTarget.focus();
       }}
-      class="p-1 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
+      class={[
+        'outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500',
+        list.hasValueList() ? 'flex h-full' : 'p-1',
+      ]}
     >
-      <For each={getRows()} keyed={(row) => row.id}>
-        {(getRow) => (
-          <TreeRow
-            treeId={treeId}
-            row={getRow()}
-            selectedPath={getSelectedPath()}
-            expansion={expansion}
-            onSelect={props.onSelect}
-          />
-        )}
-      </For>
+      <Switch>
+        <Match when={list.getListedPath()}>
+          {(getListed) => (
+            <>
+              <div class="min-w-0 flex-[0_0_42%] overflow-auto border-r border-gray-700 p-1">
+                {treeRows()}
+              </div>
+              <div role="group" aria-label="Values" class="min-w-0 flex-1 overflow-auto p-1">
+                <TreePrimitiveList
+                  treeId={treeId}
+                  containerPath={getListed()}
+                  selectedPath={getSelectedPath()}
+                  getValueKeys={list.getValueKeysAt}
+                  onSelect={props.onSelect}
+                />
+              </div>
+            </>
+          )}
+        </Match>
+        <Match when={!list.hasValueList()}>{treeRows()}</Match>
+      </Switch>
     </div>
   );
 }
