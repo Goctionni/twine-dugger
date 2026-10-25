@@ -39,6 +39,7 @@ split between the diff log and the state is `ui/util/movable-split/`). The diff 
   with them (**type-ahead**). Tree: left closes or goes to the parent, right opens or goes to the
   first child. Tiles: arrows move over the grid, Enter opens a container, Backspace, Shift+Up and
   Shift+Left go up.
+- **Right-click** a value (row, tile or the inspector header) for lock, pin, filter out changes, duplicate and delete. Menus add up: right-clicking in the diff log or anywhere in the panel also shows the items of the areas around it.
 - **Locks, pins and filters** are per game and kept in `localStorage`. A locked value is put back by
   the content script on every poll; a locked container holds everything in it, and cannot be
   deleted or changed. A **filtered path** (right-click it in the diff log) can be hidden in the diff

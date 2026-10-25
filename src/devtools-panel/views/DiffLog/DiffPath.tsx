@@ -10,8 +10,7 @@ export function DiffPath(props: {
   onAddFilter: (path: Path) => void;
   action?: 'added' | 'removed';
 }) {
-  const onContextMenu = createContextMenuHandler(
-    // oxlint-disable-next-line solid/reactivity
+  const onContextMenu = createContextMenuHandler(() =>
     getParentPaths(props.path).map((path) => ({
       label: () => (
         <>

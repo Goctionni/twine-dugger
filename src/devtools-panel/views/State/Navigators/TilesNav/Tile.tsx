@@ -5,6 +5,7 @@ import { highlight } from '@/devtools-panel/ui/display/HighlightDirective';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import type { Path } from '@/shared/shared-types';
 
+import { createPathMenu } from '../../PathMenu/create-path-menu';
 import { ChangedDot } from '../Shared/ChangedDot';
 import { getChildCountTitle } from '../Shared/ChildCount';
 import { createNodeInfo } from '../Shared/create-node-info';
@@ -39,6 +40,7 @@ export function Tile(props: Props) {
       id={props.id}
       selectionState={props.selectionState}
       onClick={() => (getCounts() === undefined ? props.onSelect() : props.onOpen())}
+      onContextMenu={createPathMenu(getPath)}
     >
       <TileIcon type={getType()} isContainer={getCounts() !== undefined}>
         <Show when={isPinned(getPath())}>

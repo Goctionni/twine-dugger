@@ -6,6 +6,7 @@ import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import type { Path } from '@/shared/shared-types';
 
+import { createPathMenu } from '../../PathMenu/create-path-menu';
 import { ChangedDot } from './ChangedDot';
 import { ChildCount } from './ChildCount';
 import { createNodeInfo } from './create-node-info';
@@ -26,6 +27,7 @@ export function NavRow(props: Props) {
   // The path of a row is a new array whenever it is worked out again
   const getPath = createStablePath(() => props.path);
   const getLevel = () => getPath().length;
+  const onContextMenu = createPathMenu(getPath);
   const { getValue, getType, getName, getCounts, getNameRanges, getValueRanges } =
     createNodeInfo(getPath);
   // Only a container with something to show can be open
@@ -52,6 +54,7 @@ export function NavRow(props: Props) {
         props.class,
       ]}
       onClick={() => props.onClick()}
+      onContextMenu={onContextMenu}
     >
       <TypeIcon type={getType()} />
       <span class="max-w-[60%] shrink-0 truncate" ref={highlight(getNameRanges)}>

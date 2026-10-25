@@ -10,6 +10,7 @@ import { getJsonType, getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { getPathLabels } from '../../logic/path-labels';
+import { createPathMenu } from '../../PathMenu/create-path-menu';
 import { createEditStatus } from '../createEditStatus';
 import { DeleteButton } from './DeleteButton';
 import { deleteValue } from './deleteValue';
@@ -34,8 +35,10 @@ export function ValueHeader(props: Props) {
     () => props.path,
   );
 
+  const onContextMenu = createPathMenu(() => props.path);
+
   return (
-    <header class="flex flex-col gap-1">
+    <header class="flex flex-col gap-1" onContextMenu={onContextMenu}>
       <div class="flex items-center gap-2">
         <TypeIcon type={getType()} />
         <h2 class="font-mono text-base font-semibold break-all">{getTitle()}</h2>
