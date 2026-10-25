@@ -25,6 +25,9 @@ globalThis.ResizeObserver = class {
   disconnect() {}
 };
 
+globalThis.requestIdleCallback = (callback) => setTimeout(callback, 0) as unknown as number;
+const untilIdle = () => new Promise((resolve) => setTimeout(resolve, 5));
+
 afterEach(cleanup);
 
 it('selects the crumb that is clicked and asks to scroll to the selection', () => {
@@ -75,16 +78,19 @@ it('filters the rows with the search, says when nothing matches, and clears the 
 
   input.value = 'gol';
   input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  await untilIdle();
   flush();
   expect(within(getByRole('tree', { name: 'State' })).queryByText('stats')).toBeNull();
   expect(within(getByRole('tree', { name: 'State' })).getByText('gold')).toBeTruthy();
 
   input.value = 'zzz';
   input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  await untilIdle();
   flush();
   expect(getByRole('status').textContent).toContain('zzz');
 
   getByRole('button', { name: 'Clear filter' }).click();
+  await untilIdle();
   flush();
   expect(input.value).toBe('');
   expect(queryByRole('button', { name: 'Clear filter' })).toBeNull();

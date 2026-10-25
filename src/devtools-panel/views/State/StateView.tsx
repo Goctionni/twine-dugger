@@ -2,6 +2,7 @@ import { Show, createMemo, createSignal } from 'solid-js';
 
 import { getLatestState } from '@/devtools-panel/store/game-state';
 import { getStatePath, requestScrollTo, setStatePath } from '@/devtools-panel/store/state-location';
+import { whenIdle } from '@/devtools-panel/utils/when-idle';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 import { pathKey } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
@@ -75,7 +76,7 @@ export function StateView() {
             navigator={getNavigator()}
             onNavigatorChange={setNavigator}
             searchText={getSearchText()}
-            onSearchTextChange={setSearchText}
+            onSearchTextChange={(searchText) => whenIdle(() => setSearchText(searchText))}
             availableTypes={getNavigatorInfo()?.getAvailableTypes() ?? TYPE_ORDER}
             hiddenTypes={getHiddenTypes()}
             onHiddenTypesChange={setHiddenTypes}
