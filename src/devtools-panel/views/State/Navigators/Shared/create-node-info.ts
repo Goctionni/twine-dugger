@@ -8,6 +8,7 @@ import type { Range } from '../../../GlobalSearch/types';
 import { getSearchMatcher } from '../../state-search';
 import { getChildCounts, sameChildCounts } from './get-child-counts';
 import { getNodeName } from './get-node-name';
+import { toPreviewRanges } from './preview';
 
 const NO_RANGES: Range[] = [];
 const sameRanges = (a: Range[], b: Range[]) =>
@@ -36,8 +37,7 @@ export function createNodeInfo(getPath: () => Path) {
     { equals: sameRanges },
   );
 
-  // For the preview of the value. A string is shown in quotes, which moves what is in them by one;
-  // an escaped character is longer than it is, so a match after one is a little off
+  // For the preview of the value, where a string is in quotes and has its escapes
   const getValueRanges = createMemo(
     () => {
       const queryMatcher = getSearchMatcher();
@@ -46,9 +46,7 @@ export function createNodeInfo(getPath: () => Path) {
         return NO_RANGES;
       }
       const ranges = queryMatcher.ranges(String(getValue() as string | number | boolean));
-      return type === 'string'
-        ? ranges.map(([start, end]) => [start + 1, end + 1] as const)
-        : ranges;
+      return type === 'string' ? toPreviewRanges(getValue() as string, ranges) : ranges;
     },
     { equals: sameRanges },
   );
