@@ -8,7 +8,7 @@ import {
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { sortPaths } from '@/shared/path-sorter';
 
-import { btnClass } from '../../ui/util/btnClass';
+import { btnClass } from '../../../ui/util/btnClass';
 
 export function FilteredPathsSettings() {
   const filteredPaths = createMemo(() => sortPaths(getFilteredPaths()));

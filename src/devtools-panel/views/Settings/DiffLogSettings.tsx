@@ -5,35 +5,50 @@ import {
   onFontSizeChange,
   onMaxHistorySlicesChange,
   onPollingIntervalChange,
-} from './diffLogSetters';
-import { SettingControl } from './SettingControl';
+} from './util/diffLogSetters';
+import { SettingRow } from './util/SettingRow';
 
 export function DiffLogSettings() {
   const { fontSize, pollingInterval, maxHistorySlices } = getSettings.diffLog;
 
   return (
     <>
-      <SettingControl label="Font size">
-        {(id) => <NumberInput inputProps={{ id }} value={fontSize()} onChange={onFontSizeChange} />}
-      </SettingControl>
-      <SettingControl label="Polling interval">
-        {(id) => (
-          <NumberInput
-            inputProps={{ id }}
-            value={pollingInterval()}
-            onChange={onPollingIntervalChange}
-          />
-        )}
-      </SettingControl>
-      <SettingControl label="Max history slices">
-        {(id) => (
-          <NumberInput
-            inputProps={{ id }}
-            value={maxHistorySlices()}
-            onChange={onMaxHistorySlicesChange}
-          />
-        )}
-      </SettingControl>
+      <SettingRow
+        label="Text size"
+        description="The size of the text in the diff log."
+        setting="diffLog.fontSize"
+        unit="pixels"
+      >
+        <NumberInput
+          inputProps={{ 'aria-label': 'Text size' }}
+          value={fontSize()}
+          onChange={onFontSizeChange}
+        />
+      </SettingRow>
+      <SettingRow
+        label="Polling interval"
+        description="How often the panel asks the game for changes."
+        setting="diffLog.pollingInterval"
+        unit="milliseconds"
+      >
+        <NumberInput
+          inputProps={{ 'aria-label': 'Polling interval' }}
+          value={pollingInterval()}
+          onChange={onPollingIntervalChange}
+        />
+      </SettingRow>
+      <SettingRow
+        label="Changes kept"
+        description="How many changes the diff log and the History tab of a value keep."
+        setting="diffLog.maxHistorySlices"
+        unit="changes"
+      >
+        <NumberInput
+          inputProps={{ 'aria-label': 'Changes kept' }}
+          value={maxHistorySlices()}
+          onChange={onMaxHistorySlicesChange}
+        />
+      </SettingRow>
     </>
   );
 }

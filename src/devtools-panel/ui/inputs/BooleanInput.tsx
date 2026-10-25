@@ -30,7 +30,7 @@ export function BooleanInput(props: BooleanInputProps) {
   // here, and only for the half that a click would change
   const labelClass = (isChosen: boolean) =>
     clsx(
-      'relative flex flex-1 items-center justify-center rounded-sm',
+      'relative flex h-7.5 flex-1 items-center justify-center rounded-sm',
       props.readOnly || isChosen ? 'cursor-default' : 'cursor-pointer hover:bg-white/10',
     );
 

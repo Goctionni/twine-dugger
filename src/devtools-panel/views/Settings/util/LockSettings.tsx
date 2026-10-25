@@ -1,11 +1,19 @@
 import { createMemo, For, Show } from 'solid-js';
 
-import { clearLocks, getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
+import { clearLocks, getLock, getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { sortPaths } from '@/shared/path-sorter';
-import type { Path } from '@/shared/shared-types';
+import type { Lock, Path } from '@/shared/shared-types';
 
-import { btnClass } from '../../ui/util/btnClass';
+import { btnClass } from '../../../ui/util/btnClass';
+import { formatAsJson } from '../../State/Inspector/logic/info';
+
+/** Where the path is held: at a value, or within the range of a number */
+function describeLock(lock: Lock) {
+  return lock.min !== undefined && lock.max !== undefined
+    ? { word: 'within', text: `${lock.min} – ${lock.max}` }
+    : { word: 'at', text: formatAsJson(lock.value, 40) };
+}
 
 export function LockSettings() {
   const onUnlock = (path: Path) => setPathLock(path, false);
@@ -41,6 +49,14 @@ export function LockSettings() {
             {(path) => (
               <li class="flex items-center gap-2 rounded border border-gray-700 bg-gray-900/70 px-2 py-1">
                 <PrettyPath path={path} class="min-w-0 flex-1 font-mono text-xs break-all" />
+                <Show when={getLock(path)}>
+                  {(lock) => (
+                    <span class="shrink-0 font-mono text-xs text-gray-400">
+                      {describeLock(lock()).word}{' '}
+                      <span class="text-sky-300">{describeLock(lock()).text}</span>
+                    </span>
+                  )}
+                </Show>
                 <button
                   type="button"
                   class={btnClass('outline', 'clr-gray hover:clr-sky px-2 py-0.5 text-xs')}

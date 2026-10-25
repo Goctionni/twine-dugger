@@ -48,7 +48,9 @@ export const clearLocks = () => setLocks([]);
 
 export const syncLocks = () => setStatePropertyLocks(currentLocks());
 
-const findLock = (path: Path) => store.gameConfig.locks.find((lock) => pathEquals(lock.path, path));
+export const getLock = (path: Path): Lock | undefined =>
+  store.gameConfig.locks.find((lock) => pathEquals(lock.path, path));
+const findLock = getLock;
 
 /** The bounds of a locked number: the number itself, on both sides, when it has no range */
 export function getLockRange(path: Path): { min: number; max: number } | undefined {

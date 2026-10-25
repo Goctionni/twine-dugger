@@ -11,6 +11,9 @@ vi.mock('@/devtools-panel/store/locks', () => ({
     ['state', 'z', 'score'],
     ['state', 'a', 'name'],
   ]),
+  getLock: vi.fn((path: Array<string | number>) =>
+    path.at(-1) === 'score' ? { path, value: 10, min: 5, max: 20 } : { path, value: 'test' },
+  ),
   setPathLock: vi.fn(),
   clearLocks: vi.fn(),
 }));
@@ -27,6 +30,15 @@ describe('LockSettings', () => {
   it('renders initial paths sorted', () => {
     render(() => <LockSettings />);
     expect(screen.getByText('Locked paths:').textContent).toContain('2');
+  });
+
+  it('shows the value a path is held at, or the range of a number', () => {
+    render(() => <LockSettings />);
+
+    expect(screen.getByText('"test"')).toBeTruthy();
+    expect(screen.getByText('5 – 20')).toBeTruthy();
+    expect(screen.getByText('5 – 20').parentElement!.textContent).toBe('within 5 – 20');
+    expect(screen.getByText('"test"').parentElement!.textContent).toBe('at "test"');
   });
 
   it('Calls methods to unlock a path when Unlock is clicked', async () => {

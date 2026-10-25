@@ -191,6 +191,13 @@ export function setSetting<T extends keyof Settings>(setting: T, value: Settings
   });
 }
 
+export const getDefaultSetting = <T extends keyof Settings>(setting: T): Settings[T] =>
+  defaultSettings[setting];
+
+/** Only for settings that are a single number, text or true / false */
+export const isSettingDefault = (setting: keyof Settings) =>
+  store.settings[setting] === defaultSettings[setting];
+
 export function createSetSetting<T extends keyof Settings>(setting: T) {
   return (value: Settings[T]) => setSetting(setting, value);
 }
