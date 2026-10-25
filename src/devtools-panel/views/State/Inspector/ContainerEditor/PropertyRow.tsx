@@ -13,12 +13,16 @@ import { NumberEditor } from '../PrimitiveEditor/NumberEditor';
 import { StringEditor } from '../PrimitiveEditor/StringEditor';
 import { DeleteButton } from '../ValueHeader/DeleteButton';
 import { deleteValue } from '../ValueHeader/deleteValue';
+import { rowColumnsClass } from './row-layout';
 
 interface Props {
   /** The path of the property itself */
   path: Path;
   isSelected: boolean;
   onToggle: () => void;
+  /** Where the row is among the rows (from 1) and how many there are: the others may not be in the DOM */
+  position: number;
+  size: number;
 }
 
 /** A primitive property of the container: its name, an editor for its value, and delete */
@@ -27,9 +31,12 @@ export function PropertyRow(props: Props) {
   const getType = createMemo(() => getJsonType(getValue()));
   const getName = () => getPathLabels(getLatestState(), props.path).at(-1) ?? '';
   const { canChange } = createEditStatus(() => props.path);
-
   return (
-    <li class="col-span-3 grid grid-cols-subgrid items-start py-1">
+    <li
+      aria-posinset={props.position}
+      aria-setsize={props.size}
+      class={[rowColumnsClass, 'items-start py-1']}
+    >
       {/* Only the checkbox and the name react to the pointer, and show that the row is selected */}
       <label
         class={[

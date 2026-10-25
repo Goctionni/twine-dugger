@@ -16,7 +16,7 @@ interface Props {
   path: Path;
   /** Names the value for those who cannot see it */
   label: string;
-  /** For a row of a container: no choice of a larger field, and no hint, which would not fit */
+  /** For a row of a container: one line, no choice of a larger field, and no hint, which would not fit */
   compact?: boolean;
 }
 
@@ -31,9 +31,10 @@ export function StringEditor(props: Props) {
     return untrack(getStateValue).includes('\n');
   });
 
-  // A single line cannot hold a line break: text that has one is always shown in the larger field
+  // A single line cannot hold a line break: text that has one is always shown in the larger field.
+  // Only this editor has it: in a row of a container the line breaks of a text may be lost
   const hasNewline = () => getDraft().includes('\n');
-  const isMultiline = () => (!props.compact && isMultilineChoice()) || hasNewline();
+  const isMultiline = () => !props.compact && (isMultilineChoice() || hasNewline());
 
   // Enter in the field: save, or lock and unlock when there is nothing to save. In the larger
   // field Enter is a new line, and Ctrl+Enter does this
@@ -72,7 +73,7 @@ export function StringEditor(props: Props) {
           <Match when={isMultiline()}>
             <textarea
               aria-label={props.label}
-              rows={props.compact ? 2 : 5}
+              rows={5}
               spellcheck="false"
               value={getDraft()}
               disabled={isDisabled()}

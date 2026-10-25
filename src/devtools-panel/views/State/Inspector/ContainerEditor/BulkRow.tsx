@@ -22,6 +22,7 @@ import {
   sortForDeletion,
   type BulkKind,
 } from './bulk';
+import { rowColumnsClass } from './row-layout';
 
 type Key = string | number;
 
@@ -144,7 +145,7 @@ export function BulkRow(props: Props) {
   return (
     <li
       aria-label="Edit the selected values"
-      class="col-span-3 grid grid-cols-subgrid items-start border-b border-gray-600 py-1.5"
+      class={[rowColumnsClass, 'items-start border-b border-gray-600 py-1.5']}
     >
       <div class="mr-1 flex h-7.5 min-w-0 items-center gap-2 border border-transparent ps-2 pe-1">
         <input

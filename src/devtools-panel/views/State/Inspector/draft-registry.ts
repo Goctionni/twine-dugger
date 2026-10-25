@@ -24,6 +24,10 @@ const getChildDrafts = (parent: Path) =>
 
 export const countUnsavedChildren = (parent: Path) => getChildDrafts(parent).length;
 
+/** The keys of the children that have something typed that is not saved */
+export const getUnsavedChildKeys = (parent: Path) =>
+  getChildDrafts(parent).map((draft) => draft.path.at(-1)!);
+
 export const saveChildDrafts = (parent: Path) =>
   Promise.all(getChildDrafts(parent).map((draft) => draft.save()));
 

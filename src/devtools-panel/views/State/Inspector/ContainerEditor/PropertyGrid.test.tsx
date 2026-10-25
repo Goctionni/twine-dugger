@@ -100,7 +100,6 @@ it('has a row for each type of value, with its editor', () => {
   expect(rowOf('alive').querySelectorAll('input[type=radio]')).toHaveLength(2);
   expect(getByRole<HTMLInputElement>('spinbutton', { name: 'hp' }).value).toBe('10');
   expect(getByRole<HTMLInputElement>('textbox', { name: 'name' }).value).toBe('Ada');
-  expect(rowOf('notes').querySelector('textarea')!.value).toBe('a\nb');
 });
 
 it('selects a row by its name', () => {

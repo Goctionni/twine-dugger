@@ -5,6 +5,8 @@ import type { createVirtualList, VirtualListItem } from './create-virtual-list';
 
 interface Props {
   list: ReturnType<typeof createVirtualList>;
+  /** The role of the list, when the items are what it says (the element of an item has none) */
+  role?: JSX.HTMLAttributes<HTMLDivElement>['role'];
   /** Classes of the element of an item, for what is laid out inside it */
   itemClass?: string;
   /** Style of the element of an item, for what is laid out inside it */
@@ -20,6 +22,7 @@ export function VirtualItems(props: Props) {
   return (
     <div
       ref={props.list.listRef}
+      role={props.role}
       class="relative"
       style={{ height: `${props.list.getTotalSize()}px` }}
     >

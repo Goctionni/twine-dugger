@@ -1,4 +1,4 @@
-import { For, Show, createMemo } from 'solid-js';
+import { Show, createMemo, createSignal } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
 import { isPinned } from '@/devtools-panel/store/store';
@@ -6,14 +6,25 @@ import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getPathValue, isContainer } from '@/shared/json-safe';
 import type { JSONSafeObject, Path } from '@/shared/shared-types';
 
+import { createVirtualList } from '../../Navigators/Shared/create-virtual-list';
+import { VirtualItems } from '../../Navigators/Shared/VirtualItems';
 import { getVisibleKeys } from '../../Navigators/Shared/visible-keys';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
-import { countUnsavedChildren, discardChildDrafts, saveChildDrafts } from '../draft-registry';
+import {
+  countUnsavedChildren,
+  discardChildDrafts,
+  getUnsavedChildKeys,
+  saveChildDrafts,
+} from '../draft-registry';
 import { BulkRow } from './BulkRow';
 import type { Selection } from './createSelection';
 import { PropertyRow } from './PropertyRow';
+import { getNameColumn } from './row-layout';
 
 type Key = string | number;
+
+// 30px of editor and 2 x 4px of padding, at the size of the text of 16px
+const ROW_HEIGHT = 38;
 
 interface Props {
   path: Path;
@@ -50,8 +61,34 @@ export function PropertyGrid(props: Props) {
 
   const getUnsavedCount = () => countUnsavedChildren(props.path);
 
+  // A row that has something typed in it, or the focus, stays in the DOM when it is scrolled out
+  // of the window: it would lose the text, or the focus
+  const [getFocusedKey, setFocusedKey] = createSignal<Key>();
+  const list = createVirtualList({
+    getKeys: getPrimitiveKeys,
+    estimateSize: ROW_HEIGHT,
+    getKeptKeys: () => {
+      const focusedKey = getFocusedKey();
+      const unsavedKeys = getUnsavedChildKeys(props.path);
+      return focusedKey === undefined ? unsavedKeys : [...unsavedKeys, focusedKey];
+    },
+  });
+  const trackFocus = (event: FocusEvent) => {
+    const index = (event.target as Element).closest<HTMLElement>('[data-index]')?.dataset.index;
+    setFocusedKey(index === undefined ? undefined : getPrimitiveKeys()[Number(index)]);
+  };
+  const untrackFocus = (event: FocusEvent) => {
+    if (!list.getListElement()?.contains(event.relatedTarget as Node | null)) {
+      setFocusedKey(undefined);
+    }
+  };
+
   return (
-    <section aria-label="Properties" class="flex flex-col gap-1">
+    <section
+      aria-label="Properties"
+      class="flex flex-col gap-1"
+      style={{ '--name-column': getNameColumn(getPrimitiveKeys()) }}
+    >
       {/* Always as tall as the line: it appears while typing, and nothing should move */}
       <div class="flex min-h-5 items-center gap-3 text-xs text-gray-400">
         <Show when={getUnsavedCount() > 0}>
@@ -78,24 +115,29 @@ export function PropertyGrid(props: Props) {
         when={getPrimitiveKeys().length > 0}
         fallback={<p class="text-sm text-gray-400">No values to edit here.</p>}
       >
-        {/* Wide: the names share a column, as wide as the longest but not over 40%. Narrow: each row is two lines */}
-        <ul class="-mx-2 grid grid-cols-[fit-content(40%)_minmax(0,1fr)_auto]">
-          <BulkRow
-            path={props.path}
-            keys={getPrimitiveKeys()}
-            selectedKeys={getSelectedKeys()}
-            onSelect={props.selection.select}
-          />
-          <For each={getPrimitiveKeys()}>
-            {(key) => (
-              <PropertyRow
-                path={[...props.path, key]}
-                isSelected={getSelectedKeys().includes(key)}
-                onToggle={() => props.selection.toggle(key)}
-              />
-            )}
-          </For>
-        </ul>
+        <div class="-mx-2">
+          <ul>
+            <BulkRow
+              path={props.path}
+              keys={getPrimitiveKeys()}
+              selectedKeys={getSelectedKeys()}
+              onSelect={props.selection.select}
+            />
+          </ul>
+          <div onFocusIn={trackFocus} onFocusOut={untrackFocus}>
+            <VirtualItems list={list} role="list">
+              {(item) => (
+                <PropertyRow
+                  path={[...props.path, item.key]}
+                  isSelected={props.selection.getSelected().has(item.key)}
+                  onToggle={() => props.selection.toggle(item.key)}
+                  position={getPrimitiveKeys().indexOf(item.key) + 1}
+                  size={getPrimitiveKeys().length}
+                />
+              )}
+            </VirtualItems>
+          </div>
+        </div>
       </Show>
       <Show when={getContainerCount() > 0}>
         <p class="text-xs text-gray-400">
