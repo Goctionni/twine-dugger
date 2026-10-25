@@ -29,20 +29,27 @@ afterEach(async () => {
   flush();
 });
 
-function setup(path: Path) {
+function setup(path: Path, { hasLock = false } = {}) {
   const game = createGame({
     flag: true,
     group: { on: true },
     flags: new Set([true]),
     list: [5, 6],
+    tool: { run: () => 1 },
+    outer: { inner: { x: 1 } },
   });
   startGameState(game.state());
   applyUpdate(game.update());
   flush();
 
-  const view = render(() => <ValueHeader path={path}>under the path</ValueHeader>);
+  const view = render(() => (
+    <ValueHeader path={path} hasLock={hasLock}>
+      under the path
+    </ValueHeader>
+  ));
+  const lock = () => view.getByRole<HTMLButtonElement>('button', { name: 'Lock' });
   const remove = () => view.getByRole<HTMLButtonElement>('button', { name: 'Delete' });
-  return { ...view, remove };
+  return { ...view, remove, lock };
 }
 
 it('names the value, shows where it is, and holds what is given', () => {
@@ -130,4 +137,43 @@ it('cannot delete a container that has something locked inside it, but a sibling
   cleanup();
 
   expect(setup(['flag']).remove().disabled).toBe(false);
+});
+
+it('has a lock for the value itself only when asked, and locks and unlocks it', async () => {
+  expect(setup(['group']).queryByRole('button', { name: 'Lock' })).toBeNull();
+  cleanup();
+
+  const view = setup(['group'], { hasLock: true });
+  expect(view.lock().getAttribute('aria-pressed')).toBe('false');
+  expect(view.remove().disabled).toBe(false);
+
+  view.lock().click();
+  await Promise.resolve();
+  flush();
+  expect(view.lock().getAttribute('aria-pressed')).toBe('true');
+  expect(view.remove().disabled).toBe(true);
+
+  view.lock().click();
+  await Promise.resolve();
+  flush();
+  expect(view.lock().getAttribute('aria-pressed')).toBe('false');
+});
+
+it('has no lock for the state itself, and says when a parent holds the lock', async () => {
+  expect(setup([], { hasLock: true }).queryByRole('button', { name: 'Lock' })).toBeNull();
+  cleanup();
+
+  const view = setup(['outer', 'inner'], { hasLock: true });
+  await setPathLock(['outer'], true);
+  flush();
+  expect(view.getByText('Ancestor locked')).toBeTruthy();
+  expect(view.queryByRole('button', { name: 'Lock' })).toBeNull();
+});
+
+it('cannot lock the items of a set or a value that holds a function, but the set itself', () => {
+  expect(setup(['flags', 1], { hasLock: true }).lock().disabled).toBe(true);
+  cleanup();
+  expect(setup(['tool'], { hasLock: true }).lock().disabled).toBe(true);
+  cleanup();
+  expect(setup(['flags'], { hasLock: true }).lock().disabled).toBe(false);
 });

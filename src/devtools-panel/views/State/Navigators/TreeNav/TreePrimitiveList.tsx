@@ -49,7 +49,7 @@ export function TreePrimitiveList(props: Props) {
 
   return (
     <>
-      <div class="sticky top-0 truncate bg-gray-900 px-3 py-1 font-mono text-xs text-gray-400">
+      <div class="sticky top-0 z-10 truncate bg-gray-900 px-3 py-1 font-mono text-xs text-gray-400">
         {getTitle()}
         <Show when={getHiddenCount() > 0}>
           <span class="text-amber-400"> · {getHiddenCount()} hidden</span>

@@ -18,7 +18,7 @@ const sections: Array<{ id: SectionId; title: string; intro: string }> = [
   {
     id: 'paths',
     title: 'Filtered paths and locks',
-    intro: 'Per game: what is left out, and what is held at a value.',
+    intro: 'Per game: What values to lock and which to ignore.',
   },
 ];
 

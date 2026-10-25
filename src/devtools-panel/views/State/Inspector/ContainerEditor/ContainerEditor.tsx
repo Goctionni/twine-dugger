@@ -67,7 +67,7 @@ export function ContainerEditor(props: Props) {
 
   return (
     <div class="flex flex-col gap-3 p-3">
-      <ValueHeader path={props.path}>
+      <ValueHeader path={props.path} hasLock>
         <p class="text-xs text-gray-400">
           {getCount()} {getCount() === 1 ? 'entry' : 'entries'}
         </p>

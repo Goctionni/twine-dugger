@@ -78,7 +78,7 @@ export function MillerColumn(props: Props) {
       tabindex="-1"
       class="min-w-57.5 flex-1 basis-57.5 overflow-y-auto border-r border-gray-700 not-last:max-w-86.25 last:border-r-0"
     >
-      <div class="sticky top-0 truncate bg-gray-900 px-3 py-1 font-mono text-xs text-gray-400">
+      <div class="sticky top-0 z-10 truncate bg-gray-900 px-3 py-1 font-mono text-xs text-gray-400">
         {getTitle()}
         <Show when={getHiddenCount() > 0}>
           <span class="text-amber-400"> · {getHiddenCount()} hidden</span>
