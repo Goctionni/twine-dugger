@@ -9,7 +9,8 @@ import type { JSONSafeValue, Path } from '@/shared/shared-types';
 import { createEditStatus } from '../createEditStatus';
 import { createValueHistory } from '../createValueHistory';
 import { describeAge, formatAsJson } from '../logic/info';
-import { describeDelta } from '../logic/value-history';
+import { describeDelta, getNumberSeries } from '../logic/value-history';
+import { NumberChart } from './NumberChart';
 
 const FIRST_ENTRIES = 5;
 
@@ -27,6 +28,9 @@ export function HistoryTab(props: Props) {
     getStablePath(); // Reset getShowAll when the path changes (The component stays alive during path changes)
     return false;
   });
+
+  const [isTimelineShown, setTimelineShown] = createSignal(false);
+  const getSeries = () => getNumberSeries(getHistory());
 
   const getShown = () =>
     getShowAll() ? getHistory().entries : getHistory().entries.slice(0, FIRST_ENTRIES);
@@ -118,6 +122,22 @@ export function HistoryTab(props: Props) {
         >
           Show older ({getHiddenCount()})
         </button>
+      </Show>
+      <Show when={getSeries().length > 1}>
+        <label class="mt-2 flex w-fit items-center gap-2 text-sm text-gray-300 select-none">
+          <input
+            type="checkbox"
+            class="h-4 w-4 check-box"
+            checked={isTimelineShown()}
+            onChange={(event) => setTimelineShown(event.currentTarget.checked)}
+          />
+          Timeline
+        </label>
+        <Show when={isTimelineShown()}>
+          <div class="mt-2">
+            <NumberChart values={getSeries()} />
+          </div>
+        </Show>
       </Show>
     </Show>
   );

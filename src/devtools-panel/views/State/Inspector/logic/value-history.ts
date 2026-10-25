@@ -79,3 +79,11 @@ export function describeRange(
   if (typeof current !== 'number' || entries.length === 0) return undefined;
   return `${Math.min(...numbers)} – ${Math.max(...numbers)}`;
 }
+
+/** The numbers the value had, oldest first, up to the one it has now: for the timeline */
+export function getNumberSeries({ entries }: ValueHistory): number[] {
+  const isNumber = (value: JSONSafeValue | undefined): value is number =>
+    typeof value === 'number' && Number.isFinite(value);
+  const oldestBefore = entries.at(-1)?.before;
+  return [oldestBefore, ...entries.map((entry) => entry.value).toReversed()].filter(isNumber);
+}

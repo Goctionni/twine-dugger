@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import type { PathRecord } from '@/devtools-panel/store/game-state';
 import { NAN_MARKER, POSITIVE_INFINITY_MARKER } from '@/shared/json-safe';
+import type { JSONSafeValue } from '@/shared/shared-types';
 
 import {
   describeChangeCount,
   describeDelta,
   describeRange,
   getLastValidValue,
+  getNumberSeries,
   getValueHistory,
   type HistoryEntry,
 } from './value-history';
@@ -93,4 +95,23 @@ describe('getLastValidValue', () => {
       getLastValidValue([entry(undefined), entry(NAN_MARKER), entry({ a: 1 })]),
     ).toBeUndefined();
   });
+});
+
+it('lists the numbers the value had, oldest first, from before the oldest change', () => {
+  const entry = (
+    id: number,
+    value: JSONSafeValue | undefined,
+    before: JSONSafeValue | undefined,
+  ) => ({
+    id,
+    timestamp: id,
+    value,
+    before,
+  });
+  const entries = [entry(3, 9, 5), entry(2, 5, 'five'), entry(1, 'five', 1)];
+  expect(getNumberSeries({ entries, forgotten: 0 })).toEqual([1, 5, 9]);
+  expect(
+    getNumberSeries({ entries: [entry(2, undefined, 4), entry(1, 4, 2)], forgotten: 0 }),
+  ).toEqual([2, 4]);
+  expect(getNumberSeries({ entries: [], forgotten: 0 })).toEqual([]);
 });

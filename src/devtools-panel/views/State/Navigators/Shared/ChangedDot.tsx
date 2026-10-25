@@ -9,7 +9,7 @@ export function ChangedDot(props: Props) {
       role="img"
       aria-label="Changed recently"
       title="Changed recently"
-      class={['h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400', props.class]}
+      class={['h-1.5 w-1.5 shrink-0 rounded-full bg-sky-300', props.class]}
     />
   );
 }

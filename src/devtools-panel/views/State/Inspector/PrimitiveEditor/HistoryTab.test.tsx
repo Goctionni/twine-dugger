@@ -127,3 +127,26 @@ it('does not restore a value that is NaN, an infinity or undefined', () => {
   expect(buttons).toHaveLength(2);
   expect(buttons.map((button) => button.disabled)).toEqual([true, false]);
 });
+
+it('offers a timeline of the numbers once there is more than one, and shows it when asked', () => {
+  const { play, queryByRole, getByRole, getByLabelText, container } = setup(['score']);
+  expect(queryByRole('checkbox', { name: 'Timeline' })).toBeNull();
+
+  play((live) => (live.score = 13));
+  play((live) => (live.score = 8));
+  expect(container.querySelector('svg')).toBeNull();
+
+  getByLabelText('Timeline').click();
+  flush();
+  expect(getByRole('img', { name: 'Timeline' })).toBeTruthy();
+  expect(
+    [...container.querySelectorAll('[title]')].map((dot) => dot.getAttribute('title')),
+  ).toEqual(['10', '13', '8']);
+});
+
+it('has no timeline for a value that is not a number', () => {
+  const { play, queryByLabelText } = setup(['name']);
+  play((live) => (live.name = 'Sam'));
+  play((live) => (live.name = 'Kim'));
+  expect(queryByLabelText('Timeline')).toBeNull();
+});

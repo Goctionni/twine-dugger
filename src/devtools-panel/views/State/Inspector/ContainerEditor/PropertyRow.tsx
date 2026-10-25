@@ -59,7 +59,7 @@ export function PropertyRow(props: Props) {
             role="img"
             aria-label="Changed recently"
             title="Changed recently"
-            class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"
+            class="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-300"
           />
         </Show>
       </label>
