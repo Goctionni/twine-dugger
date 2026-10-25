@@ -1,9 +1,4 @@
-import type { JSX } from '@solidjs/web';
-import { Show } from 'solid-js';
-
-import { Dropdown } from '@/devtools-panel/ui/display/Dropdown';
-
-import type { Sort } from '../types';
+import type { Sort, SortBy } from '../types';
 import { toolbarControl } from './toolbarControl';
 
 type SortMenuVariant = 'minimal' | 'labels';
@@ -14,90 +9,52 @@ interface Props {
   onChange: (sort: Sort) => void;
 }
 
+const REVERSE_SUFFIX = '-reverse';
+
+// The content of the select is static on purpose: a parser that does not know the customizable
+// select (jsdom, an older browser) drops the button and the markup in the options, and a binding in
+// them would have nothing to bind to. What changes is done through classes on the select.
 export function SortMenu(props: Props) {
-  const name = `sort-${crypto.randomUUID()}`;
+  const getValue = () => props.sort.by + (props.sort.isDescending ? REVERSE_SUFFIX : '');
+  const onChange = (value: string) =>
+    props.onChange({
+      by: value.replace(REVERSE_SUFFIX, '') as SortBy,
+      isDescending: value.endsWith(REVERSE_SUFFIX),
+    });
 
   return (
-    <Dropdown
-      align="end"
-      label="Sort"
-      triggerClass={[
+    <select
+      aria-label="Sort"
+      title="Sort"
+      class={[
+        'base-select',
         toolbarControl,
-        'inline-flex shrink-0 cursor-pointer items-center gap-1 px-2 hover:bg-gray-700',
+        'inline-flex shrink-0 cursor-pointer px-2 hover:bg-gray-700 [&::picker(select)]:min-w-44! [&::picker(select)]:[position-area:bottom_span-left] [&::picker-icon]:hidden',
+        { '[&_[data-sort-label]]:hidden': props.variant !== 'labels' },
       ]}
-      trigger={
-        <>
-          <span aria-hidden="true" class="material-symbols-outlined text-lg leading-none">
-            swap_vert
-          </span>
-          <Show when={props.variant === 'labels'}>
-            <span class="[text-box:trim-both_ex_alphabetic]">Sort</span>
-          </Show>
-          <span aria-hidden="true">▾</span>
-        </>
-      }
+      value={getValue()}
+      onChange={(event) => onChange(event.currentTarget.value)}
     >
-      {(close) => (
-        <fieldset>
-          <legend class="sr-only">Sort by</legend>
-          <SortOption
-            name={name}
-            isChecked={props.sort === 'name'}
-            onSelect={() => props.onChange('name')}
-            close={close}
-          >
-            Name
-          </SortOption>
-          <SortOption
-            name={name}
-            isChecked={props.sort === 'type'}
-            onSelect={() => props.onChange('type')}
-            close={close}
-          >
-            Type
-          </SortOption>
-          <SortOption
-            name={name}
-            isChecked={props.sort === 'changed'}
-            onSelect={() => props.onChange('changed')}
-            close={close}
-          >
-            Recently changed
-          </SortOption>
-        </fieldset>
-      )}
-    </Dropdown>
-  );
-}
-
-interface SortOptionProps {
-  name: string;
-  isChecked: boolean;
-  onSelect: () => void;
-  close: () => void;
-  children: JSX.Element;
-}
-
-function SortOption(props: SortOptionProps) {
-  return (
-    <label class="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-gray-700 has-focus-visible:bg-gray-700">
-      <input
-        type="radio"
-        name={props.name}
-        class="peer sr-only"
-        checked={props.isChecked}
-        onChange={() => props.onSelect()}
-        // Also for the option that is already chosen. The arrow keys click as well, and those keep
-        // the menu open (a click of the pointer has a detail, one of the keyboard has none)
-        onClick={(event) => event.detail && props.close()}
-      />
-      <span
-        aria-hidden="true"
-        class="material-symbols-outlined w-4 text-base leading-none opacity-0 peer-checked:opacity-100"
-      >
-        check
-      </span>
-      {props.children}
-    </label>
+      <button type="button" class="gap-1">
+        <span aria-hidden="true" class="material-symbols-outlined text-lg leading-none">
+          swap_vert
+        </span>
+        <span data-sort-label class="[text-box:trim-both_ex_alphabetic]">
+          Sort
+        </span>
+        <span aria-hidden="true">▾</span>
+      </button>
+      <option value="name">Name</option>
+      <option value="type">Type</option>
+      <option value="changed">Recently changed</option>
+      <hr class="my-1 border-gray-600" />
+      <option value="name-reverse">
+        Name <span class="text-gray-400">(Reverse)</span>
+      </option>
+      <option value="type-reverse">
+        Type <span class="text-gray-400">(Reverse)</span>
+      </option>
+      <option value="changed-reverse">Least recently changed</option>
+    </select>
   );
 }

@@ -38,6 +38,7 @@ const defaultSettings: Settings = {
   'state.filters': [],
   'state.recentUpdates': 10,
   'state.typeAheadResetMs': 500,
+  'state.pinCascade': true,
   'state.navigator': 'miller',
   'state.treeLayout': 'containers-and-primitives',
   'state.splitDirection': 'auto',
@@ -222,16 +223,21 @@ export function clearFilteredPaths() {
 }
 
 /** Pinned itself, or holds a pinned path: a pin on a.b.c puts a and a.b first in their containers too */
+// With the cascade, a pin also counts for the paths above it
+const getPinMatcher = () => (store.settings['state.pinCascade'] ? pathStartsWith : pathEquals);
+
 export function isPinned(path: Path) {
-  return store.gameConfig.pins.some((pin) => pathStartsWith(pin, path));
+  const isMatch = getPinMatcher();
+  return store.gameConfig.pins.some((pin) => isMatch(pin, path));
 }
 
-/** Pins the path, or unpins it together with everything pinned beneath it */
+/** Pins the path, or unpins it (with the cascade, together with everything pinned beneath it) */
 export function togglePin(path: Path) {
   const wasPinned = untrack(() => isPinned(path));
   setStore((draft) => {
     if (wasPinned) {
-      draft.gameConfig.pins = draft.gameConfig.pins.filter((pin) => !pathStartsWith(pin, path));
+      const isMatch = getPinMatcher();
+      draft.gameConfig.pins = draft.gameConfig.pins.filter((pin) => !isMatch(pin, path));
     } else {
       draft.gameConfig.pins.push([...path]);
     }
@@ -251,6 +257,7 @@ export const getSettings = {
     filters: () => store.settings['state.filters'],
     recentUpdates: () => store.settings['state.recentUpdates'],
     typeAheadResetMs: () => store.settings['state.typeAheadResetMs'],
+    pinCascade: () => store.settings['state.pinCascade'],
     navigator: () => store.settings['state.navigator'],
     treeLayout: () => store.settings['state.treeLayout'],
     splitDirection: () => store.settings['state.splitDirection'],

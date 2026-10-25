@@ -13,15 +13,15 @@ vi.mock('@/devtools-panel/api/api', () => ({
 it('keeps the sort in the setting of the old view', () => {
   setSetting('state.propertyOrder', 'most-recent');
   flush();
-  expect(getSort()).toBe('changed');
+  expect(getSort()).toEqual({ by: 'changed', isDescending: false });
 
-  setSort('name');
+  setSort({ by: 'name', isDescending: true });
   flush();
   expect(getSettings.state.propertyOrder()).toBe('alphabetic');
 
   setSetting('state.propertyOrder', 'none');
   flush();
-  expect(getSort()).toBe('type');
+  expect(getSort()).toEqual({ by: 'type', isDescending: true });
 });
 
 it('keeps the hidden types in the filters of the old view, and what has no type in the toolbar', () => {

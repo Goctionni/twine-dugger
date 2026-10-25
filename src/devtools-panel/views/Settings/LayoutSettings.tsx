@@ -3,6 +3,7 @@ import { For } from 'solid-js';
 import { getSettings, setSetting } from '@/devtools-panel/store/store';
 import type { SplitDirection } from '@/devtools-panel/ui/util/movable-split/MovableSplit';
 
+import { BooleanInput } from '../../ui/inputs/BooleanInput';
 import { NumberInput } from '../../ui/inputs/NumberInput';
 import { onRecentUpdatesChange, onTypeAheadResetChange } from './diffLogSetters';
 import { SettingControl } from './SettingControl';
@@ -59,6 +60,16 @@ export function LayoutSettings() {
             inputProps={{ id }}
             value={getSettings.state.recentUpdates()}
             onChange={onRecentUpdatesChange}
+          />
+        )}
+      </SettingControl>
+      <SettingControl label="State page: pinning a value also pins the values that hold it">
+        {(id) => (
+          <BooleanInput
+            id={id}
+            label="Pinning a value also pins the values that hold it"
+            value={getSettings.state.pinCascade()}
+            onChange={(value) => setSetting('state.pinCascade', value)}
           />
         )}
       </SettingControl>

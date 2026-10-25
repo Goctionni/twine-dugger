@@ -123,4 +123,21 @@ describe('pins', () => {
     expect(isPinned(['a', 'x'])).toBe(true);
     expect(store.gameConfig.pins).toEqual([['a', 'x']]);
   });
+
+  it('pins only the path itself without the cascade', () => {
+    setSetting('state.pinCascade', false);
+    onTestFinished(() => setSetting('state.pinCascade', true));
+    togglePin(['a', 'b', 'c']);
+    togglePin(['a', 'b']);
+    flush();
+
+    expect(isPinned(['a', 'b'])).toBe(true);
+    expect(isPinned(['a', 'b', 'c'])).toBe(true);
+    expect(isPinned(['a'])).toBe(false);
+
+    togglePin(['a', 'b']);
+    flush();
+    expect(isPinned(['a', 'b'])).toBe(false);
+    expect(store.gameConfig.pins).toEqual([['a', 'b', 'c']]);
+  });
 });

@@ -29,7 +29,7 @@ export function getVisibleKeys(
   const getTypeOf = (key: string | number) => getJsonType((container as JSONSafeObject)[key]);
 
   const keysOfType = filterKeysByType(
-    sort === 'name' ? getKeysByName(container) : getContainerKeys(container, type),
+    sort.by === 'name' ? getKeysByName(container) : getContainerKeys(container, type),
     getTypeOf,
     hiddenTypes,
   );
@@ -38,8 +38,8 @@ export function getVisibleKeys(
     : keysOfType;
   // The position is the name of an item of an array or a set, so they keep it
   if (type === 'array' || type === 'set') return keys;
-  if (sort === 'name') return pinnedFirst(keys, isPinned);
-  const sorted =
-    sort === 'changed' ? sortKeysByChanged(keys, getLastChange) : sortKeysByType(keys, getTypeOf);
-  return pinnedFirst(sorted, isPinned);
+  let sorted = keys;
+  if (sort.by === 'changed') sorted = sortKeysByChanged(keys, getLastChange);
+  else if (sort.by === 'type') sorted = sortKeysByType(keys, getTypeOf);
+  return pinnedFirst(sort.isDescending ? sorted.toReversed() : sorted, isPinned);
 }

@@ -57,6 +57,8 @@ export const settingsSchema = type({
   'state.filters': valueTypeSchema.or("'filtered'").array(),
   'state.recentUpdates': 'number',
   'state.typeAheadResetMs': 'number',
+  // A pinned value also pins everything above it, and unpinning a value unpins what is beneath it
+  'state.pinCascade': 'boolean',
   'state.navigator': "'miller' | 'tree' | 'tiles'",
   // The tree: all values in it, or only the containers in it and the values of the selected one in a list
   'state.treeLayout': "'containers-and-primitives' | 'primitives-in-list'",
