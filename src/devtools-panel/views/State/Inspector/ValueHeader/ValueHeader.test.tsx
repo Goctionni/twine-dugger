@@ -119,3 +119,15 @@ it('cannot delete a value that is locked, locked by a parent, or in a set', asyn
 
   expect(setup(['flags', 1]).remove().disabled).toBe(true);
 });
+
+it('cannot delete a container that has something locked inside it, but a sibling is fine', async () => {
+  await setPathLock(['group', 'on'], true);
+  flush();
+
+  const group = setup(['group']);
+  expect(group.remove().disabled).toBe(true);
+  expect(group.remove().title).toBe('Something inside this value is locked');
+  cleanup();
+
+  expect(setup(['flag']).remove().disabled).toBe(false);
+});

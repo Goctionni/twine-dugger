@@ -15,6 +15,11 @@ export function getLockStatus(path: Path, lockedPaths: readonly Path[]): LockSta
   return 'unlocked';
 }
 
+/** Whether something inside the value is locked: deleting the value would put it back */
+export function hasLockInside(path: Path, lockedPaths: readonly Path[]): boolean {
+  return lockedPaths.some((locked) => locked.length > path.length && pathStartsWith(locked, path));
+}
+
 /** The locked path that holds the lock on this path: itself, or else the nearest parent */
 export function getLockingPath(path: Path, lockedPaths: readonly Path[]): Path | undefined {
   return lockedPaths
