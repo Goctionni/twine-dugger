@@ -21,7 +21,7 @@ export function TileFrame(props: Props) {
       title={props.title}
       onClick={() => props.onClick()}
       class={[
-        'relative flex min-w-0 cursor-pointer flex-col items-center gap-[3px] rounded-lg border px-1 pt-2 pb-1.5 text-center select-none',
+        'relative flex h-[calc(88.5px+1.875rem)] min-w-0 cursor-pointer flex-col items-center gap-[3px] rounded-lg border px-1 pt-2 pb-1.5 text-center select-none',
         props.selectionState === 'selected' && 'border-sky-500 bg-sky-950',
         props.selectionState === 'normal' && 'border-transparent hover:bg-gray-800',
       ]}

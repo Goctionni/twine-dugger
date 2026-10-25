@@ -1,6 +1,8 @@
 import { flush } from 'solid-js';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+import { createGame } from '@/testing/test-game';
+
 import { applyUpdate, getDiffFrames, startGameState } from './game-state';
 import {
   clearLocks,
@@ -10,7 +12,6 @@ import {
   setLockRange,
   setPathLock,
 } from './locks';
-import { createGame } from './test-game';
 
 const { setStatePropertyLocks } = vi.hoisted(() => ({
   setStatePropertyLocks: vi.fn<(locks: unknown) => Promise<void>>(async () => {}),

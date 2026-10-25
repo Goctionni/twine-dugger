@@ -3,8 +3,8 @@ import { flush } from 'solid-js';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import * as gameState from '@/devtools-panel/store/game-state';
+import { installFakeHighlights, getMarkedText } from '@/testing/test-highlights';
 
-import { installFakeHighlights, getMarkedText } from '../util/test-highlights';
 import { PrettyPath } from './PrettyPath';
 
 vi.mock('@/devtools-panel/store/game-state', async () => {

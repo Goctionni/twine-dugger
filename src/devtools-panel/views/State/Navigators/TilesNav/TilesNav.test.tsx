@@ -5,8 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { getStatePath, setStatePath } from '@/devtools-panel/store/state-location';
 import { isPinned, setSetting, togglePin } from '@/devtools-panel/store/store';
-import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
+import { stubVirtualLayout } from '@/testing/stub-virtual-layout';
+import { createGame } from '@/testing/test-game';
 
 import { setHiddenTypes } from '../../store-helpers/view-prefs';
 import {
@@ -32,11 +33,15 @@ const publish: PublishNavigatorInfo = (info) => {
 // What the tiles tell StateView to show of what is typed
 const [getTyped, setTyped] = createSignal<TypedText>();
 
-// jsdom has no layout, so no scrolling either
-Element.prototype.scrollIntoView = vi.fn();
+// jsdom has no layout: a window that holds all the tiles, as wide as four tiles
+let layout: ReturnType<typeof stubVirtualLayout>;
+beforeEach(() => {
+  layout = stubVirtualLayout({ viewportHeight: 5000, itemHeight: 118, width: 400 });
+});
 
 afterEach(() => {
   cleanup();
+  layout.restore();
   if (isPinned(['stats'])) togglePin(['stats']);
   setSetting('state.filters', []);
   setStatePath([]);
@@ -65,7 +70,9 @@ function setup(initialPath: Path = []) {
   const view = render(() => (
     <NavigatorInfoContext value={publish}>
       <TypeAheadContext value={setTyped}>
-        <TilesNav path={getStatePath()} onSelect={onSelect} />
+        <div style={{ 'overflow-y': 'auto' }}>
+          <TilesNav path={getStatePath()} onSelect={onSelect} />
+        </div>
       </TypeAheadContext>
     </NavigatorInfoContext>
   ));
@@ -148,10 +155,6 @@ it('marks a pinned tile, and a tile that holds a changed value, containers too',
 });
 
 describe('the keyboard', () => {
-  // jsdom has no layout: the columns are what the grid says
-  const putInColumns = (list: HTMLElement, columns: number) => {
-    list.style.gridTemplateColumns = Array(columns).fill('100px').join(' ');
-  };
   const selectedName = (tiles: HTMLElement[]) => {
     const selected = tiles.find((tile) => tile.getAttribute('aria-selected') === 'true');
     return selected?.children[selected.children.length - 2]?.textContent;
@@ -194,8 +197,10 @@ describe('the keyboard', () => {
   });
 
   it('goes up and down through the rows of tiles', () => {
+    // As wide as two tiles
+    layout.restore();
+    layout = stubVirtualLayout({ viewportHeight: 5000, itemHeight: 118, width: 188 });
     const view = setup(['hp']);
-    putInColumns(view.getByRole('listbox'), 2);
     // empty stats / inv hp
     press(view, 'ArrowUp');
     expect(selectedName(view.tiles())).toBe('stats');
@@ -239,10 +244,9 @@ describe('the keyboard', () => {
 
   it('shows the tile that a key selected', () => {
     const view = setup(['stats']);
-    const scrollIntoView = vi.mocked(Element.prototype.scrollIntoView);
-    scrollIntoView.mockClear();
+    layout.scrollTo.mockClear();
     press(view, 'ArrowRight');
-    expect(scrollIntoView).toHaveBeenCalled();
+    expect(layout.scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'auto' }));
   });
 });
 

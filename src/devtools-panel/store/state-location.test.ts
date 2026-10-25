@@ -1,10 +1,11 @@
 import { flush } from 'solid-js';
 import { afterEach, expect, it, vi } from 'vite-plus/test';
 
+import { createGame } from '@/testing/test-game';
+
 import { applyUpdate, startGameState } from './game-state';
 import { getScrollToTrigger, setStatePath, showInStateView } from './state-location';
 import { setViewState, store } from './store';
-import { createGame } from './test-game';
 
 vi.mock('../api/api', () => ({
   getPassageData: async () => [],

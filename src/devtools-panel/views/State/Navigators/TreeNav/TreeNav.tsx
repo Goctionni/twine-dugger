@@ -1,4 +1,4 @@
-import { For, Match, Switch } from 'solid-js';
+import { Match, Show, Switch, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
 import { getStatePath, requestScrollTo } from '@/devtools-panel/store/state-location';
@@ -14,8 +14,10 @@ import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { isArrowKey } from '../Shared/arrow-keys';
 import { createScrollToSelection } from '../Shared/create-scroll-to-selection';
+import { createVirtualList } from '../Shared/create-virtual-list';
 import { getNodeName } from '../Shared/get-node-name';
 import { isTypeAheadKey, provideTypeAhead } from '../Shared/TypeAhead/provide-type-ahead';
+import { VirtualItems } from '../Shared/VirtualItems';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { createContainerMemos } from './create-container-memos';
 import { createShownTypes } from './create-shown-types';
@@ -62,8 +64,40 @@ export function TreeNav(props: NavProps) {
   const getActiveId = () =>
     isSelectedRowShown() ? getRowDomId(treeId, pathKey(getSelectedPath())) : undefined;
 
+  // Only the rows near the window are in the DOM, and the selected one
+  const getRowIds = createMemo(() => getRows().map((row) => row.id));
+  const getRowsById = createMemo(() => new Map(getRows().map((row) => [row.id, row])));
+  const getSelectedRowIndex = createMemo(() => getRowIds().indexOf(pathKey(getSelectedPath())));
+  const rowList = createVirtualList({
+    getKeys: getRowIds,
+    estimateSize: 30,
+    getSelectedIndex: getSelectedRowIndex,
+  });
+
+  const getListedValueKeys = createMemo(() => {
+    const listedPath = list.getListedPath();
+    return listedPath ? list.getValueKeysAt(listedPath) : [];
+  });
+  const getSelectedValueIndex = createMemo(() => {
+    const key = getSelectedPath().at(-1);
+    return list.isValueSelected() && key !== undefined ? getListedValueKeys().indexOf(key) : -1;
+  });
+  const valueList = createVirtualList({
+    getKeys: getListedValueKeys,
+    estimateSize: 30,
+    getSelectedIndex: getSelectedValueIndex,
+  });
+
   let tree: HTMLDivElement | undefined;
-  createScrollToSelection(() => tree, getSelectedPath, isSelectedRowShown);
+  createScrollToSelection(
+    // The selection is a row, or a value of the list beside the tree
+    () => {
+      rowList.scrollToSelection();
+      valueList.scrollToSelection();
+    },
+    getSelectedPath,
+    isSelectedRowShown,
+  );
 
   // A key that selects a row asks for it to be in view
   const selectByKey = (path: Path) => {
@@ -109,19 +143,23 @@ export function TreeNav(props: NavProps) {
   };
 
   const treeRows = () => (
-    <For each={getRows()} keyed={(row) => row.id}>
-      {(getRow) => (
-        <TreeRow
-          treeId={treeId}
-          row={getRow()}
-          selectedPath={getSelectedPath()}
-          listedPath={list.getListedPath()}
-          canOpen={canOpen}
-          expansion={expansion}
-          onSelect={props.onSelect}
-        />
+    <VirtualItems list={rowList}>
+      {(item) => (
+        <Show when={getRowsById().get(String(item.key))}>
+          {(row) => (
+            <TreeRow
+              treeId={treeId}
+              row={row()}
+              selectedPath={getSelectedPath()}
+              listedPath={list.getListedPath()}
+              canOpen={canOpen}
+              expansion={expansion}
+              onSelect={props.onSelect}
+            />
+          )}
+        </Show>
       )}
-    </For>
+    </VirtualItems>
   );
 
   return (
@@ -152,7 +190,8 @@ export function TreeNav(props: NavProps) {
                   treeId={treeId}
                   containerPath={getListed()}
                   selectedPath={getSelectedPath()}
-                  getValueKeys={list.getValueKeysAt}
+                  getValueKeys={getListedValueKeys}
+                  valueList={valueList}
                   onSelect={props.onSelect}
                 />
               </div>

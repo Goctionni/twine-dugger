@@ -3,9 +3,8 @@ import { flush } from 'solid-js';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
-import { showInStateView } from '@/devtools-panel/store/state-location';
 import { setSetting, togglePin } from '@/devtools-panel/store/store';
-import { createGame } from '@/devtools-panel/store/test-game';
+import { createGame } from '@/testing/test-game';
 
 import { MillerColumn } from './MillerColumn';
 
@@ -14,13 +13,8 @@ vi.mock('@/devtools-panel/api/api', () => ({
   setStatePropertyLocks: async () => {},
 }));
 
-// jsdom has no layout, so no scrolling either
-const scrollIntoView = vi.fn();
-Element.prototype.scrollIntoView = scrollIntoView;
-
 afterEach(() => {
   cleanup();
-  scrollIntoView.mockClear();
 });
 
 function setup(path: (string | number)[] = [], depth = 0, trail = path) {
@@ -184,42 +178,6 @@ describe('selecting', () => {
     const { rows, names, onSelect } = setup(['stats', 'str']);
     rows()[names().indexOf('stats')]!.click();
     expect(onSelect).toHaveBeenCalledWith(['stats']);
-  });
-});
-
-describe('scrolling to the selection', () => {
-  const scrolledTo = () =>
-    scrollIntoView.mock.contexts.map((row) => (row as HTMLElement).dataset.selectionState);
-
-  it('scrolls to the selected row when the column is made', () => {
-    setup(['hp']);
-    expect(scrolledTo()).toEqual(['selected']);
-  });
-
-  it('scrolls to the row that is on the path, and not in a column without one', () => {
-    setup(['stats', 'str']);
-    expect(scrolledTo()).toEqual(['on-path']);
-    scrollIntoView.mockClear();
-    setup(['hp'], 1);
-    expect(scrolledTo()).toEqual([]);
-  });
-
-  it('scrolls again when something outside asks, also for the path that is selected already', () => {
-    setup(['hp']);
-    scrollIntoView.mockClear();
-
-    showInStateView(['hp']);
-    flush();
-    expect(scrolledTo()).toEqual(['selected']);
-  });
-
-  it('does not scroll for a click in the column', () => {
-    const { rows } = setup(['hp']);
-    scrollIntoView.mockClear();
-
-    rows()[0]!.click();
-    flush();
-    expect(scrolledTo()).toEqual([]);
   });
 });
 

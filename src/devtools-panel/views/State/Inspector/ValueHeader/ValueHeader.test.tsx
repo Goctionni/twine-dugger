@@ -6,8 +6,8 @@ import { deleteFromState } from '@/devtools-panel/api/api';
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { clearLocks, setPathLock } from '@/devtools-panel/store/locks';
 import { isPinned, togglePin } from '@/devtools-panel/store/store';
-import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
+import { createGame } from '@/testing/test-game';
 
 import { confirmDelete } from './confirmDelete';
 import { ValueHeader } from './ValueHeader';

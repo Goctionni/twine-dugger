@@ -3,7 +3,7 @@ import { afterEach, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { setSetting } from '@/devtools-panel/store/store';
-import { createGame } from '@/devtools-panel/store/test-game';
+import { createGame } from '@/testing/test-game';
 
 import { isRecentlyChanged } from './recently-changed';
 

@@ -3,8 +3,8 @@ import { createSignal, flush } from 'solid-js';
 import { afterEach, expect, it, vi } from 'vite-plus/test';
 
 import { startGameState } from '@/devtools-panel/store/game-state';
-import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
+import { createGame } from '@/testing/test-game';
 
 import { MillerNav } from './MillerNav';
 

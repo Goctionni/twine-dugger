@@ -8,7 +8,7 @@ import {
   getStatePath,
   setStatePath,
 } from '@/devtools-panel/store/state-location';
-import { createGame } from '@/devtools-panel/store/test-game';
+import { createGame } from '@/testing/test-game';
 
 import { StateView } from './StateView';
 

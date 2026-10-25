@@ -4,8 +4,8 @@ import { afterEach, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { clearLocks, setLockRange, setPathLock } from '@/devtools-panel/store/locks';
-import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
+import { createGame } from '@/testing/test-game';
 
 import { ValueTabs } from './ValueTabs';
 

@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { setState } from '@/devtools-panel/api/api';
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { clearLocks, getLockRange, setLockRange, setPathLock } from '@/devtools-panel/store/locks';
-import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
+import { createGame } from '@/testing/test-game';
 
 import { NumberEditor } from './NumberEditor';
 

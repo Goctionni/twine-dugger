@@ -2,8 +2,8 @@ import { render } from '@solidjs/web';
 import { createMemo, createRoot, createSignal, flush } from 'solid-js';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vite-plus/test';
 
-import { getMarkedText, installFakeHighlights } from '@/devtools-panel/ui/util/test-highlights';
 import type { ParsedPassageData } from '@/shared/shared-types';
+import { getMarkedText, installFakeHighlights } from '@/testing/test-highlights';
 
 import { setStore } from '../../../store/store';
 import { searchPassages } from '../logic/passage-search';

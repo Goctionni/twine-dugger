@@ -3,7 +3,7 @@ import { flush } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { setSetting } from '@/devtools-panel/store/store';
-import { getMarkedText, installFakeHighlights } from '@/devtools-panel/ui/util/test-highlights';
+import { getMarkedText, installFakeHighlights } from '@/testing/test-highlights';
 
 import type * as highlighterModule from './highlighter';
 import { getHighlightingLength } from './highlighting-limits';

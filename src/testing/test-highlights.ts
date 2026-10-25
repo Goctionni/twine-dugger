@@ -1,4 +1,4 @@
-import { SEARCH_MATCH_HIGHLIGHT } from './range-highlight';
+import { SEARCH_MATCH_HIGHLIGHT } from '@/devtools-panel/ui/util/range-highlight';
 
 // jsdom has no Custom Highlight API: this stands in for it, and keeps what is marked
 class FakeHighlight extends Set<Range> {}

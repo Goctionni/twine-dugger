@@ -1,4 +1,4 @@
-import { For, Show, createEffect, createMemo } from 'solid-js';
+import { Show, createEffect, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
 import { getScrollToTrigger } from '@/devtools-panel/store/state-location';
@@ -10,7 +10,9 @@ import type { Path } from '@/shared/shared-types';
 
 import { getPathLabels } from '../../logic/path-labels';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
+import { createVirtualList } from '../Shared/create-virtual-list';
 import { NavRow } from '../Shared/NavRow';
+import { VirtualItems } from '../Shared/VirtualItems';
 import { getVisibleKeys } from '../Shared/visible-keys';
 import { getRowId } from './logic/row-id';
 
@@ -33,14 +35,6 @@ export function MillerColumn(props: Props) {
   const isSelectionHere = () => props.depth === props.path.length - 1;
   const getTrailKey = createMemo(() => props.trail[props.depth]);
 
-  // Also when the column is made: coming back to the page shows what was selected
-  let column: HTMLDivElement | undefined;
-  createEffect(getScrollToTrigger, () => {
-    column
-      ?.querySelector('[data-selection-state="selected"], [data-selection-state="on-path"]')
-      ?.scrollIntoView({ block: 'nearest' });
-  });
-
   const getKeys = createMemo(
     () =>
       getVisibleKeys(
@@ -53,6 +47,20 @@ export function MillerColumn(props: Props) {
     { equals: sameItems },
   );
 
+  // The row of the selection, or of the way to it: it stays in the DOM, and is scrolled to
+  const getSelectedIndex = createMemo(() => {
+    const key = getSelectedKey();
+    return key === undefined ? -1 : getKeys().indexOf(key);
+  });
+  const rowList = createVirtualList({
+    getKeys,
+    estimateSize: 30,
+    getSelectedIndex,
+  });
+
+  // Also when the column is made: coming back to the page shows what was selected
+  createEffect(getScrollToTrigger, () => rowList.scrollToSelection());
+
   const getTitle = () => getPathLabels(getLatestState(), getColumnPath()).at(-1) ?? 'State';
 
   const getHiddenCount = () => {
@@ -62,7 +70,6 @@ export function MillerColumn(props: Props) {
 
   return (
     <div
-      ref={column}
       role="group"
       aria-label={getTitle()}
       tabindex="-1"
@@ -75,8 +82,9 @@ export function MillerColumn(props: Props) {
         </Show>
       </div>
       <div class="p-1">
-        <For each={getKeys()}>
-          {(key) => {
+        <VirtualItems list={rowList}>
+          {(item) => {
+            const key = item.key;
             const getSelectionState = () => {
               if (getSelectedKey() === key) return isSelectionHere() ? 'selected' : 'on-path';
               return getTrailKey() === key ? 'trail' : 'normal';
@@ -98,7 +106,7 @@ export function MillerColumn(props: Props) {
               />
             );
           }}
-        </For>
+        </VirtualItems>
       </div>
     </div>
   );

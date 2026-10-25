@@ -2,6 +2,7 @@ import { createEffect, createRoot, flush, snapshot } from 'solid-js';
 import { describe, expect, it, onTestFinished, vi } from 'vite-plus/test';
 
 import { pretransformState } from '@/content-script/util/pre-transform';
+import { createGame } from '@/testing/test-game';
 
 import { getDiffFromDelta } from './diff-from-delta';
 import {
@@ -15,7 +16,6 @@ import {
   startGameState,
 } from './game-state';
 import { addFilteredPath, removeFilteredPath, setSetting, setViewState, store } from './store';
-import { createGame } from './test-game';
 
 vi.mock('../api/api', () => ({
   getPassageData: async () => [],

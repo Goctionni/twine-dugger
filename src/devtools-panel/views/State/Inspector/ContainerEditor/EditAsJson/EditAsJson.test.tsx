@@ -5,7 +5,6 @@ import { afterEach, expect, it, vi } from 'vite-plus/test';
 import { setStateMulti } from '@/devtools-panel/api/api';
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { clearLocks, setPathLock } from '@/devtools-panel/store/locks';
-import { createGame } from '@/devtools-panel/store/test-game';
 import {
   MARKED_VALUE_WRITE_ERROR,
   NAN_MARKER,
@@ -13,6 +12,7 @@ import {
   UNDEFINED_MARKER,
 } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
+import { createGame } from '@/testing/test-game';
 
 import { ContainerEditor } from '../ContainerEditor';
 

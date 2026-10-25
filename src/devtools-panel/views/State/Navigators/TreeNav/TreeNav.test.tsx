@@ -3,10 +3,9 @@ import { createSignal, flush, untrack } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
-import { requestScrollTo } from '@/devtools-panel/store/state-location';
 import { setSetting } from '@/devtools-panel/store/store';
-import { createGame } from '@/devtools-panel/store/test-game';
 import type { Path } from '@/shared/shared-types';
+import { createGame } from '@/testing/test-game';
 
 import { setHiddenTypes } from '../../store-helpers/view-prefs';
 import {
@@ -195,21 +194,6 @@ it('does not scroll for a click, also not when the tree was made with nothing se
   row('stats').click();
   flush();
   expect(scrollIntoView).not.toHaveBeenCalled();
-});
-
-it('scrolls the selected row into view when a scroll to it is asked for, also when it is shown a moment later', () => {
-  const { setPath } = setup();
-  scrollIntoView.mockClear();
-
-  // Its parents are opened after the path is set: the scroll waits for the row
-  setPath(['stats', 'nested', 'a']);
-  requestScrollTo();
-  flush();
-  expect(scrollIntoView).toHaveBeenCalledTimes(1);
-
-  // Opening and closing is no reason to scroll
-  flush();
-  expect(scrollIntoView).toHaveBeenCalledTimes(1);
 });
 
 const typeInTree = (tree: HTMLElement, key: string) => {

@@ -15,7 +15,7 @@ export default defineConfig({
   },
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
-    setupFiles: ['src/vitest.setup.ts'],
+    setupFiles: ['src/testing/vitest.setup.ts'],
     exclude: ['tests/e2e/**'],
     sequence: { shuffle: true },
   },
