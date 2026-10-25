@@ -1,6 +1,7 @@
 import { Match, Show, Switch } from 'solid-js';
 
 import { isPinned } from '@/devtools-panel/store/store';
+import { highlight } from '@/devtools-panel/ui/display/HighlightDirective';
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import type { Path } from '@/shared/shared-types';
@@ -25,7 +26,8 @@ export function NavRow(props: Props) {
   // The path of a row is a new array whenever it is worked out again
   const getPath = createStablePath(() => props.path);
   const getLevel = () => getPath().length;
-  const { getValue, getType, getName, getCounts } = createNodeInfo(getPath);
+  const { getValue, getType, getName, getCounts, getNameRanges, getValueRanges } =
+    createNodeInfo(getPath);
   // Only a container with something to show can be open
   const getIsOpen = () => {
     const counts = getCounts();
@@ -52,7 +54,9 @@ export function NavRow(props: Props) {
       onClick={() => props.onClick()}
     >
       <TypeIcon type={getType()} />
-      <span class="max-w-[60%] shrink-0 truncate">{getName()}</span>
+      <span class="max-w-[60%] shrink-0 truncate" ref={highlight(getNameRanges)}>
+        {getName()}
+      </span>
       <Switch>
         <Match when={getCounts() !== undefined}>
           <ChildCount
@@ -62,7 +66,10 @@ export function NavRow(props: Props) {
           />
         </Match>
         <Match when={getCounts() === undefined}>
-          <span class="min-w-0 truncate font-mono text-xs text-gray-400">
+          <span
+            class="min-w-0 truncate font-mono text-xs text-gray-400"
+            ref={highlight(getValueRanges)}
+          >
             {getPreview(getValue(), getType())}
           </span>
         </Match>

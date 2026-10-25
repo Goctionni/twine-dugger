@@ -1,12 +1,12 @@
 import clsx from 'clsx';
 import { createMemo, For, Show } from 'solid-js';
 
+import { highlight } from '@/devtools-panel/ui/display/HighlightDirective';
 import { getTagColor } from '@/devtools-panel/ui/display/Tag';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import type { ParsedPassageData } from '@/shared/shared-types';
 
 import type { PassageMatcherHit, QueryMatcher, Range } from '../types';
-import { Highlight } from './Highlight';
 
 const MAX_TAGS = 3;
 const NO_RANGES: Range[] = [];
@@ -70,19 +70,21 @@ export function PassageRow(props: Props) {
       onClick={() => props.onClick()}
     >
       <span class="flex min-w-0 items-center gap-2">
-        <span class="min-w-0 flex-1 truncate font-mono text-sm" title={name()}>
-          <Highlight text={name()} ranges={props.hit.nameRanges} />
+        <span
+          class="min-w-0 flex-1 truncate font-mono text-sm"
+          title={name()}
+          ref={highlight(() => props.hit.nameRanges)}
+        >
+          {name()}
         </span>
         <For each={shownTags()} keyed={false}>
           {(position) => (
             <span
               class="tag-chip shrink-0 rounded-sm px-1.5 text-xs text-white"
               style={{ 'background-color': getTagColor(tags()[position()] ?? '') }}
+              ref={highlight(() => props.hit.tagRanges[position()] ?? NO_RANGES)}
             >
-              <Highlight
-                text={tags()[position()] ?? ''}
-                ranges={props.hit.tagRanges[position()] ?? NO_RANGES}
-              />
+              {tags()[position()] ?? ''}
             </span>
           )}
         </For>
@@ -91,8 +93,8 @@ export function PassageRow(props: Props) {
         </Show>
       </span>
       <span class="flex min-w-0 items-center gap-2 text-xs text-slate-400">
-        <span class="min-w-0 flex-1 truncate">
-          <Highlight text={snippet().text} ranges={snippet().ranges} />
+        <span class="min-w-0 flex-1 truncate" ref={highlight(() => snippet().ranges)}>
+          {snippet().text}
         </span>
         <Show when={contentMatches() > 1}>
           <span class="shrink-0">{contentMatches()}×</span>

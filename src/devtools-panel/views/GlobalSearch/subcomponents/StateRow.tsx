@@ -1,10 +1,10 @@
 import clsx from 'clsx';
 
+import { highlight } from '@/devtools-panel/ui/display/HighlightDirective';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 
 import type { StateMatcherHit } from '../types';
-import { Highlight } from './Highlight';
 
 /** A long text is cut: a row shows one line and the detail has the rest */
 const MAX_TEXT = 300;
@@ -37,7 +37,7 @@ export function StateRow(props: Props) {
       </span>
       <span class="min-w-0 flex-1 truncate text-orange-200">
         {quote()}
-        <Highlight text={valueText()} ranges={props.hit.valueRanges} />
+        <span ref={highlight(() => props.hit.valueRanges)}>{valueText()}</span>
         {quote()}
       </span>
     </button>
