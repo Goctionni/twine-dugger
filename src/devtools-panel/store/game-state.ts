@@ -20,12 +20,15 @@ const [gameState, setGameState] = createStore<JSONSafeObject>({});
 // became by diff N. The initial state is 0.
 const [frames, setFrames] = createSignal<StateDiff[]>([]);
 const [latestId, setLatestId] = createSignal(0);
+// Goes up with every change of the state, also one that has no frame (see applyUpdate)
+const [stateVersion, setStateVersion] = createSignal(0);
 const [logStartId, setLogStartId] = createSignal(0);
 const [lastChanged, setLastChanged] = createStore<Record<string, number>>({});
 
 const getMaxFrames = () => untrack(() => store.settings['diffLog.maxHistorySlices']);
 
 export const getLatestId = latestId;
+export const getStateVersion = stateVersion;
 export const getLatestState = () => gameState;
 export const getLastChangeIdByKey = (key: string) => lastChanged[key] ?? 0;
 export const getLastChangeId = (path: Path) => getLastChangeIdByKey(pathKey(path));
@@ -102,6 +105,7 @@ export function startGameState(state: JSONSafeObject) {
   trimViewPath(path, trimToExistingPath(state, path));
   setFrames([]);
   setLatestId(0);
+  setStateVersion((version) => version + 1);
   setLogStartId(0);
   resetView();
 }
@@ -116,6 +120,7 @@ export function restartGameState(state: JSONSafeObject, passage: string) {
   setGameState(() => state);
   trimViewPath(path, trimToExistingPath(state, path));
   resetView();
+  setStateVersion((version) => version + 1);
   addFrame({ timestamp: Date.now(), passage, blocked: [], reloaded: true });
 }
 
@@ -133,8 +138,19 @@ export function applyUpdate({ passage, delta, reverts }: DeltaUpdate, timestamp 
     });
     trimViewPath(path, trimmed);
   }
+  setStateVersion((version) => version + 1);
+
+  // A change that is only to ignored paths is not worth a frame.
+  // The state updates and the path is marked as changed with the id that the next frame will have.
+  if (delta && !blocked.length && untrack(() => isIgnoredOnly(delta))) {
+    markChanged(delta, untrack(latestId) + 1);
+    return;
+  }
   addFrame({ timestamp, passage, delta, blocked });
 }
+
+const isIgnoredOnly = (delta: Delta) =>
+  getDiffFromDelta(delta).every((change) => isPathFiltered(change.path));
 
 function toBlockedWrite({ path, attempted }: LockRevert): BlockedWrite[] {
   const lock = untrack(() => store.gameConfig.locks.find((lock) => pathEquals(lock.path, path)));

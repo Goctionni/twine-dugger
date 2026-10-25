@@ -9,7 +9,10 @@ import {
   applyUpdate,
   createFrameLimitEffect,
   getDiffFrames,
+  getLastChangeId,
+  getLatestId,
   getLatestState,
+  getStateVersion,
   getPathRecord,
   isFrameTainted,
   restartGameState,
@@ -210,7 +213,7 @@ describe('game state', () => {
     });
 
     it('does not record paths that are filtered, and deletes records that are old', () => {
-      const game = createGame({ hp: 10, x: 0 });
+      const game = createGame({ hp: 10, x: 0, y: 0 });
       startGameState(game.state());
       flush();
       addFilteredPath(['x']);
@@ -221,8 +224,68 @@ describe('game state', () => {
       play(game, (s) => (s.hp = 9));
       expect(getPathRecord(['x'])).toBeUndefined();
 
-      for (let n = 0; n < 1001; n++) play(game, (s) => (s.x = n + 2));
+      for (let n = 0; n < 1001; n++) play(game, (s) => (s.y = n + 1));
       expect(getPathRecord(['hp'])).toBeUndefined();
+    });
+  });
+
+  describe('changes to ignored paths only', () => {
+    it('patches the state and marks the change, but gets no frame and no id', () => {
+      const game = createGame({ hp: 10, x: 0, nested: { y: 0 } });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      addFilteredPath(['nested']);
+      flush();
+      onTestFinished(() => {
+        removeFilteredPath(['x']);
+        removeFilteredPath(['nested']);
+      });
+      play(game, (s) => (s.hp = 9));
+      const id = getLatestId();
+      const version = getStateVersion();
+      const frames = getDiffFrames().length;
+
+      play(game, (s) => (s.x = 1));
+      play(game, (s) => ((s.x = 2), (s.nested.y = 5)));
+
+      expect(state().x).toBe(2);
+      expect(state().nested.y).toBe(5);
+      expect(getLatestId()).toBe(id);
+      expect(getDiffFrames()).toHaveLength(frames);
+      expect(getStateVersion()).toBe(version + 2);
+      expect(getLastChangeId(['x'])).toBe(id + 1);
+      expect(getLastChangeId(['nested', 'y'])).toBe(id + 1);
+    });
+
+    it('keeps a frame for a change that also has a path that is not ignored', () => {
+      const game = createGame({ hp: 10, x: 0 });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      flush();
+      onTestFinished(() => removeFilteredPath(['x']));
+      const id = getLatestId();
+
+      play(game, (s) => ((s.x = 1), (s.hp = 9)));
+
+      expect(getLatestId()).toBe(id + 1);
+      expect(getDiffFrames()[0]!.id).toBe(id + 1);
+    });
+
+    it('does not let ignored changes push the other frames out of the window', () => {
+      const game = createGame({ hp: 10, x: 0 });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      flush();
+      onTestFinished(() => removeFilteredPath(['x']));
+      play(game, (s) => (s.hp = 9));
+
+      for (let n = 1; n <= 100; n++) play(game, (s) => (s.x = n));
+
+      expect(getDiffFrames()).toHaveLength(1);
+      expect(state().x).toBe(100);
     });
   });
 
