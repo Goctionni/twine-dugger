@@ -32,6 +32,9 @@ beforeAll(() => {
   installFakeHighlights();
   Object.defineProperty(HTMLElement.prototype, 'offsetHeight', { configurable: true, value: 400 });
   Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, value: 600 });
+  // The virtualizer measures the scroll area with its client size
+  Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 400 });
+  Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 600 });
   globalThis.ResizeObserver ??= class {
     observe() {}
     unobserve() {}

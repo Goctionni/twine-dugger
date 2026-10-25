@@ -1,3 +1,6 @@
+import { untrack } from 'solid-js';
+
+import { getTypeVersion } from '@/devtools-panel/store/game-state';
 import { getContainerKeys, getJsonType, isContainerType } from '@/shared/json-safe';
 import type { JSONSafeObject, JSONSafeValue, ValueType } from '@/shared/shared-types';
 
@@ -28,7 +31,9 @@ export function countHiddenKeys(
   const type = getJsonType(container);
   if ((!hiddenTypes.length && !searchMatcher && !isPathHidden) || !isContainerType(type)) return 0;
   const keys = getContainerKeys(container, type);
-  const getType = (key: string | number) => getJsonType((container as JSONSafeObject)[key]);
+  getTypeVersion();
+  const getType = (key: string | number) =>
+    getJsonType(untrack(() => (container as JSONSafeObject)[key]));
   const keysOfType = filterKeysByType(keys, getType, hiddenTypes);
   const shown = searchMatcher
     ? keysOfType.filter((key) => matchesSearch(searchMatcher, container, key))

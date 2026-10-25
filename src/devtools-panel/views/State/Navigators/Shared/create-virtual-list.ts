@@ -73,7 +73,7 @@ export function createVirtualList(options: Options) {
       return scrollElement ? getStickyHeaderHeight(scrollElement) : 0;
     },
     initialRect: { width: 0, height: INITIAL_HEIGHT },
-    overscan: 8,
+    overscan: 4,
     // Measuring inside the callback of the observer changes the layout, which the browser reports as a loop
     useAnimationFrameWithResizeObserver: true,
     // The virtualizer only looks at the range again when its options change: a getter that reads the kept items

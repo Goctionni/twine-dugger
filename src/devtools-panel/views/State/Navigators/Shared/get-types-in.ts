@@ -1,3 +1,6 @@
+import { untrack } from 'solid-js';
+
+import { getTypeVersion } from '@/devtools-panel/store/game-state';
 import { getContainerKeys, getJsonType, isContainerType } from '@/shared/json-safe';
 import type { JSONSafeObject, JSONSafeValue, ValueType } from '@/shared/shared-types';
 
@@ -8,9 +11,11 @@ export function getTypesIn(container: JSONSafeValue): ValueType[] {
   const type = getJsonType(container);
   if (!isContainerType(type)) return [];
 
+  // The values are read without being followed: only a change of a type matters
+  getTypeVersion();
   const found = new Set<ValueType>();
   for (const key of getContainerKeys(container, type)) {
-    found.add(toFilterType(getJsonType((container as JSONSafeObject)[key])));
+    found.add(toFilterType(getJsonType(untrack(() => (container as JSONSafeObject)[key]))));
   }
   return TYPE_ORDER.filter((candidate) => found.has(candidate));
 }

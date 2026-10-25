@@ -1,3 +1,6 @@
+import { untrack } from 'solid-js';
+
+import { getTypeVersion } from '@/devtools-panel/store/game-state';
 import { getContainerKeys, getJsonType, isContainerType } from '@/shared/json-safe';
 import type { JSONSafeObject, JSONSafeValue, ValueType } from '@/shared/shared-types';
 
@@ -27,7 +30,11 @@ export function getVisibleKeys(
 ): Array<string | number> {
   const type = getJsonType(container);
   if (!isContainerType(type)) return [];
-  const getTypeOf = (key: string | number) => getJsonType((container as JSONSafeObject)[key]);
+  // The values are read without being followed: the order only depends on their types, and the
+  // type version says when one of them changed
+  getTypeVersion();
+  const getTypeOf = (key: string | number) =>
+    getJsonType(untrack(() => (container as JSONSafeObject)[key]));
 
   const keysOfType = filterKeysByType(
     sort.by === 'name' ? getKeysByName(container) : getContainerKeys(container, type),

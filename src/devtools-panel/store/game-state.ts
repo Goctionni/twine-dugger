@@ -29,6 +29,11 @@ const getMaxFrames = () => untrack(() => store.settings['diffLog.maxHistorySlice
 
 export const getLatestId = latestId;
 export const getStateVersion = stateVersion;
+// Goes up when a value changes its type, or an item of an array moves (and when the state is replaced).
+// Whoever works only from the types of the values reads this, not the values: a number that
+// becomes another number would run it again for nothing
+const [typeVersion, setTypeVersion] = createSignal(0);
+export const getTypeVersion = typeVersion;
 export const getLatestState = () => gameState;
 export const getLastChangeIdByKey = (key: string) => lastChanged[key] ?? 0;
 export const getLastChangeId = (path: Path) => getLastChangeIdByKey(pathKey(path));
@@ -106,6 +111,7 @@ export function startGameState(state: JSONSafeObject) {
   setFrames([]);
   setLatestId(0);
   setStateVersion((version) => version + 1);
+  setTypeVersion((version) => version + 1);
   setLogStartId(0);
   resetView();
 }
@@ -121,6 +127,7 @@ export function restartGameState(state: JSONSafeObject, passage: string) {
   trimViewPath(path, trimToExistingPath(state, path));
   resetView();
   setStateVersion((version) => version + 1);
+  setTypeVersion((version) => version + 1);
   addFrame({ timestamp: Date.now(), passage, blocked: [], reloaded: true });
 }
 
@@ -139,6 +146,9 @@ export function applyUpdate({ passage, delta, reverts }: DeltaUpdate, timestamp 
     trimViewPath(path, trimmed);
   }
   setStateVersion((version) => version + 1);
+  if (delta && untrack(() => getDiffFromDelta(delta).some(isTypeChange))) {
+    setTypeVersion((version) => version + 1);
+  }
 
   // A change that is only to ignored paths is not worth a frame.
   // The state updates and the path is marked as changed with the id that the next frame will have.
@@ -148,6 +158,8 @@ export function applyUpdate({ passage, delta, reverts }: DeltaUpdate, timestamp 
   }
   addFrame({ timestamp, passage, delta, blocked });
 }
+
+const isTypeChange = ({ kind }: { kind: string }) => kind === 'typ' || kind === 'mov';
 
 const isIgnoredOnly = (delta: Delta) =>
   getDiffFromDelta(delta).every((change) => isHiddenInDiffLog(change.path));
