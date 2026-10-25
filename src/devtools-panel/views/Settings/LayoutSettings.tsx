@@ -4,7 +4,7 @@ import { getSettings, setSetting } from '@/devtools-panel/store/store';
 import type { SplitDirection } from '@/devtools-panel/ui/util/movable-split/MovableSplit';
 
 import { NumberInput } from '../../ui/inputs/NumberInput';
-import { onRecentUpdatesChange } from './diffLogSetters';
+import { onRecentUpdatesChange, onTypeAheadResetChange } from './diffLogSetters';
 import { SettingControl } from './SettingControl';
 
 const directions: { value: SplitDirection; label: string }[] = [
@@ -59,6 +59,15 @@ export function LayoutSettings() {
             inputProps={{ id }}
             value={getSettings.state.recentUpdates()}
             onChange={onRecentUpdatesChange}
+          />
+        )}
+      </SettingControl>
+      <SettingControl label="State page: type-ahead starts over after (ms)">
+        {(id) => (
+          <NumberInput
+            inputProps={{ id }}
+            value={getSettings.state.typeAheadResetMs()}
+            onChange={onTypeAheadResetChange}
           />
         )}
       </SettingControl>

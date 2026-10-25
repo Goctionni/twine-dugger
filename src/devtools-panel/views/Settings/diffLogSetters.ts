@@ -19,6 +19,11 @@ export const onMaxHistorySlicesChange = createValidatingSetter<number>(
   (maxSlices) => Number.isInteger(maxSlices) && maxSlices >= 1 && maxSlices <= 500,
 );
 
+export const onTypeAheadResetChange = createValidatingSetter<number>(
+  (ms) => setSetting('state.typeAheadResetMs', ms),
+  (ms) => Number.isInteger(ms) && ms >= 100 && ms <= 5000,
+);
+
 export const onRecentUpdatesChange = createValidatingSetter<number>(
   (updates) => setSetting('state.recentUpdates', updates),
   (updates) => Number.isInteger(updates) && updates >= 1 && updates <= 1000,

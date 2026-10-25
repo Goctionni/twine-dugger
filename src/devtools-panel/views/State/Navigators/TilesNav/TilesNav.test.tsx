@@ -1,6 +1,6 @@
 import { cleanup, render } from '@solidjs/testing-library';
 import { createSignal, flush, untrack } from 'solid-js';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, expect, it, vi, onTestFinished } from 'vite-plus/test';
 
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { getStatePath, setStatePath } from '@/devtools-panel/store/state-location';
@@ -319,6 +319,17 @@ describe('type-ahead', () => {
     type(view, 'n');
     expect(selectedName(view)).toBe('name');
     expect(typed()).toEqual({ text: 'n', isMiss: false });
+  });
+
+  it('starts over after the time that the setting says', () => {
+    setSetting('state.typeAheadResetMs', 1000);
+    onTestFinished(() => setSetting('state.typeAheadResetMs', 500));
+    const view = setup(['stats']);
+    type(view, 's');
+    wait(600);
+    expect(typed()).toEqual({ text: 's', isMiss: false });
+    wait(500);
+    expect(typed()).toBeUndefined();
   });
 
   it('shows what is typed twice as long when nothing starts with it', () => {

@@ -1,10 +1,9 @@
 import { onCleanup, useContext } from 'solid-js';
 
+import { getSettings } from '@/devtools-panel/store/store';
+
 import { getTypeAheadTarget } from './get-type-ahead-target';
 import { TypeAheadContext } from './type-ahead-context';
-
-// What is typed after a pause is a new search. When nothing matched, the red text stays twice as long
-const TYPE_AHEAD_RESET_MS = 500;
 
 interface Options {
   /** The names of the items in the order that they are shown */
@@ -47,7 +46,9 @@ export function provideTypeAhead({ getNames, getSelectedIndex, selectIndex }: Op
     event.preventDefault();
 
     const now = performance.now();
-    if (now - typedAt > TYPE_AHEAD_RESET_MS) typed = '';
+    // What is typed after a pause is a new search. When nothing matched, the red text stays twice as long
+    const resetMs = getSettings.state.typeAheadResetMs();
+    if (now - typedAt > resetMs) typed = '';
     typedAt = now;
     typed += event.key.toLowerCase();
 
@@ -63,7 +64,7 @@ export function provideTypeAhead({ getNames, getSelectedIndex, selectIndex }: Op
         typed = '';
         showTypedText(undefined);
       },
-      isMiss ? TYPE_AHEAD_RESET_MS * 2 : TYPE_AHEAD_RESET_MS,
+      isMiss ? resetMs * 2 : resetMs,
     );
   };
 }
