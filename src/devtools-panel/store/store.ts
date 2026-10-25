@@ -32,7 +32,6 @@ const defaultSettings: Settings = {
   'diffLog.fontSize': 14,
   'diffLog.pollingInterval': 200,
   'diffLog.maxHistorySlices': 30,
-  'diffLog.headingStyle': 'default',
   'state.propertyOrder': 'type',
   'state.propertyOrderDesc': false,
   'state.filters': [],
@@ -260,7 +259,6 @@ export const getSettings = {
     fontSize: () => store.settings['diffLog.fontSize'],
     pollingInterval: () => store.settings['diffLog.pollingInterval'],
     maxHistorySlices: () => store.settings['diffLog.maxHistorySlices'],
-    headingStyle: () => store.settings['diffLog.headingStyle'],
   },
   state: {
     propertyOrder: () => store.settings['state.propertyOrder'],

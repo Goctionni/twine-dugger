@@ -51,7 +51,6 @@ export const settingsSchema = type({
   'diffLog.fontSize': 'number',
   'diffLog.pollingInterval': 'number',
   'diffLog.maxHistorySlices': 'number',
-  'diffLog.headingStyle': "'default' | 'distinct'",
   'state.propertyOrder': propertyOrderSchema,
   'state.propertyOrderDesc': 'boolean',
   'state.filters': valueTypeSchema.or("'filtered'").array(),

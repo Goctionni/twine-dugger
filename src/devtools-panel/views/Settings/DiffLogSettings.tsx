@@ -1,5 +1,4 @@
-import { getSettings, setSetting } from '@/devtools-panel/store/store';
-import { BooleanInput } from '@/devtools-panel/ui/inputs/BooleanInput';
+import { getSettings } from '@/devtools-panel/store/store';
 import { NumberInput } from '@/devtools-panel/ui/inputs/NumberInput';
 
 import {
@@ -10,7 +9,7 @@ import {
 import { SettingControl } from './SettingControl';
 
 export function DiffLogSettings() {
-  const { fontSize, pollingInterval, maxHistorySlices, headingStyle } = getSettings.diffLog;
+  const { fontSize, pollingInterval, maxHistorySlices } = getSettings.diffLog;
 
   return (
     <>
@@ -32,16 +31,6 @@ export function DiffLogSettings() {
             inputProps={{ id }}
             value={maxHistorySlices()}
             onChange={onMaxHistorySlicesChange}
-          />
-        )}
-      </SettingControl>
-      <SettingControl label="Heading Emphasis" noLabel>
-        {(id) => (
-          <BooleanInput
-            value={headingStyle() === 'distinct'}
-            onChange={(value) => setSetting('diffLog.headingStyle', value ? 'distinct' : 'default')}
-            id={id}
-            label="Heading Emphasis"
           />
         )}
       </SettingControl>

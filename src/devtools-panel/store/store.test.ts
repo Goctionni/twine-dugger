@@ -106,6 +106,14 @@ describe('persistence', () => {
     const saved = fromJson(localStorage.getItem('twine-dugger-settings')!, settingsSchema);
     expect(saved['diffLog.fontSize']).toBe(20);
   });
+
+  it('still loads settings that were saved with a setting that is gone', () => {
+    const saved = fromJson(
+      JSON.stringify({ 'diffLog.fontSize': 20, 'diffLog.headingStyle': 'distinct' }),
+      settingsSchema.partial(),
+    );
+    expect(saved['diffLog.fontSize']).toBe(20);
+  });
 });
 
 describe('pins', () => {
