@@ -12,7 +12,7 @@ import type { Path } from '@/shared/shared-types';
 
 import { NoMatches } from '../../NoMatches';
 import { getSearchMatcher } from '../../state-search';
-import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
+import { getHiddenKeyCheck, getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { createScrollToSelection } from '../Shared/create-scroll-to-selection';
@@ -74,6 +74,7 @@ export function TilesNav(props: NavProps) {
         (key) => getLastChangeId([...getTilesContainerPath(), key]),
         (key) => isPinned([...getTilesContainerPath(), key]),
         getSearchMatcher(),
+        getHiddenKeyCheck(getTilesContainerPath()),
       );
       return hasUpTile() ? [UP, ...keys] : keys;
     },

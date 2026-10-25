@@ -5,7 +5,11 @@ import { fromJson } from '@/shared/from-json';
 
 import {
   createPersistenceEffects,
+  addFilteredPath,
+  isHiddenInDiffLog,
+  isHiddenInState,
   isPinned,
+  removeFilteredPath,
   setGameMetaData,
   setSetting,
   setStore,
@@ -139,5 +143,30 @@ describe('pins', () => {
     flush();
     expect(isPinned(['a', 'b'])).toBe(false);
     expect(store.gameConfig.pins).toEqual([['a', 'b', 'c']]);
+  });
+});
+
+describe('where filtered paths are hidden', () => {
+  it('hides them in the diff log by default, and in the State view when the setting says so', () => {
+    addFilteredPath(['a']);
+    onTestFinished(() => {
+      removeFilteredPath(['a']);
+      setSetting('filteredPaths.hiddenIn', 'diff-log');
+    });
+    flush();
+
+    expect(isHiddenInDiffLog(['a', 'b'])).toBe(true);
+    expect(isHiddenInState(['a', 'b'])).toBe(false);
+
+    setSetting('filteredPaths.hiddenIn', 'state');
+    flush();
+    expect(isHiddenInDiffLog(['a', 'b'])).toBe(false);
+    expect(isHiddenInState(['a', 'b'])).toBe(true);
+
+    setSetting('filteredPaths.hiddenIn', 'both');
+    flush();
+    expect(isHiddenInDiffLog(['a', 'b'])).toBe(true);
+    expect(isHiddenInState(['a', 'b'])).toBe(true);
+    expect(isHiddenInState(['other'])).toBe(false);
   });
 });

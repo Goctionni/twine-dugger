@@ -40,3 +40,9 @@ it('has no column at all when the search matches nothing in the state', () => {
 
   expect(countColumns(state, [], [], result.queryMatcher)).toBe(0);
 });
+
+it('has no column for a container where every value is on a filtered path', () => {
+  const isHidden = (path: Array<string | number>) => path[0] === 'a' && path.length === 2;
+  expect(countColumns(state, ['a'], [], undefined, isHidden)).toBe(1);
+  expect(countColumns(state, ['deep'], [], undefined, isHidden)).toBe(2);
+});

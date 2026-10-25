@@ -11,7 +11,7 @@ import type { Path } from '@/shared/shared-types';
 
 import { NoMatches } from '../../NoMatches';
 import { getSearchMatcher } from '../../state-search';
-import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
+import { getHiddenKeyCheck, getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { isArrowKey } from '../Shared/arrow-keys';
@@ -45,6 +45,7 @@ export function TreeNav(props: NavProps) {
         (key) => getLastChangeId([...containerPath, key]),
         (key) => isPinned([...containerPath, key]),
         getSearchMatcher(),
+        getHiddenKeyCheck(containerPath),
       ),
     sameItems,
   );

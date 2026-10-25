@@ -6,13 +6,14 @@ import { toFilterType } from '../../../logic/sort-keys';
 import { matchesSearch } from '../../../state-search';
 
 /**
- * Whether a container holds a container that the filter of types and the search do not hide: a
- * row of the tree to open
+ * Whether a container holds a container that the filter of types, the search and the filtered
+ * paths do not hide: a row of the tree to open
  */
 export function hasContainerChild(
   container: JSONSafeValue,
   hiddenTypes: readonly ValueType[],
   searchMatcher?: QueryMatcher,
+  isPathHidden?: (key: string | number) => boolean,
 ) {
   const type = getJsonType(container);
   if (!isContainerType(type)) return false;
@@ -22,7 +23,8 @@ export function hasContainerChild(
     return (
       isContainer(child) &&
       !hiddenTypes.includes(toFilterType(getJsonType(child))) &&
-      (!searchMatcher || matchesSearch(searchMatcher, container, key))
+      (!searchMatcher || matchesSearch(searchMatcher, container, key)) &&
+      !isPathHidden?.(key)
     );
   });
 }

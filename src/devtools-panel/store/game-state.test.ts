@@ -289,6 +289,27 @@ describe('game state', () => {
     });
   });
 
+  describe('filtered paths hidden in the State view only', () => {
+    it('keeps a frame and a record for a filtered path, as the diff log shows it', () => {
+      const game = createGame({ hp: 10, x: 0 });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      setSetting('filteredPaths.hiddenIn', 'state');
+      flush();
+      onTestFinished(() => {
+        removeFilteredPath(['x']);
+        setSetting('filteredPaths.hiddenIn', 'diff-log');
+      });
+      const id = getLatestId();
+
+      play(game, (s) => (s.x = 1));
+
+      expect(getLatestId()).toBe(id + 1);
+      expect(getPathRecord(['x'])).toBeDefined();
+    });
+  });
+
   describe('createFrameLimitEffect', () => {
     const setup = () => {
       createRoot((dispose) => {

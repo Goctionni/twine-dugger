@@ -2,14 +2,14 @@ import { Match, Repeat, Switch, createMemo } from 'solid-js';
 
 import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
 import { getStatePath, requestScrollTo } from '@/devtools-panel/store/state-location';
-import { isPinned } from '@/devtools-panel/store/store';
+import { isHiddenInState, isPinned } from '@/devtools-panel/store/store';
 import { createElementWidth } from '@/devtools-panel/utils/create-element-width';
 import { getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { NoMatches } from '../../NoMatches';
 import { getSearchMatcher } from '../../state-search';
-import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
+import { getHiddenKeyCheck, getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { isArrowKey } from '../Shared/arrow-keys';
@@ -30,7 +30,13 @@ export function MillerNav(props: NavProps) {
 
   const getWidth = createElementWidth(() => tree);
   const getColumnCount = createMemo(() =>
-    countColumns(getLatestState(), props.path, getHiddenTypes(), getSearchMatcher()),
+    countColumns(
+      getLatestState(),
+      props.path,
+      getHiddenTypes(),
+      getSearchMatcher(),
+      isHiddenInState,
+    ),
   );
 
   let tree: HTMLDivElement | undefined;
@@ -47,6 +53,7 @@ export function MillerNav(props: NavProps) {
       (key) => getLastChangeId([...containerPath, key]),
       (key) => isPinned([...containerPath, key]),
       getSearchMatcher(),
+      getHiddenKeyCheck(containerPath),
     );
 
   provideNavigatorInfo({

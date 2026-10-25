@@ -39,6 +39,7 @@ const defaultSettings: Settings = {
   'state.recentUpdates': 10,
   'state.typeAheadResetMs': 500,
   'state.pinCascade': true,
+  'filteredPaths.hiddenIn': 'diff-log',
   'state.navigator': 'miller',
   'state.treeLayout': 'containers-and-primitives',
   'state.splitDirection': 'auto',
@@ -201,6 +202,16 @@ export function isPathFiltered(path: Path) {
   return store.gameConfig.filteredPaths.some((filterPath) => pathStartsWith(path, filterPath));
 }
 
+/** Filtered, and the filtered paths are hidden in the diff log (which also leaves them out of the history of values) */
+export function isHiddenInDiffLog(path: Path) {
+  return store.settings['filteredPaths.hiddenIn'] !== 'state' && isPathFiltered(path);
+}
+
+/** Filtered, and the filtered paths are hidden in the State view */
+export function isHiddenInState(path: Path) {
+  return store.settings['filteredPaths.hiddenIn'] !== 'diff-log' && isPathFiltered(path);
+}
+
 export function addFilteredPath(path: Path) {
   setStore((draft) => {
     const { filteredPaths } = draft.gameConfig;
@@ -261,6 +272,9 @@ export const getSettings = {
     navigator: () => store.settings['state.navigator'],
     treeLayout: () => store.settings['state.treeLayout'],
     splitDirection: () => store.settings['state.splitDirection'],
+  },
+  filteredPaths: {
+    hiddenIn: () => store.settings['filteredPaths.hiddenIn'],
   },
   passages: {
     splitDirection: () => store.settings['passages.splitDirection'],

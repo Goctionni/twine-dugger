@@ -10,7 +10,7 @@ import type { DeltaUpdate, JSONSafeObject, LockRevert, Path } from '@/shared/sha
 import { sameItems } from '../utils/same-items';
 import type { BlockedWrite, DiffChange, StateDiff } from '../views/DiffLog/diff-types';
 import { getDiffFromDelta } from './diff-from-delta';
-import { isPathFiltered, setViewState, store } from './store';
+import { isHiddenInDiffLog, setViewState, store } from './store';
 
 // The state of the game is patched with the deltas that the content script sends, so that only the
 // properties that actually changed notify their readers.
@@ -58,7 +58,7 @@ function resetView() {
 
 function recordChanges(delta: Delta, id: number, timestamp: number) {
   for (const change of getDiffFromDelta(delta)) {
-    if (change.kind === 'mov' || untrack(() => isPathFiltered(change.path))) continue;
+    if (change.kind === 'mov' || untrack(() => isHiddenInDiffLog(change.path))) continue;
 
     const key = pathKey(change.path);
     const record = records.get(key) ?? {
@@ -150,7 +150,7 @@ export function applyUpdate({ passage, delta, reverts }: DeltaUpdate, timestamp 
 }
 
 const isIgnoredOnly = (delta: Delta) =>
-  getDiffFromDelta(delta).every((change) => isPathFiltered(change.path));
+  getDiffFromDelta(delta).every((change) => isHiddenInDiffLog(change.path));
 
 function toBlockedWrite({ path, attempted }: LockRevert): BlockedWrite[] {
   const lock = untrack(() => store.gameConfig.locks.find((lock) => pathEquals(lock.path, path)));

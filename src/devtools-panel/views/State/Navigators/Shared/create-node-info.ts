@@ -21,7 +21,9 @@ export function createNodeInfo(getPath: () => Path) {
 
   const getName = () => getNodeName(getLatestState(), getPath());
   // Read in several places, and each reading is a pass over the values of the container
-  const getCounts = createMemo(() => getChildCounts(getValue()), { equals: sameChildCounts });
+  const getCounts = createMemo(() => getChildCounts(getValue(), getPath()), {
+    equals: sameChildCounts,
+  });
 
   // Like the search, only a name counts (an object or a map), and only a string, number or boolean
   const getNameRanges = createMemo(

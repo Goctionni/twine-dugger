@@ -1,8 +1,13 @@
 import { createMemo } from 'solid-js';
 
-import { createSetSetting, getSettings, setSetting } from '@/devtools-panel/store/store';
+import {
+  createSetSetting,
+  getSettings,
+  isHiddenInState,
+  setSetting,
+} from '@/devtools-panel/store/store';
 import { sameItems } from '@/devtools-panel/utils/same-items';
-import type { PropertyOrder, ValueType } from '@/shared/shared-types';
+import type { Path, PropertyOrder, ValueType } from '@/shared/shared-types';
 
 import { TYPE_ORDER } from '../logic/sort-keys';
 import type { Sort, SortBy } from '../types';
@@ -20,6 +25,10 @@ const ORDER_BY_SORT: Record<SortBy, PropertyOrder> = {
   type: 'type',
   changed: 'most-recent',
 };
+
+/** For the container at a path: whether the filtered paths hide one of its keys */
+export const getHiddenKeyCheck = (containerPath: Path) => (key: Path[number]) =>
+  isHiddenInState([...containerPath, key]);
 
 export const getNavigator = getSettings.state.navigator;
 export const setNavigator = createSetSetting('state.navigator');

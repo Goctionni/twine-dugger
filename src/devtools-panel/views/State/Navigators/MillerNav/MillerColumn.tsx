@@ -10,7 +10,7 @@ import type { Path } from '@/shared/shared-types';
 
 import { getPathLabels } from '../../logic/path-labels';
 import { getSearchMatcher } from '../../state-search';
-import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
+import { getHiddenKeyCheck, getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import { createVirtualList } from '../Shared/create-virtual-list';
 import { NavRow } from '../Shared/NavRow';
 import { VirtualItems } from '../Shared/VirtualItems';
@@ -45,6 +45,7 @@ export function MillerColumn(props: Props) {
         (key) => getLastChangeId([...getColumnPath(), key]),
         (key) => isPinned([...getColumnPath(), key]),
         getSearchMatcher(),
+        getHiddenKeyCheck(getColumnPath()),
       ),
     { equals: sameItems },
   );

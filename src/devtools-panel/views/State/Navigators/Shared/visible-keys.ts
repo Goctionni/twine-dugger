@@ -13,8 +13,8 @@ import { matchesSearch } from '../../state-search';
 import type { Sort } from '../../types';
 
 /**
- * The keys of a container as the navigators show them: filtered (by type, and by the text of the
- * search when there is a matcher), and in the order of the sort
+ * The keys of a container as the navigators show them: filtered (by type, by the text of the search
+ * when there is a matcher, and by the filtered paths that are hidden), and in the order of the sort
  */
 export function getVisibleKeys(
   container: JSONSafeValue,
@@ -23,6 +23,7 @@ export function getVisibleKeys(
   getLastChange: (key: string | number) => number,
   isPinned: (key: string | number) => boolean,
   searchMatcher?: QueryMatcher,
+  isPathHidden?: (key: string | number) => boolean,
 ): Array<string | number> {
   const type = getJsonType(container);
   if (!isContainerType(type)) return [];
@@ -33,9 +34,10 @@ export function getVisibleKeys(
     getTypeOf,
     hiddenTypes,
   );
-  const keys = searchMatcher
+  const keysOfSearch = searchMatcher
     ? keysOfType.filter((key) => matchesSearch(searchMatcher, container, key))
     : keysOfType;
+  const keys = isPathHidden ? keysOfSearch.filter((key) => !isPathHidden(key)) : keysOfSearch;
   // The position is the name of an item of an array or a set, so they keep it
   if (type === 'array' || type === 'set') return keys;
   let sorted = keys;

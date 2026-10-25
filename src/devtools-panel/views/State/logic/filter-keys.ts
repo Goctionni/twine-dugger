@@ -16,21 +16,22 @@ export function filterKeysByType<K extends string | number>(
 }
 
 /**
- * How many of the values in a container the filter of types and the search hide: 0 for what is
- * not a container
+ * How many of the values in a container the filter of types, the search and the filtered paths
+ * hide: 0 for what is not a container
  */
 export function countHiddenKeys(
   container: JSONSafeValue,
   hiddenTypes: readonly ValueType[],
   searchMatcher?: QueryMatcher,
+  isPathHidden?: (key: string | number) => boolean,
 ): number {
   const type = getJsonType(container);
-  if ((!hiddenTypes.length && !searchMatcher) || !isContainerType(type)) return 0;
+  if ((!hiddenTypes.length && !searchMatcher && !isPathHidden) || !isContainerType(type)) return 0;
   const keys = getContainerKeys(container, type);
   const getType = (key: string | number) => getJsonType((container as JSONSafeObject)[key]);
   const keysOfType = filterKeysByType(keys, getType, hiddenTypes);
   const shown = searchMatcher
     ? keysOfType.filter((key) => matchesSearch(searchMatcher, container, key))
     : keysOfType;
-  return keys.length - shown.length;
+  return keys.length - (isPathHidden ? shown.filter((key) => !isPathHidden(key)) : shown).length;
 }

@@ -1,9 +1,9 @@
 import { getContainerSize, isContainer } from '@/shared/json-safe';
-import type { JSONSafeValue } from '@/shared/shared-types';
+import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 import { countHiddenKeys } from '../../logic/filter-keys';
 import { getSearchMatcher } from '../../state-search';
-import { getHiddenTypes } from '../../store-helpers/view-prefs';
+import { getHiddenKeyCheck, getHiddenTypes } from '../../store-helpers/view-prefs';
 
 type ChildCounts = { shown: number; hidden: number };
 
@@ -12,10 +12,15 @@ export const sameChildCounts = (a: ChildCounts | undefined, b: ChildCounts | und
 
 /**
  * What a row says about the values in a container: how many are shown, and how many the filter
- * of types hides. Nothing for a value that is not a container.
+ * of types, the search and the filtered paths hide. Nothing for a value that is not a container.
  */
-export function getChildCounts(value: JSONSafeValue): ChildCounts | undefined {
+export function getChildCounts(value: JSONSafeValue, path: Path): ChildCounts | undefined {
   if (!isContainer(value)) return undefined;
-  const hidden = countHiddenKeys(value, getHiddenTypes(), getSearchMatcher());
+  const hidden = countHiddenKeys(
+    value,
+    getHiddenTypes(),
+    getSearchMatcher(),
+    getHiddenKeyCheck(path),
+  );
   return { shown: getContainerSize(value) - hidden, hidden };
 }

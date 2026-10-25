@@ -59,6 +59,8 @@ export const settingsSchema = type({
   'state.typeAheadResetMs': 'number',
   // A pinned value also pins everything above it, and unpinning a value unpins what is beneath it
   'state.pinCascade': 'boolean',
+  // Where the filtered paths are hidden: in the diff log, in the State view, or in both
+  'filteredPaths.hiddenIn': "'diff-log' | 'state' | 'both'",
   'state.navigator': "'miller' | 'tree' | 'tiles'",
   // The tree: all values in it, or only the containers in it and the values of the selected one in a list
   'state.treeLayout': "'containers-and-primitives' | 'primitives-in-list'",

@@ -15,6 +15,7 @@ const directions: { value: SplitDirection; label: string }[] = [
 ];
 
 type TreeLayout = ReturnType<typeof getSettings.state.treeLayout>;
+type FilteredPathsHiddenIn = ReturnType<typeof getSettings.filteredPaths.hiddenIn>;
 
 export function LayoutSettings() {
   return (
@@ -71,6 +72,25 @@ export function LayoutSettings() {
             value={getSettings.state.pinCascade()}
             onChange={(value) => setSetting('state.pinCascade', value)}
           />
+        )}
+      </SettingControl>
+      <SettingControl label="Filtered paths are hidden in">
+        {(id) => (
+          <select
+            id={id}
+            class="w-64 cursor-pointer rounded-sm border border-slate-600 bg-slate-900 px-2 py-1"
+            value={getSettings.filteredPaths.hiddenIn()}
+            onChange={(event) =>
+              setSetting(
+                'filteredPaths.hiddenIn',
+                event.currentTarget.value as FilteredPathsHiddenIn,
+              )
+            }
+          >
+            <option value="diff-log">The diff log only</option>
+            <option value="state">The State page only</option>
+            <option value="both">The diff log and the State page</option>
+          </select>
         )}
       </SettingControl>
       <SettingControl label="State page: type-ahead starts over after (ms)">

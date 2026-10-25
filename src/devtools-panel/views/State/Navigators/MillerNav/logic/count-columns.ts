@@ -22,12 +22,20 @@ export function countColumns(
   path: Path,
   hiddenTypes: readonly ValueType[],
   searchMatcher?: QueryMatcher,
+  isPathHidden?: (path: Path) => boolean,
 ): number {
   let value: JSONSafeValue = state;
   for (let depth = 0; ; depth++) {
     if (
       !isContainer(value) ||
-      getContainerSize(value) - countHiddenKeys(value, hiddenTypes, searchMatcher) === 0
+      getContainerSize(value) -
+        countHiddenKeys(
+          value,
+          hiddenTypes,
+          searchMatcher,
+          isPathHidden && ((key) => isPathHidden([...path.slice(0, depth), key])),
+        ) ===
+        0
     ) {
       return depth;
     }

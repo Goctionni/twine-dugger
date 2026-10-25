@@ -46,3 +46,9 @@ it('counts what the search hides, after the filter of types', () => {
   expect(countHiddenKeys(container, [], result.queryMatcher)).toBe(1);
   expect(countHiddenKeys(container, ['number'], result.queryMatcher)).toBe(2);
 });
+
+it('counts the keys that the filtered paths hide too', () => {
+  const container = { a: 'x', b: 1, c: 2 };
+  expect(countHiddenKeys(container, [], undefined, (key) => key === 'a')).toBe(1);
+  expect(countHiddenKeys(container, ['number'], undefined, (key) => key === 'a')).toBe(3);
+});

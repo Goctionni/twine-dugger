@@ -35,3 +35,9 @@ it('does not count a container that the search does not match', () => {
   expect(hasContainerChild(container, [], result.queryMatcher)).toBe(true);
   expect(hasContainerChild({ stats: { b: 2 } }, [], result.queryMatcher)).toBe(false);
 });
+
+it('does not count a container on a filtered path', () => {
+  const container = { inventory: { a: 1 }, stats: { b: 2 } };
+  expect(hasContainerChild(container, [], undefined, (key) => key === 'inventory')).toBe(true);
+  expect(hasContainerChild({ inventory: { a: 1 } }, [], undefined, () => true)).toBe(false);
+});

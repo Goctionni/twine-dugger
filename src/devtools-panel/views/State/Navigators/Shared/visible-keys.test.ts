@@ -40,6 +40,13 @@ it('keeps the keys that match the search, after the filter of types', () => {
   expect(getVisibleKeys(container, byName, ['string'], noChange, none, matcher)).toEqual(['gold']);
 });
 
+it('leaves out the keys that the filtered paths hide', () => {
+  const container = { a: 1, b: 2, c: 3 };
+  expect(
+    getVisibleKeys(container, byName, [], noChange, none, undefined, (key) => key === 'b'),
+  ).toEqual(['a', 'c']);
+});
+
 it('turns the order of the sort around, with the pinned keys still first', () => {
   const container = { b: 1, a: 'x', c: { d: 1 }, e: 2 };
   const isPinned = (key: string | number) => key === 'a';

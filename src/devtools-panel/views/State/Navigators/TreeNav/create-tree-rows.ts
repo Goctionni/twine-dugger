@@ -6,7 +6,7 @@ import { pathEquals } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
 import { getSearchMatcher } from '../../state-search';
-import { getHiddenTypes } from '../../store-helpers/view-prefs';
+import { getHiddenKeyCheck, getHiddenTypes } from '../../store-helpers/view-prefs';
 import { getChildCounts } from '../Shared/get-child-counts';
 import type { createTreeExpansion } from './create-tree-expansion';
 import type { createValueList } from './create-value-list';
@@ -41,8 +41,8 @@ export function createTreeRows({ getSelectedPath, expansion, list, getKeysAt }: 
   const canOpen = (path: Path) => {
     const value = getPathValue(getLatestState(), path);
     return list.hasValueList()
-      ? hasContainerChild(value, getHiddenTypes(), getSearchMatcher())
-      : (getChildCounts(value)?.shown ?? 0) > 0;
+      ? hasContainerChild(value, getHiddenTypes(), getSearchMatcher(), getHiddenKeyCheck(path))
+      : (getChildCounts(value, path)?.shown ?? 0) > 0;
   };
 
   const isSelectedRowShown = createMemo(() => {
