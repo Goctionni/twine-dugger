@@ -10,6 +10,8 @@ import { getContainerKeyLabel, getPathValue, isContainer, isSet } from '@/shared
 import { pathStartsWith } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
+import { NoMatches } from '../../NoMatches';
+import { getSearchMatcher } from '../../state-search';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
@@ -71,6 +73,7 @@ export function TilesNav(props: NavProps) {
         getHiddenTypes(),
         (key) => getLastChangeId([...getTilesContainerPath(), key]),
         (key) => isPinned([...getTilesContainerPath(), key]),
+        getSearchMatcher(),
       );
       return hasUpTile() ? [UP, ...keys] : keys;
     },
@@ -198,7 +201,7 @@ export function TilesNav(props: NavProps) {
       tabindex="0"
       aria-activedescendant={getActiveId()}
       onKeyDown={onKeyDown}
-      class="min-h-full p-2.5 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
+      class="relative min-h-full p-2.5 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
       onClick={(event) => {
         // The space between the tiles
         if (!(event.target as HTMLElement).closest('[role="option"]')) {
@@ -206,6 +209,7 @@ export function TilesNav(props: NavProps) {
         }
       }}
     >
+      <NoMatches isEmpty={getTileKeys().length === (hasUpTile() ? 1 : 0)} />
       <VirtualItems
         list={tileList}
         itemClass="grid"

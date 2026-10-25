@@ -61,3 +61,33 @@ it('shows the navigator, the breadcrumbs and the inspector of the selection', ()
   expect(getByRole('navigation', { name: 'Path' })).toBeTruthy();
   expect(getByRole('heading', { name: 'stats' })).toBeTruthy();
 });
+
+it('filters the rows with the search, says when nothing matches, and clears the search', async () => {
+  const game = createGame({ stats: { str: 1 }, gold: 5 });
+  startGameState(game.state());
+  applyUpdate(game.update());
+  flush();
+  setStatePath([]);
+  flush();
+
+  const { getByRole, getByLabelText, queryByRole, queryByText } = render(() => <StateView />);
+  const input = getByLabelText('Filter') as HTMLInputElement;
+
+  input.value = 'gol';
+  input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  flush();
+  expect(within(getByRole('tree', { name: 'State' })).queryByText('stats')).toBeNull();
+  expect(within(getByRole('tree', { name: 'State' })).getByText('gold')).toBeTruthy();
+
+  input.value = 'zzz';
+  input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  flush();
+  expect(getByRole('status').textContent).toContain('zzz');
+
+  getByRole('button', { name: 'Clear filter' }).click();
+  flush();
+  expect(input.value).toBe('');
+  expect(queryByRole('button', { name: 'Clear filter' })).toBeNull();
+  expect(queryByText(/No matches/)).toBeNull();
+  expect(within(getByRole('tree', { name: 'State' })).getByText('stats')).toBeTruthy();
+});

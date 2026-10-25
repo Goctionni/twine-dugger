@@ -1,5 +1,6 @@
 import { expect, it } from 'vite-plus/test';
 
+import { createQueryMatcher } from '../../../GlobalSearch/logic/query-matcher';
 import { getVisibleKeys } from './visible-keys';
 
 const none = () => false;
@@ -18,4 +19,21 @@ it('leaves the items of an array in their order', () => {
   expect(getVisibleKeys(['x', 'y', 'z'], 'name', [], noChange, (key) => key === 2)).toEqual([
     0, 1, 2,
   ]);
+});
+
+it('keeps the keys that match the search, after the filter of types', () => {
+  const container = { gold: 1, goldfish: 'x', silver: 2, nested: { gold: 1 } };
+  const result = createQueryMatcher('gold', {
+    caseSensitive: false,
+    wholeWord: false,
+    regex: false,
+  });
+  if (!result.ok) throw new Error(result.error);
+
+  const matcher = result.queryMatcher;
+  expect(getVisibleKeys(container, 'name', [], noChange, none, matcher)).toEqual([
+    'gold',
+    'goldfish',
+  ]);
+  expect(getVisibleKeys(container, 'name', ['string'], noChange, none, matcher)).toEqual(['gold']);
 });

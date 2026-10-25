@@ -17,6 +17,7 @@ import {
 import { TypeAheadContext, type TypedText } from './Navigators/Shared/TypeAhead/type-ahead-context';
 import { TypeAheadLabel } from './Navigators/Shared/TypeAhead/TypeAheadLabel';
 import { StateNav } from './Navigators/StateNav';
+import { getSearchText, setSearchText } from './state-search';
 import {
   getHiddenTypes,
   getNavigator,
@@ -29,8 +30,6 @@ import { Toolbar } from './Toolbar/Toolbar';
 import type { SelectionKind } from './types';
 
 export function StateView() {
-  const [getSearchText, setSearchText] = createSignal('');
-
   const [getNavigatorInfo, setNavigatorInfo] = createSignal<NavigatorInfo>();
   // A navigator that another one replaces takes back only its own info
   const publishNavigatorInfo: PublishNavigatorInfo = (info) => {

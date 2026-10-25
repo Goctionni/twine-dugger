@@ -2,6 +2,7 @@ import { expect, it } from 'vite-plus/test';
 
 import type { ValueType } from '@/shared/shared-types';
 
+import { createQueryMatcher } from '../../GlobalSearch/logic/query-matcher';
 import { countHiddenKeys, filterKeysByType } from './filter-keys';
 import { sortKeysByChanged, toFilterType } from './sort-keys';
 
@@ -35,4 +36,13 @@ it('puts what changed last first, and the rest by name', () => {
     'a',
     'd',
   ]);
+});
+
+it('counts what the search hides, after the filter of types', () => {
+  const result = createQueryMatcher('go', { caseSensitive: false, wholeWord: false, regex: false });
+  if (!result.ok) throw new Error(result.error);
+
+  const container = { gold: 1, goblin: 'x', silver: 2, golem: { a: 1 } };
+  expect(countHiddenKeys(container, [], result.queryMatcher)).toBe(1);
+  expect(countHiddenKeys(container, ['number'], result.queryMatcher)).toBe(2);
 });

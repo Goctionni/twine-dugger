@@ -1,5 +1,6 @@
 import { expect, it } from 'vite-plus/test';
 
+import { createQueryMatcher } from '../../../../GlobalSearch/logic/query-matcher';
 import { countColumns } from './count-columns';
 
 const state = { a: { x: 1, y: 2 }, b: 'text', empty: {}, deep: { list: [true] } };
@@ -24,4 +25,18 @@ it('has no column for a container whose values are all hidden', () => {
 
 it('drops the column of a selected value too when all its types are hidden', () => {
   expect(countColumns(state, ['a', 'x'], ['number'])).toBe(1);
+});
+
+it('has no column for a container where the search matches none of the values', () => {
+  const result = createQueryMatcher('b', { caseSensitive: false, wholeWord: false, regex: false });
+  if (!result.ok) throw new Error(result.error);
+
+  expect(countColumns(state, ['a'], [], result.queryMatcher)).toBe(1);
+});
+
+it('has no column at all when the search matches nothing in the state', () => {
+  const result = createQueryMatcher('zz', { caseSensitive: false, wholeWord: false, regex: false });
+  if (!result.ok) throw new Error(result.error);
+
+  expect(countColumns(state, [], [], result.queryMatcher)).toBe(0);
 });

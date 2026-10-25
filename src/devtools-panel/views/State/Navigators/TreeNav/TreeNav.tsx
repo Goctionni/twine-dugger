@@ -9,6 +9,8 @@ import { getPathValue } from '@/shared/json-safe';
 import { pathEquals, pathKey } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
+import { NoMatches } from '../../NoMatches';
+import { getSearchMatcher } from '../../state-search';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
@@ -42,6 +44,7 @@ export function TreeNav(props: NavProps) {
         getHiddenTypes(),
         (key) => getLastChangeId([...containerPath, key]),
         (key) => isPinned([...containerPath, key]),
+        getSearchMatcher(),
       ),
     sameItems,
   );
@@ -78,6 +81,7 @@ export function TreeNav(props: NavProps) {
     const listedPath = list.getListedPath();
     return listedPath ? list.getValueKeysAt(listedPath) : [];
   });
+  const isNothingShown = () => getRows().length === 0 && getListedValueKeys().length === 0;
   const getSelectedValueIndex = createMemo(() => {
     const key = getSelectedPath().at(-1);
     return list.isValueSelected() && key !== undefined ? getListedValueKeys().indexOf(key) : -1;
@@ -175,14 +179,15 @@ export function TreeNav(props: NavProps) {
       }}
       class={[
         'outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500',
-        list.hasValueList() ? 'flex h-full' : 'p-1',
+        list.hasValueList() ? 'flex h-full' : 'relative min-h-full p-1',
       ]}
     >
       <Switch>
         <Match when={list.getListedPath()}>
           {(getListed) => (
             <>
-              <div class="min-w-0 flex-[0_0_42%] overflow-auto border-r border-gray-700 p-1">
+              <div class="relative min-w-0 flex-[0_0_42%] overflow-auto border-r border-gray-700 p-1">
+                <NoMatches isEmpty={isNothingShown()} />
                 {treeRows()}
               </div>
               <div role="group" aria-label="Values" class="min-w-0 flex-1 overflow-auto">
@@ -198,7 +203,10 @@ export function TreeNav(props: NavProps) {
             </>
           )}
         </Match>
-        <Match when={!list.hasValueList()}>{treeRows()}</Match>
+        <Match when={!list.hasValueList()}>
+          <NoMatches isEmpty={isNothingShown()} />
+          {treeRows()}
+        </Match>
       </Switch>
     </div>
   );

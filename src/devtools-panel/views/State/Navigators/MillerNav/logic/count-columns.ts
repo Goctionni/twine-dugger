@@ -7,6 +7,7 @@ import type {
   ValueType,
 } from '@/shared/shared-types';
 
+import type { QueryMatcher } from '../../../../GlobalSearch/types';
 import { countHiddenKeys } from '../../../logic/filter-keys';
 
 /**
@@ -20,12 +21,13 @@ export function countColumns(
   state: JSONSafeContainer,
   path: Path,
   hiddenTypes: readonly ValueType[],
+  searchMatcher?: QueryMatcher,
 ): number {
   let value: JSONSafeValue = state;
   for (let depth = 0; ; depth++) {
     if (
       !isContainer(value) ||
-      getContainerSize(value) - countHiddenKeys(value, hiddenTypes) === 0
+      getContainerSize(value) - countHiddenKeys(value, hiddenTypes, searchMatcher) === 0
     ) {
       return depth;
     }

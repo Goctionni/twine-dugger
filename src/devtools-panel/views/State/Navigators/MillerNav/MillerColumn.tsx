@@ -9,6 +9,7 @@ import { pathEquals } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
 import { getPathLabels } from '../../logic/path-labels';
+import { getSearchMatcher } from '../../state-search';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import { createVirtualList } from '../Shared/create-virtual-list';
 import { NavRow } from '../Shared/NavRow';
@@ -43,6 +44,7 @@ export function MillerColumn(props: Props) {
         getHiddenTypes(),
         (key) => getLastChangeId([...getColumnPath(), key]),
         (key) => isPinned([...getColumnPath(), key]),
+        getSearchMatcher(),
       ),
     { equals: sameItems },
   );

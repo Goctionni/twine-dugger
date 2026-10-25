@@ -2,6 +2,7 @@ import { getContainerSize, isContainer } from '@/shared/json-safe';
 import type { JSONSafeValue } from '@/shared/shared-types';
 
 import { countHiddenKeys } from '../../logic/filter-keys';
+import { getSearchMatcher } from '../../state-search';
 import { getHiddenTypes } from '../../store-helpers/view-prefs';
 
 type ChildCounts = { shown: number; hidden: number };
@@ -15,6 +16,6 @@ export const sameChildCounts = (a: ChildCounts | undefined, b: ChildCounts | und
  */
 export function getChildCounts(value: JSONSafeValue): ChildCounts | undefined {
   if (!isContainer(value)) return undefined;
-  const hidden = countHiddenKeys(value, getHiddenTypes());
+  const hidden = countHiddenKeys(value, getHiddenTypes(), getSearchMatcher());
   return { shown: getContainerSize(value) - hidden, hidden };
 }

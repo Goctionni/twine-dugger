@@ -7,6 +7,8 @@ import { createElementWidth } from '@/devtools-panel/utils/create-element-width'
 import { getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
+import { NoMatches } from '../../NoMatches';
+import { getSearchMatcher } from '../../state-search';
 import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
@@ -28,7 +30,7 @@ export function MillerNav(props: NavProps) {
 
   const getWidth = createElementWidth(() => tree);
   const getColumnCount = createMemo(() =>
-    countColumns(getLatestState(), props.path, getHiddenTypes()),
+    countColumns(getLatestState(), props.path, getHiddenTypes(), getSearchMatcher()),
   );
 
   let tree: HTMLDivElement | undefined;
@@ -44,6 +46,7 @@ export function MillerNav(props: NavProps) {
       getHiddenTypes(),
       (key) => getLastChangeId([...containerPath, key]),
       (key) => isPinned([...containerPath, key]),
+      getSearchMatcher(),
     );
 
   provideNavigatorInfo({
@@ -100,8 +103,9 @@ export function MillerNav(props: NavProps) {
       onFocusIn={(event) => {
         if (event.target !== event.currentTarget) event.currentTarget.focus();
       }}
-      class="flex h-full overflow-x-auto outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
+      class="relative flex h-full overflow-x-auto outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
     >
+      <NoMatches isEmpty={getColumnCount() === 0} />
       <Repeat count={getColumnCount()}>
         {(depth) => (
           <Switch>
