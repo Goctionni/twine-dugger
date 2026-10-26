@@ -2,8 +2,6 @@ import type { JSX } from '@solidjs/web';
 import { type } from 'arktype';
 import type { Delta } from 'jsondiffpatch';
 
-import type { TYPE_KEY } from './json-safe';
-
 export type Primitive = string | number | boolean | null | undefined;
 
 export type Value =
@@ -18,10 +16,6 @@ export type JSONSafeValue = Primitive | JSONSafeValue[] | { [key: string]: JSONS
 export type JSONSafeArray = JSONSafeValue[];
 export type JSONSafeObject = { [key: string]: JSONSafeValue };
 export type JSONSafeContainer = JSONSafeArray | JSONSafeObject;
-export type JSONSafeDate = { [TYPE_KEY]: 'Date' } & Record<
-  'Y' | 'M' | 'D' | 'h' | 'm' | 's',
-  number
->;
 
 export type ObjectValue = { [key: string]: Value };
 

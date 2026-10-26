@@ -169,6 +169,24 @@ const scenarios: Record<string, Scenario> = {
       { kind: 'add', path: ['m', 'j'], value: 3 },
     ],
   },
+  'a Date that changes is one change of one value': {
+    before: {
+      when: `${TYPE_KEY}: Date 2020-01-02T03:04:05`,
+      list: [`${TYPE_KEY}: Date 2020-01-01T00:00:00`],
+    },
+    after: {
+      when: `${TYPE_KEY}: Date 2020-01-02T03:34:05`,
+      list: [`${TYPE_KEY}: Date 2020-01-01T00:00:00`],
+    },
+    changes: [
+      {
+        kind: 'chg',
+        path: ['when'],
+        oldValue: `${TYPE_KEY}: Date 2020-01-02T03:04:05`,
+        newValue: `${TYPE_KEY}: Date 2020-01-02T03:34:05`,
+      },
+    ],
+  },
   'the marker of a Map is not a change': {
     before: { m: { [TYPE_KEY]: 'Map', k: 1 } },
     after: { m: { [TYPE_KEY]: 'NumberMap', k: 1 } },

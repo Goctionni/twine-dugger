@@ -62,9 +62,10 @@ it('shows a value that has no editor as it is', () => {
 });
 
 it.each([{ compact: false }, { compact: true }])(
-  'shows a Date as what it is, without crashing ($compact)',
+  'has the editor of a Date, in the inspector and in a row ($compact)',
   (options) => {
     setup(['when'], options);
-    expect(screen.getByText('2020-01-02 03:04:05')).toBeTruthy();
+    expect((screen.getByRole('textbox') as HTMLInputElement).value).toBe('2020-01-02 03:04:05');
+    expect(screen.getByRole('button', { name: 'Lock' })).toBeTruthy();
   },
 );

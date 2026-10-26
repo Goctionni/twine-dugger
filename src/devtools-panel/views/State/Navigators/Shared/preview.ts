@@ -1,4 +1,4 @@
-import { getMarkedValueText } from '@/shared/json-safe';
+import { getDateText, getMarkedValueText, type DateMarker } from '@/shared/json-safe';
 import type { ValueType } from '@/shared/shared-types';
 
 /** What a row shows of a value that is not a container */
@@ -14,6 +14,8 @@ export function getPreview(value: unknown, type: ValueType): string {
     case 'infinity':
     case 'undefined':
       return getMarkedValueText(value) ?? type;
+    case 'date':
+      return getDateText(value as DateMarker);
     default:
       return type;
   }

@@ -11,7 +11,7 @@ The content script (`src/content-script/content-script.ts`) detects the active T
 - `getPassageData`, `goToPassage`, `setPassage` — read, open and update passages.
 
 - **Detection**: `format-helpers/[format].ts` uses `arktype` schemas to confirm the engine.
-- **Transforms**: `util/pre-transform.ts` converts engine state to JSON-safe values (Maps, Sets, Dates,
+- **Transforms**: `util/pre-transform.ts` converts engine state to JSON-safe values (Maps, Sets, Dates (one string, to the second),
   functions, NaN, the infinities and undefined are marked values) and `util/post-transform.ts`
   converts values from the panel back.
 - **Paths**: A `Path` is an array of segments (`string | number`) referring to nested values.

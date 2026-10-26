@@ -26,7 +26,7 @@ split between the diff log and the state is `ui/util/movable-split/`). The diff 
 - **Inspector** for what is selected. It sits beside the navigator, below it, or over it when the
   space is small (a size container named `frame`, see `inspector-sheet` and `inspector-overlay` in
   `style.css`).
-  - **A value** (text, number, true / false) has an editor, a lock (a number can be locked to a
+  - **A value** (text, number, true / false, a Date) has an editor (a Date is typed as `2020-01-02 03:04:05`, with a message when it is not a date; Up and Down change the part at the caret), a lock (a number can be locked to a
     range with a minimum and a maximum), pin and delete. A **History** tab lists its earlier
     values with Restore, and for numbers a timeline chart; an **Info** tab says what it is, where it
     is and when it last changed.

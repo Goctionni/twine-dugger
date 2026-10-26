@@ -1,6 +1,6 @@
 import { expect, it } from 'vite-plus/test';
 
-import { NAN_MARKER, POSITIVE_INFINITY_MARKER, SET_MARKER } from '@/shared/json-safe';
+import { NAN_MARKER, POSITIVE_INFINITY_MARKER, SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
 
 import { getLockingPath } from './edit-status';
 import { describeAge, describeLength, describeType, formatAsJson, getPosition } from './info';
@@ -24,6 +24,7 @@ it('writes a value as JSON, and cuts a long one', () => {
   expect(formatAsJson('a"b')).toBe('"a\\"b"');
   expect(formatAsJson(undefined)).toBe('undefined');
   expect(formatAsJson(NAN_MARKER)).toBe('NaN');
+  expect(formatAsJson(`${TYPE_KEY}: Date 2020-01-02T03:04:05`)).toBe('2020-01-02 03:04:05');
   expect(formatAsJson('x'.repeat(100))).toHaveLength(80);
   expect(formatAsJson('x'.repeat(100)).endsWith('…')).toBe(true);
 });

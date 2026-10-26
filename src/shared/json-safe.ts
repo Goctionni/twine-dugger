@@ -1,7 +1,6 @@
 import type {
   JSONSafeArray,
   JSONSafeContainer,
-  JSONSafeDate,
   JSONSafeObject,
   JSONSafeValue,
   Path,
@@ -35,13 +34,84 @@ export function getMarkedValueText(value: unknown): string | undefined {
   }
 }
 
-/** A Date marker as text, like `2020-01-02 03:04:05`: the time as the game's page has it */
-export function getDateText(date: JSONSafeDate): string {
-  const parts = [date.Y, date.M, date.D, date.h, date.m, date.s];
-  // A Date that is not a time has no numbers to write: they arrive as null
-  if (!parts.every((part) => Number.isFinite(part))) return 'Invalid Date';
-  const two = (part: number) => String(part).padStart(2, '0');
-  return `${String(date.Y).padStart(4, '0')}-${two(date.M)}-${two(date.D)} ${two(date.h)}:${two(date.m)}:${two(date.s)}`;
+/**
+ * A Date is sent as one string, so that it is one value to the differ, like the markers above:
+ * the time as the game page has it, to the second (`Date 2020-01-02T03:04:05`), or `Date Invalid`
+ */
+export const DATE_MARKER = `${TYPE_KEY}: Date` as const;
+export type DateMarker = `${typeof DATE_MARKER} ${string}`;
+
+export const isDateMarker = (value: unknown): value is DateMarker =>
+  typeof value === 'string' && value.startsWith(`${DATE_MARKER} `);
+
+const two = (part: number) => String(part).padStart(2, '0');
+
+function formatDateMarker(
+  Y: number,
+  M: number,
+  D: number,
+  h: number,
+  m: number,
+  s: number,
+): DateMarker {
+  if (![Y, M, D, h, m, s].every(Number.isFinite)) return `${DATE_MARKER} Invalid`;
+  return `${DATE_MARKER} ${String(Y).padStart(4, '0')}-${two(M)}-${two(D)}T${two(h)}:${two(m)}:${two(s)}`;
+}
+
+export const toDateMarker = (date: Date): DateMarker =>
+  formatDateMarker(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+  );
+
+const DATE_PATTERN = /^(\d{4,})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/;
+const getDateParts = (marker: DateMarker) =>
+  DATE_PATTERN.exec(marker.slice(DATE_MARKER.length + 1));
+
+/** The Date of a marker; an invalid one when the marker says so */
+export function fromDateMarker(marker: DateMarker): Date {
+  const parts = getDateParts(marker);
+  if (!parts) return new Date(Number.NaN);
+  const [Y, M, D, h, m, s] = parts.slice(1).map(Number) as [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+  ];
+  const date = new Date(Y, M - 1, D, h, m, s);
+  // A year before 100 is read as 19xx by the constructor
+  if (Y < 100) date.setFullYear(Y);
+  return date;
+}
+
+/** A Date marker as text, like `2020-01-02 03:04:05` */
+export function getDateText(marker: DateMarker): string {
+  const parts = getDateParts(marker);
+  return parts ? marker.slice(DATE_MARKER.length + 1).replace('T', ' ') : 'Invalid Date';
+}
+
+/**
+ * What a search looks at in a value: the text of a string, the digits of a number, true or false,
+ * and the time of a Date as it is shown. Nothing for the others (containers, null, the markers).
+ */
+export function getSearchableText(value: JSONSafeValue, type: ValueType): string | undefined {
+  switch (type) {
+    case 'string':
+      return value as string;
+    case 'number':
+    case 'boolean':
+      return String(value as number | boolean);
+    case 'date':
+      return getDateText(value as DateMarker);
+    default:
+      return undefined;
+  }
 }
 
 export const MARKED_VALUE_WRITE_ERROR = 'NaN, Infinity and undefined cannot be written from here';
@@ -74,7 +144,7 @@ export function getJsonType(value: unknown): ValueType {
       case UNDEFINED_MARKER:
         return 'undefined';
       default:
-        return 'string';
+        return isDateMarker(value) ? 'date' : 'string';
     }
   }
   if (t === 'number' || t === 'boolean' || t === 'undefined') return t as ValueType;
@@ -86,8 +156,6 @@ export function getJsonType(value: unknown): ValueType {
         return 'map';
       case 'function':
         return 'function';
-      case 'Date':
-        return 'date';
       default:
         return 'object';
     }

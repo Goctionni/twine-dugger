@@ -9,7 +9,7 @@ import { RenderValue } from './RenderValue';
 
 afterEach(cleanup);
 
-const date = { [TYPE_KEY]: 'Date', Y: 2020, M: 1, D: 2, h: 3, m: 4, s: 5 } as JSONSafeValue;
+const date = `${TYPE_KEY}: Date 2020-01-02T03:04:05` as JSONSafeValue;
 const fn = { [TYPE_KEY]: 'function', str: '() => 1' } as JSONSafeValue;
 
 it('shows a Date as the time it stands for', () => {
@@ -32,7 +32,7 @@ it('previews an object and an array that hold a Date and a function', () => {
 });
 
 it('says so when a Date is not a time', () => {
-  const invalid = { [TYPE_KEY]: 'Date', Y: null, M: null, D: null, h: null, m: null, s: null };
-  const { container } = render(() => <RenderValue value={invalid as never} />);
+  const invalid = `${TYPE_KEY}: Date Invalid` as JSONSafeValue;
+  const { container } = render(() => <RenderValue value={invalid} />);
   expect(container.textContent).toBe('Invalid Date');
 });

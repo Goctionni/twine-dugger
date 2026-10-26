@@ -1,7 +1,7 @@
 import { createMemo } from 'solid-js';
 
 import { getLatestState } from '@/devtools-panel/store/game-state';
-import { getJsonType, getPathValue } from '@/shared/json-safe';
+import { getJsonType, getPathValue, getSearchableText } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import type { Range } from '../../../GlobalSearch/types';
@@ -44,11 +44,10 @@ export function createNodeInfo(getPath: () => Path) {
     () => {
       const queryMatcher = getSearchMatcher();
       const type = getType();
-      if (!queryMatcher || !(type === 'string' || type === 'number' || type === 'boolean')) {
-        return NO_RANGES;
-      }
-      const ranges = queryMatcher.ranges(String(getValue() as string | number | boolean));
-      return type === 'string' ? toPreviewRanges(getValue() as string, ranges) : ranges;
+      const text = queryMatcher && getSearchableText(getValue(), type);
+      if (!queryMatcher || text === undefined) return NO_RANGES;
+      const ranges = queryMatcher.ranges(text);
+      return type === 'string' ? toPreviewRanges(text, ranges) : ranges;
     },
     { equals: sameRanges },
   );

@@ -1,7 +1,9 @@
 import {
   getContainerKeys,
   getJsonType,
+  getDateText,
   getMarkedValueText,
+  isDateMarker,
   isContainerType,
 } from '@/shared/json-safe';
 import type { JSONSafeContainer, JSONSafeValue, ValueType } from '@/shared/shared-types';
@@ -23,8 +25,11 @@ export function describeLength(text: string): string {
 }
 
 export function formatAsJson(value: JSONSafeValue, maxLength = 80): string {
-  // The markers of NaN, the infinities and undefined are shown as the values they stand for
-  const text = getMarkedValueText(value) ?? JSON.stringify(value) ?? 'undefined';
+  // The markers of NaN, the infinities, undefined and a Date are shown as the values they stand for
+  const text =
+    (isDateMarker(value) ? getDateText(value) : getMarkedValueText(value)) ??
+    JSON.stringify(value) ??
+    'undefined';
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
 }
 

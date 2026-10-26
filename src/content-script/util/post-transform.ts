@@ -1,4 +1,6 @@
 import {
+  fromDateMarker,
+  isDateMarker,
   isNumberLike,
   NAN_MARKER,
   NEGATIVE_INFINITY_MARKER,
@@ -7,13 +9,14 @@ import {
   TYPE_KEY,
   UNDEFINED_MARKER,
 } from '@/shared/json-safe';
-import type { JSONSafeDate, JSONSafeValue } from '@/shared/shared-types';
+import type { JSONSafeValue } from '@/shared/shared-types';
 
 export function posttransformValue(value: JSONSafeValue, { deep = false } = {}): unknown {
   if (value === NAN_MARKER) return Number.NaN;
   if (value === POSITIVE_INFINITY_MARKER) return Infinity;
   if (value === NEGATIVE_INFINITY_MARKER) return -Infinity;
   if (value === UNDEFINED_MARKER) return undefined;
+  if (isDateMarker(value)) return fromDateMarker(value);
   if (value === null || typeof value !== 'object') return value;
 
   const inside = (item: JSONSafeValue) => (deep ? posttransformValue(item, { deep }) : item);
@@ -31,10 +34,6 @@ export function posttransformValue(value: JSONSafeValue, { deep = false } = {}):
       return new Map(
         entries.map(([key, item]) => [isNumberLike(key) ? Number(key) : key, inside(item)]),
       );
-    case 'Date': {
-      const { Y, M, D, h, m, s } = value as JSONSafeDate;
-      return new Date(Y!, M! - 1, D, h, m, s);
-    }
     case 'function':
       throw new Error('A function can not be restored');
     default:

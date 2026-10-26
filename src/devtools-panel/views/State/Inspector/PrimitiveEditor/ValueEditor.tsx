@@ -6,6 +6,7 @@ import { getJsonType, getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { BooleanEditor } from './BooleanEditor';
+import { DateEditor } from './DateEditor';
 import { InvalidNumberEditor } from './InvalidNumberEditor';
 import { NumberEditor } from './NumberEditor';
 import { StringEditor } from './StringEditor';
@@ -39,6 +40,9 @@ export function ValueEditor(props: Props) {
       </Match>
       <Match when={getType() === 'number'}>
         <NumberEditor path={props.path} label={props.label} compact={props.compact} />
+      </Match>
+      <Match when={getType() === 'date'}>
+        <DateEditor path={props.path} label={props.label} compact={props.compact} />
       </Match>
       <Match when={!props.compact && (getType() === 'NaN' || getType() === 'infinity')}>
         <InvalidNumberEditor path={props.path} />

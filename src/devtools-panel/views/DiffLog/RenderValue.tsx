@@ -2,8 +2,14 @@ import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
 
 import { Tooltip } from '@/devtools-panel/ui/display/Tooltip';
-import { getDateText, getJsonType, getMarkedValueText, isContainerType } from '@/shared/json-safe';
-import type { JSONSafeDate, JSONSafeValue } from '@/shared/shared-types';
+import {
+  getDateText,
+  getJsonType,
+  getMarkedValueText,
+  isContainerType,
+  type DateMarker,
+} from '@/shared/json-safe';
+import type { JSONSafeValue } from '@/shared/shared-types';
 
 import { DiffPreview } from './DiffPreview';
 
@@ -25,6 +31,8 @@ export function RenderValue(props: Props) {
   const fadedCls = () => (props.faded ? 'opacity-60 saturate-50' : '');
   const renderType = () => {
     const t = typeof props.value;
+    // Before the strings: a Date is one
+    if (getJsonType(props.value) === 'date') return 'date';
     if (getMarkedValueText(props.value)) {
       return !props.disableInvalidHighlight && getJsonType(props.value) !== 'undefined'
         ? 'invalid-number'
@@ -32,7 +40,6 @@ export function RenderValue(props: Props) {
     }
     if (t === 'string' && !props.value) return 'empty';
     if (t === 'string' || t === 'boolean' || t === 'number') return t;
-    if (getJsonType(props.value) === 'date') return 'date';
     return 'type';
   };
   return (
@@ -55,7 +62,7 @@ export function RenderValue(props: Props) {
       </Match>
       <Match when={renderType() === 'date'}>
         <code class={clsx(colorClasses.typeOther, fadedCls())} title="Date">
-          {getDateText(props.value as JSONSafeDate)}
+          {getDateText(props.value as DateMarker)}
         </code>
       </Match>
       <Match when={renderType() === 'boolean'}>

@@ -1,6 +1,11 @@
 import { expect, it } from 'vite-plus/test';
 
-import { NAN_MARKER, NEGATIVE_INFINITY_MARKER, UNDEFINED_MARKER } from '@/shared/json-safe';
+import {
+  NAN_MARKER,
+  NEGATIVE_INFINITY_MARKER,
+  TYPE_KEY,
+  UNDEFINED_MARKER,
+} from '@/shared/json-safe';
 
 import { getPreview, toPreviewRanges } from './preview';
 
@@ -9,6 +14,11 @@ it('shows NaN, the infinities and undefined as what they stand for', () => {
   expect(getPreview(NEGATIVE_INFINITY_MARKER, 'infinity')).toBe('-Infinity');
   expect(getPreview(UNDEFINED_MARKER, 'undefined')).toBe('undefined');
   expect(getPreview('a', 'string')).toBe('"a"');
+});
+
+it('shows a Date as its time, and a Date that is not a time as invalid', () => {
+  expect(getPreview(`${TYPE_KEY}: Date 2020-01-02T03:04:05`, 'date')).toBe('2020-01-02 03:04:05');
+  expect(getPreview(`${TYPE_KEY}: Date Invalid`, 'date')).toBe('Invalid Date');
 });
 
 it('moves ranges in a string to where they are in the preview', () => {

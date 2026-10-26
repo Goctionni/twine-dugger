@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vite-plus/test';
 
 import {
+  fromDateMarker,
   getDateText,
   getJsonType,
   getMarkedValueText,
   hasNewMarkedValue,
+  isDateMarker,
   isNumberLike,
   jsonEqual,
+  toDateMarker,
   NAN_MARKER,
   NEGATIVE_INFINITY_MARKER,
   POSITIVE_INFINITY_MARKER,
@@ -92,16 +95,46 @@ describe('hasNewMarkedValue', () => {
   });
 });
 
-describe('getDateText', () => {
-  it('writes a Date as year-month-day and the time, with two digits where it needs them', () => {
-    const date = { [TYPE_KEY]: 'Date', Y: 2020, M: 1, D: 2, h: 3, m: 4, s: 5 } as const;
-    expect(getDateText(date)).toBe('2020-01-02 03:04:05');
-    expect(getDateText({ ...date, M: 12, D: 31, h: 23, m: 59, s: 59 })).toBe('2020-12-31 23:59:59');
-    expect(getDateText({ ...date, Y: 99 })).toBe('0099-01-02 03:04:05');
+describe('Date markers', () => {
+  const marker = `${TYPE_KEY}: Date 2020-01-02T03:04:05`;
+
+  it('writes a Date as one string, in the time of the game page, to the second', () => {
+    expect(toDateMarker(new Date(2020, 0, 2, 3, 4, 5, 678))).toBe(marker);
+    expect(toDateMarker(new Date(2020, 11, 31, 23, 59, 59))).toBe(
+      `${TYPE_KEY}: Date 2020-12-31T23:59:59`,
+    );
   });
 
-  it('says a Date that is not a time is invalid', () => {
-    const invalid = { [TYPE_KEY]: 'Date', Y: null, M: null, D: null, h: null, m: null, s: null };
-    expect(getDateText(invalid as never)).toBe('Invalid Date');
+  it('writes a Date that is not a time as invalid', () => {
+    expect(toDateMarker(new Date(Number.NaN))).toBe(`${TYPE_KEY}: Date Invalid`);
+  });
+
+  it('knows a Date marker from a string and from other markers', () => {
+    expect(isDateMarker(marker)).toBe(true);
+    expect(isDateMarker(`${TYPE_KEY}: Date Invalid`)).toBe(true);
+    expect(isDateMarker('2020-01-02T03:04:05')).toBe(false);
+    expect(isDateMarker(NAN_MARKER)).toBe(false);
+    expect(isDateMarker(SET_MARKER)).toBe(false);
+    expect(isDateMarker({ [TYPE_KEY]: 'Date' })).toBe(false);
+    expect(isDateMarker(5)).toBe(false);
+  });
+
+  it('is a date for getJsonType, and nothing else changes for strings', () => {
+    expect(getJsonType(marker)).toBe('date');
+    expect(getJsonType(`${TYPE_KEY}: Date Invalid`)).toBe('date');
+    expect(getJsonType('Date 2020')).toBe('string');
+  });
+
+  it('gives the Date back, also for a year before 100', () => {
+    expect(fromDateMarker(marker as never)).toEqual(new Date(2020, 0, 2, 3, 4, 5));
+    const early = new Date(2000, 5, 6, 7, 8, 9);
+    early.setFullYear(99);
+    expect(fromDateMarker(toDateMarker(early))).toEqual(early);
+    expect(Number.isNaN(fromDateMarker(`${TYPE_KEY}: Date Invalid` as never).getTime())).toBe(true);
+  });
+
+  it('writes a Date marker as year-month-day and the time', () => {
+    expect(getDateText(marker as never)).toBe('2020-01-02 03:04:05');
+    expect(getDateText(`${TYPE_KEY}: Date Invalid` as never)).toBe('Invalid Date');
   });
 });

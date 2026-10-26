@@ -15,6 +15,7 @@ import { posttransformValue } from './post-transform';
 
 const map = (entries: Record<string, unknown> = {}) =>
   ({ [TYPE_KEY]: 'Map', ...entries }) as unknown as JSONSafeValue;
+const dateMarker = `${TYPE_KEY}: Date 2020-01-02T03:04:05` as JSONSafeValue;
 const functionMarker = { [TYPE_KEY]: 'function', str: 'x' } as unknown as JSONSafeValue;
 
 describe('the value itself, with or without deep', () => {
@@ -26,12 +27,7 @@ describe('the value itself, with or without deep', () => {
         new Map([[1, 'one']]),
       );
       expect(posttransformValue([SET_MARKER, 1, 2], options)).toEqual(new Set([1, 2]));
-      expect(
-        posttransformValue(
-          { [TYPE_KEY]: 'Date', Y: 2020, M: 1, D: 2, h: 3, m: 4, s: 5 } as never,
-          options,
-        ),
-      ).toEqual(new Date(2020, 0, 2, 3, 4, 5));
+      expect(posttransformValue(dateMarker, options)).toEqual(new Date(2020, 0, 2, 3, 4, 5));
     },
   );
 
@@ -85,6 +81,11 @@ describe('without deep', () => {
     );
   });
 
+  it('leaves a Date inside the value as its marker', () => {
+    expect(posttransformValue(map({ when: dateMarker }))).toEqual(new Map([['when', dateMarker]]));
+    expect(posttransformValue([dateMarker] as never)).toEqual([dateMarker]);
+  });
+
   it('does not look at a function inside the value', () => {
     expect(posttransformValue(map({ fn: functionMarker }))).toEqual(
       new Map([['fn', functionMarker]]),
@@ -116,12 +117,11 @@ describe('with deep', () => {
   });
 
   it('restores a Map, Set or Date inside plain objects, arrays, Maps and Sets', () => {
-    const date = { [TYPE_KEY]: 'Date', Y: 2020, M: 1, D: 2, h: 3, m: 4, s: 5 };
     const restored = posttransformValue(
       {
         plain: { m: map({ k: 1 }) },
         list: [[SET_MARKER, 1]],
-        d: date,
+        d: dateMarker,
         outer: map({ in: map() }),
       } as never,
       { deep: true },
