@@ -9,15 +9,10 @@ import { InfoBubble } from '@/devtools-panel/ui/display/InfoBubble';
 interface Props<K extends keyof Settings> {
   label: string;
   description: string;
-  /** The setting that the control changes: while it is not the default, there is a button to restore it */
   setting?: K;
-  /** The default as the tooltip of that button says it. A number or true / false is written as it is */
   formatDefault?: (value: Settings[K]) => string;
-  /** Under the control, for a number */
   unit?: string;
-  /** A longer explanation, behind an "i" button next to the label */
   info?: { title: string; children: JSX.Element };
-  /** The control is under the text, for a control that is wide */
   stacked?: boolean;
   children: JSX.Element;
 }

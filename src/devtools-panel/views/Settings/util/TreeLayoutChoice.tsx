@@ -7,9 +7,7 @@ type TreeLayout = ReturnType<typeof getSettings.state.treeLayout>;
 
 interface PictogramRowProps {
   kind: 'container' | 'value';
-  /** How far the row is indented: 0, 1 or 2 levels */
   level: 0 | 1 | 2;
-  /** The width of the bar that stands for the name */
   width: number;
   isOpen?: boolean;
   isSelected?: boolean;
