@@ -1,6 +1,7 @@
 import type {
   JSONSafeArray,
   JSONSafeContainer,
+  JSONSafeDate,
   JSONSafeObject,
   JSONSafeValue,
   Path,
@@ -32,6 +33,15 @@ export function getMarkedValueText(value: unknown): string | undefined {
     default:
       return undefined;
   }
+}
+
+/** A Date marker as text, like `2020-01-02 03:04:05`: the time as the game's page has it */
+export function getDateText(date: JSONSafeDate): string {
+  const parts = [date.Y, date.M, date.D, date.h, date.m, date.s];
+  // A Date that is not a time has no numbers to write: they arrive as null
+  if (!parts.every((part) => Number.isFinite(part))) return 'Invalid Date';
+  const two = (part: number) => String(part).padStart(2, '0');
+  return `${String(date.Y).padStart(4, '0')}-${two(date.M)}-${two(date.D)} ${two(date.h)}:${two(date.m)}:${two(date.s)}`;
 }
 
 export const MARKED_VALUE_WRITE_ERROR = 'NaN, Infinity and undefined cannot be written from here';

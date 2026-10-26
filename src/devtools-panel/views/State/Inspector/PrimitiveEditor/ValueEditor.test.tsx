@@ -18,7 +18,14 @@ vi.mock('@/devtools-panel/api/api', () => ({
 afterEach(cleanup);
 
 function setup(path: Path, { compact = false } = {}) {
-  const game = createGame({ flag: true, name: 'Ada', gold: 3, odd: Number.NaN, nothing: null });
+  const game = createGame({
+    flag: true,
+    name: 'Ada',
+    gold: 3,
+    odd: Number.NaN,
+    nothing: null,
+    when: new Date(2020, 0, 2, 3, 4, 5),
+  });
   startGameState(game.state());
   applyUpdate(game.update());
   flush();
@@ -53,3 +60,11 @@ it('shows a value that has no editor as it is', () => {
   setup(['nothing']);
   expect(screen.getByText('null')).toBeTruthy();
 });
+
+it.each([{ compact: false }, { compact: true }])(
+  'shows a Date as what it is, without crashing ($compact)',
+  (options) => {
+    setup(['when'], options);
+    expect(screen.getByText('2020-01-02 03:04:05')).toBeTruthy();
+  },
+);

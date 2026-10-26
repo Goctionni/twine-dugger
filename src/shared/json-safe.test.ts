@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 
 import {
+  getDateText,
   getJsonType,
   getMarkedValueText,
   hasNewMarkedValue,
@@ -88,5 +89,19 @@ describe('hasNewMarkedValue', () => {
     expect(hasNewMarkedValue({ a: NAN_MARKER, b: 1 }, { a: NAN_MARKER, b: 2 })).toBe(false);
     expect(hasNewMarkedValue([NAN_MARKER], [NAN_MARKER, 3])).toBe(false);
     expect(hasNewMarkedValue(undefined, { a: 'NaN', b: null })).toBe(false);
+  });
+});
+
+describe('getDateText', () => {
+  it('writes a Date as year-month-day and the time, with two digits where it needs them', () => {
+    const date = { [TYPE_KEY]: 'Date', Y: 2020, M: 1, D: 2, h: 3, m: 4, s: 5 } as const;
+    expect(getDateText(date)).toBe('2020-01-02 03:04:05');
+    expect(getDateText({ ...date, M: 12, D: 31, h: 23, m: 59, s: 59 })).toBe('2020-12-31 23:59:59');
+    expect(getDateText({ ...date, Y: 99 })).toBe('0099-01-02 03:04:05');
+  });
+
+  it('says a Date that is not a time is invalid', () => {
+    const invalid = { [TYPE_KEY]: 'Date', Y: null, M: null, D: null, h: null, m: null, s: null };
+    expect(getDateText(invalid as never)).toBe('Invalid Date');
   });
 });
