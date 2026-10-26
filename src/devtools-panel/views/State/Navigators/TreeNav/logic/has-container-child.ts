@@ -2,8 +2,7 @@ import { getContainerKeys, getJsonType, isContainer, isContainerType } from '@/s
 import type { JSONSafeObject, JSONSafeValue, ValueType } from '@/shared/shared-types';
 
 import type { QueryMatcher } from '../../../../GlobalSearch/types';
-import { toFilterType } from '../../../logic/sort-keys';
-import { matchesSearch } from '../../../state-search';
+import { isKeyShown } from '../../../logic/filter-keys';
 
 /**
  * Whether a container holds a container that the filter of types, the search and the filtered
@@ -22,9 +21,7 @@ export function hasContainerChild(
     const child = (container as JSONSafeObject)[key];
     return (
       isContainer(child) &&
-      !hiddenTypes.includes(toFilterType(getJsonType(child))) &&
-      (!searchMatcher || matchesSearch(searchMatcher, container, key)) &&
-      !isPathHidden?.(key)
+      isKeyShown(container, key, () => getJsonType(child), hiddenTypes, searchMatcher, isPathHidden)
     );
   });
 }

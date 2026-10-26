@@ -8,7 +8,7 @@ import type { Path } from '@/shared/shared-types';
 import { createEditStatus } from '../Inspector/createEditStatus';
 import { getLockStatus, isInsideSet } from '../Inspector/logic/edit-status';
 import { deleteValue } from '../Inspector/ValueHeader/deleteValue';
-import { getPathLabels } from '../logic/path-labels';
+import { getNodeName } from '../logic/get-node-name';
 import { duplicateValue } from './duplicate-value';
 
 /** The right-click menu of the value at a path: lock, pin, filter, duplicate and delete */
@@ -50,7 +50,7 @@ export function createPathMenu(getPath: () => Path) {
               disabled: !canDelete(),
               onClick: () => {
                 const path = getPath();
-                void deleteValue(path, getPathLabels(getLatestState(), path).at(-1) ?? 'State');
+                void deleteValue(path, getNodeName(getLatestState(), path));
               },
             },
           ],

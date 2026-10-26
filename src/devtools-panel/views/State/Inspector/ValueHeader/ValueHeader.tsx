@@ -9,7 +9,7 @@ import { LockButton } from '@/devtools-panel/ui/inputs/LockButton';
 import { getJsonType, getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
-import { getPathLabels } from '../../logic/path-labels';
+import { getNodeName } from '../../logic/get-node-name';
 import { createPathMenu } from '../../PathMenu/create-path-menu';
 import { createEditStatus } from '../createEditStatus';
 import { DeleteButton } from './DeleteButton';
@@ -28,7 +28,7 @@ interface Props {
 export function ValueHeader(props: Props) {
   const getValue = () => getPathValue(getLatestState(), props.path);
   const getType = createMemo(() => getJsonType(getValue()));
-  const getTitle = () => getPathLabels(getLatestState(), props.path).at(-1) ?? 'State';
+  const getTitle = () => getNodeName(getLatestState(), props.path);
   const isRoot = () => props.path.length === 0;
 
   const { canDelete, hasLockedInside, getStatus, canToggleLock, toggleLock } = createEditStatus(

@@ -1,16 +1,12 @@
-import { Match, Show, Switch, createMemo } from 'solid-js';
+import { Show } from 'solid-js';
 
 import { getLatestState } from '@/devtools-panel/store/game-state';
-import { RenderValue } from '@/devtools-panel/views/DiffLog/RenderValue';
-import { getJsonType, getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
-import { getPathLabels } from '../../logic/path-labels';
+import { getNodeName } from '../../logic/get-node-name';
 import { isRecentlyChanged } from '../../Navigators/Shared/recently-changed';
 import { createEditStatus } from '../createEditStatus';
-import { BooleanEditor } from '../PrimitiveEditor/BooleanEditor';
-import { NumberEditor } from '../PrimitiveEditor/NumberEditor';
-import { StringEditor } from '../PrimitiveEditor/StringEditor';
+import { ValueEditor } from '../PrimitiveEditor/ValueEditor';
 import { DeleteButton } from '../ValueHeader/DeleteButton';
 import { deleteValue } from '../ValueHeader/deleteValue';
 import { rowColumnsClass } from './row-layout';
@@ -27,9 +23,7 @@ interface Props {
 
 /** A primitive property of the container: its name, an editor for its value, and delete */
 export function PropertyRow(props: Props) {
-  const getValue = () => getPathValue(getLatestState(), props.path);
-  const getType = createMemo(() => getJsonType(getValue()));
-  const getName = () => getPathLabels(getLatestState(), props.path).at(-1) ?? '';
+  const getName = () => getNodeName(getLatestState(), props.path);
   const { canChange } = createEditStatus(() => props.path);
   return (
     <li
@@ -64,22 +58,7 @@ export function PropertyRow(props: Props) {
         </Show>
       </label>
       <div class="min-w-0">
-        <Switch>
-          <Match when={getType() === 'boolean'}>
-            <BooleanEditor path={props.path} label={getName()} />
-          </Match>
-          <Match when={getType() === 'number'}>
-            <NumberEditor path={props.path} label={getName()} compact />
-          </Match>
-          <Match when={getType() === 'string'}>
-            <StringEditor path={props.path} label={getName()} compact />
-          </Match>
-          <Match when={!['boolean', 'number', 'string'].includes(getType())}>
-            <div class="flex min-h-7.5 min-w-0 items-center text-sm">
-              <RenderValue value={getValue()} disableInvalidHighlight />
-            </div>
-          </Match>
-        </Switch>
+        <ValueEditor path={props.path} label={getName()} compact />
       </div>
       <div class="pl-1">
         <DeleteButton

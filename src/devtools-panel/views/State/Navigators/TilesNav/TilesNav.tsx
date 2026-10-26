@@ -1,26 +1,24 @@
 import { For, createMemo, createSignal } from 'solid-js';
 
-import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
+import { getLatestState } from '@/devtools-panel/store/game-state';
 import { requestScrollTo } from '@/devtools-panel/store/state-location';
-import { isPinned } from '@/devtools-panel/store/store';
 import { createElementWidth } from '@/devtools-panel/utils/create-element-width';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import { sameItems } from '@/devtools-panel/utils/same-items';
-import { getContainerKeyLabel, getPathValue, isContainer, isSet } from '@/shared/json-safe';
+import { getPathValue, isContainer } from '@/shared/json-safe';
 import { pathStartsWith } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
+import { getNodeName } from '../../logic/get-node-name';
 import { NoMatches } from '../../NoMatches';
-import { getSearchMatcher } from '../../state-search';
-import { getHiddenKeyCheck, getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { createScrollToSelection } from '../Shared/create-scroll-to-selection';
 import { createVirtualList } from '../Shared/create-virtual-list';
 import { getTypesIn } from '../Shared/get-types-in';
+import { getVisibleKeysAt } from '../Shared/get-visible-keys-at';
 import { isTypeAheadKey, provideTypeAhead } from '../Shared/TypeAhead/provide-type-ahead';
 import { VirtualItems } from '../Shared/VirtualItems';
-import { getVisibleKeys } from '../Shared/visible-keys';
 import { Tile } from './Tile';
 import { resolveTilesContainerPath } from './tiles-container-path';
 import {
@@ -67,14 +65,9 @@ export function TilesNav(props: NavProps) {
   // The tiles in the order that they are shown
   const getTileKeys = createMemo<TileKey[]>(
     () => {
-      const keys = getVisibleKeys(
+      const keys = getVisibleKeysAt(
         getPathValue(getLatestState(), getTilesContainerPath()),
-        getSort(),
-        getHiddenTypes(),
-        (key) => getLastChangeId([...getTilesContainerPath(), key]),
-        (key) => isPinned([...getTilesContainerPath(), key]),
-        getSearchMatcher(),
-        getHiddenKeyCheck(getTilesContainerPath()),
+        getTilesContainerPath(),
       );
       return hasUpTile() ? [UP, ...keys] : keys;
     },
@@ -155,15 +148,11 @@ export function TilesNav(props: NavProps) {
   };
 
   const handleTypeAheadKey = provideTypeAhead({
-    getNames: () => {
-      const tilesContainer = getPathValue(getLatestState(), getTilesContainerPath());
-      if (!isContainer(tilesContainer)) return [];
-      const isSetContainer = isSet(tilesContainer);
-      return getTileKeys().map((key) => {
-        if (key === UP) return '';
-        return isSetContainer ? getContainerKeyLabel(tilesContainer, key) : String(key);
-      });
-    },
+    // The tile that goes up has no name to type
+    getNames: () =>
+      getTileKeys().map((key) =>
+        key === UP ? '' : getNodeName(getLatestState(), [...getTilesContainerPath(), key]),
+      ),
     getSelectedIndex,
     selectIndex: selectTile,
   });

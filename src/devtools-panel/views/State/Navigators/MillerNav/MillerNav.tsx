@@ -1,21 +1,21 @@
 import { Match, Repeat, Switch, createMemo } from 'solid-js';
 
-import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
+import { getLatestState } from '@/devtools-panel/store/game-state';
 import { getStatePath, requestScrollTo } from '@/devtools-panel/store/state-location';
-import { isHiddenInState, isPinned } from '@/devtools-panel/store/store';
+import { isHiddenInState } from '@/devtools-panel/store/store';
 import { createElementWidth } from '@/devtools-panel/utils/create-element-width';
 import { getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
+import { getNodeName } from '../../logic/get-node-name';
 import { NoMatches } from '../../NoMatches';
 import { getSearchMatcher } from '../../state-search';
-import { getHiddenKeyCheck, getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
+import { getHiddenTypes } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { isArrowKey } from '../Shared/arrow-keys';
-import { getNodeName } from '../Shared/get-node-name';
+import { getVisibleKeysAt } from '../Shared/get-visible-keys-at';
 import { isTypeAheadKey, provideTypeAhead } from '../Shared/TypeAhead/provide-type-ahead';
-import { getVisibleKeys } from '../Shared/visible-keys';
 import { countCollapsed } from './logic/count-collapsed';
 import { countColumns } from './logic/count-columns';
 import { getKeyTarget } from './logic/key-target';
@@ -46,15 +46,7 @@ export function MillerNav(props: NavProps) {
   const getTrail = createMemo<Path>((trail) => nextTrail(trail ?? [], props.path.slice()));
 
   const getKeysAt = (containerPath: Path) =>
-    getVisibleKeys(
-      getPathValue(getLatestState(), containerPath),
-      getSort(),
-      getHiddenTypes(),
-      (key) => getLastChangeId([...containerPath, key]),
-      (key) => isPinned([...containerPath, key]),
-      getSearchMatcher(),
-      getHiddenKeyCheck(containerPath),
-    );
+    getVisibleKeysAt(getPathValue(getLatestState(), containerPath), containerPath);
 
   provideNavigatorInfo({
     getBreadcrumbsPath: getStatePath,

@@ -5,9 +5,9 @@ import { getJsonType, getPathValue } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import type { Range } from '../../../GlobalSearch/types';
+import { getNodeName } from '../../logic/get-node-name';
 import { getSearchMatcher } from '../../state-search';
 import { getChildCounts, sameChildCounts } from './get-child-counts';
-import { getNodeName } from './get-node-name';
 import { toPreviewRanges } from './preview';
 
 const NO_RANGES: Range[] = [];

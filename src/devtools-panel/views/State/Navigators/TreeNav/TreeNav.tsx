@@ -1,26 +1,23 @@
 import { Match, Show, Switch, createMemo } from 'solid-js';
 
-import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
+import { getLatestState } from '@/devtools-panel/store/game-state';
 import { getStatePath, requestScrollTo } from '@/devtools-panel/store/state-location';
-import { isPinned } from '@/devtools-panel/store/store';
 import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getPathValue } from '@/shared/json-safe';
 import { pathEquals, pathKey } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
+import { getNodeName } from '../../logic/get-node-name';
 import { NoMatches } from '../../NoMatches';
-import { getSearchMatcher } from '../../state-search';
-import { getHiddenKeyCheck, getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import type { NavProps } from '../../types';
 import { provideNavigatorInfo } from '../navigator-info';
 import { isArrowKey } from '../Shared/arrow-keys';
 import { createScrollToSelection } from '../Shared/create-scroll-to-selection';
 import { createVirtualList } from '../Shared/create-virtual-list';
-import { getNodeName } from '../Shared/get-node-name';
+import { getVisibleKeysAt } from '../Shared/get-visible-keys-at';
 import { isTypeAheadKey, provideTypeAhead } from '../Shared/TypeAhead/provide-type-ahead';
 import { VirtualItems } from '../Shared/VirtualItems';
-import { getVisibleKeys } from '../Shared/visible-keys';
 import { createContainerMemos } from './create-container-memos';
 import { createShownTypes } from './create-shown-types';
 import { createTreeExpansion } from './create-tree-expansion';
@@ -38,15 +35,7 @@ export function TreeNav(props: NavProps) {
 
   const getKeysAt = createContainerMemos(
     (containerPath) =>
-      getVisibleKeys(
-        getPathValue(getLatestState(), containerPath),
-        getSort(),
-        getHiddenTypes(),
-        (key) => getLastChangeId([...containerPath, key]),
-        (key) => isPinned([...containerPath, key]),
-        getSearchMatcher(),
-        getHiddenKeyCheck(containerPath),
-      ),
+      getVisibleKeysAt(getPathValue(getLatestState(), containerPath), containerPath),
     sameItems,
   );
   const list = createValueList(getSelectedPath, getKeysAt);

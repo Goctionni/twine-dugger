@@ -5,14 +5,13 @@ import { getContainerKeys, getJsonType, isContainerType } from '@/shared/json-sa
 import type { JSONSafeObject, JSONSafeValue, ValueType } from '@/shared/shared-types';
 
 import type { QueryMatcher } from '../../../GlobalSearch/types';
-import { filterKeysByType } from '../../logic/filter-keys';
+import { isKeyShown } from '../../logic/filter-keys';
 import {
   getKeysByName,
   pinnedFirst,
   sortKeysByChanged,
   sortKeysByType,
 } from '../../logic/sort-keys';
-import { matchesSearch } from '../../state-search';
 import type { Sort } from '../../types';
 
 /**
@@ -36,15 +35,20 @@ export function getVisibleKeys(
   const getTypeOf = (key: string | number) =>
     getJsonType(untrack(() => (container as JSONSafeObject)[key]));
 
-  const keysOfType = filterKeysByType(
-    sort.by === 'name' ? getKeysByName(container) : getContainerKeys(container, type),
-    getTypeOf,
-    hiddenTypes,
-  );
-  const keysOfSearch = searchMatcher
-    ? keysOfType.filter((key) => matchesSearch(searchMatcher, container, key))
-    : keysOfType;
-  const keys = isPathHidden ? keysOfSearch.filter((key) => !isPathHidden(key)) : keysOfSearch;
+  const allKeys = sort.by === 'name' ? getKeysByName(container) : getContainerKeys(container, type);
+  const keys =
+    hiddenTypes.length || searchMatcher || isPathHidden
+      ? allKeys.filter((key) =>
+          isKeyShown(
+            container,
+            key,
+            () => getTypeOf(key),
+            hiddenTypes,
+            searchMatcher,
+            isPathHidden,
+          ),
+        )
+      : allKeys;
   // The position is the name of an item of an array or a set, so they keep it
   if (type === 'array' || type === 'set') return keys;
   let sorted = keys;

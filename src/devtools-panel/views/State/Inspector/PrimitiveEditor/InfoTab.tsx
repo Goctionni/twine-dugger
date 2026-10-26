@@ -5,7 +5,7 @@ import { getLockedPaths, getLockRange } from '@/devtools-panel/store/locks';
 import { getJsonType, getPathValue, isContainer } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
-import { getPathLabels } from '../../logic/path-labels';
+import { getNodeName } from '../../logic/get-node-name';
 import { createValueHistory } from '../createValueHistory';
 import { getLockingPath } from '../logic/edit-status';
 import {
@@ -28,7 +28,7 @@ export function InfoTab(props: Props) {
   const getType = createMemo(() => getJsonType(getValue()));
 
   const getParentPath = () => props.path.slice(0, -1);
-  const getParentName = () => getPathLabels(getLatestState(), getParentPath()).at(-1) ?? 'State';
+  const getParentName = () => getNodeName(getLatestState(), getParentPath());
   const getPlace = () => {
     const parent = getPathValue(getLatestState(), getParentPath());
     return isContainer(parent) ? getPosition(parent, props.path.at(-1)!) : undefined;
@@ -41,7 +41,7 @@ export function InfoTab(props: Props) {
       const range = getLockRange(props.path);
       return range && range.min !== range.max ? `yes · ${range.min} – ${range.max}` : 'yes';
     }
-    return `via ${getPathLabels(getLatestState(), lockingPath).at(-1)}`;
+    return `via ${getNodeName(getLatestState(), lockingPath)}`;
   };
 
   return (

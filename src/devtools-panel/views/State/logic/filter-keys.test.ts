@@ -1,9 +1,9 @@
-import { expect, it } from 'vite-plus/test';
+import { expect, it, vi } from 'vite-plus/test';
 
 import type { ValueType } from '@/shared/shared-types';
 
 import { createQueryMatcher } from '../../GlobalSearch/logic/query-matcher';
-import { countHiddenKeys, filterKeysByType } from './filter-keys';
+import { countHiddenKeys, filterKeysByType, isKeyShown } from './filter-keys';
 import { sortKeysByChanged, toFilterType } from './sort-keys';
 
 it('files the types that have no type of their own under other', () => {
@@ -51,4 +51,34 @@ it('counts the keys that the filtered paths hide too', () => {
   const container = { a: 'x', b: 1, c: 2 };
   expect(countHiddenKeys(container, [], undefined, (key) => key === 'a')).toBe(1);
   expect(countHiddenKeys(container, ['number'], undefined, (key) => key === 'a')).toBe(3);
+});
+
+it('says a key is shown only when the types, the search and the filtered paths all leave it', () => {
+  const result = createQueryMatcher('go', { caseSensitive: false, wholeWord: false, regex: false });
+  if (!result.ok) throw new Error(result.error);
+  const { queryMatcher } = result;
+  const container = { gold: 1, silver: 2 };
+
+  expect(isKeyShown(container, 'gold', () => 'number', [])).toBe(true);
+  expect(isKeyShown(container, 'gold', () => 'number', ['number'])).toBe(false);
+  expect(isKeyShown(container, 'gold', () => 'number', [], queryMatcher)).toBe(true);
+  expect(isKeyShown(container, 'silver', () => 'number', [], queryMatcher)).toBe(false);
+  expect(
+    isKeyShown(
+      container,
+      'gold',
+      () => 'number',
+      [],
+      queryMatcher,
+      () => true,
+    ),
+  ).toBe(false);
+});
+
+it('does not ask for the type of a key when no type is hidden', () => {
+  const getType = vi.fn(() => 'number' as ValueType);
+
+  isKeyShown({ a: 1 }, 'a', getType, []);
+
+  expect(getType).not.toHaveBeenCalled();
 });

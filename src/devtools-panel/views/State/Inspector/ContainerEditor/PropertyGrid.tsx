@@ -1,15 +1,13 @@
 import { Show, createMemo, createSignal } from 'solid-js';
 
-import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
-import { isPinned } from '@/devtools-panel/store/store';
+import { getLatestState } from '@/devtools-panel/store/game-state';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getPathValue, isContainer } from '@/shared/json-safe';
 import type { JSONSafeObject, Path } from '@/shared/shared-types';
 
 import { createVirtualList } from '../../Navigators/Shared/create-virtual-list';
+import { getVisibleKeysAt } from '../../Navigators/Shared/get-visible-keys-at';
 import { VirtualItems } from '../../Navigators/Shared/VirtualItems';
-import { getVisibleKeys } from '../../Navigators/Shared/visible-keys';
-import { getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
 import {
   countUnsavedChildren,
   discardChildDrafts,
@@ -38,14 +36,7 @@ export function PropertyGrid(props: Props) {
   const getContainer = createMemo(() => getPathValue(getLatestState(), props.path));
 
   const getKeys = createMemo(
-    () =>
-      getVisibleKeys(
-        getContainer(),
-        getSort(),
-        getHiddenTypes(),
-        (key) => getLastChangeId([...props.path, key]),
-        (key) => isPinned([...props.path, key]),
-      ),
+    () => getVisibleKeysAt(getContainer(), props.path, { isSearched: false }),
     { equals: sameItems },
   );
 

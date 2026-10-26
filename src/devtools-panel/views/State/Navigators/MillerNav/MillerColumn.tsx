@@ -1,20 +1,17 @@
 import { Show, createEffect, createMemo } from 'solid-js';
 
-import { getLastChangeId, getLatestState } from '@/devtools-panel/store/game-state';
+import { getLatestState } from '@/devtools-panel/store/game-state';
 import { getScrollToTrigger } from '@/devtools-panel/store/state-location';
-import { isPinned } from '@/devtools-panel/store/store';
 import { sameItems } from '@/devtools-panel/utils/same-items';
 import { getContainerSize, getPathValue, isContainer } from '@/shared/json-safe';
 import { pathEquals } from '@/shared/path-equals';
 import type { Path } from '@/shared/shared-types';
 
-import { getPathLabels } from '../../logic/path-labels';
-import { getSearchMatcher } from '../../state-search';
-import { getHiddenKeyCheck, getHiddenTypes, getSort } from '../../store-helpers/view-prefs';
+import { getNodeName } from '../../logic/get-node-name';
 import { createVirtualList } from '../Shared/create-virtual-list';
+import { getVisibleKeysAt } from '../Shared/get-visible-keys-at';
 import { NavRow } from '../Shared/NavRow';
 import { VirtualItems } from '../Shared/VirtualItems';
-import { getVisibleKeys } from '../Shared/visible-keys';
 import { getRowId } from './logic/row-id';
 
 interface Props {
@@ -36,19 +33,9 @@ export function MillerColumn(props: Props) {
   const isSelectionHere = () => props.depth === props.path.length - 1;
   const getTrailKey = createMemo(() => props.trail[props.depth]);
 
-  const getKeys = createMemo(
-    () =>
-      getVisibleKeys(
-        getContainer(),
-        getSort(),
-        getHiddenTypes(),
-        (key) => getLastChangeId([...getColumnPath(), key]),
-        (key) => isPinned([...getColumnPath(), key]),
-        getSearchMatcher(),
-        getHiddenKeyCheck(getColumnPath()),
-      ),
-    { equals: sameItems },
-  );
+  const getKeys = createMemo(() => getVisibleKeysAt(getContainer(), getColumnPath()), {
+    equals: sameItems,
+  });
 
   // The row of the selection, or of the way to it: it stays in the DOM, and is scrolled to
   const getSelectedIndex = createMemo(() => {
@@ -64,7 +51,7 @@ export function MillerColumn(props: Props) {
   // Also when the column is made: coming back to the page shows what was selected
   createEffect(getScrollToTrigger, () => rowList.scrollToSelection());
 
-  const getTitle = () => getPathLabels(getLatestState(), getColumnPath()).at(-1) ?? 'State';
+  const getTitle = () => getNodeName(getLatestState(), getColumnPath());
 
   const getHiddenCount = () => {
     const container = getContainer();

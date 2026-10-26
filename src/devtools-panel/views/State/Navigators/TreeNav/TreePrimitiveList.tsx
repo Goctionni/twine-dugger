@@ -12,7 +12,7 @@ import {
 import { pathEquals, pathKey } from '@/shared/path-equals';
 import type { JSONSafeObject, Path } from '@/shared/shared-types';
 
-import { getPathLabels } from '../../logic/path-labels';
+import { getNodeName } from '../../logic/get-node-name';
 import type { createVirtualList } from '../Shared/create-virtual-list';
 import { NavRow } from '../Shared/NavRow';
 import { VirtualItems } from '../Shared/VirtualItems';
@@ -34,7 +34,7 @@ interface Props {
 /** The values of a container that is not a container themselves: for the layout with the containers in the tree */
 export function TreePrimitiveList(props: Props) {
   const getContainerPath = createStablePath(() => props.containerPath);
-  const getTitle = () => getPathLabels(getLatestState(), getContainerPath()).at(-1) ?? 'State';
+  const getTitle = () => getNodeName(getLatestState(), getContainerPath());
   // Only the values count: the containers that the filter hides are in the tree, not in the list
   const getHiddenCount = createMemo(() => {
     const container = getPathValue(getLatestState(), getContainerPath());

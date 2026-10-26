@@ -42,7 +42,7 @@ afterEach(async () => {
   flush();
 });
 
-function setup(path: Path) {
+async function setup(path: Path, { locked }: { locked?: Path } = {}) {
   const game = createGame({
     flag: true,
     list: [5, 6],
@@ -52,6 +52,7 @@ function setup(path: Path) {
   startGameState(game.state());
   applyUpdate(game.update());
   flush();
+  if (locked) await setPathLock(locked, true);
 
   render(() => (
     <div data-testid="target" onContextMenu={createPathMenu(() => path)}>
@@ -89,9 +90,8 @@ it('filters the path out of the diff log, once', async () => {
   expect(getFilteredPaths()).toEqual([['outer', 'inner']]);
 });
 
-it('offers Unlock for a locked value, and holds what is inside a locked container', async () => {
-  await setPathLock(['outer'], true);
-  await setup(['outer', 'inner']);
+it('holds what is inside a locked container', async () => {
+  await setup(['outer', 'inner'], { locked: ['outer'] });
   expect(item('Lock').disabled).toBe(true);
   expect(item('Duplicate').disabled).toBe(true);
   expect(item('Delete').disabled).toBe(true);
@@ -135,4 +135,9 @@ it('has no menu for the state itself', () => {
   const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
   screen.getByTestId('target').dispatchEvent(event);
   expect(screen.queryByText('Duplicate')).toBeNull();
+});
+
+it('offers Unlock for a value that is locked', async () => {
+  await setup(['flag'], { locked: ['flag'] });
+  expect(item('Unlock').disabled).toBe(false);
 });
