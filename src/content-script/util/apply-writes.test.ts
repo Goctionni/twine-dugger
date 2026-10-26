@@ -64,15 +64,18 @@ it('restores a Map, Set or Date at the top of a value, and inside only with deep
 
 it('reports a function that cannot be restored, without stopping', () => {
   const state: Record<string, any> = {};
+  const functionMarker = { [TYPE_KEY]: 'function', str: 'x' };
   const results = applyWrites(
     [
-      { path: ['f'], value: { [TYPE_KEY]: 'Map', fn: { [TYPE_KEY]: 'function', str: 'x' } } },
+      { path: ['f'], value: functionMarker },
+      { path: ['g'], value: { fn: functionMarker }, deep: true },
       { path: ['ok'], value: 1 },
     ],
     targetOf(state),
   );
 
   expect(results[0]).toEqual({ ok: false, error: 'A function can not be restored' });
-  expect(results[1]).toEqual({ ok: true });
+  expect(results[1]).toEqual({ ok: false, error: 'A function can not be restored' });
+  expect(results[2]).toEqual({ ok: true });
   expect(state).toEqual({ ok: 1 });
 });

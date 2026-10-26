@@ -1,6 +1,6 @@
 import type { Path, Write, WriteResult } from '@/shared/shared-types';
 
-import { restoreMarkedJsonValue } from './post-transform';
+import { posttransformValue } from './post-transform';
 
 interface Target {
   setState: (path: Path, value: unknown) => void;
@@ -18,7 +18,7 @@ export function applyWrites(writes: Write[], target: Target): WriteResult[] {
       if ('delete' in write) {
         target.deleteFromState(write.path);
       } else {
-        target.setState(write.path, restoreMarkedJsonValue(write.value, { deep: write.deep }));
+        target.setState(write.path, posttransformValue(write.value, { deep: write.deep }));
       }
       return { ok: true };
     } catch (error) {

@@ -63,7 +63,7 @@ export function createLockEnforcer(
         if (!lastBlocked.has(id) || !jsonEqual(attempted, lastBlocked.get(id)))
           reverts.push({ path, attempted });
         lastBlocked.set(id, attempted);
-        setState(path, posttransformValue(allowed));
+        setState(path, posttransformValue(allowed, { deep: true }));
       }
 
       return reverts;
