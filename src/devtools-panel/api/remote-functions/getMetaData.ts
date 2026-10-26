@@ -2,6 +2,7 @@ import type {
   CandidateGameIframes,
   ChapbookGlobals,
   GameMetaData,
+  BlockedApiGame,
   SnowmanGlobals,
   SugarCubeGlobals,
   VersionInfo,
@@ -27,7 +28,7 @@ interface SchemaObject {
   [key: string]: NanoSchema;
 }
 
-export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
+export function getGameMetaFn(): GameMetaData | CandidateGameIframes | BlockedApiGame | null {
   // Since remote-execute can only run fully self-contained functions...
   // `isType` is basically a budget replica of arktype.
   const isType = <T>(value: unknown, schema: NanoSchema): value is T => {
@@ -174,6 +175,13 @@ export function getGameMetaFn(): GameMetaData | CandidateGameIframes | null {
   if (isHarlowe()) return getHarloweMeta();
   if (isChapbook(window)) return getChapbookMeta();
   if (isSnowman(window)) return getSnowmanMeta();
+
+  // A page of SugarCube that has blocked access to the API: the script and the page of the engine
+  // are there, and `SugarCube` is not
+  const hasSugarCubePage =
+    !!document.getElementById('script-sugarcube') ||
+    (!!document.getElementById('ui-bar') && !!document.getElementById('passages'));
+  if (hasSugarCubePage) return { __type: 'blocked-api', format: 'SugarCube' };
 
   // If neither is detected, look for a large-ish iframes
   const iframes = Array.from(document.querySelectorAll('iframe[src]'));

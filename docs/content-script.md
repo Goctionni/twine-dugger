@@ -21,3 +21,7 @@ The content script (`src/content-script/content-script.ts`) detects the active T
 
 1. Create a new helper in `format-helpers/<format>.ts` that implements `FormatHelpers` (`type.ts`).
 2. Add the helper to the `formatHelpers` array in `content-script.ts`.
+
+## A SugarCube game that has blocked access to its API
+
+Some games take `window.SugarCube` out of the page. `getGameMetaFn` then finds the page of SugarCube (the script `script-sugarcube`, or `#ui-bar` and `#passages`) but not the engine, and the panel says "This game has blocked access to the SugarCube API" (`app/ApiBlocked.tsx`). TwineDugger does not try to get around it.

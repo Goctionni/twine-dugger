@@ -92,6 +92,7 @@ export interface OrderConfig {
 }
 export type Page = 'state' | 'search' | 'passages' | 'settings';
 export type ConnectionState =
+  | 'api-blocked'
   | 'candidate-iframes'
   | 'killed'
   | 'loading-meta'
@@ -105,6 +106,12 @@ export type ConnectionState =
 export interface CandidateGameIframes {
   __type: 'candidate-game-iframes';
   urls: string[];
+}
+
+/** A game of a format that is there, but that has blocked access to the API of the format */
+export interface BlockedApiGame {
+  __type: 'blocked-api';
+  format: 'SugarCube';
 }
 
 export interface VersionInfo {

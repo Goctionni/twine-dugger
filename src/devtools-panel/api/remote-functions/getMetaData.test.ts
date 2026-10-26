@@ -8,6 +8,7 @@ const win = window as unknown as Record<string, unknown>;
 
 afterEach(() => {
   delete win.XLowe;
+  delete win.SugarCube;
   document.body.innerHTML = '';
   document.title = '';
 });
@@ -62,5 +63,53 @@ describe('getGameMetaFn for XLowe', () => {
       expect(meta.framework).toBeUndefined();
       expect(meta.format?.version).toBeUndefined();
     }
+  });
+});
+
+describe('getGameMetaFn for a SugarCube game that has blocked access to its API', () => {
+  const blocked = { __type: 'blocked-api', format: 'SugarCube' };
+
+  it('says so for a page that has the script of SugarCube, and no SugarCube', () => {
+    document.body.innerHTML = '<script id="script-sugarcube"></script>';
+    expect(getGameMetaFn()).toEqual(blocked);
+  });
+
+  it('says so for a page that has the elements of the SugarCube page', () => {
+    document.body.innerHTML =
+      '<div id="ui-bar"></div><div id="story"><div id="passages"></div></div>';
+    expect(getGameMetaFn()).toEqual(blocked);
+  });
+
+  it('is not for a page that has only one of those elements', () => {
+    document.body.innerHTML = '<div id="passages"></div>';
+    expect(getGameMetaFn()).toBeNull();
+    document.body.innerHTML = '<div id="ui-bar"></div>';
+    expect(getGameMetaFn()).toBeNull();
+  });
+
+  it('is not for a page of another format, which is found first', () => {
+    document.body.innerHTML = '<script id="script-sugarcube"></script>';
+    win.XLowe = { story: { ifid: 'ABC-123', name: 'The Game' } };
+    expect(getMeta().format?.name).toBe('Harlowe');
+  });
+
+  it('gives way to a page that does have SugarCube', () => {
+    document.body.innerHTML = '<script id="script-sugarcube"></script>';
+    win.SugarCube = {
+      Config: { passages: {}, history: { controls: true, maxStates: 100 }, saves: {} },
+      Save: { slots: { length: 8, count: () => 2 } },
+      State: { variables: {}, passage: 'Start' },
+      Story: { ifId: 'IF-1', has: () => true, get: () => ({}), name: 'The Game' },
+      storage: {},
+      version: {
+        major: 2,
+        minor: 36,
+        patch: 1,
+        build: 1,
+        long: () => 'v2.36.1',
+        short: () => '2.36.1',
+      },
+    };
+    expect(getMeta().ifId).toBe('IF-1');
   });
 });

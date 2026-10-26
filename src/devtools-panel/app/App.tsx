@@ -16,6 +16,7 @@ import { startTrackingFrames } from '../store/tracking';
 import { TooltipOutlet } from '../ui/display/TooltipOutlet';
 import { ContextMenuUI } from '../ui/util/ContextMenu';
 import { PromptDialogOutlet } from '../ui/util/Prompt';
+import { ApiBlocked } from './ApiBlocked';
 import { Candidates } from './CandidateFrames';
 import { initMeta } from './initMeta';
 import { Layout } from './Layout';
@@ -41,6 +42,9 @@ export function App() {
         <Switch>
           <Match when={state() === 'no-game-detected'}>
             <span class="m-auto">No supported game detected</span>
+          </Match>
+          <Match when={state() === 'api-blocked'}>
+            <ApiBlocked />
           </Match>
           <Match when={state() === 'candidate-iframes'}>
             <Candidates />
