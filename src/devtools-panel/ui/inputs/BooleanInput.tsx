@@ -3,31 +3,23 @@ import clsx from 'clsx';
 interface BooleanInputProps {
   value: boolean;
   onChange: (value: boolean) => void;
-  /** Names the group */
   label?: string;
-  /** Cannot be focused */
   disabled?: boolean;
-  /** Can be focused, and does not change */
   readOnly?: boolean;
-  /** Takes the width that is left in a flex row, instead of a fixed one */
   fill?: boolean;
   class?: string;
   id?: string;
 }
 
-/** True | False: two radios, with a thumb that slides to the one that is chosen */
 export function BooleanInput(props: BooleanInputProps) {
   const name = `boolean-${crypto.randomUUID()}`;
 
-  // The click is cancelled, so that the browser does not check the radio itself: what is checked
-  // follows `value`, which is for the one that uses this to change when it takes the new value
+  // Prevent default since this is a controlled component
   const choose = (event: MouseEvent, value: boolean) => {
     event.preventDefault();
     if (!props.readOnly && props.value !== value) props.onChange(value);
   };
 
-  // Each half is a label as tall as the control. Browsers give a label its own cursor, so it is set
-  // here, and only for the half that a click would change
   const labelClass = (isChosen: boolean) =>
     clsx(
       'relative flex h-7.5 flex-1 items-center justify-center rounded-sm',

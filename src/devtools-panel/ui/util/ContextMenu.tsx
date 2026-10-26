@@ -9,7 +9,6 @@ export interface ContextMenuItem {
 }
 
 export interface ContextMenuGroup {
-  /** Says what the items are about, e.g. the path of a row. A function is called by the open menu */
   heading?: JSX.Element | (() => JSX.Element);
   items: ContextMenuItem[];
 }
@@ -19,12 +18,9 @@ interface ContextMenuState {
   groups: ContextMenuGroup[];
 }
 
-// Place to set the event and groups to show in a context menu
 const [contextMenu, setContextMenu] = createSignal<ContextMenuState | null>(null);
 const clearContextMenu = () => setContextMenu(null);
 
-// The handlers add their group while the event bubbles, the element that was clicked first. The
-// menu opens at the window, when every handler had its turn
 const collected = new WeakMap<MouseEvent, ContextMenuGroup[]>();
 
 function isInput(el: unknown) {
@@ -41,11 +37,6 @@ function isInput(el: unknown) {
   return inputs.some((input) => [...(input.labels ?? [])].includes(el));
 }
 
-/**
- * Returns event-handler for onContextMenu. The items add up: right-clicking deep in the page shows
- * the items of every element above it that has a menu, the innermost first.
- * `getItems` is called when the menu opens
- */
 export function createContextMenuHandler(
   getItems: ContextMenuItem[] | (() => ContextMenuItem[]),
   heading?: JSX.Element | (() => JSX.Element),

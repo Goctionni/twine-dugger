@@ -28,18 +28,19 @@ const [getSectionId, setSectionId] = createSignal<SectionId>('state');
 export function SettingsPage() {
   const getSection = () => sections.find((section) => section.id === getSectionId())!;
 
-  // The arrow keys move between the tabs, as the keys of a list of tabs do
-  const onKeyDown = (event: KeyboardEvent) => {
+  const getKeyDownIndex = (event: KeyboardEvent) => {
     const step = { ArrowDown: 1, ArrowUp: -1 }[event.key];
     const index = sections.findIndex((section) => section.id === getSectionId());
-    const next =
-      event.key === 'Home'
-        ? 0
-        : event.key === 'End'
-          ? sections.length - 1
-          : step === undefined
-            ? undefined
-            : (index + step + sections.length) % sections.length;
+
+    if (event.key === 'Home') return 0;
+    if (event.key === 'End') return sections.length - 1;
+    if (step === undefined) return undefined;
+    return (index + step + sections.length) % sections.length;
+  };
+
+  // The arrow keys move between the tabs, as the keys of a list of tabs do
+  const onKeyDown = (event: KeyboardEvent) => {
+    const next = getKeyDownIndex(event);
     if (next === undefined) return;
     event.preventDefault();
     setSectionId(sections[next]!.id);

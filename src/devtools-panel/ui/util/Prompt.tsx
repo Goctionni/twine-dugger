@@ -6,7 +6,6 @@ import { Dialog } from './Dialog';
 
 interface PromptState {
   dialogTitle: string;
-  /** Made inside the dialog, so that what it sets up goes away when the dialog does */
   content: () => JSX.Element;
   reject: () => void;
 }
@@ -29,10 +28,6 @@ export function showPromptDialog<T>(dialogTitle: string, resolver: PromptResolve
   });
 }
 
-/**
- * A question with Cancel and a button for the answer yes. Resolves with whether it was yes; closing
- * the dialog counts as no.
- */
 export async function showConfirmDialog(
   title: string,
   message: JSX.Element,

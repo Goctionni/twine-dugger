@@ -12,22 +12,15 @@ interface NumberInputProps {
   onKeyDown?: (e: KeyboardEvent) => void;
   disabled?: boolean;
   readOnly?: boolean;
-  /** The buttons and the keys stop here. What is typed is not held to it */
   min?: number;
   max?: number;
-  /** Take the place of the − and + buttons */
   before?: JSX.Element;
   after?: JSX.Element;
-  /** Takes the width that is left in a flex row, instead of a fixed one */
   fill?: boolean;
   className?: string;
   inputProps?: JSX.InputHTMLAttributes<HTMLInputElement>;
 }
 
-/**
- * The buttons, and the up and down keys, add 1; with Shift they add 10. Ctrl with up and down
- * multiplies by 10 and divides by 10.
- */
 export function NumberInput(props: NumberInputProps) {
   const isDisabled = () => props.disabled || props.readOnly;
   const clamp = (value: number) =>
@@ -106,7 +99,6 @@ export function NumberInput(props: NumberInputProps) {
               btnClass(
                 'contained',
                 '[REMOVE]: rounded-md px-4',
-                // A button that cannot be used is fainter, not brighter
                 '[REMOVE]: disabled:bg-gray-500 disabled:text-gray-300 disabled:hover:bg-gray-500',
                 'disabled:opacity-35',
                 'clr-gray hover:clr-sky w-7 rounded-r-md px-2 font-mono',

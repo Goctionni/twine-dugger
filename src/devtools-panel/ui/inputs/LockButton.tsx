@@ -5,13 +5,16 @@ import type { LockStatus } from '@/shared/shared-types';
 interface LockButtonProps {
   status: LockStatus;
   onToggle: () => void;
-  /** Cannot be pressed, for the reason that `disabledTitle` gives */
   disabled?: boolean;
   disabledTitle?: string;
 }
 
-/** Locks a value at what it is, or unlocks it. A lock of a parent is not for this button to undo */
 export function LockButton(props: LockButtonProps) {
+  const getTitle = () => {
+    if (props.disabled) return props.disabledTitle;
+    if (props.status === 'locked') return 'Unlock this value';
+    return 'Lock this value';
+  };
   return (
     <Switch>
       <Match when={props.status === 'ancestor-lock'}>
@@ -23,13 +26,7 @@ export function LockButton(props: LockButtonProps) {
           aria-label="Lock"
           aria-pressed={props.status === 'locked' ? 'true' : 'false'}
           disabled={props.disabled}
-          title={
-            props.disabled
-              ? props.disabledTitle
-              : props.status === 'locked'
-                ? 'Unlock this value'
-                : 'Lock this value'
-          }
+          title={getTitle()}
           class={[
             'inline-flex h-7.5 w-7.5 shrink-0 cursor-pointer items-center justify-center rounded-md border',
             props.status === 'locked'
