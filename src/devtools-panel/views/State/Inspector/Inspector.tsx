@@ -1,10 +1,7 @@
-import { Match, Switch } from 'solid-js';
-
 import type { Path } from '@/shared/shared-types';
 
 import type { SelectionKind } from '../types';
-import { ContainerEditor } from './ContainerEditor/ContainerEditor';
-import { PrimitiveEditor } from './PrimitiveEditor/PrimitiveEditor';
+import { InspectorContent } from './InspectorContent';
 
 interface Props {
   path: Path;
@@ -33,14 +30,11 @@ export function Inspector(props: Props) {
       >
         ✕ Close
       </button>
-      <Switch>
-        <Match when={props.selectionKind === 'container'}>
-          <ContainerEditor path={props.path} />
-        </Match>
-        <Match when={props.selectionKind === 'primitive'}>
-          <PrimitiveEditor path={props.path} onSelect={props.onSelect} />
-        </Match>
-      </Switch>
+      <InspectorContent
+        path={props.path}
+        onSelect={props.onSelect}
+        selectionKind={props.selectionKind}
+      />
     </aside>
   );
 }
