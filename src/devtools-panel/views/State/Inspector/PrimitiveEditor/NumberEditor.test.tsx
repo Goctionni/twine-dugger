@@ -311,3 +311,55 @@ describe('locked to a range', () => {
     expect(getLockRange(['score'])).toBeUndefined();
   });
 });
+
+describe('digits a number cannot hold', () => {
+  const longText = '132.417410624911679';
+
+  it('keeps what is typed, and shows save for it though the number is the same', async () => {
+    const { field, lockButton, saveButton, type, play } = setup(['score']);
+    play((live) => (live.score = Number('132.41741062491167')));
+    expect(field().value).toBe('132.41741062491167');
+
+    type(longText);
+    expect(field().value).toBe(longText);
+    expect(saveButton()).not.toBeNull();
+    expect(lockButton()).toBeNull();
+  });
+
+  it('shows the real number again after Esc, and after Enter saves', async () => {
+    const { field, saveButton, type, press, play } = setup(['score']);
+    play((live) => (live.score = Number('132.41741062491167')));
+
+    type(longText);
+    press('Escape');
+    expect(field().value).toBe('132.41741062491167');
+    expect(saveButton()).toBeNull();
+
+    type(longText);
+    press('Enter');
+    await vi.waitFor(() => expect(field().value).toBe('132.41741062491167'));
+    expect(vi.mocked(setState)).toHaveBeenCalledWith(['score'], Number('132.41741062491167'));
+    expect(saveButton()).toBeNull();
+  });
+
+  it('says what will be saved when the text is not the number', () => {
+    const { type, press, play, queryByRole } = setup(['score']);
+    play((live) => (live.score = Number('132.41741062491167')));
+    expect(queryByRole('status')).toBeNull();
+
+    type(longText);
+    expect(queryByRole('status')?.textContent).toBe('Will be saved as 132.41741062491167');
+
+    press('Escape');
+    expect(queryByRole('status')).toBeNull();
+  });
+
+  it('shows save for 1.50 over 1.5', () => {
+    const { field, lockButton, saveButton, type, play } = setup(['score']);
+    play((live) => (live.score = 1.5));
+    type('1.50');
+    expect(field().value).toBe('1.50');
+    expect(saveButton()).not.toBeNull();
+    expect(lockButton()).toBeNull();
+  });
+});

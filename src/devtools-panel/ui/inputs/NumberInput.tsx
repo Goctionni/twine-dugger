@@ -8,7 +8,8 @@ import { addToNumber, getSteppedNumber } from './step-number';
 
 interface NumberInputProps {
   value: number;
-  onChange: (value: number) => void;
+  valueText?: string;
+  onChange: (value: number, valueText: string) => void;
   onKeyDown?: (e: KeyboardEvent) => void;
   disabled?: boolean;
   readOnly?: boolean;
@@ -23,10 +24,11 @@ interface NumberInputProps {
 
 export function NumberInput(props: NumberInputProps) {
   const isDisabled = () => props.disabled || props.readOnly;
+
   const clamp = (value: number) =>
     Math.min(Math.max(value, props.min ?? -Infinity), props.max ?? Infinity);
-  const safeOnChange = (newValue: number) => {
-    if (!isNaN(newValue)) props.onChange(newValue);
+  const change = (value: number, valueStr?: string) => {
+    if (!isNaN(value)) props.onChange(value, valueStr ?? String(value));
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -36,7 +38,7 @@ export function NumberInput(props: NumberInputProps) {
       return;
     }
     event.preventDefault();
-    props.onChange(clamp(stepped));
+    change(clamp(stepped));
   };
 
   return (
@@ -48,9 +50,7 @@ export function NumberInput(props: NumberInputProps) {
             type="button"
             aria-label="Decrease"
             title="−1 (Shift: −10)"
-            onClick={(event) =>
-              props.onChange(clamp(addToNumber(props.value, event.shiftKey ? -10 : -1)))
-            }
+            onClick={(event) => change(clamp(addToNumber(props.value, event.shiftKey ? -10 : -1)))}
             disabled={isDisabled()}
             class={clsx(
               btnClass(
@@ -71,8 +71,8 @@ export function NumberInput(props: NumberInputProps) {
         step="any"
         min={props.min}
         max={props.max}
-        value={props.value}
-        onInput={(e) => safeOnChange(e.target.valueAsNumber)}
+        value={props.valueText ?? props.value}
+        onInput={(e) => change(e.target.valueAsNumber, e.target.value)}
         onKeyDown={onKeyDown}
         disabled={props.disabled}
         readonly={props.readOnly}
@@ -91,9 +91,7 @@ export function NumberInput(props: NumberInputProps) {
             type="button"
             aria-label="Increase"
             title="+1 (Shift: +10)"
-            onClick={(event) =>
-              props.onChange(clamp(addToNumber(props.value, event.shiftKey ? 10 : 1)))
-            }
+            onClick={(event) => change(clamp(addToNumber(props.value, event.shiftKey ? 10 : 1)))}
             disabled={isDisabled()}
             class={clsx(
               btnClass(

@@ -16,9 +16,7 @@ import { RangeBound } from './RangeBound';
 
 interface Props {
   path: Path;
-  /** Names the value for those who cannot see it */
   label: string;
-  /** For a row of a container: no bounds to change and no hint, which would not fit */
   compact?: boolean;
 }
 
@@ -33,9 +31,14 @@ export function NumberEditor(props: Props) {
     const range = getRange();
     return range !== undefined && range.min === range.max;
   };
-  const { getDraft, setDraft, isDirty, revert, save } = createDraft<number>(getPath, (value) =>
-    Math.min(Math.max(value, getRange()?.min ?? -Infinity), getRange()?.max ?? Infinity),
+  const { getDraft, getDraftText, setDraft, isDirty, revert, save } = createDraft<number>(
+    getPath,
+    (value) => Math.min(Math.max(value, getRange()?.min ?? -Infinity), getRange()?.max ?? Infinity),
   );
+  const isTextChangedBySave = () => {
+    const text = getDraftText();
+    return text !== undefined && text !== String(getDraft());
+  };
   const changeRange = (bound: keyof LockRange, value: number) => {
     const range = getRange();
     if (!range) return;
@@ -62,8 +65,9 @@ export function NumberEditor(props: Props) {
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
           <NumberInput
             value={getDraft()}
+            valueText={getDraftText()}
             fill
-            onChange={(value) => setDraft(value)}
+            onChange={setDraft}
             onKeyDown={onKeyDown}
             disabled={isDisabled()}
             readOnly={isExactLock()}
@@ -91,6 +95,11 @@ export function NumberEditor(props: Props) {
             }
             inputProps={{ 'aria-label': props.label }}
           />
+          <Show when={!props.compact && isTextChangedBySave()}>
+            <p role="status" class="text-center text-xs text-amber-400">
+              Will be saved as {getDraft()}
+            </p>
+          </Show>
           <Show when={hasRange()}>
             <div aria-hidden="true" class="flex text-[10px] leading-none text-gray-400">
               <span class="w-16 text-center">min</span>

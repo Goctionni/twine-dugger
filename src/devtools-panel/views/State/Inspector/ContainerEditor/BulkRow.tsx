@@ -82,15 +82,22 @@ export function BulkRow(props: Props) {
   };
   // Another selection, or another first value, starts over
   const [getDraft, setDraft] = createSignal<JSONSafeValue | undefined>(() => getFirstValue());
+
+  const [getDraftText, setDraftText] = createSignal<string | undefined>(() => {
+    getFirstValue(); // Another selection, or another first value, starts over
+    return undefined;
+  });
   const getSelectionId = () => JSON.stringify([props.selectedKeys, getFirstValue() ?? null]);
   const [getEditedFor, setEditedFor] = createSignal<string>();
   const isEdited = () => getEditedFor() === getSelectionId();
-  const edit = (value: JSONSafeValue) => {
+  const edit = (value: JSONSafeValue, text?: string) => {
     setDraft(() => value);
+    setDraftText(text);
     setEditedFor(getSelectionId());
   };
   const revert = () => {
     setDraft(() => getFirstValue());
+    setDraftText(undefined);
     setEditedFor(undefined);
   };
 
@@ -98,6 +105,7 @@ export function BulkRow(props: Props) {
     const value = getDraft();
     if (value === undefined) return;
     await setStateMulti(getEditableKeys().map((key) => ({ path: getPathOf(key), value })));
+    setDraftText(undefined);
   };
   const toggleLock = () =>
     setPathLocks(getLockableKeys().map(getPathOf), getLockState() !== 'locked');
@@ -190,6 +198,7 @@ export function BulkRow(props: Props) {
               <NumberInput
                 fill
                 value={getDraft() as number}
+                valueText={getDraftText()}
                 onChange={edit}
                 onKeyDown={onKeyDown}
                 inputProps={{ 'aria-label': 'Value for the selected' }}

@@ -241,3 +241,21 @@ it('does not ask when the answer is no', async () => {
   await Promise.resolve();
   expect(setStateMulti).not.toHaveBeenCalled();
 });
+
+it('keeps what is typed in the number field, and shows the number after Esc and after a save', async () => {
+  const { select, bulkValue, type, getByRole } = setup();
+  select('hp', 'gold');
+
+  type(bulkValue(), '1.50');
+  expect(bulkValue().value).toBe('1.50');
+
+  bulkValue().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  flush();
+  expect(bulkValue().value).toBe('5');
+
+  type(bulkValue(), '1.50');
+  getByRole('button', { name: 'Save' }).click();
+  await Promise.resolve();
+  flush();
+  expect(bulkValue().value).toBe('1.5');
+});
