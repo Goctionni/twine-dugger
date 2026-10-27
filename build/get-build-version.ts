@@ -55,7 +55,7 @@ export function bumpVersion(version: string, bump: Bump) {
   return `${major}.${minor}.${patch! + 1}`;
 }
 
-export function getBuildVersion(): BuildVersion {
+function decideBuildVersion(): BuildVersion {
   const current = packageJson.version;
   if (matchesReleaseTag(current))
     return { version: current, versionName: current, firefoxVersion: current };
@@ -63,3 +63,7 @@ export function getBuildVersion(): BuildVersion {
   const version = bumpVersion(current, getChangesetBump() ?? 'patch');
   return { version, versionName: `${version}-beta`, firefoxVersion: `0.${version}` };
 }
+
+// Once per run: a watch build builds again on every change, and the answer should not change midway
+let buildVersion: BuildVersion | undefined;
+export const getBuildVersion = () => (buildVersion ??= decideBuildVersion());
