@@ -5,9 +5,11 @@ import { afterEach, expect, it, vi } from 'vite-plus/test';
 import { setState } from '@/devtools-panel/api/api';
 import { applyUpdate, startGameState } from '@/devtools-panel/store/game-state';
 import { clearLocks, setPathLock } from '@/devtools-panel/store/locks';
+import { getStatePath } from '@/devtools-panel/store/state-location';
 import {
   clearFilteredPaths,
   getFilteredPaths,
+  getNavigationPage,
   isPinned,
   togglePin,
 } from '@/devtools-panel/store/store';
@@ -70,9 +72,7 @@ const item = (name: string) => screen.getByRole<HTMLButtonElement>('button', { n
 
 it('has lock, pin, filter, duplicate and delete for a value, under its path', async () => {
   await setup(['flag']);
-  expect(
-    ['Lock', 'Pin', 'Filter out changes', 'Duplicate', 'Delete'].map((n) => item(n)),
-  ).toHaveLength(5);
+  expect(['Lock', 'Pin', 'Filter path', 'Duplicate', 'Delete'].map((n) => item(n))).toHaveLength(5);
   expect(screen.getByText('State')).toBeTruthy();
 });
 
@@ -85,7 +85,7 @@ it('pins the value', async () => {
 
 it('filters the path out of the diff log, once', async () => {
   await setup(['outer', 'inner']);
-  item('Filter out changes').click();
+  item('Filter path').click();
   flush();
   expect(getFilteredPaths()).toEqual([['outer', 'inner']]);
 });
@@ -140,4 +140,34 @@ it('has no menu for the state itself', () => {
 it('offers Unlock for a value that is locked', async () => {
   await setup(['flag'], { locked: ['flag'] });
   expect(item('Unlock').disabled).toBe(false);
+});
+
+it('leaves out Duplicate and Delete when asked, for a list that is not the State view', async () => {
+  const game = createGame({ flag: true });
+  startGameState(game.state());
+  applyUpdate(game.update());
+  flush();
+
+  render(() => (
+    <div
+      data-testid="target"
+      onContextMenu={createPathMenu(() => ['flag'], { canReshape: false, canShowInState: true })}
+    >
+      <ContextMenuUI />
+    </div>
+  ));
+  screen
+    .getByTestId('target')
+    .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+
+  await screen.findByText('Filter path');
+  expect(screen.getByText('Lock')).not.toBeNull();
+  expect(screen.getByText('Pin')).not.toBeNull();
+  expect(screen.queryByText('Duplicate')).toBeNull();
+  expect(screen.queryByText('Delete')).toBeNull();
+
+  screen.getByText('Show in State view').click();
+  flush();
+  expect(getNavigationPage()).toBe('state');
+  expect(getStatePath()).toEqual(['flag']);
 });

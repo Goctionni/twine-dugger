@@ -4,7 +4,7 @@ import { trimToExistingPath } from '@/shared/json-safe';
 import type { Path } from '@/shared/shared-types';
 
 import { getLatestState } from './game-state';
-import { setViewState, store } from './store';
+import { setNavigationPage, setViewState, store } from './store';
 
 const [scrollToTrigger, setScrollToTrigger] = createSignal(0);
 
@@ -35,4 +35,10 @@ export const requestScrollTo = () => setScrollToTrigger((trigger) => trigger + 1
 
 export function showInStateView(path: Path) {
   if (setStatePath(path)) requestScrollTo();
+}
+
+/** From any other page: show the path in the State view */
+export function showInStatePage(path: Path) {
+  setNavigationPage('state');
+  showInStateView([...path]);
 }

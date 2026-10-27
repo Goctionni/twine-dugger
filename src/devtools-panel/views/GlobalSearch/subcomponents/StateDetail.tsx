@@ -1,13 +1,11 @@
 import { Match, Switch } from 'solid-js';
 
 import { getLatestState } from '@/devtools-panel/store/game-state';
-import { showInStateView } from '@/devtools-panel/store/state-location';
-import { setNavigationPage } from '@/devtools-panel/store/store';
+import { showInStatePage } from '@/devtools-panel/store/state-location';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
 import { InspectorContent } from '@/devtools-panel/views/State/Inspector/InspectorContent';
 import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
-import type { Path } from '@/shared/shared-types';
 
 import type { StateMatcherHit } from '../types';
 
@@ -19,18 +17,13 @@ interface Props {
 export function StateDetail(props: Props) {
   const getValue = () => getPathValue(getLatestState(), props.hit.path);
 
-  const showInState = (path: Path) => {
-    setNavigationPage('state');
-    showInStateView([...path]);
-  };
-
   return (
     <div class="flex flex-col">
       <div class="px-3 pt-3">
         <button
           type="button"
           class={btnClass('contained')}
-          onClick={() => showInState(props.hit.path)}
+          onClick={() => showInStatePage(props.hit.path)}
         >
           Show in State view
         </button>
@@ -45,7 +38,7 @@ export function StateDetail(props: Props) {
         <Match when={getValue() !== undefined}>
           <InspectorContent
             path={props.hit.path}
-            onSelect={showInState}
+            onSelect={showInStatePage}
             selectionKind={isContainerType(getJsonType(getValue())) ? 'container' : 'primitive'}
           />
         </Match>

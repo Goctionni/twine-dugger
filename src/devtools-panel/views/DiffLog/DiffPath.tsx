@@ -14,7 +14,7 @@ export function DiffPath(props: {
     getParentPaths(props.path).map((path) => ({
       label: () => (
         <>
-          Filter out changes to "<PrettyPath path={path} class="font-mono" globSuffix />"
+          Filter path "<PrettyPath path={path} class="font-mono" globSuffix />"
         </>
       ),
       onClick: () => props.onAddFilter(path),

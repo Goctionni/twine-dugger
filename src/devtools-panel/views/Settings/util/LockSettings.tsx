@@ -1,6 +1,7 @@
 import { createMemo, For, Show } from 'solid-js';
 
 import { clearLocks, getLock, getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
+import { showInStatePage } from '@/devtools-panel/store/state-location';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
 import { sortPaths } from '@/shared/path-sorter';
 import type { Lock, Path } from '@/shared/shared-types';
@@ -48,7 +49,14 @@ export function LockSettings() {
           <For each={lockedPaths()}>
             {(path) => (
               <li class="flex items-center gap-2 rounded border border-gray-700 bg-gray-900/70 px-2 py-1">
-                <PrettyPath path={path} class="min-w-0 flex-1 font-mono text-xs break-all" />
+                <button
+                  type="button"
+                  title="Show in State view"
+                  class="min-w-0 flex-1 cursor-pointer text-left hover:underline"
+                  onClick={() => showInStatePage(path)}
+                >
+                  <PrettyPath path={path} class="font-mono text-xs break-all" />
+                </button>
                 <Show when={getLock(path)}>
                   {(lock) => (
                     <span class="shrink-0 font-mono text-xs text-gray-400">

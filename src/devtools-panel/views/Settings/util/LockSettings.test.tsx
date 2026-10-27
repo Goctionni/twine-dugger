@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { clearLocks, getLockedPaths, setPathLock } from '@/devtools-panel/store/locks';
+import { showInStatePage } from '@/devtools-panel/store/state-location';
 
 import { LockSettings } from './LockSettings';
 
@@ -17,6 +18,7 @@ vi.mock('@/devtools-panel/store/locks', () => ({
   setPathLock: vi.fn(),
   clearLocks: vi.fn(),
 }));
+vi.mock('@/devtools-panel/store/state-location', () => ({ showInStatePage: vi.fn() }));
 vi.mock('@/devtools-panel/store/game-state', () => ({
   getLatestState: vi.fn(() => ({
     state: { a: { name: 'test', inventory: [] }, z: { score: 10 } },
@@ -39,6 +41,16 @@ describe('LockSettings', () => {
     expect(screen.getByText('5 – 20')).toBeTruthy();
     expect(screen.getByText('5 – 20').parentElement!.textContent).toBe('within 5 – 20');
     expect(screen.getByText('"test"').parentElement!.textContent).toBe('at "test"');
+  });
+
+  it('shows a path in the State view when it is clicked', async () => {
+    const user = userEvent.setup();
+    render(() => <LockSettings />);
+
+    const [button] = screen.getAllByTitle('Show in State view');
+    await user.click(button!);
+
+    expect(showInStatePage).toHaveBeenCalledWith(['state', 'a', 'name']);
   });
 
   it('Calls methods to unlock a path when Unlock is clicked', async () => {

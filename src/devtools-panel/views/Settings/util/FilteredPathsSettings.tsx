@@ -1,8 +1,10 @@
-import { createMemo, For, Show } from 'solid-js';
+import { createMemo, For, Match, Show, Switch } from 'solid-js';
 
+import { showInStatePage } from '@/devtools-panel/store/state-location';
 import {
   clearFilteredPaths,
   getFilteredPaths,
+  isHiddenInState,
   removeFilteredPath,
 } from '@/devtools-panel/store/store';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
@@ -37,11 +39,26 @@ export function FilteredPathsSettings() {
           <For each={filteredPaths()}>
             {(path) => (
               <li class="flex items-center gap-2 rounded border border-gray-700 bg-gray-900/70 px-2 py-1">
-                <PrettyPath
-                  path={path}
-                  class="min-w-0 flex-1 font-mono text-xs break-all"
-                  globSuffix
-                />
+                <Switch>
+                  {/* A path that the State view hides cannot be shown there */}
+                  <Match when={isHiddenInState(path)}>
+                    <PrettyPath
+                      path={path}
+                      class="min-w-0 flex-1 font-mono text-xs break-all"
+                      globSuffix
+                    />
+                  </Match>
+                  <Match when={!isHiddenInState(path)}>
+                    <button
+                      type="button"
+                      title="Show in State view"
+                      class="min-w-0 flex-1 cursor-pointer text-left hover:underline"
+                      onClick={() => showInStatePage(path)}
+                    >
+                      <PrettyPath path={path} class="font-mono text-xs break-all" globSuffix />
+                    </button>
+                  </Match>
+                </Switch>
                 <button
                   type="button"
                   class={btnClass('outline', 'clr-gray hover:clr-sky px-2 py-0.5 text-xs')}
