@@ -26,7 +26,7 @@ function matchesReleaseTag(version: string) {
       stdio: ['ignore', 'pipe', 'ignore'],
     });
   try {
-    git('diff', '--quiet', `v${version}`);
+    git('diff', '--quiet', `v${version}`); // exit code 1 if there are changes (will throw)
     return git('ls-files', '--others', '--exclude-standard').trim() === '';
   } catch {
     return false;

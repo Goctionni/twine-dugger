@@ -7,7 +7,6 @@ import { ZipArchive } from 'archiver';
 const releasesDir = 'releases';
 
 const run = (command: string, args: string[]) => execFileSync(command, args, { stdio: 'inherit' });
-// The build decides the version (see get-build-version.ts), so the files are named after what it made
 const getBuiltVersion = () => {
   const manifest = JSON.parse(readFileSync('dist/manifest.json', 'utf8')) as {
     version: string;
@@ -46,7 +45,6 @@ function zipSourceCode(outputPath: string) {
   });
 }
 
-// The build copies dist onto dist-ff without clearing it, so stale files would end up in the zip
 rmSync('dist-ff', { recursive: true, force: true });
 run('npx', ['vp', 'build']);
 
