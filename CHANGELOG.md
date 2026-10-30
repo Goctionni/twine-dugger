@@ -1,5 +1,41 @@
 # twine-dugger
 
+## 2.0.0
+
+### Major Changes
+
+- 0c2f572: Complete rewrite of the State view
+
+  New features include:
+
+  - 3 ways to navigate through state: Miller columns, a tree, and tiles
+  - Breadcrumbs with menus to jump to siblings
+  - Keyboard navigation, plus type-ahead to jump to a row by typing its name
+  - Edit values in an inspector: booleans, numbers and text
+  - Bulk editing values of the same type
+  - Edit containers as JSON
+  - View a variable's previous values and restore them, with a timeline chart for numbers
+  - Lock number-values to within a given range
+  - Pin important variables (they are listed first)
+  - Recently changed indicators
+
+### Minor Changes
+
+- 0c2f572: Chrome 145 or later is now required.
+- 0c2f572: Update: The diff log says "No changes yet" instead of showing an empty list.
+- 0c2f572: New setting: choose where filtered paths are hidden: in the diff log, in the State page, or in both.
+- 0c2f572: Update: The list of locked variables shows the value or range each variable is held at.
+- 0c2f572: Update: Support for atypical numeric values (NaN, positive infinity, negative infinity).
+- 0c2f572: Update: The Settings page has been recreated. Same settings with a better UI: descriptions, units, a "Restore default" button and short explanations.
+- 0c2f572: Update: Support for undefined values.
+
+### Patch Changes
+
+- 0c2f572: Bugfix: A container with a locked value inside it can no longer be deleted (the game would put the locked part back).
+- 0c2f572: Update: State updates with only ignored (filtered) properties no longer drain the diff log.
+- 0c2f572: Bugfix: The State page copes when the game deletes the value you have selected.
+- 0c2f572: Bugfix: The extension still works for SugarCube games where `Story.add` is missing (SugarCube 2.30).
+
 ## 1.9.1
 
 ### Patch Changes
