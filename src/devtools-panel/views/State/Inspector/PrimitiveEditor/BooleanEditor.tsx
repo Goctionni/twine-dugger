@@ -8,7 +8,7 @@ import { createEditStatus } from '../createEditStatus';
 interface Props {
   path: Path;
   label: string;
-  compact?: boolean;
+  buttonTabindex?: number;
 }
 
 export function BooleanEditor(props: Props) {
@@ -37,7 +37,7 @@ export function BooleanEditor(props: Props) {
       <LockButton
         status={getStatus()}
         onToggle={() => void toggleLock()}
-        tabindex={props.compact ? -1 : undefined}
+        tabindex={props.buttonTabindex}
       />
     </div>
   );

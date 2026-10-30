@@ -18,6 +18,7 @@ interface Props {
   label: string;
   /** For a row of a container: one line, no choice of a larger field, and no hint, which would not fit */
   compact?: boolean;
+  buttonTabindex?: number;
 }
 
 export function StringEditor(props: Props) {
@@ -86,13 +87,13 @@ export function StringEditor(props: Props) {
         </Switch>
         <Switch>
           <Match when={isDirty()}>
-            <SaveButton onClick={() => void save()} tabindex={props.compact ? -1 : undefined} />
+            <SaveButton onClick={() => void save()} tabindex={props.buttonTabindex} />
           </Match>
           <Match when={!isDirty()}>
             <LockButton
               status={getStatus()}
               onToggle={() => void toggleLock()}
-              tabindex={props.compact ? -1 : undefined}
+              tabindex={props.buttonTabindex}
             />
           </Match>
         </Switch>

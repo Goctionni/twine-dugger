@@ -59,7 +59,7 @@ export function PropertyRow(props: Props) {
         </Show>
       </label>
       <div class="min-w-0">
-        <ValueEditor path={props.path} label={getName()} compact />
+        <ValueEditor path={props.path} label={getName()} compact buttonTabindex={-1} />
       </div>
       <div class="pl-1">
         <DeleteButton

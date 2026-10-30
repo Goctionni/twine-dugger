@@ -19,6 +19,7 @@ interface Props {
   label: string;
   /** For a row of a container: no message and no hint, which would not fit. The problem is the title */
   compact?: boolean;
+  buttonTabindex?: number;
 }
 
 /** A Date is typed as `2020-01-02 03:04:05`; up and down change the part at the caret */
@@ -94,14 +95,14 @@ export function DateEditor(props: Props) {
             <SaveButton
               onClick={trySave}
               disabled={getProblem() !== undefined}
-              tabindex={props.compact ? -1 : undefined}
+              tabindex={props.buttonTabindex}
             />
           </Match>
           <Match when={!isDirty()}>
             <LockButton
               status={getStatus()}
               onToggle={() => void toggleLock()}
-              tabindex={props.compact ? -1 : undefined}
+              tabindex={props.buttonTabindex}
             />
           </Match>
         </Switch>

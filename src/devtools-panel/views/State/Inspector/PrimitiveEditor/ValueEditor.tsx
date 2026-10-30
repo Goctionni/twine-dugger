@@ -17,6 +17,7 @@ interface Props {
   label: string;
   /** For a row of the grid: smaller editors, and NaN and the infinities are shown, not offered a fix */
   compact?: boolean;
+  buttonTabindex?: number;
 }
 
 /** The editor for the type of the primitive at a path; what has no editor is shown as it is */
@@ -33,16 +34,35 @@ export function ValueEditor(props: Props) {
       }
     >
       <Match when={getType() === 'boolean'}>
-        <BooleanEditor path={props.path} label={props.label} compact={props.compact} />
+        <BooleanEditor
+          path={props.path}
+          label={props.label}
+          buttonTabindex={props.buttonTabindex}
+        />
       </Match>
       <Match when={getType() === 'string'}>
-        <StringEditor path={props.path} label={props.label} compact={props.compact} />
+        <StringEditor
+          path={props.path}
+          label={props.label}
+          compact={props.compact}
+          buttonTabindex={props.buttonTabindex}
+        />
       </Match>
       <Match when={getType() === 'number'}>
-        <NumberEditor path={props.path} label={props.label} compact={props.compact} />
+        <NumberEditor
+          path={props.path}
+          label={props.label}
+          compact={props.compact}
+          buttonTabindex={props.buttonTabindex}
+        />
       </Match>
       <Match when={getType() === 'date'}>
-        <DateEditor path={props.path} label={props.label} compact={props.compact} />
+        <DateEditor
+          path={props.path}
+          label={props.label}
+          compact={props.compact}
+          buttonTabindex={props.buttonTabindex}
+        />
       </Match>
       <Match when={!props.compact && (getType() === 'NaN' || getType() === 'infinity')}>
         <InvalidNumberEditor path={props.path} />
