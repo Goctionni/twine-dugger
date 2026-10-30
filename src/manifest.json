@@ -11,7 +11,7 @@
     "128": "icons/128.png"
   },
   "description": "For developers and cheaters in Twine games: See the game state, edit variables, track changes, and debug issues.",
-  "permissions": ["debugger", "scripting", "activeTab"],
+  "permissions": ["debugger"],
   "host_permissions": ["<all_urls>", "file:///*"],
   "devtools_page": "./create-panel.html",
   "content_scripts": [],
