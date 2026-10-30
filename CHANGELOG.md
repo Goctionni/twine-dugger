@@ -1,5 +1,11 @@
 # twine-dugger
 
+## 2.0.1
+
+### Patch Changes
+
+- d76f808: Remove scripting and activeTab from extension manifest
+
 ## 2.0.0
 
 ### Major Changes
