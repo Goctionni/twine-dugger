@@ -141,6 +141,18 @@ it('counts what is typed and not saved, and saves it all or drops it', async () 
   expect(getByRole<HTMLInputElement>('textbox', { name: 'name' }).value).toBe('Ada');
 });
 
+it('saves everything that is typed when Enter is pressed in a row', async () => {
+  const { getByRole, type } = setup();
+  const hp = getByRole<HTMLInputElement>('spinbutton', { name: 'hp' });
+  type(hp, '12');
+  type(getByRole<HTMLInputElement>('textbox', { name: 'name' }), 'Bo');
+
+  hp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+  await Promise.resolve();
+  expect(setState).toHaveBeenCalledWith(['hero', 'hp'], 12);
+  expect(setState).toHaveBeenCalledWith(['hero', 'name'], 'Bo');
+});
+
 it('does not count what is typed in another container', () => {
   const { getByRole, queryByText, type } = setup(['hero']);
   type(getByRole<HTMLInputElement>('spinbutton', { name: 'hp' }), '12');

@@ -74,6 +74,16 @@ export function PropertyGrid(props: Props) {
     }
   };
 
+  // Capturing, so that it comes before the editor of the row, which would save only its own value
+  const saveAllOnEnter = (event: KeyboardEvent) => {
+    const target = event.target;
+    if (event.key !== 'Enter' || !(target instanceof HTMLInputElement)) return;
+    if (target.type === 'checkbox' || getUnsavedCount() === 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    void saveChildDrafts(props.path);
+  };
+
   return (
     <section
       aria-label="Properties"
@@ -115,7 +125,11 @@ export function PropertyGrid(props: Props) {
               onSelect={props.selection.select}
             />
           </ul>
-          <div onFocusIn={trackFocus} onFocusOut={untrackFocus}>
+          <div
+            ref={(element) => element.addEventListener('keydown', saveAllOnEnter, true)}
+            onFocusIn={trackFocus}
+            onFocusOut={untrackFocus}
+          >
             <VirtualItems list={list} role="list">
               {(item) => (
                 <PropertyRow
