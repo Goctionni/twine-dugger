@@ -2,6 +2,7 @@ import type { ContainerType } from '@/shared/json-safe';
 import {
   getContainerKeys,
   getJsonType,
+  getSearchableText,
   isContainerType,
   isNumberLike,
   isNumberMapValue,
@@ -23,7 +24,7 @@ export interface StateEntry {
   /** Whether the key is a name: not for an array index or the position in a set */
   isName: boolean;
   type: ValueType;
-  /** The value of a string, number or boolean; the others have none */
+  /** The value of a string, number or boolean, or the time of a Date as it is shown; the others have none */
   primitive: string | number | boolean | undefined;
 }
 
@@ -65,9 +66,9 @@ export function walkState(root: JSONSafeObject, visit: (entry: StateEntry) => vo
         isName,
         type,
         primitive:
-          type === 'string' || type === 'number' || type === 'boolean'
-            ? (child as string | number | boolean)
-            : undefined,
+          type === 'number' || type === 'boolean'
+            ? (child as number | boolean)
+            : getSearchableText(child, type),
       });
 
       if (child && typeof child === 'object') {

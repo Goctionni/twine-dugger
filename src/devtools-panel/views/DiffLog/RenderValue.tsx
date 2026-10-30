@@ -2,7 +2,13 @@ import clsx from 'clsx';
 import { Match, Switch } from 'solid-js';
 
 import { Tooltip } from '@/devtools-panel/ui/display/Tooltip';
-import { getJsonType } from '@/shared/json-safe';
+import {
+  getDateText,
+  getJsonType,
+  getMarkedValueText,
+  isContainerType,
+  type DateMarker,
+} from '@/shared/json-safe';
 import type { JSONSafeValue } from '@/shared/shared-types';
 
 import { DiffPreview } from './DiffPreview';
@@ -15,10 +21,23 @@ const colorClasses = {
   typeOther: 'text-purple-300',
 } as const;
 
-export function RenderValue(props: { value: JSONSafeValue; faded?: boolean }) {
+interface Props {
+  value: JSONSafeValue;
+  faded?: boolean;
+  disableInvalidHighlight?: boolean;
+}
+
+export function RenderValue(props: Props) {
   const fadedCls = () => (props.faded ? 'opacity-60 saturate-50' : '');
   const renderType = () => {
     const t = typeof props.value;
+    // Before the strings: a Date is one
+    if (getJsonType(props.value) === 'date') return 'date';
+    if (getMarkedValueText(props.value)) {
+      return !props.disableInvalidHighlight && getJsonType(props.value) !== 'undefined'
+        ? 'invalid-number'
+        : 'marked';
+    }
     if (t === 'string' && !props.value) return 'empty';
     if (t === 'string' || t === 'boolean' || t === 'number') return t;
     return 'type';
@@ -27,6 +46,24 @@ export function RenderValue(props: { value: JSONSafeValue; faded?: boolean }) {
     <Switch fallback={<RenderValueFallback value={props.value} faded={props.faded} />}>
       <Match when={renderType() === 'empty'}>
         <code class={clsx(colorClasses.typeEmpty, fadedCls())}>""</code>
+      </Match>
+      <Match when={renderType() === 'invalid-number'}>
+        <code
+          class={clsx('rounded-xs bg-red-600 px-1 font-semibold text-white', fadedCls())}
+          title="Not a valid number"
+        >
+          {getMarkedValueText(props.value)}
+        </code>
+      </Match>
+      <Match when={renderType() === 'marked'}>
+        <code class={clsx(colorClasses.typeEmpty, fadedCls())}>
+          {getMarkedValueText(props.value)}
+        </code>
+      </Match>
+      <Match when={renderType() === 'date'}>
+        <code class={clsx(colorClasses.typeOther, fadedCls())} title="Date">
+          {getDateText(props.value as DateMarker)}
+        </code>
       </Match>
       <Match when={renderType() === 'boolean'}>
         <code class={clsx(colorClasses.typeBoolean, fadedCls())}>
@@ -57,7 +94,8 @@ function RenderValueFallback(props: RenderValueFallbackProps) {
 
   return (
     <Switch fallback={base()}>
-      <Match when={props.value && typeof props.value === 'object'}>
+      {/* Only what the preview shows: it hands anything else (a Date, a function) back to RenderValue */}
+      <Match when={isContainerType(getJsonType(props.value))}>
         <Tooltip
           area="bottom right"
           element={(elProps) => (

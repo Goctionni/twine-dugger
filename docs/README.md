@@ -8,6 +8,7 @@ inspects and diffs the runtime state of **Twine** games (SugarCube, Harlowe, Cha
 - Start here: [`setup.md`](./setup.md)
 - Architecture overview: [`architecture.md`](./architecture.md)
 - Extension panels & flows: [`devtools.md`](./devtools.md)
+- State page (what it does, its parts, where the data comes from and how it flows): [`state/`](./state/README.md)
 - Search (what it does, its parts, where the data comes from and how it flows; plus design notes): [`search/`](./search/README.md)
 - Content script & Twine integration: [`content-script.md`](./content-script.md)
 - State diffing model: [`state-diffing.md`](./state-diffing.md)

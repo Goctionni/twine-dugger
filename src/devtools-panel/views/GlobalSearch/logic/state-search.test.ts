@@ -26,7 +26,7 @@ const state: JSONSafeObject = {
   visits: { [TYPE_KEY]: 'Map', 'home': 4, 'far-away': 1 },
   counts: { [TYPE_KEY]: 'NumberMap', '12': 'twelve' },
   onTick: { [TYPE_KEY]: 'function', name: 'zzfn' },
-  today: { [TYPE_KEY]: 'Date', value: '2020-01-01' },
+  today: `${TYPE_KEY}: Date 2020-01-01T00:00:00`,
 };
 
 const run = (text: string, s: Partial<StateScope> = {}, options: Partial<SearchOptions> = {}) =>
@@ -57,10 +57,23 @@ describe('searchState', () => {
     expect(paths('NumberMap')).toEqual([]);
   });
 
-  it('does not look inside functions and dates', () => {
+  it('does not look inside functions', () => {
     expect(paths('zzfn')).toEqual([]);
-    expect(paths('2020')).toEqual([]);
     expect(paths('onTick')).toEqual(['onTick']);
+  });
+
+  it('matches a Date as the time it is shown as', () => {
+    expect(paths('2020')).toEqual(['today']);
+    expect(paths('00:00:00')).toEqual(['today']);
+    expect(paths('twinedugger')).toEqual([]);
+
+    const [hit] = run('01-01');
+    expect(hit).toMatchObject({
+      pathText: 'today',
+      type: 'date',
+      value: '2020-01-01 00:00:00',
+      valueRanges: [[5, 10]],
+    });
   });
 
   it('writes the path the way the state view does', () => {

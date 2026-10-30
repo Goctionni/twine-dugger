@@ -1,0 +1,242 @@
+import { For, createMemo, createSignal } from 'solid-js';
+
+import { getLatestState } from '@/devtools-panel/store/game-state';
+import { requestScrollTo } from '@/devtools-panel/store/state-location';
+import { createElementWidth } from '@/devtools-panel/utils/create-element-width';
+import { createStablePath } from '@/devtools-panel/utils/create-stable-path';
+import { sameItems } from '@/devtools-panel/utils/same-items';
+import { getPathValue, isContainer } from '@/shared/json-safe';
+import { pathStartsWith } from '@/shared/path-equals';
+import type { Path } from '@/shared/shared-types';
+
+import { getNodeName } from '../../logic/get-node-name';
+import { NoMatches } from '../../NoMatches';
+import type { NavProps } from '../../types';
+import { provideNavigatorInfo } from '../navigator-info';
+import { createScrollToSelection } from '../Shared/create-scroll-to-selection';
+import { createVirtualList } from '../Shared/create-virtual-list';
+import { getTypesIn } from '../Shared/get-types-in';
+import { getVisibleKeysAt } from '../Shared/get-visible-keys-at';
+import { isTypeAheadKey, provideTypeAhead } from '../Shared/TypeAhead/provide-type-ahead';
+import { VirtualItems } from '../Shared/VirtualItems';
+import { Tile } from './Tile';
+import { resolveTilesContainerPath } from './tiles-container-path';
+import {
+  handleGoUpKey,
+  handleLeftRightKey,
+  handleSelectKey,
+  handleUpDownKey,
+  isGoUpKey,
+  isLeftRightKey,
+  isSelectKey,
+  isUpDownKey,
+  type TilesKeyContext,
+} from './tiles-keyboard-helper';
+import { UpTile } from './UpTile';
+
+// The tile that goes up has no key in the container that is shown: this stands for it
+const UP = Symbol('up');
+type TileKey = string | number | typeof UP;
+
+// The tiles are in rows as many as fit, as wide as the width allows and not narrower than this
+const MIN_TILE_WIDTH = 92;
+const TILE_GAP = 4;
+// The height of a tile (see `TileFrame`), at the size of text of 16px
+const TILE_HEIGHT = 118.5;
+
+export function TilesNav(props: NavProps) {
+  const tilesId = `tiles-${crypto.randomUUID()}`;
+  const getTileId = (key: TileKey) =>
+    `${tilesId}-${key === UP ? 'up' : `key-${encodeURIComponent(key)}`}`;
+
+  // What is selected in the State view
+  const getGlobalPath = createStablePath(() => props.path);
+  // The container that the tiles show. It follows the global path when that goes somewhere else, and
+  // keeps its own value while the global path is in it
+  const [getTilesContainerPath, setTilesContainerPath] = createSignal(
+    (tilesContainerPath: Path | undefined) =>
+      resolveTilesContainerPath(getLatestState(), getGlobalPath(), tilesContainerPath),
+  );
+  const getParentPath = () => getTilesContainerPath().slice(0, -1);
+  const hasUpTile = () => getTilesContainerPath().length > 0;
+  const getTilePath = (key: TileKey) =>
+    key === UP ? getParentPath() : [...getTilesContainerPath(), key];
+
+  // The tiles in the order that they are shown
+  const getTileKeys = createMemo<TileKey[]>(
+    () => {
+      const keys = getVisibleKeysAt(
+        getPathValue(getLatestState(), getTilesContainerPath()),
+        getTilesContainerPath(),
+      );
+      return hasUpTile() ? [UP, ...keys] : keys;
+    },
+    { equals: sameItems },
+  );
+
+  // The tile of the global path, if it has one. The tiles container path is the global path, a
+  // start of it (the global path is one of the tiles) or one longer (the tile that goes up)
+  const getSelectedKey = createMemo<TileKey | undefined>(() => {
+    const tilesContainerPath = getTilesContainerPath();
+    if (getGlobalPath().length < tilesContainerPath.length) return UP;
+    return getGlobalPath()[tilesContainerPath.length];
+  });
+  const getSelectedIndex = () => {
+    const key = getSelectedKey();
+    return key === undefined ? -1 : getTileKeys().indexOf(key);
+  };
+  const getActiveId = () => (getSelectedIndex() < 0 ? undefined : getTileId(getSelectedKey()!));
+
+  const selectAndScrollTo = (path: Path) => {
+    props.onSelect(path);
+    requestScrollTo();
+  };
+  const open = (path: Path) => {
+    setTilesContainerPath(path);
+    props.onSelect(path);
+    // It starts at the top, and nothing in it is selected
+    tileList.scrollToIndex(0);
+  };
+  // The container that it came from is selected
+  const goUpTo = (path: Path) => {
+    const cameFrom = getTilesContainerPath().slice(0, path.length + 1);
+    setTilesContainerPath(path);
+    selectAndScrollTo(cameFrom);
+  };
+  const goUp = () => goUpTo(getParentPath());
+
+  provideNavigatorInfo({
+    getBreadcrumbsPath: getTilesContainerPath,
+    getAvailableTypes: () => getTypesIn(getPathValue(getLatestState(), getTilesContainerPath())),
+    // A container above the tiles is a way up; anything else is selected
+    onBreadcrumbClick: (path) => {
+      const tilesContainerPath = getTilesContainerPath();
+      const isAbove =
+        path.length < tilesContainerPath.length && pathStartsWith(tilesContainerPath, path);
+      if (isAbove) goUpTo(path);
+      else selectAndScrollTo(path);
+    },
+  });
+
+  // The tiles are in rows of as many as fit in the width; only the rows near the window are in the DOM
+  const getListWidth = createElementWidth(() => tileList.getListElement());
+  const getColumns = createMemo(() =>
+    Math.max(1, Math.floor((getListWidth() + TILE_GAP) / (MIN_TILE_WIDTH + TILE_GAP))),
+  );
+  const getRowIndexes = createMemo(
+    () => Array.from({ length: Math.ceil(getTileKeys().length / getColumns()) }, (_, row) => row),
+    { equals: sameItems },
+  );
+  const getSelectedRowIndex = createMemo(() => {
+    const index = getSelectedIndex();
+    return index < 0 ? -1 : Math.floor(index / getColumns());
+  });
+  const tileList = createVirtualList({
+    getKeys: getRowIndexes,
+    estimateSize: TILE_HEIGHT,
+    gap: TILE_GAP,
+    getSelectedIndex: getSelectedRowIndex,
+  });
+
+  // A tile is there as soon as the selection is: there is nothing to wait for
+  createScrollToSelection(tileList.scrollToSelection, getGlobalPath, () => true);
+
+  const selectTile = (index: number) => {
+    const key = getTileKeys()[index]!;
+    const path = getTilePath(key);
+    selectAndScrollTo(path);
+  };
+
+  const handleTypeAheadKey = provideTypeAhead({
+    // The tile that goes up has no name to type
+    getNames: () =>
+      getTileKeys().map((key) =>
+        key === UP ? '' : getNodeName(getLatestState(), [...getTilesContainerPath(), key]),
+      ),
+    getSelectedIndex,
+    selectIndex: selectTile,
+  });
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+    const activateTile = (index: number) => {
+      const key = getTileKeys()[index]!;
+      if (key === UP) goUp();
+      else if (isContainer(getPathValue(getLatestState(), getTilePath(key)))) {
+        open(getTilePath(key));
+      }
+    };
+    const context: TilesKeyContext = {
+      selectedIndex: getSelectedIndex(),
+      tileCount: getTileKeys().length,
+      hasUpTile: hasUpTile(),
+      getColumns,
+      selectTile,
+      activateTile,
+      goUp,
+    };
+
+    if (isGoUpKey(event)) return handleGoUpKey(event, context);
+    if (isSelectKey(event)) return handleSelectKey(event, context);
+    if (isLeftRightKey(event)) return handleLeftRightKey(event, context);
+    if (isUpDownKey(event)) return handleUpDownKey(event, context);
+    if (isTypeAheadKey(event)) return handleTypeAheadKey(event);
+  };
+
+  return (
+    <div
+      role="listbox"
+      aria-label="State"
+      tabindex="0"
+      aria-activedescendant={getActiveId()}
+      onKeyDown={onKeyDown}
+      class="relative min-h-full p-2.5 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-500"
+      onClick={(event) => {
+        // The space between the tiles
+        if (!(event.target as HTMLElement).closest('[role="option"]')) {
+          props.onSelect(getTilesContainerPath());
+        }
+      }}
+    >
+      <NoMatches isEmpty={getTileKeys().length === (hasUpTile() ? 1 : 0)} />
+      <VirtualItems
+        list={tileList}
+        itemClass="grid"
+        getItemStyle={() => ({
+          'grid-template-columns': `repeat(${getColumns()}, minmax(0, 1fr))`,
+          'gap': `${TILE_GAP}px`,
+        })}
+      >
+        {(item) => {
+          const getRowKeys = createMemo(
+            () => getTileKeys().slice(item.index * getColumns(), (item.index + 1) * getColumns()),
+            { equals: sameItems },
+          );
+          return (
+            <For each={getRowKeys()}>
+              {(key) =>
+                key === UP ? (
+                  <UpTile
+                    id={getTileId(key)}
+                    path={getParentPath()}
+                    selectionState={getSelectedKey() === key ? 'selected' : 'normal'}
+                    onClick={goUp}
+                  />
+                ) : (
+                  <Tile
+                    id={getTileId(key)}
+                    path={getTilePath(key)}
+                    selectionState={getSelectedKey() === key ? 'selected' : 'normal'}
+                    onSelect={() => props.onSelect(getTilePath(key))}
+                    onOpen={() => open(getTilePath(key))}
+                  />
+                )
+              }
+            </For>
+          );
+        }}
+      </VirtualItems>
+    </div>
+  );
+}

@@ -10,6 +10,9 @@ export function initMeta() {
       if (!meta) {
         setConnectionState('no-game-detected');
         return false;
+      } else if ('__type' in meta && meta.__type === 'blocked-api') {
+        setConnectionState('api-blocked');
+        return false;
       } else if ('__type' in meta && meta.__type === 'candidate-game-iframes') {
         setConnectionState('candidate-iframes');
         setCandidateIframes(meta.urls);

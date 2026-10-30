@@ -1,11 +1,12 @@
 import type { JSX } from '@solidjs/web';
 import { createSignal, Show } from 'solid-js';
 
+import { btnClass } from './btnClass';
 import { Dialog } from './Dialog';
 
 interface PromptState {
   dialogTitle: string;
-  content: JSX.Element;
+  content: () => JSX.Element;
   reject: () => void;
 }
 
@@ -23,8 +24,36 @@ export function showPromptDialog<T>(dialogTitle: string, resolver: PromptResolve
       rejectPromise();
       setPrompt(undefined);
     };
-    setPrompt({ dialogTitle, content: resolver(resolve), reject });
+    setPrompt({ dialogTitle, content: () => resolver(resolve), reject });
   });
+}
+
+export async function showConfirmDialog(
+  title: string,
+  message: JSX.Element,
+  confirmLabel = 'OK',
+): Promise<boolean> {
+  try {
+    return await showPromptDialog<boolean>(title, (answer) => (
+      <div class="flex max-w-sm flex-col gap-4 py-2">
+        <p class="text-sm">{message}</p>
+        <div class="flex justify-end gap-2">
+          <button
+            type="button"
+            class={btnClass('outline', 'clr-gray')}
+            onClick={() => answer(false)}
+          >
+            Cancel
+          </button>
+          <button type="button" class={btnClass('contained')} onClick={() => answer(true)}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    ));
+  } catch {
+    return false;
+  }
 }
 
 export function PromptDialogOutlet() {
@@ -32,7 +61,7 @@ export function PromptDialogOutlet() {
     <Show when={prompt()}>
       {(current) => (
         <Dialog onClose={current().reject} open closedby="any" heading={current().dialogTitle}>
-          {current().content}
+          {current().content()}
         </Dialog>
       )}
     </Show>

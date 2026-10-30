@@ -1,4 +1,5 @@
 import { jsonEqual } from '@/shared/json-safe';
+import { getAllowedValue } from '@/shared/lock-value';
 import { pathKey } from '@/shared/path-equals';
 import type {
   JSONSafeValue,
@@ -46,21 +47,30 @@ export function createLockEnforcer(
     enforce(): LockRevert[] {
       const reverts: LockRevert[] = [];
 
-      for (const { path, value } of locks) {
+      for (const lock of locks) {
+        const { path } = lock;
         const [found, live] = findLiveValue(getRawState(), path);
         if (!found) continue;
 
         const attempted = pretransformValue(live, new Map(), new Map());
         const id = pathKey(path);
-        if (jsonEqual(attempted, value)) {
+        const allowed = getAllowedValue(attempted, lock);
+
+        // If the value is allowed, stop reporting it was blocked
+        if (jsonEqual(attempted, allowed)) {
           lastBlocked.delete(id);
           continue;
         }
 
-        if (!lastBlocked.has(id) || !jsonEqual(attempted, lastBlocked.get(id)))
+        // If lastBlocked does not contains the path, then we have not just reported the path as write-blocked
+        // since we didn't just report it, we can report it now
+        if (!lastBlocked.has(id) || !jsonEqual(attempted, lastBlocked.get(id))) {
           reverts.push({ path, attempted });
+        }
+        // Register the path as having been blocked and reported recently
         lastBlocked.set(id, attempted);
-        setState(path, posttransformValue(value));
+        // Restore to an allowed value
+        setState(path, posttransformValue(allowed, { deep: true }));
       }
 
       return reverts;

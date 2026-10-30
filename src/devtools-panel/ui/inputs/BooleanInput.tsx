@@ -3,54 +3,72 @@ import clsx from 'clsx';
 interface BooleanInputProps {
   value: boolean;
   onChange: (value: boolean) => void;
+  label?: string;
   disabled?: boolean;
   readOnly?: boolean;
-  className?: string;
+  fill?: boolean;
+  class?: string;
   id?: string;
 }
 
 export function BooleanInput(props: BooleanInputProps) {
-  const isDisabled = () => props.disabled || props.readOnly;
+  const name = `boolean-${crypto.randomUUID()}`;
+
+  // Prevent default since this is a controlled component
+  const choose = (event: MouseEvent, value: boolean) => {
+    event.preventDefault();
+    if (!props.readOnly && props.value !== value) props.onChange(value);
+  };
+
+  const labelClass = (isChosen: boolean) =>
+    clsx(
+      'relative flex h-7.5 flex-1 items-center justify-center rounded-sm',
+      props.readOnly || isChosen ? 'cursor-default' : 'cursor-pointer hover:bg-white/10',
+    );
 
   return (
-    <div class={clsx('flex justify-start gap-2 select-none', props.className)}>
-      <div
+    <fieldset
+      id={props.id}
+      role="radiogroup"
+      aria-label={props.label}
+      aria-readonly={props.readOnly ? 'true' : undefined}
+      disabled={props.disabled}
+      class={clsx(
+        'relative flex h-7.5 text-white select-none has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-sky-400',
+        props.fill ? 'min-w-0 flex-1' : 'w-46',
+        props.disabled && 'pointer-events-none',
+        props.class,
+      )}
+    >
+      <span
+        aria-hidden="true"
         class={clsx(
-          'relative flex h-7 w-46 justify-between',
-          !isDisabled() ? 'cursor-pointer' : 'pointer-events-none',
+          'absolute top-0 h-7.5 w-1/2 rounded-sm border-2 transition-all',
+          props.value
+            ? 'left-0 border-gray-200 bg-gray-200/15'
+            : 'left-1/2 border-gray-500 bg-gray-500/20',
         )}
-      >
+      />
+      <label class={labelClass(props.value)}>
         <input
-          type="checkbox"
-          class="peer hidden"
+          type="radio"
+          name={name}
+          class="sr-only"
           checked={props.value}
-          readonly={props.readOnly}
-          disabled={props.disabled}
-          onChange={(e) => props.onChange(e.target.checked)}
-          id={props.id}
+          onClick={(event) => choose(event, true)}
         />
-        <span class="toggle absolute top-0 left-1/2 h-7 w-1/2 rounded-sm border-2 border-gray-500 transition-all peer-checked:left-0" />
-        <label
-          class="relative grow cursor-pointer self-center text-center text-white transition"
-          for={props.id}
-          onClick={(e) => {
-            e.preventDefault();
-            if (!isDisabled()) props.onChange(true);
-          }}
-        >
-          True
-        </label>
-        <label
-          class="relative grow cursor-pointer self-center text-center text-white transition"
-          for={props.id}
-          onClick={(e) => {
-            e.preventDefault();
-            if (!isDisabled()) props.onChange(false);
-          }}
-        >
-          False
-        </label>
-      </div>
-    </div>
+        True
+      </label>
+      <label class={labelClass(!props.value)}>
+        <input
+          type="radio"
+          name={name}
+          class="sr-only"
+          checked={!props.value}
+          onClick={(event) => choose(event, false)}
+        />
+        False
+      </label>
+    </fieldset>
   );
 }

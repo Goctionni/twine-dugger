@@ -1,18 +1,153 @@
-import type { JSONSafeArray, JSONSafeObject, JSONSafeValue, ValueType } from './shared-types';
+import type {
+  JSONSafeArray,
+  JSONSafeContainer,
+  JSONSafeObject,
+  JSONSafeValue,
+  Path,
+  ValueType,
+} from './shared-types';
 
 /** Marks objects that stand in for a non-JSON value (Map, function, Date) */
 export const TYPE_KEY = '__twinedugger-type' as const;
 /** First element of an array that stands in for a Set */
 export const SET_MARKER = `${TYPE_KEY}: Set` as const;
 
+/** Stand in for values that do not survive the trip to the panel, or the diff: NaN, the infinities, undefined */
+export const NAN_MARKER = `${TYPE_KEY}: NaN` as const;
+export const POSITIVE_INFINITY_MARKER = `${TYPE_KEY}: +Infinity` as const;
+export const NEGATIVE_INFINITY_MARKER = `${TYPE_KEY}: -Infinity` as const;
+export const UNDEFINED_MARKER = `${TYPE_KEY}: undefined` as const;
+
+/** What a marker stands for, as text. Nothing for a value that is not one of the four markers */
+export function getMarkedValueText(value: unknown): string | undefined {
+  switch (value) {
+    case NAN_MARKER:
+      return 'NaN';
+    case POSITIVE_INFINITY_MARKER:
+      return 'Infinity';
+    case NEGATIVE_INFINITY_MARKER:
+      return '-Infinity';
+    case UNDEFINED_MARKER:
+      return 'undefined';
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * A Date is sent as one string, so that it is one value to the differ, like the markers above:
+ * the time as the game page has it, to the second (`Date 2020-01-02T03:04:05`), or `Date Invalid`
+ */
+export const DATE_MARKER = `${TYPE_KEY}: Date` as const;
+export type DateMarker = `${typeof DATE_MARKER} ${string}`;
+
+export const isDateMarker = (value: unknown): value is DateMarker =>
+  typeof value === 'string' && value.startsWith(`${DATE_MARKER} `);
+
+const two = (part: number) => String(part).padStart(2, '0');
+
+function formatDateMarker(
+  Y: number,
+  M: number,
+  D: number,
+  h: number,
+  m: number,
+  s: number,
+): DateMarker {
+  if (![Y, M, D, h, m, s].every(Number.isFinite)) return `${DATE_MARKER} Invalid`;
+  return `${DATE_MARKER} ${String(Y).padStart(4, '0')}-${two(M)}-${two(D)}T${two(h)}:${two(m)}:${two(s)}`;
+}
+
+export const toDateMarker = (date: Date): DateMarker =>
+  formatDateMarker(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+  );
+
+const DATE_PATTERN = /^(\d{4,})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/;
+const getDateParts = (marker: DateMarker) =>
+  DATE_PATTERN.exec(marker.slice(DATE_MARKER.length + 1));
+
+/** The Date of a marker; an invalid one when the marker says so */
+export function fromDateMarker(marker: DateMarker): Date {
+  const parts = getDateParts(marker);
+  if (!parts) return new Date(Number.NaN);
+  const [Y, M, D, h, m, s] = parts.slice(1).map(Number) as [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+  ];
+  const date = new Date(Y, M - 1, D, h, m, s);
+  // A year before 100 is read as 19xx by the constructor
+  if (Y < 100) date.setFullYear(Y);
+  return date;
+}
+
+/** A Date marker as text, like `2020-01-02 03:04:05` */
+export function getDateText(marker: DateMarker): string {
+  const parts = getDateParts(marker);
+  return parts ? marker.slice(DATE_MARKER.length + 1).replace('T', ' ') : 'Invalid Date';
+}
+
+/**
+ * What a search looks at in a value: the text of a string, the digits of a number, true or false,
+ * and the time of a Date as it is shown. Nothing for the others (containers, null, the markers).
+ */
+export function getSearchableText(value: JSONSafeValue, type: ValueType): string | undefined {
+  switch (type) {
+    case 'string':
+      return value as string;
+    case 'number':
+    case 'boolean':
+      return String(value as number | boolean);
+    case 'date':
+      return getDateText(value as DateMarker);
+    default:
+      return undefined;
+  }
+}
+
+export const MARKED_VALUE_WRITE_ERROR = 'NaN, Infinity and undefined cannot be written from here';
+
+/**
+ * Whether `after` has a marker (see above) where `before` did not have the same one: a marker
+ * that was there and stays is no new value. Containers are compared by key and index.
+ */
+export function hasNewMarkedValue(before: unknown, after: unknown): boolean {
+  if (getMarkedValueText(after) !== undefined) return before !== after;
+  if (after === null || typeof after !== 'object') return false;
+  const previous = typeof before === 'object' && before !== null ? before : {};
+  return Object.entries(after).some(([key, value]) =>
+    hasNewMarkedValue((previous as Record<string, unknown>)[key], value),
+  );
+}
+
 export type ContainerType = 'object' | 'array' | 'map' | 'set';
 
 export function getJsonType(value: unknown): ValueType {
   if (value === null) return 'null';
   const t = typeof value;
-  if (t === 'string' || t === 'number' || t === 'boolean' || t === 'undefined') {
-    return t as ValueType;
+  if (t === 'string') {
+    switch (value) {
+      case NAN_MARKER:
+        return 'NaN';
+      case POSITIVE_INFINITY_MARKER:
+      case NEGATIVE_INFINITY_MARKER:
+        return 'infinity';
+      case UNDEFINED_MARKER:
+        return 'undefined';
+      default:
+        return isDateMarker(value) ? 'date' : 'string';
+    }
   }
+  if (t === 'number' || t === 'boolean' || t === 'undefined') return t as ValueType;
   if (Array.isArray(value)) return value[0] === SET_MARKER ? 'set' : 'array';
   if (t === 'object') {
     switch ((value as Record<string, unknown>)[TYPE_KEY]) {
@@ -21,8 +156,6 @@ export function getJsonType(value: unknown): ValueType {
         return 'map';
       case 'function':
         return 'function';
-      case 'Date':
-        return 'date';
       default:
         return 'object';
     }
@@ -51,16 +184,37 @@ export function getContainerKeys(value: unknown, type: ContainerType): Array<str
   return type === 'map' ? keys.filter((key) => key !== TYPE_KEY) : keys;
 }
 
+export function isContainer(value: JSONSafeValue): value is JSONSafeContainer {
+  return isContainerType(getJsonType(value));
+}
+
+/** `getContainerKeys(value, type).length` without making the list: arrays can be large */
+export function getContainerSize(value: JSONSafeContainer): number {
+  if (Array.isArray(value)) return value[0] === SET_MARKER ? value.length - 1 : value.length;
+  const size = Object.keys(value).length;
+  return value[TYPE_KEY] === 'Map' || value[TYPE_KEY] === 'NumberMap' ? size - 1 : size;
+}
+
 export function getPathValue(
-  root: JSONSafeValue,
+  root: JSONSafeContainer,
   path: ReadonlyArray<string | number>,
 ): JSONSafeValue {
-  let value = root;
+  let value: JSONSafeValue = root;
   for (const key of path) {
     if (value === null || typeof value !== 'object') return undefined;
-    value = (value as Record<string | number, JSONSafeValue>)[key];
+    value = (value as JSONSafeObject)[key];
   }
   return value;
+}
+
+/** The longest start of `path` that is still in `root` */
+export function trimToExistingPath(root: JSONSafeContainer, path: Path): Path {
+  let value: JSONSafeValue = root;
+  for (let depth = 0; depth < path.length; depth++) {
+    if (!isContainer(value) || !Object.hasOwn(value, path[depth]!)) return path.slice(0, depth);
+    value = (value as JSONSafeObject)[path[depth]!];
+  }
+  return path;
 }
 
 export function jsonEqual(a: JSONSafeValue, b: JSONSafeValue): boolean {
@@ -81,4 +235,13 @@ export function containsFunction(value: JSONSafeValue): boolean {
 
 export function getKeyLabel(type: ContainerType, key: string | number) {
   return type === 'set' && typeof key === 'number' ? key - 1 : key;
+}
+
+export function getContainerKeyLabel(container: JSONSafeContainer, key: string | number) {
+  if (typeof key === 'string') return key;
+  return String(isSet(container) ? key - 1 : key);
+}
+
+export function isSet(value: JSONSafeValue): value is JSONSafeArray {
+  return Array.isArray(value) && value[0] === SET_MARKER;
 }

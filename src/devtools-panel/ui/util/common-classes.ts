@@ -4,4 +4,5 @@ export const baseInputClasses = `
   text-sm placeholder-gray-400 text-gray-100
   shadow-sm
   focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500
+  disabled:opacity-50 [&[readonly]]:opacity-55
 `;

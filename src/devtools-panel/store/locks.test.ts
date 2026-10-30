@@ -1,9 +1,17 @@
 import { flush } from 'solid-js';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
+import { createGame } from '@/testing/test-game';
+
 import { applyUpdate, getDiffFrames, startGameState } from './game-state';
-import { clearLocks, getLockedPaths, isPathLockable, setPathLock } from './locks';
-import { createGame } from './test-game';
+import {
+  clearLocks,
+  getLockedPaths,
+  getLockRange,
+  isPathLockable,
+  setLockRange,
+  setPathLock,
+} from './locks';
 
 const { setStatePropertyLocks } = vi.hoisted(() => ({
   setStatePropertyLocks: vi.fn<(locks: unknown) => Promise<void>>(async () => {}),
@@ -32,6 +40,32 @@ describe('locks', () => {
 
     setPathLock(['hp'], false);
     expect(getLockedPaths()).toEqual([['inv']]);
+  });
+
+  it('locks a number to a range, which starts as the number itself', () => {
+    const game = createGame({ hp: 10, name: 'a' });
+    startGameState(game.state());
+    flush();
+
+    setPathLock(['hp'], true);
+    expect(getLockRange(['hp'])).toEqual({ min: 10, max: 10 });
+    expect(getLockRange(['other'])).toBeUndefined();
+
+    setLockRange(['hp'], 10, 50);
+    expect(getLockRange(['hp'])).toEqual({ min: 10, max: 50 });
+    expect(setStatePropertyLocks).toHaveBeenLastCalledWith([
+      { path: ['hp'], value: 10, min: 10, max: 50 },
+    ]);
+
+    setLockRange(['hp'], 20, 50);
+    expect(setStatePropertyLocks).toHaveBeenLastCalledWith([
+      { path: ['hp'], value: 20, min: 20, max: 50 },
+    ]);
+    expect(() => setLockRange(['hp'], 9, 8)).toThrow(/minimum/);
+
+    setPathLock(['name'], true);
+    setLockRange(['name'], 1, 2);
+    expect(getLockRange(['name'])).toBeUndefined();
   });
 
   it('refuses to lock functions, and says so', () => {

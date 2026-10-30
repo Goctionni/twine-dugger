@@ -23,19 +23,15 @@ export interface StoreData {
   viewState: {
     activeTab: Page;
     state: {
-      historyRef: number | 'latest';
       path: Path;
     };
     passages: {
       selected: string | null;
     };
-    /** What the search is told; see `search/types.ts` */
     search: {
       scope: SearchScope;
       sort: SearchSort;
-      /** Value types to show in state results; empty = all */
       typeFilter: ValueType[];
-      /** Passage tags to require; empty = all. Game specific, never persisted */
       tagFilter: string[];
     };
   };
@@ -44,6 +40,7 @@ export interface StoreData {
 export const gameConfigSchema = type({
   locks: lockSchema.array(),
   filteredPaths: pathSchema.array(),
+  pins: pathSchema.array(),
 });
 export type GameConfig = typeof gameConfigSchema.infer;
 
@@ -51,15 +48,19 @@ export const settingsSchema = type({
   'diffLog.fontSize': 'number',
   'diffLog.pollingInterval': 'number',
   'diffLog.maxHistorySlices': 'number',
-  'diffLog.headingStyle': "'default' | 'distinct'",
   'state.propertyOrder': propertyOrderSchema,
   'state.propertyOrderDesc': 'boolean',
   'state.filters': valueTypeSchema.or("'filtered'").array(),
+  'state.recentUpdates': 'number',
+  'state.typeAheadResetMs': 'number',
+  'state.pinCascade': 'boolean',
+  'filteredPaths.hiddenIn': "'diff-log' | 'state' | 'both'",
+  'state.navigator': "'miller' | 'tree' | 'tiles'",
+  'state.treeLayout': "'containers-and-primitives' | 'primitives-in-list'",
   'state.splitDirection': "'auto' | 'vertical' | 'horizontal'",
   'passages.splitDirection': "'auto' | 'vertical' | 'horizontal'",
   'editor.disableHighlighting': "'never' | 'very-large' | 'large' | 'normal' | 'always'",
   'search.smFilterLayout': "'icon-sidebar' | 'top-bar'",
-  // Which parts of the search are remembered between sessions (the search text and tag filter never are)
   'search.persist.options': 'boolean',
   'search.persist.scope': 'boolean',
   'search.persist.sort': 'boolean',

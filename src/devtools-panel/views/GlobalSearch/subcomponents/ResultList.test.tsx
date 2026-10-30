@@ -2,8 +2,8 @@ import { render } from '@solidjs/web';
 import { createMemo, createRoot, createSignal, flush } from 'solid-js';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vite-plus/test';
 
-import { getMarkedText, installFakeHighlights } from '@/devtools-panel/ui/util/test-highlights';
 import type { ParsedPassageData } from '@/shared/shared-types';
+import { getMarkedText, installFakeHighlights } from '@/testing/test-highlights';
 
 import { setStore } from '../../../store/store';
 import { searchPassages } from '../logic/passage-search';
@@ -32,6 +32,9 @@ beforeAll(() => {
   installFakeHighlights();
   Object.defineProperty(HTMLElement.prototype, 'offsetHeight', { configurable: true, value: 400 });
   Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, value: 600 });
+  // The virtualizer measures the scroll area with its client size
+  Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 400 });
+  Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 600 });
   globalThis.ResizeObserver ??= class {
     observe() {}
     unobserve() {}

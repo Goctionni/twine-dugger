@@ -2,13 +2,11 @@
 
 The DevTools app (`src/devtools-panel`) renders the main UI (`views/`):
 
-- **State View**: Inspect nested state (objects, arrays, Maps, Sets). Edit primitives in-place;
-  add/duplicate/delete keys; lock properties.
+- **State page**: Move through the state (objects, arrays, Maps, Sets) with Miller columns, a tree or tiles, filter and sort it, and edit it in an inspector: values, containers (in bulk, or as JSON), previous values, pins and locks. See [`state/`](./state/README.md).
 - **Diff Log**: Stream of **diff frames**, each showing the changes between two states.
-- **History Navigation**: Jump between frames to inspect prior states.
 - **Passages**: List, view and edit passages.
 - **Search**: Search state and passages, with match case, whole word and regex, and filters (what to search in, state type, passage tag) and sorting. Which options are remembered is set in Settings. See [`search/`](./search/README.md).
-- **Settings**: Display options, filtered paths and locks. Per-game settings are stored in `localStorage`.
+- **Settings**: Options of each page, the lists of filtered paths and locked variables. Settings are stored in `localStorage`, filtered paths, locks and pins per game.
 
 State lives in a Solid store (`store/`), updated by polling the content script.
 

@@ -1,5 +1,7 @@
 import { createEffect, createSignal, onSettled, Show } from 'solid-js';
 
+import { whenIdle } from '@/devtools-panel/utils/when-idle';
+
 import { createQueryMatcher } from '../../logic/query-matcher';
 import { getFocusRequests } from '../../store-helpers/search-focus';
 import {
@@ -11,7 +13,6 @@ import {
 import type { FilterLayout, QueryMatcher, SearchOptions } from '../../types';
 import { LayoutToggle } from '../Filters/LayoutToggle';
 import { ToggleCaseSensitive, ToggleRegex, ToggleWholeWord } from './OptionToggles';
-import { whenIdle } from './when-idle';
 
 interface Props {
   layout: FilterLayout;

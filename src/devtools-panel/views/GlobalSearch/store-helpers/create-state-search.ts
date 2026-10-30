@@ -1,6 +1,6 @@
 import { createMemo, createProjection, snapshot, untrack, type Accessor } from 'solid-js';
 
-import { getLastChangeIdByKey, getLatestId, getLatestState } from '../../../store/game-state';
+import { getLastChangeIdByKey, getLatestState, getStateVersion } from '../../../store/game-state';
 import { sortStateHits } from '../logic/sort';
 import { countTypes, searchState } from '../logic/state-search';
 import type { QueryMatcher, StateMatcherHit, StateScope } from '../types';
@@ -20,8 +20,8 @@ export function createStateSearch(getQueryMatcher: Accessor<QueryMatcher | null>
     const queryMatcher = getQueryMatcher();
     if (!queryMatcher) return NO_HITS;
 
-    // Searched again whenever the state changes: that is what the id says
-    getLatestId();
+    // Searched again whenever the state changes
+    getStateVersion();
     return searchState(
       untrack(() => snapshot(getLatestState())),
       queryMatcher,

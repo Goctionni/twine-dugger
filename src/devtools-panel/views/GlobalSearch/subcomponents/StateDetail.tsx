@@ -1,12 +1,11 @@
 import { Match, Switch } from 'solid-js';
 
-import { setNavigationPage, setViewState } from '@/devtools-panel/store/store';
+import { getLatestState } from '@/devtools-panel/store/game-state';
+import { showInStatePage } from '@/devtools-panel/store/state-location';
 import { PrettyPath } from '@/devtools-panel/ui/display/PrettyPath';
-import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import { btnClass } from '@/devtools-panel/ui/util/btnClass';
-import { StateBooleanInput } from '@/devtools-panel/views/State/StateInputs/StateBooleanInput';
-import { StateNumberInput } from '@/devtools-panel/views/State/StateInputs/StateNumberInput';
-import { StateStringInput } from '@/devtools-panel/views/State/StateInputs/StateStringInput';
+import { InspectorContent } from '@/devtools-panel/views/State/Inspector/InspectorContent';
+import { getJsonType, getPathValue, isContainerType } from '@/shared/json-safe';
 
 import type { StateMatcherHit } from '../types';
 
@@ -14,36 +13,36 @@ interface Props {
   hit: StateMatcherHit;
 }
 
-/** The value is the live one, with the inputs of the State page: a hit only has the value it was found with */
+/** The editor of the State page, for the live value: a hit only has the value it was found with */
 export function StateDetail(props: Props) {
-  const showInState = () => {
-    setNavigationPage('state');
-    setViewState('state', 'path', [...props.hit.path]);
-  };
+  const getValue = () => getPathValue(getLatestState(), props.hit.path);
 
   return (
-    <div class="flex flex-col gap-3 p-3">
-      <div class="flex items-center gap-2">
-        <TypeIcon type={props.hit.type} />
-        <span class="text-sm font-semibold">{props.hit.type}</span>
-      </div>
-      <PrettyPath class="font-mono text-sm font-bold break-all" path={props.hit.path} statePrefix />
-      <Switch>
-        <Match when={props.hit.type === 'string'}>
-          <StateStringInput path={props.hit.path} />
-        </Match>
-        <Match when={props.hit.type === 'number'}>
-          <StateNumberInput path={props.hit.path} />
-        </Match>
-        <Match when={props.hit.type === 'boolean'}>
-          <StateBooleanInput path={props.hit.path} />
-        </Match>
-      </Switch>
-      <div>
-        <button type="button" class={btnClass('contained')} onClick={showInState}>
+    <div class="flex flex-col">
+      <div class="px-3 pt-3">
+        <button
+          type="button"
+          class={btnClass('contained')}
+          onClick={() => showInStatePage(props.hit.path)}
+        >
           Show in State view
         </button>
       </div>
+      <Switch>
+        <Match when={getValue() === undefined}>
+          <div class="flex flex-col gap-2 p-3 text-sm text-slate-400">
+            <PrettyPath class="font-mono break-all" path={props.hit.path} statePrefix />
+            <p>This value is no longer in the state.</p>
+          </div>
+        </Match>
+        <Match when={getValue() !== undefined}>
+          <InspectorContent
+            path={props.hit.path}
+            onSelect={showInStatePage}
+            selectionKind={isContainerType(getJsonType(getValue())) ? 'container' : 'primitive'}
+          />
+        </Match>
+      </Switch>
     </div>
   );
 }

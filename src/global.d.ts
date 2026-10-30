@@ -8,6 +8,8 @@ import type {
   PassageData,
   Path,
   UpdateResult,
+  Write,
+  WriteResult,
 } from '@/shared/shared-types';
 
 type SchedulerTask<T> = () => T | Promise<T>;
@@ -26,8 +28,7 @@ declare global {
     TwineDugger: {
       getPassageData: () => PassageData[];
       getUpdates: (full?: boolean) => UpdateResult;
-      setState: (path: Path, value: JSONSafeValue) => void;
-      deleteFromState: (path: Path) => void;
+      setStateMulti: (writes: Write[]) => WriteResult[];
       duplicateStateProperty: (
         parentPath: Path,
         sourceKey: string | number,

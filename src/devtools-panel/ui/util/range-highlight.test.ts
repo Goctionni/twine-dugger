@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 
+import { getMarkedText, installFakeHighlights } from '@/testing/test-highlights';
+
 import { highlightRanges } from './range-highlight';
-import { getMarkedText, installFakeHighlights } from './test-highlights';
 
 let host: HTMLElement;
 beforeEach(() => {

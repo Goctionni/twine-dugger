@@ -14,7 +14,9 @@ export default defineConfig({
     },
   },
   test: {
+    environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: ['src/testing/vitest.setup.ts'],
     exclude: ['tests/e2e/**'],
     sequence: { shuffle: true },
   },

@@ -48,10 +48,22 @@ function createOrUpdatePassage({ name, source, tags }: FormatPassage) {
       passage.element!.setAttribute('tags', tags.join(' '));
     }
   } else {
-    storyAPI.add({
-      name: name,
-      text: source,
-      tags: tags ?? [],
-    });
+    addPassage(name, source, tags ?? []);
   }
+}
+
+function addPassage(name: string, text: string, tags: string[]) {
+  const { Story, Passage } = sugarcube();
+  if (Story.add) {
+    Story.add({ name, text, tags });
+    return;
+  }
+
+  // Story.add is not in every version of SugarCube (2.30 has none, and the Story object is frozen,
+  // so it cannot be added). The story makes its passages like this when it loads
+  const element = document.createElement('tw-passagedata');
+  element.setAttribute('name', name);
+  element.setAttribute('tags', tags.join(' '));
+  element.textContent = text;
+  Story.passages[name] = new Passage(name, element);
 }

@@ -29,7 +29,7 @@ export default defineConfig({
       rules: solid.rules,
     },
     {
-      files: ['src/**/*.test.{ts,tsx}'],
+      files: ['src/**/*.test.{ts,tsx}', 'src/testing/**/*.{ts,tsx}'],
       plugins: ['vitest', 'jest', 'typescript'],
       env: { vitest: true },
       jsPlugins: ['eslint-plugin-testing-library'],

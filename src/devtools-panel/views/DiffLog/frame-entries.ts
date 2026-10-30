@@ -1,11 +1,11 @@
 import { getDiffFromDelta } from '../../store/diff-from-delta';
-import { isPathFiltered } from '../../store/store';
+import { isHiddenInDiffLog } from '../../store/store';
 import type { StateDiff } from './diff-types';
 
 export function getVisibleEntries(frame: StateDiff) {
   return {
-    changes: getDiffFromDelta(frame.delta).filter((change) => !isPathFiltered(change.path)),
-    blocked: frame.blocked.filter((write) => !isPathFiltered(write.path)),
+    changes: getDiffFromDelta(frame.delta).filter((change) => !isHiddenInDiffLog(change.path)),
+    blocked: frame.blocked.filter((write) => !isHiddenInDiffLog(write.path)),
   };
 }
 

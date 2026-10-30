@@ -5,7 +5,7 @@ import { PassagesPage } from '../pages/PassagesPage';
 import { SearchPage } from '../pages/SearchPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { StatePage } from '../pages/StatePage';
-import { createHistoryEffects } from '../store/game-state';
+import { createFrameLimitEffect } from '../store/game-state';
 import {
   createPersistenceEffects,
   getConnectionState,
@@ -16,6 +16,7 @@ import { startTrackingFrames } from '../store/tracking';
 import { TooltipOutlet } from '../ui/display/TooltipOutlet';
 import { ContextMenuUI } from '../ui/util/ContextMenu';
 import { PromptDialogOutlet } from '../ui/util/Prompt';
+import { ApiBlocked } from './ApiBlocked';
 import { Candidates } from './CandidateFrames';
 import { initMeta } from './initMeta';
 import { Layout } from './Layout';
@@ -23,7 +24,7 @@ import { Layout } from './Layout';
 initMeta();
 
 export function App() {
-  createHistoryEffects();
+  createFrameLimitEffect();
   createPersistenceEffects();
   const state = () => getConnectionState();
 
@@ -41,6 +42,9 @@ export function App() {
         <Switch>
           <Match when={state() === 'no-game-detected'}>
             <span class="m-auto">No supported game detected</span>
+          </Match>
+          <Match when={state() === 'api-blocked'}>
+            <ApiBlocked />
           </Match>
           <Match when={state() === 'candidate-iframes'}>
             <Candidates />

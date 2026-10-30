@@ -3,7 +3,7 @@ import type { JSX } from '@solidjs/web';
 type AnchorRenderProps = {
   'class': string;
   'data-anchor': string;
-  'tabIndex'?: number;
+  'tabindex'?: number;
 };
 
 type Props = {
@@ -17,7 +17,7 @@ export function Tooltip(props: Props) {
 
   return (
     <>
-      {props.element({ 'class': 'tp-anchor', 'data-anchor': id, 'tabIndex': 0 })}
+      {props.element({ 'class': 'tp-anchor', 'data-anchor': id, 'tabindex': 0 })}
       <div class="tp-tooltip p-2" data-anchor-target={id} data-area={props.area} role="tooltip">
         <div
           class="

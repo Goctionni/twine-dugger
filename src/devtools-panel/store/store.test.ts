@@ -3,7 +3,19 @@ import { beforeEach, describe, expect, it, onTestFinished } from 'vite-plus/test
 
 import { fromJson } from '@/shared/from-json';
 
-import { createPersistenceEffects, setGameMetaData, setSetting, setStore, store } from './store';
+import {
+  createPersistenceEffects,
+  addFilteredPath,
+  isHiddenInDiffLog,
+  isHiddenInState,
+  isPinned,
+  removeFilteredPath,
+  setGameMetaData,
+  setSetting,
+  setStore,
+  store,
+  togglePin,
+} from './store';
 import { gameConfigSchema, settingsSchema } from './store-types';
 
 const key = 'twine-dugger-game-1';
@@ -13,7 +25,7 @@ beforeEach(() => {
   localStorage.clear();
   setStore((draft) => {
     draft.gameMeta = null;
-    draft.gameConfig = { locks: [], filteredPaths: [] };
+    draft.gameConfig = { locks: [], filteredPaths: [], pins: [] };
   });
   flush();
 });
@@ -36,6 +48,7 @@ describe('persistence', () => {
         { path: ['list'], value: [1, 2] },
       ],
       filteredPaths: [['log', 0]],
+      pins: [['a', 'b']],
     };
     localStorage.setItem(key, JSON.stringify(saved));
     persist();
@@ -51,7 +64,7 @@ describe('persistence', () => {
     persist();
     setGameMetaData(meta);
     flush();
-    expect(store.gameConfig).toEqual({ locks: [], filteredPaths: [] });
+    expect(store.gameConfig).toEqual({ locks: [], filteredPaths: [], pins: [] });
   });
 
   it('keeps the config of a game without an ifid under its name', () => {
@@ -92,5 +105,76 @@ describe('persistence', () => {
 
     const saved = fromJson(localStorage.getItem('twine-dugger-settings')!, settingsSchema);
     expect(saved['diffLog.fontSize']).toBe(20);
+  });
+
+  it('still loads settings that were saved with a setting that is gone', () => {
+    const saved = fromJson(
+      JSON.stringify({ 'diffLog.fontSize': 20, 'diffLog.headingStyle': 'distinct' }),
+      settingsSchema.partial(),
+    );
+    expect(saved['diffLog.fontSize']).toBe(20);
+  });
+});
+
+describe('pins', () => {
+  it('pins a path, which also marks the paths above it, and unpins it with what is beneath', () => {
+    togglePin(['a', 'b', 'c']);
+    togglePin(['a', 'x']);
+    flush();
+
+    expect(isPinned(['a', 'b', 'c'])).toBe(true);
+    expect(isPinned(['a', 'b'])).toBe(true);
+    expect(isPinned(['a'])).toBe(true);
+    expect(isPinned([])).toBe(true);
+    expect(isPinned(['a', 'b', 'c', 'd'])).toBe(false);
+    expect(isPinned(['other'])).toBe(false);
+
+    togglePin(['a', 'b']);
+    flush();
+    expect(isPinned(['a', 'b', 'c'])).toBe(false);
+    expect(isPinned(['a', 'x'])).toBe(true);
+    expect(store.gameConfig.pins).toEqual([['a', 'x']]);
+  });
+
+  it('pins only the path itself without the cascade', () => {
+    setSetting('state.pinCascade', false);
+    onTestFinished(() => setSetting('state.pinCascade', true));
+    togglePin(['a', 'b', 'c']);
+    togglePin(['a', 'b']);
+    flush();
+
+    expect(isPinned(['a', 'b'])).toBe(true);
+    expect(isPinned(['a', 'b', 'c'])).toBe(true);
+    expect(isPinned(['a'])).toBe(false);
+
+    togglePin(['a', 'b']);
+    flush();
+    expect(isPinned(['a', 'b'])).toBe(false);
+    expect(store.gameConfig.pins).toEqual([['a', 'b', 'c']]);
+  });
+});
+
+describe('where filtered paths are hidden', () => {
+  it('hides them in the diff log by default, and in the State view when the setting says so', () => {
+    addFilteredPath(['a']);
+    onTestFinished(() => {
+      removeFilteredPath(['a']);
+      setSetting('filteredPaths.hiddenIn', 'diff-log');
+    });
+    flush();
+
+    expect(isHiddenInDiffLog(['a', 'b'])).toBe(true);
+    expect(isHiddenInState(['a', 'b'])).toBe(false);
+
+    setSetting('filteredPaths.hiddenIn', 'state');
+    flush();
+    expect(isHiddenInDiffLog(['a', 'b'])).toBe(false);
+    expect(isHiddenInState(['a', 'b'])).toBe(true);
+
+    setSetting('filteredPaths.hiddenIn', 'both');
+    flush();
+    expect(isHiddenInDiffLog(['a', 'b'])).toBe(true);
+    expect(isHiddenInState(['a', 'b'])).toBe(true);
+    expect(isHiddenInState(['other'])).toBe(false);
   });
 });

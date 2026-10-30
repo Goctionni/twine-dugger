@@ -2,8 +2,6 @@ import type { JSX } from '@solidjs/web';
 import { type } from 'arktype';
 import type { Delta } from 'jsondiffpatch';
 
-import type { TYPE_KEY } from './json-safe';
-
 export type Primitive = string | number | boolean | null | undefined;
 
 export type Value =
@@ -17,10 +15,7 @@ export type Value =
 export type JSONSafeValue = Primitive | JSONSafeValue[] | { [key: string]: JSONSafeValue };
 export type JSONSafeArray = JSONSafeValue[];
 export type JSONSafeObject = { [key: string]: JSONSafeValue };
-export type JSONSafeDate = { [TYPE_KEY]: 'Date' } & Record<
-  'Y' | 'M' | 'D' | 'h' | 'm' | 's',
-  number
->;
+export type JSONSafeContainer = JSONSafeArray | JSONSafeObject;
 
 export type ObjectValue = { [key: string]: Value };
 
@@ -40,13 +35,26 @@ export type PropertyFilterKey = ValueType | 'filtered';
 export const jsonSafeValueSchema = type(
   'string | number | boolean | null | object',
 ).as<JSONSafeValue>();
-export const lockSchema = type({ path: pathSchema, value: jsonSafeValueSchema });
+// A number may be locked to a range: the game can set any value inside it, and anything outside
+// goes to the nearest bound. `value` is what the number was when it was locked.
+export const lockSchema = type({
+  'path': pathSchema,
+  'value': jsonSafeValueSchema,
+  'min?': 'number',
+  'max?': 'number',
+});
 export type Lock = typeof lockSchema.infer;
 
 export interface LockRevert {
   path: Path;
   attempted: JSONSafeValue;
 }
+
+/** A write of `setStateMulti`. `deep`: restore Map, Set, Date and the markers inside the value too, not only at its top */
+export type Write =
+  | { path: Path; value: JSONSafeValue; deep?: boolean }
+  | { path: Path; delete: true };
+export type WriteResult = { ok: true } | { ok: false; error: string };
 
 export type InitUpdate = { type: 'init'; passage: string; state: JSONSafeObject };
 export type DeltaUpdate = {
@@ -58,7 +66,7 @@ export type DeltaUpdate = {
 export type UpdateResult = InitUpdate | DeltaUpdate;
 
 export const valueTypeSchema = type(
-  "'other' | 'null' | 'undefined' | 'object' | 'array' | 'map' | 'set' | 'function' | 'date' | 'string' | 'number' | 'boolean'",
+  "'other' | 'null' | 'undefined' | 'NaN' | 'infinity' | 'object' | 'array' | 'map' | 'set' | 'function' | 'date' | 'string' | 'number' | 'boolean'",
 );
 export type ValueType = typeof valueTypeSchema.infer;
 
@@ -84,6 +92,7 @@ export interface OrderConfig {
 }
 export type Page = 'state' | 'search' | 'passages' | 'settings';
 export type ConnectionState =
+  | 'api-blocked'
   | 'candidate-iframes'
   | 'killed'
   | 'loading-meta'
@@ -97,6 +106,12 @@ export type ConnectionState =
 export interface CandidateGameIframes {
   __type: 'candidate-game-iframes';
   urls: string[];
+}
+
+/** A game of a format that is there, but that has blocked access to the API of the format */
+export interface BlockedApiGame {
+  __type: 'blocked-api';
+  format: 'SugarCube';
 }
 
 export interface VersionInfo {
@@ -204,8 +219,10 @@ export interface SugarCubeGlobals {
       get ifId(): string;
       has(name: string): boolean;
       get(name: string): SugarCubePassage;
-      add(passage: SugarCubePassage): boolean;
+      add?(passage: SugarCubePassage): boolean;
+      passages: Record<string, SugarCubePassage>;
     };
+    Passage: new (title: string, element: HTMLElement) => SugarCubePassage;
     storage: {
       name: string;
     };

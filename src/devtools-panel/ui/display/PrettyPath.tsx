@@ -1,6 +1,6 @@
 import { createEffect, createMemo, Show, untrack } from 'solid-js';
 
-import { getActiveState } from '@/devtools-panel/store/game-state';
+import { getLatestState } from '@/devtools-panel/store/game-state';
 import type { ContainerType } from '@/shared/json-safe';
 import {
   getJsonType,
@@ -137,14 +137,14 @@ export function PrettyPath(props: Props) {
   const pieces = createMemo(() => {
     const path = [...props.path];
     return untrack(() =>
-      getAtoms(path, getActiveState(), props).map((atom) => (
+      getAtoms(path, getLatestState(), props).map((atom) => (
         <span class={colorClasses[atom.color]}>{atom.text}</span>
       )),
     );
   });
 
   const isContainer = () =>
-    untrack(() => isContainerType(getJsonType(getPathValue(getActiveState(), props.path))));
+    untrack(() => isContainerType(getJsonType(getPathValue(getLatestState(), props.path))));
 
   const content = (
     <>

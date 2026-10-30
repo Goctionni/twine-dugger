@@ -1,5 +1,13 @@
 import type { IdentityCache, IdentityLookup } from '@/shared/id-helper';
-import { SET_MARKER, TYPE_KEY } from '@/shared/json-safe';
+import {
+  NAN_MARKER,
+  NEGATIVE_INFINITY_MARKER,
+  POSITIVE_INFINITY_MARKER,
+  SET_MARKER,
+  toDateMarker,
+  TYPE_KEY,
+  UNDEFINED_MARKER,
+} from '@/shared/json-safe';
 import type {
   ArrayValue,
   ContainerValue,
@@ -42,8 +50,16 @@ export function pretransformValue(
   identityCache: IdentityCache,
   identityLookup: IdentityLookup,
 ): JSONSafeValue {
+  if (value === undefined) return UNDEFINED_MARKER;
+  if (typeof value === 'number' && !Number.isFinite(value)) {
+    if (Number.isNaN(value)) return NAN_MARKER;
+    return value > 0 ? POSITIVE_INFINITY_MARKER : NEGATIVE_INFINITY_MARKER;
+  }
   if (!value) return value;
   if (primitiveTypes.has(typeof value)) return value as Primitive;
+
+  // A Date is a value, not something with an identity to keep
+  if (value.constructor === Date || value instanceof Date) return toDateMarker(value as Date);
 
   const object = value as ContainerValue;
   const cached = identityCache.get(object);
@@ -56,7 +72,7 @@ export function pretransformValue(
 }
 
 function pretransformOther(
-  value: ContainerValue | SetValue | Function | Date,
+  value: ContainerValue | SetValue | Function,
   identityCache: IdentityCache,
   identityRegistry: IdentityLookup,
 ): JSONSafeArray | JSONSafeObject {
@@ -67,7 +83,6 @@ function pretransformOther(
     return pretransformObject(value as ObjectValue, identityCache, identityRegistry);
   if (constructor === Array || Array.isArray(value))
     return pretransformArray(value as ArrayValue, identityCache, identityRegistry);
-  if (constructor === Date || value instanceof Date) return pretransformDate(value as Date);
   if (constructor === Map || value instanceof Map)
     return pretransformMap(value as MapValue, identityCache, identityRegistry);
   if (constructor === Set || value instanceof Set)
@@ -77,18 +92,6 @@ function pretransformOther(
 
 function pretransformFunction(fn: Function): JSONSafeObject {
   return { [TYPE_KEY]: 'function', str: Function.prototype.toString.call(fn) };
-}
-
-function pretransformDate(date: Date): JSONSafeObject {
-  return {
-    [TYPE_KEY]: 'Date',
-    Y: date.getFullYear(),
-    M: date.getMonth() + 1,
-    D: date.getDate(),
-    h: date.getHours(),
-    m: date.getMinutes(),
-    s: date.getSeconds(),
-  };
 }
 
 function pretransformArray(

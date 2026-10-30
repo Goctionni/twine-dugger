@@ -1,49 +1,80 @@
-import type { Delta } from 'jsondiffpatch';
+import type {
+  AddedDelta,
+  ArrayDelta,
+  DeletedDelta,
+  Delta,
+  ModifiedDelta,
+  MovedDelta,
+  ObjectDelta,
+  TextDiffDelta,
+} from 'jsondiffpatch';
 
 import { getJsonType, TYPE_KEY } from '@/shared/json-safe';
 import type { JSONSafeValue, Path } from '@/shared/shared-types';
 
 import type { DiffChange } from '../views/DiffLog/diff-types';
 
-// The parts of jsondiffpatch's delta format that are relied on:
-//  - `[value]` is an added value, `[old, new]` a change and `[old, 0, 0]` a deleted value
-//  - a nested object holds the changes inside an object or array; an array's has `_t: 'a'`
-//  - in an array's delta `3` is the item that is at index 3 in the new array, and `_3` the one that
-//    was at index 3 in the old array. Of those, `['', to, 3]` is an item that moved.
-const MOVED = 3;
+// jsondiffpatch has these functions, but does not export them correctly. Hence why they're implemented here
+const isObject = (value: unknown): value is object =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
+const isTupleOf = (value: unknown, size: number): value is unknown[] =>
+  Array.isArray(value) && value.length === size;
 
-type DeltaNode = { [key: string]: unknown[] | DeltaNode };
+const isAddedDelta = (delta: Delta): delta is AddedDelta => isTupleOf(delta, 1);
+const isModifiedDelta = (delta: Delta): delta is ModifiedDelta => isTupleOf(delta, 2);
+const isDeletedDelta = (delta: Delta): delta is DeletedDelta =>
+  isTupleOf(delta, 3) && delta[2] === 0 && delta[1] === 0;
+const isArrayDelta = (delta: Delta): delta is ArrayDelta =>
+  isObject(delta) && '_t' in delta && delta._t === 'a';
+const isObjectDelta = (delta: Delta): delta is ObjectDelta => isObject(delta);
+const isMovedDelta = (delta: Delta): delta is MovedDelta =>
+  isTupleOf(delta, 3) && delta[2] === 3 && typeof delta[1] === 'number';
+const isTextDiffDelta = (delta: Delta): delta is TextDiffDelta =>
+  isTupleOf(delta, 3) && delta[2] === 2 && delta[1] === 0 && typeof delta[0] === 'string';
 
-function walkDelta(delta: DeltaNode): DiffChange[] {
+function walkDelta(delta: Delta) {
   const changes: DiffChange[] = [];
 
-  const walk = (node: DeltaNode, path: Path) => {
-    const isArray = node._t !== undefined;
-    let hasMoves = false;
+  const walk = (node: Delta, path: Path) => {
+    if (!node) return changes;
 
-    for (const [rawKey, entry] of Object.entries(node)) {
-      if (rawKey === '_t' || rawKey === TYPE_KEY) continue;
-      const childPath = [...path, isArray ? Number(rawKey.replace('_', '')) : rawKey];
-
-      if (!Array.isArray(entry)) {
-        walk(entry, childPath);
-      } else if (entry[2] === MOVED) {
-        hasMoves = true;
-      } else if (entry.length === 1) {
-        changes.push({ kind: 'add', path: childPath, value: entry[0] as JSONSafeValue });
-      } else if (entry.length === 3) {
-        changes.push({ kind: 'del', path: childPath, value: entry[0] as JSONSafeValue });
-      } else {
-        const [oldValue, newValue] = entry as [JSONSafeValue, JSONSafeValue];
-        const kind = getJsonType(oldValue) === getJsonType(newValue) ? 'chg' : 'typ';
-        changes.push({ kind, path: childPath, oldValue, newValue });
+    if (isAddedDelta(node)) {
+      changes.push({ kind: 'add', path, value: node[0] as JSONSafeValue });
+    } else if (isModifiedDelta(node)) {
+      const [oldValue, newValue] = node as [JSONSafeValue, JSONSafeValue];
+      const kind = getJsonType(oldValue) === getJsonType(newValue) ? 'chg' : 'typ';
+      changes.push({ kind, path, oldValue, newValue });
+    } else if (isDeletedDelta(node)) {
+      changes.push({ kind: 'del', path, value: node[0] as JSONSafeValue });
+    } else if (isObjectDelta(node)) {
+      let hasMoves = false;
+      const isArray = isArrayDelta(node);
+      const keys = Object.keys(node);
+      for (const rawKey of keys) {
+        if (rawKey === '_t' || rawKey === TYPE_KEY) continue;
+        const key = isArray ? Number(rawKey.replace('_', '')) : rawKey;
+        const childNode = node[rawKey];
+        if (isMovedDelta(childNode)) {
+          hasMoves = true;
+        } else {
+          walk(node[rawKey], [...path, key]);
+        }
       }
-    }
 
-    if (hasMoves) changes.push({ kind: 'mov', path });
+      if (hasMoves) changes.push({ kind: 'mov', path });
+    } else if (isMovedDelta(node)) {
+      console.warn("[TwineDugger]: diffFromDelta detected a MovedDelta where it shouldn't have.");
+    } else if (isTextDiffDelta(node)) {
+      console.warn(
+        '[TwineDugger]: diffFromDelta detected a TextDiffDelta, whilst TextDiffing should be disabled.',
+      );
+    } else {
+      console.warn('[TwineDugger]: diffFromDelta was unable to determine the type of delta.', node);
+    }
   };
 
   walk(delta, []);
+
   return changes;
 }
 
@@ -52,10 +83,5 @@ const diffs = new WeakMap<object, DiffChange[]>();
 export function getDiffFromDelta(delta: Delta): DiffChange[] {
   if (!delta) return [];
 
-  let diff = diffs.get(delta as object);
-  if (!diff) {
-    diff = walkDelta(delta as DeltaNode);
-    diffs.set(delta as object, diff);
-  }
-  return diff;
+  return diffs.getOrInsertComputed(delta, () => walkDelta(delta));
 }

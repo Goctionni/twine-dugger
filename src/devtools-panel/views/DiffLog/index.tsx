@@ -21,7 +21,7 @@ export function DiffLog() {
     <div onContextMenu={onContextMenu} class="flex h-full flex-col p-4">
       <h2 class="mb-2 text-lg font-semibold text-gray-200">Diff Log</h2>
       <ul class="flex-1 overflow-auto">
-        <For each={frames()}>
+        <For each={frames()} fallback={<li class="text-sm text-gray-400">No changes yet</li>}>
           {(frame, index) => (
             <li>
               <DiffFrame frame={frame} first={index() === 0} />

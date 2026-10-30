@@ -1,5 +1,3 @@
-import { Match, Switch } from 'solid-js';
-
 import type { ValueType } from '@/shared/shared-types';
 
 interface Props {
@@ -9,64 +7,41 @@ interface Props {
 const baseIconClasses =
   'inline-flex items-center justify-center w-5 h-4.5 px-1 rounded-xs text-[10px] font-bold font-mono leading-none align-middle';
 
+const colored = (colors: string) => `${baseIconClasses} ${colors}`;
+
+// The letters are drawn by CSS from data-letters, not written as text: an icon in an option of a
+// select would otherwise be part of the label of the option in browsers that show only text
+const icons: Record<ValueType, { letters: string; classes: string }> = {
+  function: { letters: 'ƒ', classes: colored('bg-purple-500 text-white') },
+  array: { letters: '[]', classes: colored('bg-sky-500 text-white') },
+  set: { letters: 'S', classes: colored('bg-green-500 text-white') },
+  map: { letters: 'M', classes: colored('bg-teal-500 text-white') },
+  object: { letters: '{}', classes: colored('bg-blue-500 text-white') },
+  date: { letters: 'D', classes: colored('bg-orange-500 text-white') },
+  string: { letters: 'az', classes: colored('bg-yellow-400 text-yellow-900') },
+  number: { letters: '#', classes: colored('bg-red-500 text-white') },
+  NaN: { letters: '#?', classes: colored('bg-red-900 text-white') },
+  infinity: { letters: '∞', classes: colored('bg-red-900 text-white') },
+  boolean: { letters: '01', classes: colored('bg-black text-white') },
+  null: { letters: 'ø', classes: colored('bg-slate-500 text-white') },
+  undefined: { letters: '?', classes: colored('bg-gray-400 text-gray-800') },
+  // A symbol of the icon font: its name is turned into the symbol
+  other: {
+    letters: 'asterisk',
+    classes:
+      'material-symbols-outlined inline-flex h-4.5 w-5 items-center justify-center rounded-xs bg-fuchsia-900 text-xs leading-none text-white',
+  },
+};
+
+/** The letters of the icon of a type, for a larger icon elsewhere */
+export const getTypeLetters = (type: ValueType) => icons[type].letters;
+
 export function TypeIcon(props: Props) {
   return (
-    <Switch>
-      <Match when={props.type === 'function'}>
-        <span title={props.type} class={`${baseIconClasses} bg-purple-500 text-white`}>
-          ƒ
-        </span>
-      </Match>
-      <Match when={props.type === 'array'}>
-        <span title={props.type} class={`${baseIconClasses} bg-sky-500 text-white`}>
-          []
-        </span>
-      </Match>
-      <Match when={props.type === 'set'}>
-        <span title={props.type} class={`${baseIconClasses} bg-green-500 text-white`}>
-          S
-        </span>
-      </Match>
-      <Match when={props.type === 'map'}>
-        <span title={props.type} class={`${baseIconClasses} bg-teal-500 text-white`}>
-          M
-        </span>
-      </Match>
-      <Match when={props.type === 'object'}>
-        <span title={props.type} class={`${baseIconClasses} bg-blue-500 text-white`}>
-          {'{}'}
-        </span>
-      </Match>
-      <Match when={props.type === 'date'}>
-        <span title={props.type} class={`${baseIconClasses} bg-orange-500 text-white`}>
-          D
-        </span>
-      </Match>
-      <Match when={props.type === 'string'}>
-        <span title={props.type} class={`${baseIconClasses} bg-yellow-400 text-yellow-900`}>
-          az
-        </span>
-      </Match>
-      <Match when={props.type === 'number'}>
-        <span title={props.type} class={`${baseIconClasses} bg-red-500 text-white`}>
-          #
-        </span>
-      </Match>
-      <Match when={props.type === 'boolean'}>
-        <span title={props.type} class={`${baseIconClasses} bg-black text-white`}>
-          01
-        </span>
-      </Match>
-      <Match when={props.type === 'null'}>
-        <span title={props.type} class={`${baseIconClasses} bg-slate-500 text-white`}>
-          ø
-        </span>
-      </Match>
-      <Match when={props.type === 'undefined'}>
-        <span title={props.type} class={`${baseIconClasses} bg-gray-400 text-gray-800`}>
-          ?
-        </span>
-      </Match>
-    </Switch>
+    <span
+      title={props.type}
+      data-letters={icons[props.type].letters}
+      class={[icons[props.type].classes, 'before:content-[attr(data-letters)]']}
+    />
   );
 }

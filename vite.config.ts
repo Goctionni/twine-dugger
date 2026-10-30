@@ -7,10 +7,10 @@ import { defineConfig, type PluginOption } from 'vite-plus';
 
 import { buildLib } from './build/build-lib.ts';
 import { copyTransform } from './build/copy-transform.ts';
+import { getBuildVersion } from './build/get-build-version.ts';
 import { htmlInsertFontPlugin } from './build/html-insert-font.ts';
 import { logResults } from './build/log-results.ts';
 import { mockApiPlugin } from './build/plugin-mock-api.ts';
-import packageJson from './package.json' with { type: 'json' };
 
 export default defineConfig({
   staged: { '*': 'vp check --fix' },
@@ -43,13 +43,20 @@ export default defineConfig({
 });
 
 async function buildExtra() {
+  const { version, versionName, firefoxVersion } = getBuildVersion();
+  const insertVersion = (content: string) =>
+    content
+      .replace(/\$versionName/g, versionName)
+      .replace(/\$firefoxVersion/g, firefoxVersion)
+      .replace(/\$version/g, version);
+
   await cp('icons', 'dist/icons', { recursive: true });
   await logResults([
     // Manifest with version number
     copyTransform({
       from: 'src/manifest.json',
       to: 'dist/manifest.json',
-      transform: (content) => content.replace(/\$version/g, packageJson.version),
+      transform: insertVersion,
     }),
     // create-panel.html
     copyTransform({
@@ -73,6 +80,6 @@ async function buildExtra() {
   await copyTransform({
     from: 'src/manifest.firefox.json',
     to: 'dist-ff/manifest.json',
-    transform: (content) => content.replace(/\$version/g, packageJson.version),
+    transform: insertVersion,
   });
 }

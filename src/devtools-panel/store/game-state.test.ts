@@ -2,20 +2,23 @@ import { createEffect, createRoot, flush, snapshot } from 'solid-js';
 import { describe, expect, it, onTestFinished, vi } from 'vite-plus/test';
 
 import { pretransformState } from '@/content-script/util/pre-transform';
+import { createGame } from '@/testing/test-game';
 
 import { getDiffFromDelta } from './diff-from-delta';
 import {
   applyUpdate,
-  createHistoryEffects,
-  getActiveState,
+  createFrameLimitEffect,
   getDiffFrames,
-  getHistoryIds,
+  getLastChangeId,
+  getLatestId,
+  getLatestState,
+  getStateVersion,
+  getPathRecord,
   isFrameTainted,
   restartGameState,
   startGameState,
 } from './game-state';
-import { setSetting, setViewState } from './store';
-import { createGame } from './test-game';
+import { addFilteredPath, removeFilteredPath, setSetting, setViewState, store } from './store';
 
 vi.mock('../api/api', () => ({
   getPassageData: async () => [],
@@ -24,7 +27,7 @@ vi.mock('../api/api', () => ({
 
 type Game = ReturnType<typeof createGame>;
 
-const state = () => getActiveState() as any;
+const state = () => getLatestState() as any;
 
 function play(game: Game, mutate: (live: any) => void) {
   mutate(game.live);
@@ -74,19 +77,6 @@ describe('game state', () => {
       ['chg:inv.1.item'],
       ['chg:hp'],
     ]);
-
-    setViewState('state', 'historyRef', 5);
-    flush();
-    expect(state().hp).toBe(9);
-
-    setViewState('state', 'historyRef', 0);
-    flush();
-    expect(state().hp).toBe(10);
-    expect(state().inv).toHaveLength(2);
-
-    setViewState('state', 'historyRef', 'latest');
-    flush();
-    expect(getHistoryIds()).toEqual([6, 5, 4, 3, 2, 1, 0]);
   });
 
   it('only notifies readers of the properties that changed', () => {
@@ -122,6 +112,35 @@ describe('game state', () => {
     expect(runs).toEqual({ ...before, b: before.b + 1, n1: before.n1 + 1, len: before.len + 1 });
   });
 
+  it('trims the path of the State view to the part that is still in the state', () => {
+    const game = createGame({ a: { b: { c: 1 }, keep: 1 }, list: [1, 2] });
+    startGameState(game.state());
+    flush();
+    const selectPath = (path: (string | number)[]) => {
+      setViewState('state', 'path', path);
+      flush();
+    };
+
+    selectPath(['a', 'b', 'c']);
+    play(game, (s) => (s.a.keep = 2));
+    expect([...store.viewState.state.path]).toEqual(['a', 'b', 'c']);
+
+    play(game, (s) => delete s.a.b.c);
+    expect([...store.viewState.state.path]).toEqual(['a', 'b']);
+
+    play(game, (s) => delete s.a.b);
+    expect([...store.viewState.state.path]).toEqual(['a']);
+
+    selectPath(['list', 1]);
+    play(game, (s) => s.list.pop());
+    expect([...store.viewState.state.path]).toEqual(['list']);
+
+    selectPath(['a', 'keep']);
+    restartGameState(structuredClone({ a: {} }) as any, 'start');
+    flush();
+    expect([...store.viewState.state.path]).toEqual(['a']);
+  });
+
   it('keeps the same proxies for array items that only moved', () => {
     const game = createGame({
       list: [
@@ -138,13 +157,12 @@ describe('game state', () => {
     expect(state().list[0]).toBe(before);
   });
 
-  it('keeps the log across a reload, but only lets you travel to what came after it', () => {
+  it('keeps the log across a reload, and marks what is before it as tainted', () => {
     const game = createGame({ hp: 10 });
     startGameState(game.state());
     flush();
     play(game, (s) => (s.hp = 9));
     play(game, (s) => (s.hp = 8));
-    expect(getHistoryIds()).toEqual([2, 1, 0]);
 
     game.live.hp = 100;
     const reloaded = createGame(game.live);
@@ -156,17 +174,146 @@ describe('game state', () => {
     expect(frames.map((frame) => frame.id)).toEqual([4, 3, 2, 1]);
     expect(frames[1]!.reloaded).toBe(true);
     expect(frames.map((frame) => isFrameTainted(frame))).toEqual([false, false, true, true]);
-
-    expect(getHistoryIds()).toEqual([4, 3]);
-    setViewState('state', 'historyRef', 3);
-    flush();
-    expect(state().hp).toBe(100);
   });
 
-  describe('createHistoryEffects', () => {
+  describe('path records', () => {
+    const values = (path: (string | number)[]) =>
+      getPathRecord(path)?.changes.map(({ change }) =>
+        change.kind === 'chg' ? change.newValue : change.kind,
+      );
+
+    it('keeps the changes of each path, newest first, and clears them on a reload', () => {
+      const game = createGame({ hp: 10, other: 1 });
+      startGameState(game.state());
+      flush();
+      play(game, (s) => (s.hp = 9));
+      play(game, (s) => (s.other = 2));
+      play(game, (s) => (s.hp = 8));
+
+      expect(values(['hp'])).toEqual([8, 9]);
+      expect(getPathRecord(['hp'])).toMatchObject({ count: 2, lastId: 3 });
+      expect(values(['other'])).toEqual([2]);
+      expect(getPathRecord(['nothing'])).toBeUndefined();
+
+      restartGameState(game.state(), 'P');
+      flush();
+      expect(getPathRecord(['hp'])).toBeUndefined();
+    });
+
+    it('forgets the changes that leave the window, but keeps counting them', () => {
+      onTestFinished(() => setSetting('diffLog.maxHistorySlices', 30));
+      setSetting('diffLog.maxHistorySlices', 2);
+      const game = createGame({ hp: 10 });
+      startGameState(game.state());
+      flush();
+      for (let hp = 9; hp > 5; hp--) play(game, (s) => (s.hp = hp));
+
+      expect(values(['hp'])).toEqual([6, 7]);
+      expect(getPathRecord(['hp'])?.count).toBe(4);
+    });
+
+    it('does not record paths that are filtered, and deletes records that are old', () => {
+      const game = createGame({ hp: 10, x: 0, y: 0 });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      flush();
+      onTestFinished(() => removeFilteredPath(['x']));
+
+      play(game, (s) => (s.x = 1));
+      play(game, (s) => (s.hp = 9));
+      expect(getPathRecord(['x'])).toBeUndefined();
+
+      for (let n = 0; n < 1001; n++) play(game, (s) => (s.y = n + 1));
+      expect(getPathRecord(['hp'])).toBeUndefined();
+    });
+  });
+
+  describe('changes to ignored paths only', () => {
+    it('patches the state and marks the change, but gets no frame and no id', () => {
+      const game = createGame({ hp: 10, x: 0, nested: { y: 0 } });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      addFilteredPath(['nested']);
+      flush();
+      onTestFinished(() => {
+        removeFilteredPath(['x']);
+        removeFilteredPath(['nested']);
+      });
+      play(game, (s) => (s.hp = 9));
+      const id = getLatestId();
+      const version = getStateVersion();
+      const frames = getDiffFrames().length;
+
+      play(game, (s) => (s.x = 1));
+      play(game, (s) => ((s.x = 2), (s.nested.y = 5)));
+
+      expect(state().x).toBe(2);
+      expect(state().nested.y).toBe(5);
+      expect(getLatestId()).toBe(id);
+      expect(getDiffFrames()).toHaveLength(frames);
+      expect(getStateVersion()).toBe(version + 2);
+      expect(getLastChangeId(['x'])).toBe(id + 1);
+      expect(getLastChangeId(['nested', 'y'])).toBe(id + 1);
+    });
+
+    it('keeps a frame for a change that also has a path that is not ignored', () => {
+      const game = createGame({ hp: 10, x: 0 });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      flush();
+      onTestFinished(() => removeFilteredPath(['x']));
+      const id = getLatestId();
+
+      play(game, (s) => ((s.x = 1), (s.hp = 9)));
+
+      expect(getLatestId()).toBe(id + 1);
+      expect(getDiffFrames()[0]!.id).toBe(id + 1);
+    });
+
+    it('does not let ignored changes push the other frames out of the window', () => {
+      const game = createGame({ hp: 10, x: 0 });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      flush();
+      onTestFinished(() => removeFilteredPath(['x']));
+      play(game, (s) => (s.hp = 9));
+
+      for (let n = 1; n <= 100; n++) play(game, (s) => (s.x = n));
+
+      expect(getDiffFrames()).toHaveLength(1);
+      expect(state().x).toBe(100);
+    });
+  });
+
+  describe('filtered paths hidden in the State view only', () => {
+    it('keeps a frame and a record for a filtered path, as the diff log shows it', () => {
+      const game = createGame({ hp: 10, x: 0 });
+      startGameState(game.state());
+      flush();
+      addFilteredPath(['x']);
+      setSetting('filteredPaths.hiddenIn', 'state');
+      flush();
+      onTestFinished(() => {
+        removeFilteredPath(['x']);
+        setSetting('filteredPaths.hiddenIn', 'diff-log');
+      });
+      const id = getLatestId();
+
+      play(game, (s) => (s.x = 1));
+
+      expect(getLatestId()).toBe(id + 1);
+      expect(getPathRecord(['x'])).toBeDefined();
+    });
+  });
+
+  describe('createFrameLimitEffect', () => {
     const setup = () => {
       createRoot((dispose) => {
-        createHistoryEffects();
+        createFrameLimitEffect();
         onTestFinished(dispose);
       });
       onTestFinished(() => setSetting('diffLog.maxHistorySlices', 30));
@@ -175,20 +322,6 @@ describe('game state', () => {
       flush();
       return game;
     };
-
-    it('goes back to the latest state when the slice that is looked at is gone', () => {
-      const game = setup();
-      for (let hp = 9; hp > 5; hp--) play(game, (s) => (s.hp = hp));
-
-      setViewState('state', 'historyRef', 1);
-      flush();
-      expect(state().hp).toBe(9);
-
-      setSetting('diffLog.maxHistorySlices', 2);
-      flush();
-      expect(getHistoryIds()).toEqual([4, 3, 2]);
-      expect(getActiveState().hp).toBe(6);
-    });
 
     it('keeps no more frames than the setting allows', () => {
       const game = setup();

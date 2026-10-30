@@ -1,4 +1,4 @@
-import { createEffect, createStore, deep } from 'solid-js';
+import { createEffect, createStore, deep, untrack } from 'solid-js';
 
 import { fromJson } from '@/shared/from-json';
 import { pathEquals, pathStartsWith } from '@/shared/path-equals';
@@ -32,10 +32,15 @@ const defaultSettings: Settings = {
   'diffLog.fontSize': 14,
   'diffLog.pollingInterval': 200,
   'diffLog.maxHistorySlices': 30,
-  'diffLog.headingStyle': 'default',
   'state.propertyOrder': 'type',
   'state.propertyOrderDesc': false,
   'state.filters': [],
+  'state.recentUpdates': 10,
+  'state.typeAheadResetMs': 500,
+  'state.pinCascade': true,
+  'filteredPaths.hiddenIn': 'diff-log',
+  'state.navigator': 'miller',
+  'state.treeLayout': 'containers-and-primitives',
   'state.splitDirection': 'auto',
   'passages.splitDirection': 'auto',
   'editor.disableHighlighting': 'large',
@@ -64,10 +69,14 @@ function loadGameConfig(gameId: string | undefined): GameConfig {
     const saved = gameId && localStorage.getItem(getGameSettingsKey(gameId));
     if (saved) {
       const config = fromJson(saved, gameConfigSchema.partial());
-      return { filteredPaths: config.filteredPaths ?? [], locks: config.locks ?? [] };
+      return {
+        filteredPaths: config.filteredPaths ?? [],
+        locks: config.locks ?? [],
+        pins: config.pins ?? [],
+      };
     }
   } catch {}
-  return { filteredPaths: [], locks: [] };
+  return { filteredPaths: [], locks: [], pins: [] };
 }
 
 function createInitialSearchState(settings: Settings): StoreData['viewState']['search'] {
@@ -97,11 +106,11 @@ export const [store, setStore] = createStore<StoreData>({
   connectionState: 'loading-meta',
   candidateIframes: [],
   gameMeta: null,
-  gameConfig: { filteredPaths: [], locks: [] },
+  gameConfig: { filteredPaths: [], locks: [], pins: [] },
   settings: initialSettings,
   viewState: {
     activeTab: 'state',
-    state: { historyRef: 'latest', path: [] },
+    state: { path: [] },
     passages: { selected: null },
     search: createInitialSearchState(initialSettings),
   },
@@ -182,6 +191,13 @@ export function setSetting<T extends keyof Settings>(setting: T, value: Settings
   });
 }
 
+export const getDefaultSetting = <T extends keyof Settings>(setting: T): Settings[T] =>
+  defaultSettings[setting];
+
+/** Only for settings that are a single number, text or true / false */
+export const isSettingDefault = (setting: keyof Settings) =>
+  store.settings[setting] === defaultSettings[setting];
+
 export function createSetSetting<T extends keyof Settings>(setting: T) {
   return (value: Settings[T]) => setSetting(setting, value);
 }
@@ -190,6 +206,16 @@ export const getFilteredPaths = () => store.gameConfig.filteredPaths;
 
 export function isPathFiltered(path: Path) {
   return store.gameConfig.filteredPaths.some((filterPath) => pathStartsWith(path, filterPath));
+}
+
+/** Filtered, and the filtered paths are hidden in the diff log (which also leaves them out of the history of values) */
+export function isHiddenInDiffLog(path: Path) {
+  return store.settings['filteredPaths.hiddenIn'] !== 'state' && isPathFiltered(path);
+}
+
+/** Filtered, and the filtered paths are hidden in the State view */
+export function isHiddenInState(path: Path) {
+  return store.settings['filteredPaths.hiddenIn'] !== 'diff-log' && isPathFiltered(path);
 }
 
 export function addFilteredPath(path: Path) {
@@ -213,18 +239,47 @@ export function clearFilteredPaths() {
   });
 }
 
+/** Pinned itself, or holds a pinned path: a pin on a.b.c puts a and a.b first in their containers too */
+// With the cascade, a pin also counts for the paths above it
+const getPinMatcher = () => (store.settings['state.pinCascade'] ? pathStartsWith : pathEquals);
+
+export function isPinned(path: Path) {
+  const isMatch = getPinMatcher();
+  return store.gameConfig.pins.some((pin) => isMatch(pin, path));
+}
+
+/** Pins the path, or unpins it (with the cascade, together with everything pinned beneath it) */
+export function togglePin(path: Path) {
+  const wasPinned = untrack(() => isPinned(path));
+  setStore((draft) => {
+    if (wasPinned) {
+      const isMatch = getPinMatcher();
+      draft.gameConfig.pins = draft.gameConfig.pins.filter((pin) => !isMatch(pin, path));
+    } else {
+      draft.gameConfig.pins.push([...path]);
+    }
+  });
+}
+
 export const getSettings = {
   diffLog: {
     fontSize: () => store.settings['diffLog.fontSize'],
     pollingInterval: () => store.settings['diffLog.pollingInterval'],
     maxHistorySlices: () => store.settings['diffLog.maxHistorySlices'],
-    headingStyle: () => store.settings['diffLog.headingStyle'],
   },
   state: {
     propertyOrder: () => store.settings['state.propertyOrder'],
     propertyOrderDesc: () => store.settings['state.propertyOrderDesc'],
     filters: () => store.settings['state.filters'],
+    recentUpdates: () => store.settings['state.recentUpdates'],
+    typeAheadResetMs: () => store.settings['state.typeAheadResetMs'],
+    pinCascade: () => store.settings['state.pinCascade'],
+    navigator: () => store.settings['state.navigator'],
+    treeLayout: () => store.settings['state.treeLayout'],
     splitDirection: () => store.settings['state.splitDirection'],
+  },
+  filteredPaths: {
+    hiddenIn: () => store.settings['filteredPaths.hiddenIn'],
   },
   passages: {
     splitDirection: () => store.settings['passages.splitDirection'],

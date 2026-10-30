@@ -1,4 +1,11 @@
-import type { FormatPassage, JSONSafeValue, Lock, Path } from '@/shared/shared-types';
+import type {
+  FormatPassage,
+  JSONSafeValue,
+  Lock,
+  Path,
+  Write,
+  WriteResult,
+} from '@/shared/shared-types';
 
 import type * as T from '../api/api';
 
@@ -49,11 +56,16 @@ export async function getUpdates(full = false): Return<'getUpdates'> {
   return Promise.resolve({ type: 'update', passage: '', delta: undefined, reverts: [] });
 }
 
+export async function setStateMulti(writes: Write[]): Return<'setStateMulti'> {
+  return Promise.resolve(writes.map((): WriteResult => ({ ok: true })));
+}
+
 export async function setState(
   _path: Array<string | number>,
   _value: JSONSafeValue,
+  _options: { deep?: boolean } = {},
 ): Return<'setState'> {
-  return Promise.resolve();
+  return Promise.resolve({ ok: true });
 }
 
 export async function setStatePropertyLocks(_locks: Lock[]): Return<'setStatePropertyLocks'> {
@@ -69,7 +81,7 @@ export async function duplicateStateProperty(
 }
 
 export async function deleteFromState(_path: Array<string | number>): Return<'deleteFromState'> {
-  return Promise.resolve();
+  return Promise.resolve({ ok: true });
 }
 
 export async function getPassageData(): Return<'getPassageData'> {

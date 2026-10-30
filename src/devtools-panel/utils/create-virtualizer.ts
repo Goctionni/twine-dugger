@@ -34,11 +34,12 @@ type Options<TScrollElement extends Element, TItemElement extends Element> = Par
  * The virtual items live in a projection keyed by `index` (or `key`, see `reconcileBy`): an item that
  * stays in view is the same object (so its row stays), and scrolling only updates the properties that changed (`start`).
  * Options can be getters (`get count() {...}`): when what they read changes, the virtualizer is
- * updated.
+ * updated. `syncOptions()` does that at once, for what has to act on the latest options before the
+ * update that follows a change (a scroll to an item that has just been added).
  */
 export function createVirtualizer<TScrollElement extends Element, TItemElement extends Element>(
   options: Options<TScrollElement, TItemElement>,
-): Virtualizer<TScrollElement, TItemElement> {
+): Virtualizer<TScrollElement, TItemElement> & { syncOptions: () => void } {
   const resolved = merge(
     { observeElementRect, observeElementOffset, scrollToFn: elementScroll },
     options,
@@ -75,8 +76,15 @@ export function createVirtualizer<TScrollElement extends Element, TItemElement e
     });
   }
 
+  function syncOptions() {
+    instance.setOptions({ ...untrack(() => ({ ...resolved })), onChange });
+    instance._willUpdate();
+    update();
+  }
+
   const virtualizer = new Proxy(instance, {
     get(target, prop) {
+      if (prop === 'syncOptions') return syncOptions;
       if (prop === 'getVirtualItems') return () => virtualItems;
       if (prop === 'getTotalSize') return () => totalSize();
       return Reflect.get(target, prop) as unknown;
@@ -99,5 +107,5 @@ export function createVirtualizer<TScrollElement extends Element, TItemElement e
     },
   );
 
-  return virtualizer;
+  return virtualizer as Virtualizer<TScrollElement, TItemElement> & { syncOptions: () => void };
 }
