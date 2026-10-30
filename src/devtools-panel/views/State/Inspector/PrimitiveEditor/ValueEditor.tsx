@@ -33,7 +33,7 @@ export function ValueEditor(props: Props) {
       }
     >
       <Match when={getType() === 'boolean'}>
-        <BooleanEditor path={props.path} label={props.label} />
+        <BooleanEditor path={props.path} label={props.label} compact={props.compact} />
       </Match>
       <Match when={getType() === 'string'}>
         <StringEditor path={props.path} label={props.label} compact={props.compact} />

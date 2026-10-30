@@ -86,10 +86,14 @@ export function StringEditor(props: Props) {
         </Switch>
         <Switch>
           <Match when={isDirty()}>
-            <SaveButton onClick={() => void save()} />
+            <SaveButton onClick={() => void save()} tabindex={props.compact ? -1 : undefined} />
           </Match>
           <Match when={!isDirty()}>
-            <LockButton status={getStatus()} onToggle={() => void toggleLock()} />
+            <LockButton
+              status={getStatus()}
+              onToggle={() => void toggleLock()}
+              tabindex={props.compact ? -1 : undefined}
+            />
           </Match>
         </Switch>
       </div>

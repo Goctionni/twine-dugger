@@ -40,6 +40,7 @@ export function PropertyRow(props: Props) {
       >
         <input
           type="checkbox"
+          tabindex={-1}
           class="h-4 w-4 check-box shrink-0"
           checked={props.isSelected}
           onChange={() => props.onToggle()}
@@ -63,6 +64,7 @@ export function PropertyRow(props: Props) {
       <div class="pl-1">
         <DeleteButton
           disabled={!canChange()}
+          tabindex={-1}
           onDelete={() => void deleteValue(props.path, getName())}
         />
       </div>

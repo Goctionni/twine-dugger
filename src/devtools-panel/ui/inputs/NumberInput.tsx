@@ -18,6 +18,7 @@ interface NumberInputProps {
   before?: JSX.Element;
   after?: JSX.Element;
   fill?: boolean;
+  buttonTabindex?: number;
   className?: string;
   inputProps?: JSX.InputHTMLAttributes<HTMLInputElement>;
 }
@@ -50,6 +51,7 @@ export function NumberInput(props: NumberInputProps) {
             type="button"
             aria-label="Decrease"
             title="−1 (Shift: −10)"
+            tabindex={props.buttonTabindex}
             onClick={(event) => change(clamp(addToNumber(props.value, event.shiftKey ? -10 : -1)))}
             disabled={isDisabled()}
             class={clsx(
@@ -91,6 +93,7 @@ export function NumberInput(props: NumberInputProps) {
             type="button"
             aria-label="Increase"
             title="+1 (Shift: +10)"
+            tabindex={props.buttonTabindex}
             onClick={(event) => change(clamp(addToNumber(props.value, event.shiftKey ? 10 : 1)))}
             disabled={isDisabled()}
             class={clsx(

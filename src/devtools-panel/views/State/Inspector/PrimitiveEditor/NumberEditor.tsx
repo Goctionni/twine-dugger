@@ -67,6 +67,7 @@ export function NumberEditor(props: Props) {
             value={getDraft()}
             valueText={getDraftText()}
             fill
+            buttonTabindex={props.compact ? -1 : undefined}
             onChange={setDraft}
             onKeyDown={onKeyDown}
             disabled={isDisabled()}
@@ -110,10 +111,14 @@ export function NumberEditor(props: Props) {
         </div>
         <Switch>
           <Match when={isDirty()}>
-            <SaveButton onClick={() => void save()} />
+            <SaveButton onClick={() => void save()} tabindex={props.compact ? -1 : undefined} />
           </Match>
           <Match when={!isDirty()}>
-            <LockButton status={getStatus()} onToggle={() => void toggleLock()} />
+            <LockButton
+              status={getStatus()}
+              onToggle={() => void toggleLock()}
+              tabindex={props.compact ? -1 : undefined}
+            />
           </Match>
         </Switch>
       </div>

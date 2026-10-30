@@ -7,6 +7,7 @@ interface LockButtonProps {
   onToggle: () => void;
   disabled?: boolean;
   disabledTitle?: string;
+  tabindex?: number;
 }
 
 export function LockButton(props: LockButtonProps) {
@@ -26,6 +27,7 @@ export function LockButton(props: LockButtonProps) {
           aria-label="Lock"
           aria-pressed={props.status === 'locked' ? 'true' : 'false'}
           disabled={props.disabled}
+          tabindex={props.tabindex}
           title={getTitle()}
           class={[
             'inline-flex h-7.5 w-7.5 shrink-0 cursor-pointer items-center justify-center rounded-md border',

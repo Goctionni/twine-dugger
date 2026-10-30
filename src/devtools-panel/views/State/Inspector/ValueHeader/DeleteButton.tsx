@@ -3,6 +3,7 @@ interface Props {
   /** Why it is disabled; by default the value is locked or in a set */
   disabledTitle?: string;
   onDelete: () => void;
+  tabindex?: number;
 }
 
 export function DeleteButton(props: Props) {
@@ -16,6 +17,7 @@ export function DeleteButton(props: Props) {
           : 'Delete this value'
       }
       disabled={props.disabled}
+      tabindex={props.tabindex}
       class="inline-flex h-7.5 w-7.5 shrink-0 cursor-pointer items-center justify-center rounded-md border border-red-400/40 bg-red-400/10 text-red-400 hover:border-red-400 hover:bg-red-900 hover:text-white disabled:cursor-default disabled:opacity-35 disabled:hover:border-red-400/40 disabled:hover:bg-red-400/10 disabled:hover:text-red-400"
       onClick={() => props.onDelete()}
     >

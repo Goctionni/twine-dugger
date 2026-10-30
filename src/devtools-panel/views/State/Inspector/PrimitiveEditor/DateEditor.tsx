@@ -91,10 +91,18 @@ export function DateEditor(props: Props) {
         />
         <Switch>
           <Match when={isDirty()}>
-            <SaveButton onClick={trySave} disabled={getProblem() !== undefined} />
+            <SaveButton
+              onClick={trySave}
+              disabled={getProblem() !== undefined}
+              tabindex={props.compact ? -1 : undefined}
+            />
           </Match>
           <Match when={!isDirty()}>
-            <LockButton status={getStatus()} onToggle={() => void toggleLock()} />
+            <LockButton
+              status={getStatus()}
+              onToggle={() => void toggleLock()}
+              tabindex={props.compact ? -1 : undefined}
+            />
           </Match>
         </Switch>
       </div>

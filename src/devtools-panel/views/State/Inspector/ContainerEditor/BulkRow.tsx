@@ -160,6 +160,7 @@ export function BulkRow(props: Props) {
           ref={checkbox}
           type="checkbox"
           aria-label="Select all"
+          tabindex={-1}
           class="h-4 w-4 check-box shrink-0"
           checked={isAllSelected()}
           disabled={props.keys.length === 0}
@@ -197,6 +198,7 @@ export function BulkRow(props: Props) {
             <Match when={getKind() === 'number'}>
               <NumberInput
                 fill
+                buttonTabindex={-1}
                 value={getDraft() as number}
                 valueText={getDraftText()}
                 onChange={edit}
@@ -248,7 +250,7 @@ export function BulkRow(props: Props) {
           </Switch>
           <Switch>
             <Match when={isSaveShown()}>
-              <SaveButton onClick={() => void save()} />
+              <SaveButton onClick={() => void save()} tabindex={-1} />
             </Match>
             <Match when={!isSaveShown()}>
               <button
@@ -257,6 +259,7 @@ export function BulkRow(props: Props) {
                 aria-pressed={getLockState() === 'locked' ? 'true' : 'false'}
                 title={lockTitle()}
                 disabled={getLockableKeys().length === 0}
+                tabindex={-1}
                 class={[
                   'relative inline-flex h-7.5 w-7.5 shrink-0 cursor-pointer items-center justify-center rounded-md border disabled:cursor-default disabled:opacity-35',
                   getLockState() === 'locked'
@@ -279,7 +282,11 @@ export function BulkRow(props: Props) {
         </div>
       </div>
       <div class="pl-1">
-        <DeleteButton disabled={getEditableKeys().length === 0} onDelete={() => void remove()} />
+        <DeleteButton
+          disabled={getEditableKeys().length === 0}
+          tabindex={-1}
+          onDelete={() => void remove()}
+        />
       </div>
     </li>
   );

@@ -8,6 +8,7 @@ import { createEditStatus } from '../createEditStatus';
 interface Props {
   path: Path;
   label: string;
+  compact?: boolean;
 }
 
 export function BooleanEditor(props: Props) {
@@ -33,7 +34,11 @@ export function BooleanEditor(props: Props) {
         readOnly={getStatus() === 'locked' || isWaiting()}
         disabled={isDisabled()}
       />
-      <LockButton status={getStatus()} onToggle={() => void toggleLock()} />
+      <LockButton
+        status={getStatus()}
+        onToggle={() => void toggleLock()}
+        tabindex={props.compact ? -1 : undefined}
+      />
     </div>
   );
 }
