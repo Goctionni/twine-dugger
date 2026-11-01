@@ -46,7 +46,7 @@ export function DetailsPane(props: Props) {
           </button>
         </div>
       </Show>
-      <div class="min-h-0 flex-1 overflow-auto">
+      <div class="min-h-0 flex-1 overflow-auto" data-scroll-pane>
         <Switch fallback={<p class="p-3 text-sm text-slate-400">Select a result to preview it</p>}>
           {/* Matched on the id: saving a passage makes a new object, which must not replace the editor; another passage does */}
           <Match when={passage()?.id} keyed>
