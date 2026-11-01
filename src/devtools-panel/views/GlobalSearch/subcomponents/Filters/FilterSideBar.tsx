@@ -2,7 +2,12 @@ import { For, Match, Show, Switch } from 'solid-js';
 
 import { hasActiveFilters, resetFilters } from '../../store-helpers/search-state';
 import type { FilterLayout } from '../../types';
-import { createFilterGroups, type FilterCounts, type FilterGroup } from './filter-groups';
+import {
+  GroupHeading,
+  createFilterGroups,
+  type FilterCounts,
+  type FilterGroup,
+} from './filter-groups';
 import { LayoutToggle } from './LayoutToggle';
 import { Popover } from './Popover';
 
@@ -31,12 +36,7 @@ function FullSideBar(props: { groups: FilterGroup[] }) {
       <For each={props.groups}>
         {(group) => (
           <section>
-            <h3 class="mb-1 px-1 text-xs font-semibold tracking-wide text-slate-300 uppercase">
-              {group.title}
-              <Show when={group.count()}>
-                <span class="ml-1 rounded-full bg-sky-600 px-1.5 text-white">{group.count()}</span>
-              </Show>
-            </h3>
+            <GroupHeading group={group} />
             <group.Body />
           </section>
         )}
@@ -81,9 +81,7 @@ function IconSideBar(props: { groups: FilterGroup[] }) {
                 </>
               }
             >
-              <h3 class="mb-1 text-xs font-semibold tracking-wide text-slate-300 uppercase">
-                {group.title}
-              </h3>
+              <GroupHeading group={group} compact />
               <group.Body />
             </Popover>
           )}

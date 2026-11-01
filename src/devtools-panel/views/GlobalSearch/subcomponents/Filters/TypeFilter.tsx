@@ -1,9 +1,9 @@
-import { createMemo, For, Show } from 'solid-js';
+import { createMemo, For } from 'solid-js';
 
 import { TypeIcon } from '@/devtools-panel/ui/display/TypeIcon';
 import type { ValueType } from '@/shared/shared-types';
 
-import { clearTypes, getTypeFilter, toggleType } from '../../store-helpers/search-state';
+import { getTypeFilter, toggleType } from '../../store-helpers/search-state';
 import { CheckRow } from './CheckRow';
 
 /** The types of the results, most common first; a chosen type stays in the list when it has none */
@@ -21,15 +21,6 @@ export function TypeFilter(props: Props) {
 
   return (
     <div class="flex flex-col">
-      <Show when={getTypeFilter().length}>
-        <button
-          type="button"
-          class="cursor-pointer self-end px-1 text-xs text-sky-400 hover:underline"
-          onClick={() => clearTypes()}
-        >
-          Show all types
-        </button>
-      </Show>
       <For each={types()} fallback={<p class="px-1 text-sm text-slate-400">No results</p>}>
         {(type) => (
           <CheckRow
