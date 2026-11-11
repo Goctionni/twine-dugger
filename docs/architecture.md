@@ -4,7 +4,7 @@ The extension has three main parts:
 
 1. **DevTools Panel UI** (`src/devtools-panel`)
    - SolidJS app rendered into a custom DevTools panel.
-   - Talks to the inspected page using `chrome.scripting.executeScript` (see `api/remote-execute.ts`).
+   - Talks to the inspected page with `devtools.inspectedWindow.eval` (see `api/remote-execute.ts`).
    - Displays game **state**, **diff history**, passages and search; allows editing and locking state paths.
 
 2. **Content Script** (`src/content-script`)
@@ -25,12 +25,12 @@ The extension has three main parts:
 ### High-Level Data Flow
 
 ```
-DevTools Panel  ──► (chrome.scripting.executeScript) ──►  Content Script
+DevTools Panel  ──► (devtools.inspectedWindow.eval)  ──►  Content Script
      ▲                                                         │
      │◄─ JSON (state, diffs, passage) ◄─ window.TwineDugger ◄──┘
 ```
 
-- Panel calls functions (e.g., `getUpdates`, `setState`) by executing code in the page context.
+- Panel calls functions (e.g., `getUpdates`, `setStateMulti`) by executing code in the page context.
 - The content script keeps the last seen state in memory to produce deltas.
 - State is made JSON-safe (Maps, Sets, functions and Dates as marked values, see `src/shared/json-safe.ts`) so it survives the trip.
 

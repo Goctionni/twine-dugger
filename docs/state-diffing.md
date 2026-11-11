@@ -5,9 +5,8 @@ Changes to the game state are tracked as **deltas** in the format of
 
 The content script keeps the last seen state and, each time the panel polls, returns the delta between
 that state and the live one. To make this possible the live state is first converted to JSON safe values
-(Maps, Sets, functions and Dates are represented by marked values, see `src/shared/json-safe.ts`). A Date is one string (`Date 2020-01-02T03:04:05`, the time in the game page, to the second), so a Date that changes is one change, not one per field.
-Array items are matched by identity where the game provides it, so reordering and insertion don't show
-up as rewrites of the whole array.
+(Maps, Sets, functions and Dates are represented by marked values, see [`state-transfer.md`](./state-transfer.md)). A Date is one string (`Date 2020-01-02T03:04:05`, the time in the game page, to the second), so a Date that changes is one change, not one per field.
+An attempt is made to match array items by identity, so reordering and insertion don't show up as rewrites of the whole array; see `src/content-script/util/update-tracker.ts` for how.
 
 The panel applies each delta to its own copy of the state and keeps the latest deltas (the number is a
 setting) as the diff log, which shows each delta as a list of changes. From the same deltas it keeps

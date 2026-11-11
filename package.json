@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "prepare": "vp config",
-    "package": "node build/package-release.ts"
+    "iframe": "vp dev . --",
+    "package": "vpx build/package-release.ts"
   },
   "dependencies": {
     "@shikijs/langs": "4.5.0",

@@ -10,6 +10,7 @@ import { copyTransform } from './build/copy-transform.ts';
 import { getBuildVersion } from './build/get-build-version.ts';
 import { htmlInsertFontPlugin } from './build/html-insert-font.ts';
 import { logResults } from './build/log-results.ts';
+import { gameIframePlugin } from './build/plugin-game-iframe.ts';
 import { mockApiPlugin } from './build/plugin-mock-api.ts';
 
 export default defineConfig({
@@ -21,6 +22,7 @@ export default defineConfig({
     // Its CSS optimizer doesn't know ::highlight() yet and warns; the output is not minified anyway
     tailwindcss({ optimize: false }),
     htmlInsertFontPlugin,
+    gameIframePlugin(),
     mockApiPlugin(),
   ],
   lint: (await import('./oxlint.config.ts')).default,

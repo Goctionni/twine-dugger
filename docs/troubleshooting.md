@@ -2,7 +2,8 @@
 
 **Panel doesn't appear**
 
-- Verify you loaded the **dist/** folder via **Load unpacked**.
+- Chrome: verify you loaded the **dist/** folder via **Load unpacked**.
+- Firefox: verify you loaded `dist-ff/manifest.json` via **Load Temporary Add-on**. A temporary add-on does not survive a restart of Firefox, so check that it is still listed under `about:debugging` > **This Firefox**.
 - Check the DevTools **Console** for extension logs.
 - Ensure you're on a page running a Twine game.
 

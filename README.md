@@ -14,7 +14,7 @@ Twine Dugger is a browser-extension that's intended to help either debug or chea
 - typescript - Types
 - vite - build tool
 - SolidJS - UI
-- Tailwindcs - Styling
+- Tailwind CSS - Styling
 
 ## Commands
 
@@ -28,7 +28,16 @@ See: https://viteplus.dev/guide/
 `vp build` - build extension
 `vp build --watch` - build extension and watch for file changes
 
-## Status
+If vite-plus (`vp`) is not installed globally, install dependencies using `pnpm i` and use `npx vp ...` instead of `vp ...`.
 
-This project is extremely "work in progress", there's probably a ton of dead code, stuff that
-needs to be refactored, tests that don't really test things, usecases missed.
+## Documentation
+
+Technical documentation is placed in the docs directory as markdown files. See [docs/README.md](docs/README.md).
+
+## Agent skills and Claude Code
+
+Skills for coding agents live in `.agents/skills`. Claude Code does not read this (industry standard) skills-directory ([anthropics/claude-code#31005](https://github.com/anthropics/claude-code/issues/31005)). If you use Claude Code, link `.claude/skills` to `.agents/skills` but keep the link out of git. The easiest way is to ask Claude Code to create the link:
+
+```
+Link .claude/skills to .agents/skills (a symlink, or a directory junction on Windows), add .claude/ to .git/info/exclude, and don't stage or commit anything.
+```

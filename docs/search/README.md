@@ -56,14 +56,14 @@ The page is laid out by the width of the **window** (`utils/create-get-breakpoin
 
 ## Where the data comes from
 
-| Data                                 | Lives in                                                                           | Changes when                                                                                               |
-| ------------------------------------ | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Game state                           | `store/game-state.ts` (`getLatestState`, `getLatestId`, `getLastChangeIdByKey`)    | The panel polls the content script and patches the state with the deltas; the id goes up with every change |
-| Passages                             | `store/passages.ts` (`getPassageData`)                                             | Loaded once; again after a reload or a save                                                                |
-| Search text and options              | `store-helpers/search-input.ts` (module signals)                                   | The user types or toggles an option, in `SearchBar`                                                        |
-| Scope, sort, type filter, tag filter | `store.viewState.search`, read and written through `store-helpers/search-state.ts` | The user changes a filter                                                                                  |
-| Settings that matter here            | `store.settings`: `search.*` and `editor.disableHighlighting`                      | Settings page, or the layout button of the narrow layouts                                                  |
-| Selected result                      | A signal in `GlobalSearchView`                                                     | The user clicks a row                                                                                      |
+| Data                                 | Lives in                                                                            | Changes when                                                                                                    |
+| ------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Game state                           | `store/game-state.ts` (`getLatestState`, `getStateVersion`, `getLastChangeIdByKey`) | The panel polls the content script and patches the state with the deltas; the version goes up with every change |
+| Passages                             | `store/passages.ts` (`getPassageData`)                                              | Loaded once; again after a reload or a save                                                                     |
+| Search text and options              | `store-helpers/search-input.ts` (module signals)                                    | The user types or toggles an option, in `SearchBar`                                                             |
+| Scope, sort, type filter, tag filter | `store.viewState.search`, read and written through `store-helpers/search-state.ts`  | The user changes a filter                                                                                       |
+| Settings that matter here            | `store.settings`: `search.*` and `editor.disableHighlighting`                       | Settings page, or the layout button of the narrow layouts                                                       |
+| Selected result                      | A signal in `GlobalSearchView`                                                      | The user clicks a row                                                                                           |
 
 ## How the data flows
 

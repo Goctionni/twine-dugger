@@ -21,7 +21,7 @@ import type {
   Value,
 } from '@/shared/shared-types';
 
-// Harlowe uses `TwineScript_*` properties for inernals, but stores this state. We remove it
+// Harlowe uses `TwineScript_*` properties for internals, but stores this state. We remove it
 // when making a copy of gamestate for all story-formats.
 // (We accept the small risk of games having actual state using this prefix)
 const INTERNAL_PREFIX = 'TwineScript_';

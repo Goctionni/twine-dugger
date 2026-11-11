@@ -9,11 +9,11 @@ const bumps = ['patch', 'minor', 'major'] as const;
 type Bump = (typeof bumps)[number];
 
 export interface BuildVersion {
-  /** What the browsers read as the version: Chrome only takes up to four numbers */
+  /** The manifest `version`: up to four dot-separated numbers, in both Chrome and Firefox */
   version: string;
-  /** What people see, with `-beta` when the code is not a tagged release */
+  /** Chrome's `version_name`, which people see: `-beta` is added when the code is not a tagged release */
   versionName: string;
-  /** Firefox takes no text after the numbers, so a beta is 0.major.minor.patch, below any release */
+  /** Firefox has no `version_name`, so a beta gets a leading `0.` to show people it is not a release */
   firefoxVersion: string;
 }
 

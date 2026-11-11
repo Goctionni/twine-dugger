@@ -14,8 +14,10 @@ State lives in a Solid store (`store/`), updated by polling the content script.
 
 All requests go through `api/api.ts`, which depends on:
 
-- `api/remote-execute.ts` — wraps `chrome.scripting.executeScript` for the inspected tab.
+- `api/remote-execute.ts` — runs a function in the inspected page with `devtools.inspectedWindow.eval`.
 - `api/remote-functions/*` — small lambdas serialized and executed in the page context.
 - `injectContentScript()` — ensures `content-script.js` is present before calling `window.TwineDugger`.
 
-Error handling keeps the panel responsive if the inspected page reloads or the extension gets killed; re-open DevTools to reinit.
+Everything that crosses this bridge has to survive being turned into JSON, see [`state-transfer.md`](./state-transfer.md).
+
+A reload of the inspected page is picked up by the next poll and starts the state over. After repeated failed polls the panel shows an error instead; re-open DevTools to start again.

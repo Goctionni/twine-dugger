@@ -9,7 +9,9 @@ it('says that the game has blocked access to the SugarCube API', () => {
   render(() => <ApiBlocked />);
 
   expect(screen.getByText('This game has blocked access to the SugarCube API')).toBeTruthy();
-  expect(screen.getByText(/cannot read or change the state of this game/)).toBeTruthy();
+  expect(
+    screen.getByText(/cannot access the API's required for tracking or updating/),
+  ).toBeTruthy();
 });
 
 it('has nothing to press: there is no way around it offered', () => {

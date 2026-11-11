@@ -27,7 +27,6 @@ export function getLockingPath(path: Path, lockedPaths: readonly Path[]): Path |
     .sort((a, b) => b.length - a.length)[0];
 }
 
-/** The items of a set have no name to write to: nothing in a set can be set */
 export function isInsideSet(state: JSONSafeContainer, path: Path): boolean {
   let value: JSONSafeValue = state;
   for (const key of path) {

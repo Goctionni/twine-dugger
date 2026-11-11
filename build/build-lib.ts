@@ -11,7 +11,7 @@ export function buildLib(config: Partial<InlineConfig>) {
     format: 'iife',
     clean: false,
     logLevel: 'warn',
-    target: 'chrome135',
+    target: 'chrome145',
     platform: 'browser',
     minify: false,
     sourcemap: true,
