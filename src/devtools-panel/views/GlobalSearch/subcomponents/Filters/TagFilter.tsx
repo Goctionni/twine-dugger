@@ -2,7 +2,7 @@ import { createMemo, createSignal, For, Show } from 'solid-js';
 
 import { getTagColor } from '@/devtools-panel/ui/display/Tag';
 
-import { clearTags, getTagFilter, toggleTag } from '../../store-helpers/search-state';
+import { getTagFilter, toggleTag } from '../../store-helpers/search-state';
 import { CheckRow } from './CheckRow';
 
 /** The tags are the game's own, and there can be thousands: only the first are listed */
@@ -39,15 +39,6 @@ export function TagFilter(props: Props) {
         value={find()}
         onInput={(event) => setFind(event.currentTarget.value)}
       />
-      <Show when={getTagFilter().length}>
-        <button
-          type="button"
-          class="cursor-pointer self-end px-1 text-xs text-sky-400 hover:underline"
-          onClick={() => clearTags()}
-        >
-          Any tag
-        </button>
-      </Show>
       <For each={listed()} fallback={<p class="px-1 text-sm text-slate-400">No tags in results</p>}>
         {(tag) => (
           <CheckRow

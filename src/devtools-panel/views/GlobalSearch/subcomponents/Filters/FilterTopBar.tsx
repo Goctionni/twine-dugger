@@ -1,6 +1,6 @@
 import { For, Show } from 'solid-js';
 
-import { createFilterGroups, type FilterCounts } from './filter-groups';
+import { GroupHeading, createFilterGroups, type FilterCounts } from './filter-groups';
 import { Popover } from './Popover';
 
 /** A row of buttons under the search bar, each opening one group below it */
@@ -22,6 +22,7 @@ export function FilterTopBar(props: FilterCounts) {
               </>
             }
           >
+            <GroupHeading group={group} compact />
             <group.Body />
           </Popover>
         )}
