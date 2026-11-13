@@ -24,6 +24,13 @@ vi.mock('@/devtools-panel/api/api', () => ({
 
 vi.mock('../AddPropertyDialog', () => ({ showAddDialog: vi.fn() }));
 
+// jsdom has no layout: no scrolling, and nothing to observe the size of
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as unknown as typeof ResizeObserver;
+
 afterEach(async () => {
   cleanup();
   await clearLocks();
@@ -90,6 +97,14 @@ it('can include the container properties, until something is typed', () => {
   flush();
   expect(Object.keys(JSON.parse(area().value) as object)).toEqual(['a', 'b', 'c', 'deep', 'tags']);
   expect(queryByText(/container properties excluded/)).toBeNull();
+  expect(area().style.maxHeight).not.toBe('');
+  box().click();
+  flush();
+  expect(Object.keys(JSON.parse(area().value) as object)).toEqual(['a', 'b', 'c']);
+  box().click();
+  flush();
+  expect(Object.keys(JSON.parse(area().value) as object)).toEqual(['a', 'b', 'c', 'deep', 'tags']);
+  expect(area().style.maxHeight).not.toBe('');
 
   type({ a: 1 });
   expect(box().disabled).toBe(true);

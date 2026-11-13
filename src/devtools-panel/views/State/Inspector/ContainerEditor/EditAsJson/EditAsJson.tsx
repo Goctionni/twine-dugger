@@ -6,6 +6,7 @@ import type { Path } from '@/shared/shared-types';
 
 import { ChangeLine } from './ChangeLine';
 import { createEditedKeys } from './create-edited-keys';
+import { createFitJsonHeight } from './create-fit-json-height';
 import { createJsonDraft } from './create-json-draft';
 import { handleJsonTextKey } from './textarea-editing';
 
@@ -52,8 +53,9 @@ export function EditAsJson(props: Props) {
     isLocked,
     onSaved: () => props.onClose(),
   });
+  const [getArea, setArea] = createSignal<HTMLTextAreaElement>();
   const [showChanges, setShowChanges] = createSignal(false);
-
+  createFitJsonHeight({ getArea, getText });
   const onTextKeyDown = (event: KeyboardEvent & { currentTarget: HTMLTextAreaElement }) => {
     if (handleJsonTextKey(event)) setEditedText(event.currentTarget.value);
   };
@@ -98,6 +100,7 @@ export function EditAsJson(props: Props) {
       </Show>
 
       <textarea
+        ref={setArea}
         aria-label="JSON"
         spellcheck="false"
         wrap="off"
@@ -107,7 +110,7 @@ export function EditAsJson(props: Props) {
         aria-invalid={getProblem() ? 'true' : 'false'}
         class={[
           baseInputClasses,
-          'min-h-55 w-full resize-y overflow-auto rounded-md font-mono text-xs leading-normal whitespace-pre',
+          'field-sizing-content max-h-none min-h-55 w-full overflow-auto rounded-md font-mono text-xs leading-normal whitespace-pre',
           { 'border-red-500! focus:border-red-500! focus:ring-red-500!': Boolean(getProblem()) },
         ]}
       />
@@ -125,7 +128,7 @@ export function EditAsJson(props: Props) {
         </Match>
       </Switch>
 
-      <div class="flex items-center justify-between gap-1.5 pt-1">
+      <div class="sticky bottom-0 flex items-center justify-between gap-1.5 bg-gray-900 pt-1 pb-0.5">
         <label class={checkboxLabelClass}>
           <input
             type="checkbox"
